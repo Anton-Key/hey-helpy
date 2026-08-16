@@ -1,0 +1,6 @@
+{
+  "name": "Hey Helpy Flutter",
+  "image": "ghcr.io/cirruslabs/flutter:stable",
+  "forwardPorts": [8080],
+  "postCreateCommand": "flutter create . --platforms=web --project-name hey_helpy && flutter pub get"
+}

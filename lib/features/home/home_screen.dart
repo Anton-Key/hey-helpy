@@ -100,13 +100,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(8)))))));
   Widget _profileView() {
     final brand = Theme.of(context).colorScheme.primary;
-    final name = _profile?.displayName ?? 'Антон';
-    final role = _profile?.role.title ?? 'Администратор';
+    // Пока профиль грузится, не показываем чужое имя и роль.
+    final name = _profile?.displayName ?? '';
+    final role = _profile?.role.title ?? 'Загрузка…';
     return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 120), children: [
       Container(padding: const EdgeInsets.all(16), decoration: _cardDeco(),
         child: Row(children: [
           CircleAvatar(radius: 28, backgroundColor: brand,
-            child: Text(name.isNotEmpty ? name[0] : 'A',
+            child: Text(name.isNotEmpty ? name[0].toUpperCase() : '·',
                 style: const TextStyle(color: _onBrand, fontWeight: FontWeight.w800, fontSize: 20))),
           const SizedBox(width: 14),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

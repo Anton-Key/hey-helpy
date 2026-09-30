@@ -12,7 +12,7 @@ class OnboardingException implements Exception {
 /// Онбординг и управление участниками компании.
 ///
 /// Все изменения company_id и role идут только через серверные функции
-/// (миграция 20260923000001_security_fixes.sql). Напрямую писать эти поля
+/// (миграция 0003_workflow_security.sql). Напрямую писать эти поля
 /// в таблицу profiles клиент больше не может.
 class OnboardingRepository {
   OnboardingRepository([SupabaseClient? client])

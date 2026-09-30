@@ -73,7 +73,7 @@ class _ObjectsTabState extends State<ObjectsTab> {
   void initState() {
     super.initState();
     _future = _repo.objects();
-    _repo.myCompanyId().then((v) => setState(() => _companyId = v));
+    _repo.myCompanyId().then((v) { if (mounted) setState(() => _companyId = v); });
   }
   void _reload() => setState(() => _future = _repo.objects());
   @override
@@ -187,7 +187,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
   void initState() {
     super.initState();
     _future = _repo.contractors();
-    _repo.myCompanyId().then((v) => setState(() => _companyId = v));
+    _repo.myCompanyId().then((v) { if (mounted) setState(() => _companyId = v); });
   }
   void _reload() => setState(() => _future = _repo.contractors());
   @override

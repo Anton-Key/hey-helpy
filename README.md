@@ -45,9 +45,18 @@ flutter pub get
 # вариант с CLI (если установлен supabase)
 supabase db execute --file supabase/migrations/0001_init.sql
 supabase db execute --file supabase/migrations/0002_domain.sql
+supabase db execute --file supabase/migrations/0003_workflow_security.sql
 ```
 
-Иначе просто выполни содержимое `0001_init.sql`, затем `0002_domain.sql` в SQL Editor.
+Иначе просто выполни содержимое `0001_init.sql`, `0002_domain.sql`, затем `0003_workflow_security.sql` в SQL Editor.
+
+> **Уже работающую базу тоже нужно обновить миграцией `0003`.** Без неё не работают онбординг (`create_company`, `accept_invite`), создание заявки (`create_work_order`) и статусы «На проверке» / «Возвращена». Миграцию можно запускать повторно.
+
+Что делает `0003_workflow_security.sql`:
+- добавляет статусы `on_review` / `returned`, поля `assigned_contractor_id`, `return_reason` и порядок пунктов чек-листа;
+- закрывает дыру, из-за которой любой пользователь мог сам выставить себе `role = 'admin'` и чужой `company_id`;
+- проверяет переходы статусов по ролям на сервере и пишет журнал `work_logs`;
+- удалять заявки может только админ, приглашения видят только админ и менеджер.
 
 ### 3. Взять ключи
 
@@ -96,10 +105,10 @@ hey_helpy/
 │  └─ features/
 │     ├─ auth/                  # репозиторий + экран логина
 │     ├─ home/                  # главный экран «одна кнопка»
-│     ├─ requests/              # создание заявки (заготовка)
+│     ├─ requests/              # список, карточка и экран создания заявки
 │     ├─ reports/               # отчёты (заготовка)
 │     └─ admin/                 # администрирование (заготовка)
-└─ supabase/migrations/         # 0001_init.sql, 0002_domain.sql
+└─ supabase/migrations/         # 0001_init.sql, 0002_domain.sql, 0003_workflow_security.sql
 ```
 
 ## Дальше (Фаза 1)

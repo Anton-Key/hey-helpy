@@ -580,7 +580,16 @@ Future<bool?> showOrderForm({
   required List<Obj> objects,
   required String companyId,
   Map<String, dynamic>? existing,
-}) {
+}) async {
+  // Виды работ = слои компании из базы. Если база недоступна — список по умолчанию.
+  List<String> workTypes = const ['Климат', 'Электрика', 'Сантехника', 'Клининг',
+      'Системы безопасности', 'Мебель', 'Другое'];
+  try {
+    final fromDb = await DirectoryRepo().layerNames();
+    if (fromDb.isNotEmpty) workTypes = fromDb;
+  } catch (_) {}
+  if (!context.mounted) return null;
+
   final isEdit = existing != null;
   final titleC = TextEditingController(text: isEdit ? (existing['title'] ?? '') as String : '');
   final descC = TextEditingController(text: isEdit ? (existing['description'] ?? '') as String? ?? '' : '');
@@ -589,7 +598,6 @@ Future<bool?> showOrderForm({
   String? objectId = isEdit ? existing['object_id'] as String? : null;
   bool recurring = isEdit ? existing['recurrence'] != null : false;
 
-  const workTypes = ['Сантехника', 'Электрика', 'Климат', 'Клининг', 'Мебель', 'Другое'];
   const priorities = [['low', 'Низкий'], ['normal', 'Обычный'], ['high', 'Высокий'], ['critical', 'Критич.']];
   final brand = Theme.of(context).colorScheme.primary;
 
@@ -626,7 +634,7 @@ Future<bool?> showOrderForm({
               const SizedBox(height: 16),
               Row(children: [
                 const Expanded(child: Text('Регламентная (повторяющаяся)', style: TextStyle(fontSize: 15))),
-                Switch(value: recurring, activeColor: brand, onChanged: (v) => setSt(() => recurring = v))]),
+                Switch(value: recurring, activeTrackColor: brand, onChanged: (v) => setSt(() => recurring = v))]),
               const SizedBox(height: 10),
               FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: brand, foregroundColor: _onBrand),
@@ -647,8 +655,10 @@ Future<bool?> showOrderForm({
                           workType: workType, priority: priority, objectId: objectId, recurring: recurring);
                     }
                     if (ctx.mounted) Navigator.pop(ctx, true);
-                  } catch (e) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+                  } catch (_) {
+                    if (!ctx.mounted) return;
+                    ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                        content: Text('Не удалось сохранить заявку. Проверьте интернет и попробуйте ещё раз.')));
                   }
                 },
                 child: Text(isEdit ? 'Сохранить' : 'Создать заявку',

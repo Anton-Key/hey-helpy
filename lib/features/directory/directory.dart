@@ -49,6 +49,13 @@ class DirectoryRepo {
   Future<void> addContractor({required String orgName, required String companyId}) async {
     await _c.from('contractors').insert({'org_name': orgName, 'company_id': companyId});
   }
+
+  /// Названия слоёв компании (климат, электрика, системы безопасности…)
+  /// в порядке отображения. Добавляются в базе без изменения приложения.
+  Future<List<String>> layerNames() async {
+    final rows = await _c.from('layers').select('name').order('sort').order('name');
+    return (rows as List).map((e) => (e as Map<String, dynamic>)['name'] as String).toList();
+  }
 }
 
 const _ink = Color(0xFF1C1E22);

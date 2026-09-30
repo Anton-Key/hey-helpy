@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _reports() {
     final brand = Theme.of(context).colorScheme.primary;
     return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 120), children: [
-      Row(children: const [
+      const Row(children: [
         Expanded(child: _Kpi(n: '27', t: 'заявок за месяц')),
         SizedBox(width: 10), Expanded(child: _Kpi(n: '92%', t: 'в срок')),
         SizedBox(width: 10), Expanded(child: _Kpi(n: '1.4ч', t: 'ср. время')),
@@ -189,7 +189,7 @@ class _TopTabs extends StatelessWidget {
               decoration: BoxDecoration(border: Border(
                   bottom: BorderSide(color: tab == i ? _ink : Colors.transparent, width: 3))),
               child: Text(labels[i], style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
-                  color: tab == i ? _ink : _ink.withOpacity(0.5)))))),
+                  color: tab == i ? _ink : _ink.withValues(alpha: 0.5)))))),
     ]);
   }
 }

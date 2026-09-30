@@ -1,54 +1,51 @@
-import 'dart:async';
-
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/auth/login_screen.dart';
 import '../features/home/home_screen.dart';
-import '../features/requests/create_request_screen.dart';
-import '../features/reports/reports_screen.dart';
-import '../features/admin/admin_screen.dart';
+import '../features/onboarding/onboarding_screen.dart';
+import 'session_controller.dart';
+import 'splash_screen.dart';
 
-/// Создаёт роутер с редиректом по состоянию аутентификации.
-GoRouter createRouter() {
-  final auth = Supabase.instance.client.auth;
+/// Служебные экраны, с которых готового пользователя уводим на главный.
+const _gateRoutes = {'/splash', '/login', '/onboarding'};
 
+/// Создаёт роутер. Вызывать один раз за жизнь приложения.
+GoRouter createRouter(SessionController session) {
   return GoRouter(
     initialLocation: '/',
-    refreshListenable: _AuthRefresh(auth.onAuthStateChange),
+    refreshListenable: session,
     redirect: (context, state) {
-      final loggedIn = auth.currentSession != null;
-      final atLogin = state.matchedLocation == '/login';
+      final loc = state.matchedLocation;
 
-      if (!loggedIn) return atLogin ? null : '/login';
-      if (atLogin) return '/';
-      return null;
+      switch (session.status) {
+        case SessionStatus.loading:
+        case SessionStatus.error:
+          return loc == '/splash' ? null : '/splash';
+        case SessionStatus.signedOut:
+          return loc == '/login' ? null : '/login';
+        case SessionStatus.needsOnboarding:
+          return loc == '/onboarding' ? null : '/onboarding';
+        case SessionStatus.ready:
+          return _gateRoutes.contains(loc) ? '/' : null;
+      }
     },
     routes: [
-      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/', builder: (_, __) => const HomeScreen()),
       GoRoute(
-        path: '/create',
-        builder: (_, __) => const CreateRequestScreen(),
+        path: '/splash',
+        builder: (_, __) => SplashScreen(session: session),
       ),
-      GoRoute(path: '/reports', builder: (_, __) => const ReportsScreen()),
-      GoRoute(path: '/admin', builder: (_, __) => const AdminScreen()),
+      GoRoute(
+        path: '/login',
+        builder: (_, __) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (_, __) => OnboardingScreen(onCompleted: session.reloadProfile),
+      ),
+      GoRoute(
+        path: '/',
+        builder: (_, __) => const HomeScreen(),
+      ),
     ],
   );
-}
-
-/// Мост из потока AuthState в Listenable для go_router.
-class _AuthRefresh extends ChangeNotifier {
-  _AuthRefresh(Stream<AuthState> stream) {
-    _sub = stream.listen((_) => notifyListeners());
-  }
-
-  late final StreamSubscription<AuthState> _sub;
-
-  @override
-  void dispose() {
-    _sub.cancel();
-    super.dispose();
-  }
 }

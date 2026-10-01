@@ -7,6 +7,9 @@ import '../../core/directional.dart';
 import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import '../photos/photo_capture.dart';
+import '../photos/photo_repository.dart';
+import '../photos/photo_section.dart';
 import '../voice/voice_record_screen.dart';
 import '../voice/wake_word_service.dart';
 
@@ -363,9 +366,13 @@ class WorkOrderDetailScreen extends StatefulWidget {
 }
 
 class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
+  final _photoRepo = PhotoRepository();
   Map<String, dynamic>? _d;
   bool _loading = true;
   String? _error;
+  List<WorkPhoto> _photos = const [];
+  bool _photosFailed = false;
+  bool _uploading = false;
 
   @override
   void initState() {
@@ -379,10 +386,48 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       final d = await widget.repo.detail(widget.order.id);
       if (!mounted) return;
       setState(() { _d = d; _loading = false; });
+      await _loadPhotos();
     } catch (e) {
       debugPrint('WorkOrderDetail: $e');
       if (!mounted) return;
       setState(() { _error = '$e'; _loading = false; });
+    }
+  }
+
+  Future<void> _loadPhotos() async {
+    try {
+      final photos = await _photoRepo.list(widget.order.id);
+      if (mounted) setState(() { _photos = photos; _photosFailed = false; });
+    } catch (e) {
+      debugPrint('photos: $e');
+      if (mounted) setState(() => _photosFailed = true);
+    }
+  }
+
+  bool get _hasAfterPhoto => _photos.any((p) => p.stage != 'before');
+
+  /// Съёмка и загрузка фото «до» (автор) или «после» (исполнитель).
+  Future<void> _addPhoto(String stage) async {
+    final l = context.l10n;
+    final companyId = widget.companyId ?? (_d!['company_id'] as String);
+    final CapturedPhoto? photo;
+    try {
+      photo = await capturePhoto();
+    } on CaptureException catch (e) {
+      _ok(e.problem == CaptureProblem.cameraDenied ? l.photoCameraDenied : l.photoCameraFailed);
+      return;
+    }
+    if (photo == null || !mounted) return;
+    setState(() => _uploading = true);
+    try {
+      await _photoRepo.upload(companyId: companyId, workOrderId: widget.order.id, stage: stage, photo: photo);
+      await _loadPhotos();
+      _ok(l.photoUploaded);
+    } catch (e) {
+      debugPrint('upload: $e');
+      _ok(l.photoUploadFailed);
+    } finally {
+      if (mounted) setState(() => _uploading = false);
     }
   }
 
@@ -541,6 +586,16 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
                 style: const TextStyle(color: Color(0xFFC24444), fontWeight: FontWeight.w600)),
           ),
         ],
+        if (_photos.isNotEmpty || _photosFailed || _canAddBefore(status) || _canAddAfter(status)) ...[
+          const SizedBox(height: 20),
+          WorkPhotosSection(
+            photos: _photos,
+            loadFailed: _photosFailed,
+            busy: _uploading,
+            onAddBefore: _canAddBefore(status) ? () => _addPhoto('before') : null,
+            onAddAfter: _canAddAfter(status) ? () => _addPhoto('after') : null,
+          ),
+        ],
         if (_actions(status, contractorId, brand).isNotEmpty) ...[
           const SizedBox(height: 24),
           Text(l.actionsTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
@@ -551,11 +606,17 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     );
   }
 
+  // Те же правила проверяет база (миграция 0006).
+  bool _canAddBefore(String status) => (status == 'new' || status == 'assigned') && (_isAuthor || _isManager);
+  bool _canAddAfter(String status) => status == 'in_progress' && (_isExecutor || _isManager);
+
   /// Кнопки зависят от роли и статуса. Те же правила проверяет база.
   List<Widget> _actions(String status, String? contractorId, Color brand) {
     final canWork = _isExecutor || _isManager;
     final canAccept = _isAuthor || _isManager;
     final l = context.l10n;
+    // Без фото «после» кнопка «На проверку» неактивна; база проверяет то же.
+    final needPhoto = _d?['requires_photo'] == true && !_hasAfterPhoto;
     final filled = FilledButton.styleFrom(backgroundColor: brand, foregroundColor: _onBrand);
     return [
       if (_isManager && (status == 'new' || status == 'assigned' || status == 'returned'))
@@ -571,9 +632,18 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
           icon: const Icon(Icons.play_arrow_rounded, size: 18),
           label: Text(status == 'returned' ? l.actionRestart : l.actionStart),
         ),
+      if (canWork && status == 'in_progress' && needPhoto) ...[
+        FilledButton.icon(
+          onPressed: _uploading ? null : () => _addPhoto('after'),
+          style: filled,
+          icon: const Icon(Icons.photo_camera_outlined, size: 18),
+          label: Text(l.photoTakeResult),
+        ),
+        Text(l.photoNeededHint, style: const TextStyle(color: _muted, fontSize: 13)),
+      ],
       if (canWork && status == 'in_progress')
         FilledButton.icon(
-          onPressed: () => _setStatus('on_review', l.toastSubmitted),
+          onPressed: needPhoto ? null : () => _setStatus('on_review', l.toastSubmitted),
           style: filled,
           icon: const Icon(Icons.check_rounded, size: 18),
           label: Text(l.actionSubmit),

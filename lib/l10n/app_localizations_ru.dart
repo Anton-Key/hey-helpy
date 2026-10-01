@@ -729,4 +729,64 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get reportsComingBody =>
       'Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту.';
+
+  @override
+  String get photosTitle => 'Фото';
+
+  @override
+  String get photosBefore => 'До';
+
+  @override
+  String get photosAfter => 'После';
+
+  @override
+  String get photosNone => 'Нет фото';
+
+  @override
+  String get photoTakeResult => 'Сфотографировать результат';
+
+  @override
+  String get photoTakeMore => 'Ещё фото';
+
+  @override
+  String get photoAddBefore => 'Добавить фото «до»';
+
+  @override
+  String get photoUploading => 'Загружаю фото…';
+
+  @override
+  String get photoUploaded => 'Фото добавлено';
+
+  @override
+  String get photoUploadFailed =>
+      'Не удалось загрузить фото. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get photoCameraDenied =>
+      'Нужен доступ к камере. Разрешите его в настройках телефона и попробуйте снова.';
+
+  @override
+  String get photoCameraFailed =>
+      'Не удалось открыть камеру. Попробуйте ещё раз.';
+
+  @override
+  String get photoLoadFailed => 'Не удалось загрузить фото';
+
+  @override
+  String get photoNeededHint =>
+      'Сфотографируйте результат: без фото «после» отправить на проверку нельзя.';
+
+  @override
+  String photoTakenAt(String date) {
+    return 'Снято $date';
+  }
+
+  @override
+  String get photoNoLocation => 'Без геометки';
+
+  @override
+  String get photoWithLocation => 'С геометкой';
+
+  @override
+  String get photoMockLocation => 'Координаты могли быть подменены';
 }

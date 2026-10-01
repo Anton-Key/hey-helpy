@@ -11,7 +11,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 Сейчас идёт MVP к демо-дню акселератора (октябрь 2026). Приоритет — работающий сквозной сценарий, а не полнота функций.
 
 ## Стек
-- Flutter (мобильное приложение + веб), Dart ≥ 3.4. Пакеты: `supabase_flutter`, `go_router`, `flutter_localizations` + `intl` (переводы), `shared_preferences`, `record` (голос).
+- Flutter (мобильное приложение + веб), Dart ≥ 3.4. Пакеты: `supabase_flutter`, `go_router`, `flutter_localizations` + `intl` (переводы), `shared_preferences`, `record` (голос), `image_picker` + `geolocator` (фото).
 - Backend: Supabase (Postgres + RLS + Auth + Storage), регион eu-west-1. Позже — self-hosted Supabase в Yandex Cloud для РФ.
 - ИИ (план): Yandex SpeechKit (речь → текст), YandexGPT (разбор заявки), Picovoice Porcupine (ключевая фраза на устройстве).
 - **MVP только под Android.** APK собирается GitHub Actions (`.github/workflows/build-apk.yml`), ключи — в секретах репозитория.
@@ -26,6 +26,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 - `lib/features/onboarding/` — создание компании / вступление по коду приглашения через RPC.
 - `lib/features/requests/requests.dart` — заявки: список, карточка, форма, смена статусов.
 - `lib/features/voice/` — голосовая заявка: запись, заглушка распознавания, экран подтверждения.
+- `lib/features/photos/` — фото «до/после»: съёмка только камерой (`image_picker`, ~1600 px) с геометкой (`geolocator`), загрузка в Storage + `attachments`, блок в карточке и просмотр на весь экран.
 - `lib/features/directory/directory.dart` — объекты, помещения, подрядчики, слои.
 - `lib/features/home/`, `admin/`, `reports/`, `auth/`, `lib/models/`.
 - Вкладки «История» и «Отчёты» на главном экране пока показывают **выдуманные данные** — их нужно перевести на реальные.
@@ -35,7 +36,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 - **0003** — закрыта эскалация привилегий: `profiles.company_id` и `profiles.role` меняются только через RPC `create_company`, `accept_invite`, `set_member_role`. Индексы, `updated_at`.
 - **0004** — слои (`layers`), закрепление подрядчиков (`contractor_layers`), автоназначение заявки подрядчику слоя, статусы, ролевой доступ к заявкам, таблица `visits`.
 - **0005** — слой «Системы безопасности».
-- **0006** — хранилище фото «до/после» (в работе).
+- **0006** — фото «до/после»: хранилище `work-photos` (путь `<company_id>/<work_order_id>/<файл>.jpg`), `attachments.stage` / `uploaded_by` / `mock_location`, доступ к вложениям как к заявке, «на проверку» только с фото «после», `requires_photo` включён у всех слоёв.
 - **0007** — мультиязычность: `profiles.locale`, `layers.name_i18n`.
 - **0008** — исправления безопасности из аудита (позже).
 
@@ -43,7 +44,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 Правила переходов проверяет триггер `trg_wo_status_flow` в базе:
 - взять в работу и отправить на проверку — исполнитель подрядчика или менеджер;
 - принять или вернуть — автор заявки или менеджер;
-- если `requires_photo = true`, на проверку нельзя без фото во вложениях.
+- если `requires_photo = true`, на проверку нельзя без фото **«после»** (`attachments.stage = 'after'`). Фото «после» загружает исполнитель (или менеджер) в статусе «в работе», фото «до» — автор (или менеджер) до закрытия заявки.
 
 Роли: `admin`, `manager` (видят всё в компании), `requester` (свои заявки), `executor` / `contractor` (заявки своего подрядчика).
 Вид работ в форме заявки = слой из таблицы `layers`. Приложение передаёт `layer_id` (и `work_type` = `layers.name`); триггер по слою и объекту назначает подрядчика.

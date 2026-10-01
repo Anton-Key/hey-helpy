@@ -310,5 +310,30 @@
   "adminUsers": "Пользователи и роли",
   "adminComingSoon": "Появится в Фазе 1",
   "reportsComingTitle": "Отчёты появятся в Фазе 1",
-  "reportsComingBody": "Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту."
+  "reportsComingBody": "Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту.",
+  "photosTitle": "Фото",
+  "photosBefore": "До",
+  "photosAfter": "После",
+  "photosNone": "Нет фото",
+  "photoTakeResult": "Сфотографировать результат",
+  "photoTakeMore": "Ещё фото",
+  "photoAddBefore": "Добавить фото «до»",
+  "photoUploading": "Загружаю фото…",
+  "photoUploaded": "Фото добавлено",
+  "photoUploadFailed": "Не удалось загрузить фото. Проверьте интернет и попробуйте ещё раз.",
+  "photoCameraDenied": "Нужен доступ к камере. Разрешите его в настройках телефона и попробуйте снова.",
+  "photoCameraFailed": "Не удалось открыть камеру. Попробуйте ещё раз.",
+  "photoLoadFailed": "Не удалось загрузить фото",
+  "photoNeededHint": "Сфотографируйте результат: без фото «после» отправить на проверку нельзя.",
+  "photoTakenAt": "Снято {date}",
+  "@photoTakenAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "photoNoLocation": "Без геометки",
+  "photoWithLocation": "С геометкой",
+  "photoMockLocation": "Координаты могли быть подменены"
 }

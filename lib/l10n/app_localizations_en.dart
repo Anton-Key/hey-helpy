@@ -727,4 +727,64 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reportsComingBody =>
       'Filters: site, work type, contractor, period, time.\nExport: CSV / XLSX / PDF / email.';
+
+  @override
+  String get photosTitle => 'Photos';
+
+  @override
+  String get photosBefore => 'Before';
+
+  @override
+  String get photosAfter => 'After';
+
+  @override
+  String get photosNone => 'No photos';
+
+  @override
+  String get photoTakeResult => 'Photograph the result';
+
+  @override
+  String get photoTakeMore => 'Add photo';
+
+  @override
+  String get photoAddBefore => 'Add a “before” photo';
+
+  @override
+  String get photoUploading => 'Uploading photo…';
+
+  @override
+  String get photoUploaded => 'Photo added';
+
+  @override
+  String get photoUploadFailed =>
+      'Couldn\'t upload the photo. Check your connection and try again.';
+
+  @override
+  String get photoCameraDenied =>
+      'Camera access is needed. Allow it in your phone settings and try again.';
+
+  @override
+  String get photoCameraFailed =>
+      'Couldn\'t open the camera. Please try again.';
+
+  @override
+  String get photoLoadFailed => 'Couldn\'t load photos';
+
+  @override
+  String get photoNeededHint =>
+      'Photograph the result: you can\'t send for review without an “after” photo.';
+
+  @override
+  String photoTakenAt(String date) {
+    return 'Taken $date';
+  }
+
+  @override
+  String get photoNoLocation => 'No location';
+
+  @override
+  String get photoWithLocation => 'With location';
+
+  @override
+  String get photoMockLocation => 'Location may be spoofed';
 }

@@ -1417,6 +1417,114 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту.'**
   String get reportsComingBody;
+
+  /// No description provided for @photosTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото'**
+  String get photosTitle;
+
+  /// No description provided for @photosBefore.
+  ///
+  /// In ru, this message translates to:
+  /// **'До'**
+  String get photosBefore;
+
+  /// No description provided for @photosAfter.
+  ///
+  /// In ru, this message translates to:
+  /// **'После'**
+  String get photosAfter;
+
+  /// No description provided for @photosNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет фото'**
+  String get photosNone;
+
+  /// No description provided for @photoTakeResult.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографировать результат'**
+  String get photoTakeResult;
+
+  /// No description provided for @photoTakeMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё фото'**
+  String get photoTakeMore;
+
+  /// No description provided for @photoAddBefore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить фото «до»'**
+  String get photoAddBefore;
+
+  /// No description provided for @photoUploading.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загружаю фото…'**
+  String get photoUploading;
+
+  /// No description provided for @photoUploaded.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото добавлено'**
+  String get photoUploaded;
+
+  /// No description provided for @photoUploadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить фото. Проверьте интернет и попробуйте ещё раз.'**
+  String get photoUploadFailed;
+
+  /// No description provided for @photoCameraDenied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужен доступ к камере. Разрешите его в настройках телефона и попробуйте снова.'**
+  String get photoCameraDenied;
+
+  /// No description provided for @photoCameraFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось открыть камеру. Попробуйте ещё раз.'**
+  String get photoCameraFailed;
+
+  /// No description provided for @photoLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить фото'**
+  String get photoLoadFailed;
+
+  /// No description provided for @photoNeededHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографируйте результат: без фото «после» отправить на проверку нельзя.'**
+  String get photoNeededHint;
+
+  /// No description provided for @photoTakenAt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Снято {date}'**
+  String photoTakenAt(String date);
+
+  /// No description provided for @photoNoLocation.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без геометки'**
+  String get photoNoLocation;
+
+  /// No description provided for @photoWithLocation.
+  ///
+  /// In ru, this message translates to:
+  /// **'С геометкой'**
+  String get photoWithLocation;
+
+  /// No description provided for @photoMockLocation.
+  ///
+  /// In ru, this message translates to:
+  /// **'Координаты могли быть подменены'**
+  String get photoMockLocation;
 }
 
 class _AppLocalizationsDelegate

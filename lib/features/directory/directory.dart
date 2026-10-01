@@ -27,6 +27,22 @@ class Contractor {
       Contractor(id: m['id'] as String, orgName: (m['org_name'] ?? '') as String);
 }
 
+/// Помещение / зона внутри объекта.
+class Place {
+  final String id;
+  final String objectId;
+  final String name;
+  final String? objectName;
+  Place({required this.id, required this.objectId, required this.name, this.objectName});
+  factory Place.fromMap(Map<String, dynamic> m) => Place(
+        id: m['id'] as String,
+        objectId: m['object_id'] as String,
+        name: (m['name'] ?? '') as String,
+        objectName: (m['objects'] as Map<String, dynamic>?)?['name'] as String?,
+      );
+  String get fullName => objectName == null ? name : '$objectName · $name';
+}
+
 class DirectoryRepo {
   final SupabaseClient _c = Supabase.instance.client;
   Future<String?> myCompanyId() async {
@@ -48,6 +64,12 @@ class DirectoryRepo {
   }
   Future<void> addContractor({required String orgName, required String companyId}) async {
     await _c.from('contractors').insert({'org_name': orgName, 'company_id': companyId});
+  }
+
+  /// Помещения всех объектов компании (доступ ограничен RLS).
+  Future<List<Place>> places() async {
+    final rows = await _c.from('locations').select('id,object_id,name,objects(name)').order('name');
+    return (rows as List).map((e) => Place.fromMap(e as Map<String, dynamic>)).toList();
   }
 
   /// Названия слоёв компании (климат, электрика, системы безопасности…)

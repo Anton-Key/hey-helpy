@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../directory/directory.dart';
+import '../voice/voice_record_screen.dart';
+import '../voice/wake_word_service.dart';
 
 class WorkOrder {
   final String id;
@@ -51,10 +55,12 @@ class RequestsRepo {
   }
 
   Future<void> create({required String companyId, required String title, String? description,
-      String? workType, required String priority, String? objectId, required bool recurring}) async {
+      String? workType, required String priority, String? objectId, required bool recurring,
+      String? locationId, String inputChannel = 'button'}) async {
     await _c.from('work_orders').insert({
       'company_id': companyId, 'title': title, 'description': description, 'work_type': workType,
-      'priority': priority, 'status': 'new', 'input_channel': 'button', 'object_id': objectId,
+      'priority': priority, 'status': 'new', 'input_channel': inputChannel, 'object_id': objectId,
+      'location_id': locationId,
       'recurrence': recurring ? {'kind': 'regular'} : null, 'created_by': uid,
     });
   }
@@ -160,6 +166,10 @@ class RequestsTab extends StatefulWidget {
 class _RequestsTabState extends State<RequestsTab> {
   final _repo = RequestsRepo();
   final _dir = DirectoryRepo();
+  /// Сейчас — кнопка «Нажми и говори»; позже сюда же подключится «Эй, Хелпи».
+  final _wake = PushToTalkWakeWord();
+  StreamSubscription<void>? _wakeSub;
+  bool _voiceOpen = false;
   List<WorkOrder> _items = [];
   List<Obj> _objects = const [];
   List<Contractor> _contractors = const [];
@@ -172,6 +182,15 @@ class _RequestsTabState extends State<RequestsTab> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    _wakeSub = _wake.detections.listen((_) => _openVoice());
+    _wake.start();
+  }
+
+  @override
+  void dispose() {
+    _wakeSub?.cancel();
+    _wake.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -226,6 +245,11 @@ class _RequestsTabState extends State<RequestsTab> {
           FloatingActionButton.small(
             heroTag: 'refreshReq', backgroundColor: Colors.white, foregroundColor: brand,
             onPressed: _load, child: const Icon(Icons.refresh)),
+          const SizedBox(height: 10),
+          Tooltip(message: 'Нажми и говори',
+            child: FloatingActionButton.large(
+              heroTag: 'voiceReq', backgroundColor: brand, foregroundColor: _onBrand,
+              onPressed: _wake.trigger, child: const Icon(Icons.mic, size: 44))),
           const SizedBox(height: 10),
           FloatingActionButton.extended(
             heroTag: 'addReq', backgroundColor: brand, foregroundColor: _onBrand,
@@ -305,6 +329,16 @@ class _RequestsTabState extends State<RequestsTab> {
     if (_companyId == null) { _snack('Профиль без компании (сделай себя админом).'); return; }
     final ok = await showOrderForm(
       context: context, repo: _repo, objects: _objects, companyId: _companyId!, existing: null);
+    if (ok == true) { await _load(); _snackOk('Заявка создана'); }
+  }
+
+  Future<void> _openVoice() async {
+    if (_voiceOpen || !mounted) return;
+    if (_companyId == null) { _snack('Профиль без компании (сделай себя админом).'); return; }
+    _voiceOpen = true;
+    final ok = await Navigator.push<bool>(context, MaterialPageRoute(
+        builder: (_) => VoiceRecordScreen(companyId: _companyId!, objects: _objects)));
+    _voiceOpen = false;
     if (ok == true) { await _load(); _snackOk('Заявка создана'); }
   }
 

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Подпись под иконкой для русского языка телефона. См. values/strings.xml -->
+<resources>
+    <string name="app_name">Эй, Helpy</string>
+</resources>

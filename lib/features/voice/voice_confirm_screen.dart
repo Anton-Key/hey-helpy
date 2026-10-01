@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n_ext.dart';
 import '../directory/directory.dart';
 import '../requests/requests.dart';
 import 'voice_draft.dart';
@@ -11,7 +12,7 @@ const _onBrand = Color(0xFF06342A);
 const _mint = Color(0xFFD8F0EA);
 const _danger = Color(0xFFC24444);
 
-const _priorities = [['low', 'Низкий'], ['normal', 'Обычный'], ['high', 'Высокий'], ['critical', 'Критич.']];
+const _priorities = ['low', 'normal', 'high', 'critical'];
 
 /// Проверка черновика голосовой заявки. Заявка создаётся только по кнопке
 /// «Отправить»; подрядчика затем назначает база по слою.
@@ -31,9 +32,9 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
   late final _titleC = TextEditingController(text: widget.draft.title);
   late final _descC = TextEditingController(text: widget.draft.description ?? '');
   late String _priority = widget.draft.priority;
-  List<String> _layers = const [];
+  List<Layer> _layers = const [];
   List<Place> _places = const [];
-  String? _layer;
+  Layer? _layer;
   /// 'o:<id>' — объект целиком, 'p:<id>' — помещение.
   String? _where;
   bool _loading = true;
@@ -53,27 +54,18 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
   }
 
   Future<void> _load() async {
-    List<String> layers = const [];
+    List<Layer> layers = const [];
     List<Place> places = const [];
-    try { layers = await _dir.layerNames(); } catch (_) {}
+    try { layers = await _dir.layers(); } catch (_) {}
     try { places = await _dir.places(); } catch (_) {}
     if (!mounted) return;
     setState(() {
       _layers = layers;
       _places = places;
-      _layer = _matchLayer(widget.draft.layer, layers);
+      _layer = Layer.find(layers, id: widget.draft.layerId, name: widget.draft.layer);
       _where = _matchWhere(widget.draft.locationHint, places, widget.objects);
       _loading = false;
     });
-  }
-
-  static String? _matchLayer(String? layer, List<String> layers) {
-    if (layer == null) return null;
-    final l = layer.trim().toLowerCase();
-    for (final name in layers) {
-      if (name.toLowerCase() == l) return name;
-    }
-    return null;
   }
 
   /// Подбирает помещение (или объект) по словам из подсказки:
@@ -106,7 +98,7 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
   Future<void> _submit() async {
     final title = _titleC.text.trim();
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Напишите, что случилось')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.formWhatRequired)));
       return;
     }
     String? objectId, locationId;
@@ -123,63 +115,64 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
       await _repo.create(
         companyId: widget.companyId, title: title,
         description: _descC.text.trim().isEmpty ? null : _descC.text.trim(),
-        workType: _layer, priority: _priority, objectId: objectId, locationId: locationId,
+        layer: _layer, priority: _priority, objectId: objectId, locationId: locationId,
         recurring: false, inputChannel: 'voice',
       );
       if (mounted) Navigator.pop(context, true);
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Не удалось отправить заявку. Проверьте интернет и попробуйте ещё раз.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.voiceSendFailed)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final brand = Theme.of(context).colorScheme.primary;
+    final l = context.l10n;
+    final locale = context.localeCode;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('Проверьте заявку'), backgroundColor: Colors.white),
+      appBar: AppBar(title: Text(l.voiceConfirmTitle), backgroundColor: Colors.white),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 32), children: [
+          : ListView(padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32), children: [
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: _mint, borderRadius: BorderRadius.circular(16)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('Вы сказали', style: TextStyle(color: _onBrand, fontWeight: FontWeight.w700, fontSize: 13)),
+                  Text(l.voiceYouSaid, style: const TextStyle(color: _onBrand, fontWeight: FontWeight.w700, fontSize: 13)),
                   const SizedBox(height: 6),
-                  Text('«${widget.draft.transcript}»', style: const TextStyle(color: _ink, fontSize: 15, height: 1.35)),
+                  Text(l.quoted(widget.draft.transcript), style: const TextStyle(color: _ink, fontSize: 15, height: 1.35)),
                 ]),
               ),
               const SizedBox(height: 18),
               TextField(controller: _titleC, textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(labelText: 'Что случилось', border: OutlineInputBorder())),
+                  decoration: InputDecoration(labelText: l.formWhat, border: const OutlineInputBorder())),
               const SizedBox(height: 12),
               TextField(controller: _descC, minLines: 2, maxLines: 5, textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(labelText: 'Подробности', border: OutlineInputBorder())),
+                  decoration: InputDecoration(labelText: l.formDetailsHint, border: const OutlineInputBorder())),
               const SizedBox(height: 18),
-              _label('Вид работ'),
+              _label(l.fieldWorkType),
               if (_layers.isEmpty)
-                const Text('Не удалось загрузить виды работ — заявку можно отправить без него.',
-                    style: TextStyle(color: _muted))
+                Text(l.formLayersFailed, style: const TextStyle(color: _muted))
               else
                 Wrap(spacing: 8, runSpacing: 8, children: [
-                  for (final l in _layers) _chip(l, _layer == l, brand, () => setState(() => _layer = _layer == l ? null : l)),
+                  for (final t in _layers)
+                    _chip(t.label(locale), _layer?.id == t.id, brand,
+                        () => setState(() => _layer = _layer?.id == t.id ? null : t)),
                 ]),
-              if (widget.draft.layer != null && _layer == null && _layers.isNotEmpty)
-                const Padding(padding: EdgeInsets.only(top: 6),
-                    child: Text('Выберите вид работ, чтобы заявка сразу ушла нужному подрядчику.',
-                        style: TextStyle(color: _danger, fontSize: 13))),
+              if (_layer == null && _layers.isNotEmpty)
+                Padding(padding: const EdgeInsetsDirectional.only(top: 6),
+                    child: Text(l.voicePickLayer, style: const TextStyle(color: _danger, fontSize: 13))),
               const SizedBox(height: 18),
-              _label('Где'),
+              _label(l.voiceWhere),
               DropdownButtonFormField<String?>(
                 initialValue: _where,
                 isExpanded: true,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
                 items: [
-                  const DropdownMenuItem<String?>(value: null, child: Text('Не указано')),
+                  DropdownMenuItem<String?>(value: null, child: Text(l.commonNotSpecified)),
                   for (final o in widget.objects)
                     DropdownMenuItem<String?>(value: 'o:${o.id}', child: Text(o.name, overflow: TextOverflow.ellipsis)),
                   for (final p in _places)
@@ -188,13 +181,13 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
                 onChanged: (v) => setState(() => _where = v),
               ),
               if (widget.draft.locationHint != null)
-                Padding(padding: const EdgeInsets.only(top: 6),
-                    child: Text('Услышали: «${widget.draft.locationHint}»',
+                Padding(padding: const EdgeInsetsDirectional.only(top: 6),
+                    child: Text(l.voiceHeard(widget.draft.locationHint!),
                         style: const TextStyle(color: _muted, fontSize: 13))),
               const SizedBox(height: 18),
-              _label('Срочность'),
+              _label(l.voiceUrgency),
               Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final p in _priorities) _chip(p[1], _priority == p[0], brand, () => setState(() => _priority = p[0])),
+                for (final p in _priorities) _chip(l.priority(p), _priority == p, brand, () => setState(() => _priority = p)),
               ]),
               const SizedBox(height: 28),
               FilledButton(
@@ -203,13 +196,13 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
                 onPressed: _saving ? null : _submit,
                 child: _saving
                     ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: _onBrand))
-                    : const Text('Отправить', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                    : Text(l.voiceSend, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
               ),
             ]),
     );
   }
 
-  Widget _label(String t) => Padding(padding: const EdgeInsets.only(bottom: 8),
+  Widget _label(String t) => Padding(padding: const EdgeInsetsDirectional.only(bottom: 8),
       child: Text(t, style: const TextStyle(color: _ink, fontWeight: FontWeight.w700, fontSize: 15)));
 
   Widget _chip(String text, bool selected, Color brand, VoidCallback onTap) => GestureDetector(

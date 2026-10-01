@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'l10n_ext.dart';
 import 'session_controller.dart';
 
 /// Показывается, пока проверяется сессия и загружается профиль.
@@ -27,18 +28,18 @@ class SplashScreen extends StatelessWidget {
                   children: [
                     const Icon(Icons.cloud_off_outlined, size: 48),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Не удалось загрузить профиль.\nПроверьте подключение к интернету.',
+                    Text(
+                      context.l10n.splashLoadFailed,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: session.reloadProfile,
-                      child: const Text('Повторить'),
+                      child: Text(context.l10n.commonRetry),
                     ),
                     TextButton(
                       onPressed: session.signOut,
-                      child: const Text('Выйти из аккаунта'),
+                      child: Text(context.l10n.splashSignOut),
                     ),
                   ],
                 ),

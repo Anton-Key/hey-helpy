@@ -1,0 +1,251 @@
+{
+  "@@locale": "ru",
+  "appName": "Эй, Helpy",
+  "@appName": {
+    "description": "Название продукта в интерфейсе. Единственное место, где оно задано (кроме подписи под иконкой: android/app/src/main/res/values*/strings.xml). Шапка выделяет часть после первого пробела."
+  },
+  "wakePhrase": "Эй, Хелпи",
+  "@wakePhrase": {
+    "description": "Фраза голосовой активации, как её произносит пользователь"
+  },
+  "appTagline": "Заявки и контроль работ — в одно касание",
+  "commonCancel": "Отмена",
+  "commonSave": "Сохранить",
+  "commonRetry": "Повторить",
+  "commonRefresh": "Обновить",
+  "commonNotSpecified": "Не указано",
+  "errorGeneric": "Не получилось. Проверьте интернет и попробуйте ещё раз.",
+  "misconfiguredTitle": "Не заданы ключи Supabase",
+  "misconfiguredRunWith": "Запустите приложение с параметрами:",
+  "misconfiguredSeeReadme": "Подробности — в README.md",
+  "splashLoadFailed": "Не удалось загрузить профиль.\nПроверьте подключение к интернету.",
+  "splashSignOut": "Выйти из аккаунта",
+  "loginName": "Имя",
+  "loginEmail": "Email",
+  "loginEmailInvalid": "Введите корректный email",
+  "loginPassword": "Пароль",
+  "loginPasswordTooShort": "Минимум 6 символов",
+  "loginSignIn": "Войти",
+  "loginSignUp": "Зарегистрироваться",
+  "loginHaveAccount": "Уже есть аккаунт? Войти",
+  "loginNoAccount": "Нет аккаунта? Зарегистрироваться",
+  "loginAccountCreated": "Аккаунт создан. Если включено подтверждение почты — проверьте письмо.",
+  "loginErrorInvalidCredentials": "Неверный email или пароль",
+  "loginErrorAlreadyRegistered": "Пользователь с таким email уже зарегистрирован. Войдите.",
+  "loginErrorEmailNotConfirmed": "Почта не подтверждена. Откройте письмо и перейдите по ссылке.",
+  "navHome": "Главная",
+  "navHistory": "История",
+  "navReports": "Отчёты",
+  "navProfile": "Профиль",
+  "tabRequests": "Заявки",
+  "tabContractors": "Исполнитель",
+  "@tabContractors": {
+    "description": "Вкладка со списком подрядчиков"
+  },
+  "tabLocations": "Локации",
+  "mockHistoryDoneThisMonth": "Выполнено за месяц: {count}",
+  "@mockHistoryDoneThisMonth": {
+    "description": "Временно: выдуманные данные",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mockHistory1Title": "Ремонт стула",
+  "mockHistory1Place": "Астана · Кабинет 512",
+  "mockHistory1Meta": "12 авг · 40 мин",
+  "mockHistory2Title": "Замена фильтров",
+  "mockHistory2Place": "Москва · Серверная",
+  "mockHistory2Meta": "11 авг · 1 ч 20 мин",
+  "mockHistory3Title": "Уборка холла",
+  "mockHistory3Place": "Москва · 1 этаж",
+  "mockHistory3Meta": "11 авг · 55 мин",
+  "historyDone": "Готово",
+  "reportsKpiRequests": "заявок за месяц",
+  "reportsKpiOnTime": "в срок",
+  "reportsKpiAvgTime": "ср. время",
+  "hoursShort": "{value} ч",
+  "@hoursShort": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsWeeklyChart": "Заявки по неделям",
+  "reportsExportPdf": "Экспорт в PDF",
+  "reportsWebHint": "Полные отчёты и фильтры — в web-версии",
+  "profileDefaultName": "Пользователь",
+  "profileMyCompany": "Моя компания",
+  "profileNotifications": "Уведомления",
+  "profileLanguage": "Язык",
+  "profileSettings": "Настройки",
+  "profileSignOut": "Выйти",
+  "profileLanguageNotSynced": "Язык сохранён на этом телефоне, но не в профиле. Проверьте интернет.",
+  "roleAdmin": "Администратор",
+  "roleManager": "Менеджер",
+  "roleRequester": "Заявитель",
+  "roleContractor": "Подрядчик",
+  "roleExecutor": "Исполнитель",
+  "statusNew": "Новая",
+  "statusAssigned": "Назначена",
+  "statusInProgress": "В работе",
+  "statusOnReview": "На проверке",
+  "statusReturned": "Возвращена",
+  "statusDone": "Принята",
+  "statusCancelled": "Отменена",
+  "statusOverdue": "Просрочена",
+  "priorityLow": "Низкий",
+  "priorityNormal": "Обычный",
+  "priorityHigh": "Высокий",
+  "priorityCritical": "Критический",
+  "requestsLoading": "Загрузка…",
+  "requestsLoadErrorShort": "Ошибка загрузки",
+  "requestsCount": "{count, plural, =0{Заявок нет} one{{count} заявка} few{{count} заявки} many{{count} заявок} other{{count} заявки}}",
+  "@requestsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "requestsLoadFailed": "Не удалось загрузить заявки. Проверьте интернет и нажмите «Обновить».",
+  "requestsEmpty": "Пока нет заявок.\nНажмите «Создать заявку».",
+  "requestsCreate": "Создать заявку",
+  "requestsVoice": "Нажми и говори",
+  "requestsCreated": "Заявка создана",
+  "requestsNoCompany": "Ваш профиль не привязан к компании. Обратитесь к администратору.",
+  "requestRecurringTag": "регламент",
+  "objectNone": "Без объекта",
+  "objectUnknown": "Объект",
+  "contractorNone": "не назначен",
+  "contractorUnknown": "исполнитель",
+  "detailTitle": "Заявка",
+  "detailEdit": "Редактировать",
+  "detailLoadFailed": "Не удалось открыть заявку. Проверьте интернет и попробуйте ещё раз.",
+  "fieldObject": "Объект",
+  "fieldContractor": "Исполнитель",
+  "fieldWorkType": "Вид работ",
+  "fieldPriority": "Приоритет",
+  "fieldKind": "Тип",
+  "kindRecurring": "Регламентная",
+  "kindOneOff": "Разовая",
+  "fieldPhotoProof": "Фотоподтверждение",
+  "photoRequired": "Требуется",
+  "photoNotRequired": "Не требуется",
+  "fieldCreated": "Создана",
+  "createdByYou": "{date} (вы)",
+  "@createdByYou": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldDescription": "Описание",
+  "noDescription": "Без описания",
+  "returnedWithReason": "Возвращено: {reason}",
+  "@returnedWithReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "actionsTitle": "Действия",
+  "actionAssign": "Назначить исполнителя",
+  "actionReassign": "Сменить исполнителя",
+  "actionStart": "Взять в работу",
+  "actionRestart": "Взять на доработку",
+  "actionSubmit": "Выполнено, на проверку",
+  "actionAccept": "Принять работу",
+  "actionReturn": "Вернуть на доработку",
+  "actionCancel": "Отменить",
+  "toastInProgress": "Заявка в работе",
+  "toastSubmitted": "Отправлено на проверку",
+  "toastAccepted": "Работа принята",
+  "toastCancelled": "Заявка отменена",
+  "toastReturned": "Возвращено исполнителю",
+  "toastSaved": "Сохранено",
+  "toastAssigned": "Исполнитель назначен",
+  "assignNoContractors": "Сначала добавьте подрядчика во вкладке «{tab}»",
+  "@assignNoContractors": {
+    "placeholders": {
+      "tab": {
+        "type": "String"
+      }
+    }
+  },
+  "returnHint": "Что нужно исправить?",
+  "returnConfirm": "Вернуть",
+  "returnReasonRequired": "Напишите, что нужно исправить",
+  "errPhotoRequired": "Нужно фото выполненной работы",
+  "errNotAllowed": "Это действие недоступно для вашей роли или текущего статуса",
+  "formNewTitle": "Новая заявка",
+  "formEditTitle": "Редактировать заявку",
+  "formWhat": "Что случилось?",
+  "formWhatHint": "Например, протекает кран",
+  "formDetailsHint": "Подробности",
+  "formNoObjects": "Нет объектов — добавьте во вкладке «{tab}»",
+  "@formNoObjects": {
+    "placeholders": {
+      "tab": {
+        "type": "String"
+      }
+    }
+  },
+  "formChooseObject": "Выберите объект",
+  "formRecurring": "Регламентная (повторяющаяся)",
+  "formWhatRequired": "Напишите, что случилось",
+  "formSaveFailed": "Не удалось сохранить заявку. Проверьте интернет и попробуйте ещё раз.",
+  "formLayersFailed": "Не удалось загрузить виды работ. Заявку можно отправить без него.",
+  "voiceTitle": "Голосовая заявка",
+  "voiceStarting": "Включаю микрофон…",
+  "voiceListening": "Слушаю",
+  "voiceProcessing": "Распознаю…",
+  "voiceFailedTitle": "Не получилось",
+  "voicePrompt": "Скажите, что случилось и где.\nНапример: «В переговорной на третьем этаже не работает кондиционер».",
+  "voiceTimer": "{elapsed} · осталось {left} с",
+  "@voiceTimer": {
+    "placeholders": {
+      "elapsed": {
+        "type": "String"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceProcessingHint": "Это займёт несколько секунд",
+  "voiceDone": "Готово",
+  "voiceAgain": "Ещё раз",
+  "voiceNoMicPermission": "Нужен доступ к микрофону. Разрешите его в настройках телефона и попробуйте снова.",
+  "voiceMicFailed": "Не удалось включить микрофон. Попробуйте ещё раз.",
+  "voiceTooShort": "Слишком коротко. Нажмите «Ещё раз» и опишите проблему.",
+  "voiceRecognizeFailed": "Не получилось распознать запись. Проверьте интернет и попробуйте ещё раз.",
+  "voiceConfirmTitle": "Проверьте заявку",
+  "voiceYouSaid": "Вы сказали",
+  "quoted": "«{text}»",
+  "@quoted": {
+    "description": "Цитата в кавычках, принятых в языке",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "voicePickLayer": "Выберите вид работ, чтобы заявка сразу ушла нужному подрядчику.",
+  "voiceWhere": "Где",
+  "voiceHeard": "Услышали: «{hint}»",
+  "@voiceHeard": {
+    "placeholders": {
+      "hint": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceUrgency": "Срочность",
+  "voiceSend": "Отправить",
+  "voiceSendFailed": "Не удалось отправить заявку. Проверьте интернет и попробуйте ещё раз."
+}

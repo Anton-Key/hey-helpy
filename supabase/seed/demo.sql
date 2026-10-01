@@ -1,7 +1,8 @@
 -- =====================================================================
 -- Hey Helpy · тестовые данные для демо (НЕ миграция)
 --
--- Запускать в Supabase → SQL Editor после миграций 0001–0005.
+-- Запускать в Supabase → SQL Editor после миграций 0001–0005
+-- (английские названия слоёв — после 0007; без неё шаг пропускается).
 -- Перед запуском создайте трёх пользователей в Authentication → Users
 -- и впишите их email ниже. Подробно: docs/DEMO_SETUP.md
 --
@@ -62,6 +63,28 @@ begin
   select id into v_layer_elec from public.layers where company_id = c_company and name = 'Электрика';
   if v_layer_hvac is null or v_layer_elec is null then
     raise exception 'Не найдены слои «Климат» и «Электрика». Проверьте, что применена миграция 0004';
+  end if;
+
+  -- Слои на двух языках (поле name_i18n появляется в миграции 0007;
+  -- до неё этот шаг пропускается, остальной скрипт работает).
+  if exists (select 1 from information_schema.columns
+             where table_schema = 'public' and table_name = 'layers' and column_name = 'name_i18n') then
+    execute $sql$
+      update public.layers l
+         set name_i18n = jsonb_build_object('ru', l.name, 'en', t.en)
+        from (values
+          ('Климат',               'HVAC'),
+          ('Электрика',            'Electrical'),
+          ('Сантехника',           'Plumbing'),
+          ('Клининг',              'Cleaning'),
+          ('Системы безопасности', 'Security systems'),
+          ('Мебель',               'Furniture'),
+          ('Другое',               'Other')
+        ) as t(ru, en)
+       where l.company_id = $1 and l.name = t.ru
+    $sql$ using c_company;
+  else
+    raise notice 'Миграция 0007 не применена — английские названия слоёв пропущены.';
   end if;
 
   -- 3. Объект с координатами (для отметки визита по геозоне)

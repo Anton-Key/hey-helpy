@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/l10n_ext.dart';
 import 'auth_repository.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,12 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Аккаунт создан. Если включено подтверждение почты — '
-                'проверь письмо.',
-              ),
-            ),
+            SnackBar(content: Text(context.l10n.loginAccountCreated)),
           );
         }
       } else {
@@ -55,12 +51,32 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } on AuthException catch (e) {
-      _showError(e.message);
+      debugPrint('auth: ${e.code} ${e.message}');
+      if (mounted) _showError(_authErrorText(e));
     } catch (e) {
-      _showError('Что-то пошло не так: $e');
+      debugPrint('auth: $e');
+      if (mounted) _showError(context.l10n.errorGeneric);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// Ошибки Supabase Auth приходят на английском и с техническими
+  /// подробностями — показываем понятный текст на языке интерфейса.
+  String _authErrorText(AuthException e) {
+    final l = context.l10n;
+    final code = e.code ?? '';
+    final m = e.message.toLowerCase();
+    if (code == 'invalid_credentials' || m.contains('invalid login credentials')) {
+      return l.loginErrorInvalidCredentials;
+    }
+    if (code == 'user_already_exists' || code == 'email_exists' || m.contains('already registered')) {
+      return l.loginErrorAlreadyRegistered;
+    }
+    if (code == 'email_not_confirmed' || m.contains('email not confirmed')) {
+      return l.loginErrorEmailNotConfirmed;
+    }
+    return l.errorGeneric;
   }
 
   void _showError(String msg) {
@@ -72,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l10n;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -86,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Hey Helpy',
+                      l.appName,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
@@ -95,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Заявки и контроль работ — в одно касание',
+                      l.appTagline,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium,
                     ),
@@ -103,9 +120,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (_isSignUp) ...[
                       TextFormField(
                         controller: _fullName,
-                        decoration: const InputDecoration(
-                          labelText: 'Имя',
-                          prefixIcon: Icon(Icons.person_outline),
+                        decoration: InputDecoration(
+                          labelText: l.loginName,
+                          prefixIcon: const Icon(Icons.person_outline),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -114,24 +131,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _email,
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.mail_outline),
+                      decoration: InputDecoration(
+                        labelText: l.loginEmail,
+                        prefixIcon: const Icon(Icons.mail_outline),
                       ),
                       validator: (v) => (v == null || !v.contains('@'))
-                          ? 'Введите корректный email'
+                          ? l.loginEmailInvalid
                           : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _password,
                       obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Пароль',
-                        prefixIcon: Icon(Icons.lock_outline),
+                      decoration: InputDecoration(
+                        labelText: l.loginPassword,
+                        prefixIcon: const Icon(Icons.lock_outline),
                       ),
                       validator: (v) => (v == null || v.length < 6)
-                          ? 'Минимум 6 символов'
+                          ? l.loginPasswordTooShort
                           : null,
                     ),
                     const SizedBox(height: 24),
@@ -144,16 +161,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               child:
                                   CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : Text(_isSignUp ? 'Зарегистрироваться' : 'Войти'),
+                          : Text(_isSignUp ? l.loginSignUp : l.loginSignIn),
                     ),
                     const SizedBox(height: 12),
                     TextButton(
                       onPressed: _loading
                           ? null
                           : () => setState(() => _isSignUp = !_isSignUp),
-                      child: Text(_isSignUp
-                          ? 'Уже есть аккаунт? Войти'
-                          : 'Нет аккаунта? Зарегистрироваться'),
+                      child: Text(_isSignUp ? l.loginHaveAccount : l.loginNoAccount),
                     ),
                   ],
                 ),

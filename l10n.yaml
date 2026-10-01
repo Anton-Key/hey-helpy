@@ -1,0 +1,7 @@
+# Переводы интерфейса: lib/l10n/app_<язык>.arb → класс AppLocalizations.
+# Основной (шаблонный) язык — русский; ключи и описания задаются в app_ru.arb.
+arb-dir: lib/l10n
+template-arb-file: app_ru.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false

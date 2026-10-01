@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/directional.dart';
+import '../../core/l10n_ext.dart';
+import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import '../voice/voice_record_screen.dart';
 import '../voice/wake_word_service.dart';
@@ -11,17 +14,19 @@ class WorkOrder {
   final String id;
   final String title;
   final String? workType;
+  final String? layerId;
   final String priority;
   final String status;
   final String? objectId;
   final bool recurring;
-  WorkOrder({required this.id, required this.title, this.workType, required this.priority,
+  WorkOrder({required this.id, required this.title, this.workType, this.layerId, required this.priority,
       required this.status, this.objectId, required this.recurring});
   factory WorkOrder.fromMap(Map<String, dynamic> m) {
     return WorkOrder(
       id: m['id'] as String,
       title: (m['title'] ?? '') as String,
       workType: m['work_type'] as String?,
+      layerId: m['layer_id'] as String?,
       priority: (m['priority'] ?? 'normal') as String,
       status: (m['status'] ?? 'new') as String,
       objectId: m['object_id'] as String?,
@@ -45,7 +50,7 @@ class RequestsRepo {
   Future<List<WorkOrder>> list() async {
     final rows = await _c
         .from('work_orders')
-        .select('id,title,work_type,priority,status,recurrence,object_id')
+        .select('id,title,work_type,layer_id,priority,status,recurrence,object_id')
         .order('created_at', ascending: false);
     return (rows as List).map((e) => WorkOrder.fromMap(e as Map<String, dynamic>)).toList();
   }
@@ -55,10 +60,12 @@ class RequestsRepo {
   }
 
   Future<void> create({required String companyId, required String title, String? description,
-      String? workType, required String priority, String? objectId, required bool recurring,
+      Layer? layer, required String priority, String? objectId, required bool recurring,
       String? locationId, String inputChannel = 'button'}) async {
+    // Слой передаём явно: тогда назначение подрядчика не зависит от языка интерфейса.
     await _c.from('work_orders').insert({
-      'company_id': companyId, 'title': title, 'description': description, 'work_type': workType,
+      'company_id': companyId, 'title': title, 'description': description,
+      'work_type': layer?.name, 'layer_id': layer?.id,
       'priority': priority, 'status': 'new', 'input_channel': inputChannel, 'object_id': objectId,
       'location_id': locationId,
       'recurrence': recurring ? {'kind': 'regular'} : null, 'created_by': uid,
@@ -66,9 +73,9 @@ class RequestsRepo {
   }
 
   Future<void> update(String id, {required String title, String? description,
-      String? workType, required String priority, String? objectId, required bool recurring}) async {
+      Layer? layer, required String priority, String? objectId, required bool recurring}) async {
     await _c.from('work_orders').update({
-      'title': title, 'description': description, 'work_type': workType,
+      'title': title, 'description': description, 'work_type': layer?.name, 'layer_id': layer?.id,
       'priority': priority, 'object_id': objectId,
       'recurrence': recurring ? {'kind': 'regular'} : null,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
@@ -92,15 +99,6 @@ class RequestsRepo {
   }
 }
 
-/// Понятный текст для ошибок, которые возвращает база при смене статуса.
-String humanizeStatusError(Object e) {
-  final m = '$e';
-  if (m.contains('photo required')) return 'Нужно фото выполненной работы';
-  if (m.contains('return reason required')) return 'Напишите, что нужно исправить';
-  if (m.contains('not allowed')) return 'Это действие недоступно для вашей роли или текущего статуса';
-  return 'Не получилось: $m';
-}
-
 const _ink = Color(0xFF1C1E22);
 const _muted = Color(0xFF8A9098);
 const _line = Color(0xFFE8EAED);
@@ -108,16 +106,6 @@ const _onBrand = Color(0xFF06342A);
 
 BoxDecoration _card() => BoxDecoration(
     color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: _line));
-
-String _statusLabel(String s) => const {
-      'new': 'Новая', 'assigned': 'Назначена', 'in_progress': 'В работе',
-      'on_review': 'На проверке', 'returned': 'Возвращена',
-      'done': 'Принята', 'cancelled': 'Отменена', 'overdue': 'Просрочено',
-    }[s] ?? s;
-
-String _priorityLabel(String p) => const {
-      'low': 'Низкий', 'normal': 'Обычный', 'high': 'Высокий', 'critical': 'Критический',
-    }[p] ?? p;
 
 List<Color> _statusColors(String s) {
   switch (s) {
@@ -137,24 +125,23 @@ List<Color> _statusColors(String s) {
   }
 }
 
-String _objNameIn(List<Obj> objects, String? id) {
-  if (id == null) return 'Без объекта';
+String _objNameIn(AppLocalizations l, List<Obj> objects, String? id) {
+  if (id == null) return l.objectNone;
   for (final o in objects) { if (o.id == id) return o.name; }
-  return 'Объект';
+  return l.objectUnknown;
 }
 
-String _contractorNameIn(List<Contractor> list, String? id) {
-  if (id == null) return 'не назначен';
+String _contractorNameIn(AppLocalizations l, List<Contractor> list, String? id) {
+  if (id == null) return l.contractorNone;
   for (final c in list) { if (c.id == id) return c.orgName; }
-  return 'исполнитель';
+  return l.contractorUnknown;
 }
 
-String _fmtDate(String? s) {
-  if (s == null) return '—';
-  final d = DateTime.tryParse(s)?.toLocal();
-  if (d == null) return '—';
-  String two(int n) => n < 10 ? '0$n' : '$n';
-  return '${two(d.day)}.${two(d.month)}.${d.year} ${two(d.hour)}:${two(d.minute)}';
+/// Вид работ заявки на языке интерфейса.
+String? _workTypeLabel(List<Layer> layers, String locale, {String? layerId, String? workType}) {
+  final layer = Layer.find(layers, id: layerId, name: workType);
+  if (layer != null) return layer.label(locale);
+  return (workType == null || workType.isEmpty) ? null : workType;
 }
 
 class RequestsTab extends StatefulWidget {
@@ -173,6 +160,7 @@ class _RequestsTabState extends State<RequestsTab> {
   List<WorkOrder> _items = [];
   List<Obj> _objects = const [];
   List<Contractor> _contractors = const [];
+  List<Layer> _layers = const [];
   String? _companyId;
   String? _role;
   bool _loading = true;
@@ -201,24 +189,28 @@ class _RequestsTabState extends State<RequestsTab> {
       final objs = await _dir.objects();
       final cons = await _dir.contractors();
       final data = await _repo.list();
+      List<Layer> layers = _layers;
+      try { layers = await _dir.layers(); } catch (_) {}
       if (!mounted) return;
-      setState(() { _objects = objs; _contractors = cons; _items = data; _loading = false; });
+      setState(() { _objects = objs; _contractors = cons; _layers = layers; _items = data; _loading = false; });
     } catch (e) {
+      debugPrint('RequestsTab: $e');
       if (!mounted) return;
       setState(() { _error = '$e'; _loading = false; });
     }
   }
 
   String _statusText() {
-    if (_loading) return 'Загрузка…';
-    if (_error != null) return 'Ошибка загрузки';
-    return 'Заявок: ${_items.length}';
+    final l = context.l10n;
+    if (_loading) return l.requestsLoading;
+    if (_error != null) return l.requestsLoadErrorShort;
+    return l.requestsCount(_items.length);
   }
 
   Future<void> _openDetail(WorkOrder w) async {
     await Navigator.push(context, MaterialPageRoute(
       builder: (_) => WorkOrderDetailScreen(
-        order: w, objects: _objects, contractors: _contractors,
+        order: w, objects: _objects, contractors: _contractors, layers: _layers,
         uid: _repo.uid, role: _role, repo: _repo, companyId: _companyId,
       ),
     ));
@@ -232,21 +224,21 @@ class _RequestsTabState extends State<RequestsTab> {
       Positioned.fill(
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 14, 18, 6),
+            padding: const EdgeInsetsDirectional.fromSTEB(18, 14, 18, 6),
             child: Text(_statusText(),
                 style: const TextStyle(color: _muted, fontWeight: FontWeight.w700, fontSize: 13)),
           ),
           Expanded(child: _body()),
         ]),
       ),
-      Positioned(
-        right: 4, bottom: 8,
+      PositionedDirectional(
+        end: 4, bottom: 8,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [
           FloatingActionButton.small(
             heroTag: 'refreshReq', backgroundColor: Colors.white, foregroundColor: brand,
-            onPressed: _load, child: const Icon(Icons.refresh)),
+            tooltip: context.l10n.commonRefresh, onPressed: _load, child: const Icon(Icons.refresh)),
           const SizedBox(height: 10),
-          Tooltip(message: 'Нажми и говори',
+          Tooltip(message: context.l10n.requestsVoice,
             child: FloatingActionButton.large(
               heroTag: 'voiceReq', backgroundColor: brand, foregroundColor: _onBrand,
               onPressed: _wake.trigger, child: const Icon(Icons.mic, size: 44))),
@@ -255,39 +247,40 @@ class _RequestsTabState extends State<RequestsTab> {
             heroTag: 'addReq', backgroundColor: brand, foregroundColor: _onBrand,
             onPressed: _openCreate,
             icon: const Icon(Icons.add),
-            label: const Text('Создать заявку', style: TextStyle(fontWeight: FontWeight.w800))),
+            label: Text(context.l10n.requestsCreate, style: const TextStyle(fontWeight: FontWeight.w800))),
         ]),
       ),
     ]);
   }
 
   Widget _body() {
+    final l = context.l10n;
+    final locale = context.localeCode;
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error != null) {
       return Padding(
         padding: const EdgeInsets.all(24),
-        child: Text('Не удалось загрузить заявки:\n$_error',
-            style: const TextStyle(color: Color(0xFFC24444))),
+        child: Text(l.requestsLoadFailed, style: const TextStyle(color: Color(0xFFC24444))),
       );
     }
     if (_items.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(28),
-          child: Text('Пока нет заявок.\nНажми «Создать заявку».',
-              textAlign: TextAlign.center, style: TextStyle(color: _muted)),
+          padding: const EdgeInsets.all(28),
+          child: Text(l.requestsEmpty, textAlign: TextAlign.center, style: const TextStyle(color: _muted)),
         ),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 140),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 140),
       itemCount: _items.length,
       itemBuilder: (_, i) {
         final w = _items[i];
         final c = _statusColors(w.status);
         final high = w.priority == 'high' || w.priority == 'critical';
+        final workType = _workTypeLabel(_layers, locale, layerId: w.layerId, workType: w.workType);
         return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsetsDirectional.only(bottom: 10),
           child: InkWell(
             onTap: () => _openDetail(w),
             borderRadius: BorderRadius.circular(18),
@@ -301,21 +294,21 @@ class _RequestsTabState extends State<RequestsTab> {
                       borderRadius: BorderRadius.circular(4))),
                   const SizedBox(width: 11),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(w.title + (w.recurring ? '  · регламент' : ''),
+                    Text(w.title + (w.recurring ? '  · ${l.requestRecurringTag}' : ''),
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 3),
-                    Text('${_objNameIn(_objects, w.objectId)}'
-                        '${w.workType != null && w.workType!.isNotEmpty ? ' · ${w.workType}' : ''}',
+                    Text('${_objNameIn(l, _objects, w.objectId)}'
+                        '${workType != null ? ' · $workType' : ''}',
                         style: const TextStyle(color: _muted, fontSize: 13)),
                   ])),
                   const SizedBox(width: 8),
                   Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(color: c[0], borderRadius: BorderRadius.circular(20)),
-                      child: Text(_statusLabel(w.status),
+                      child: Text(l.status(w.status),
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: c[1]))),
                   const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right, color: _muted, size: 20),
+                  const ChevronEnd(color: _muted, size: 20),
                 ]),
               ),
             ),
@@ -326,20 +319,20 @@ class _RequestsTabState extends State<RequestsTab> {
   }
 
   Future<void> _openCreate() async {
-    if (_companyId == null) { _snack('Профиль без компании (сделай себя админом).'); return; }
+    if (_companyId == null) { _snack(context.l10n.requestsNoCompany); return; }
     final ok = await showOrderForm(
       context: context, repo: _repo, objects: _objects, companyId: _companyId!, existing: null);
-    if (ok == true) { await _load(); _snackOk('Заявка создана'); }
+    if (ok == true) { await _load(); if (mounted) _snackOk(context.l10n.requestsCreated); }
   }
 
   Future<void> _openVoice() async {
     if (_voiceOpen || !mounted) return;
-    if (_companyId == null) { _snack('Профиль без компании (сделай себя админом).'); return; }
+    if (_companyId == null) { _snack(context.l10n.requestsNoCompany); return; }
     _voiceOpen = true;
     final ok = await Navigator.push<bool>(context, MaterialPageRoute(
         builder: (_) => VoiceRecordScreen(companyId: _companyId!, objects: _objects)));
     _voiceOpen = false;
-    if (ok == true) { await _load(); _snackOk('Заявка создана'); }
+    if (ok == true) { await _load(); if (mounted) _snackOk(context.l10n.requestsCreated); }
   }
 
   void _snack(String m) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m))); }
@@ -354,11 +347,12 @@ class _RequestsTabState extends State<RequestsTab> {
 
 class WorkOrderDetailScreen extends StatefulWidget {
   const WorkOrderDetailScreen({super.key, required this.order, required this.objects,
-      required this.contractors, required this.uid, required this.role,
+      required this.contractors, required this.layers, required this.uid, required this.role,
       required this.repo, required this.companyId});
   final WorkOrder order;
   final List<Obj> objects;
   final List<Contractor> contractors;
+  final List<Layer> layers;
   final String? uid;
   final String? role;
   final RequestsRepo repo;
@@ -386,6 +380,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       if (!mounted) return;
       setState(() { _d = d; _loading = false; });
     } catch (e) {
+      debugPrint('WorkOrderDetail: $e');
       if (!mounted) return;
       setState(() { _error = '$e'; _loading = false; });
     }
@@ -400,12 +395,13 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final ok = await showOrderForm(
       context: context, repo: widget.repo, objects: widget.objects,
       companyId: widget.companyId ?? (_d!['company_id'] as String), existing: _d);
-    if (ok == true) { await _load(); _ok('Сохранено'); }
+    if (ok == true) { await _load(); if (mounted) _ok(context.l10n.toastSaved); }
   }
 
   Future<void> _assign() async {
+    final l = context.l10n;
     if (widget.contractors.isEmpty) {
-      _ok('Сначала добавь подрядчика во вкладке «Исполнитель»');
+      _ok(l.assignNoContractors(l.tabContractors));
       return;
     }
     final chosen = await showModalBottomSheet<String>(
@@ -415,8 +411,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(width: 40, height: 4, margin: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(color: _line, borderRadius: BorderRadius.circular(4))),
-          const Padding(padding: EdgeInsets.only(bottom: 6),
-              child: Text('Назначить исполнителя', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+          Padding(padding: const EdgeInsetsDirectional.only(bottom: 6),
+              child: Text(l.actionAssign, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
           for (final c in widget.contractors)
             ListTile(
               leading: const Icon(Icons.business),
@@ -428,34 +424,36 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       ),
     );
     if (chosen != null) {
-      try { await widget.repo.assign(widget.order.id, chosen); await _load(); _ok('Исполнитель назначен'); }
-      catch (e) { _ok('Ошибка: $e'); }
+      try { await widget.repo.assign(widget.order.id, chosen); await _load(); _ok(l.toastAssigned); }
+      catch (e) { debugPrint('assign: $e'); _ok(l.errorGeneric); }
     }
   }
 
   Future<void> _setStatus(String status, String okText) async {
+    final l = context.l10n;
     try { await widget.repo.setStatus(widget.order.id, status); await _load(); _ok(okText); }
-    catch (e) { _ok(humanizeStatusError(e)); }
+    catch (e) { _ok(l.statusError(e)); }
   }
 
   Future<void> _returnForRework() async {
+    final l = context.l10n;
     final c = TextEditingController();
     final reason = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Вернуть на доработку'),
+        title: Text(l.actionReturn),
         content: TextField(controller: c, autofocus: true, maxLines: 3,
-            decoration: const InputDecoration(hintText: 'Что нужно исправить?')),
+            decoration: InputDecoration(hintText: l.returnHint)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('Вернуть')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, c.text.trim()), child: Text(l.returnConfirm)),
         ],
       ),
     );
     if (reason == null) return;
-    if (reason.isEmpty) { _ok('Напишите, что нужно исправить'); return; }
-    try { await widget.repo.returnForRework(widget.order.id, reason); await _load(); _ok('Возвращено исполнителю'); }
-    catch (e) { _ok(humanizeStatusError(e)); }
+    if (reason.isEmpty) { _ok(l.returnReasonRequired); return; }
+    try { await widget.repo.returnForRework(widget.order.id, reason); await _load(); _ok(l.toastReturned); }
+    catch (e) { _ok(l.statusError(e)); }
   }
 
   void _ok(String m) {
@@ -468,24 +466,26 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Заявка'),
+        title: Text(l.detailTitle),
         actions: [
           if (_canEdit)
-            IconButton(tooltip: 'Редактировать', icon: const Icon(Icons.edit_outlined), onPressed: _edit),
+            IconButton(tooltip: l.detailEdit, icon: const Icon(Icons.edit_outlined), onPressed: _edit),
         ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
               ? Padding(padding: const EdgeInsets.all(24),
-                  child: Text('Ошибка: $_error', style: const TextStyle(color: Color(0xFFC24444))))
+                  child: Text(l.detailLoadFailed, style: const TextStyle(color: Color(0xFFC24444))))
               : _content(),
     );
   }
 
   Widget _content() {
+    final l = context.l10n;
     final d = _d!;
     final status = (d['status'] ?? 'new') as String;
     final c = _statusColors(status);
@@ -493,40 +493,42 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final recurring = d['recurrence'] != null;
     final title = (d['title'] ?? '') as String;
     final desc = (d['description'] ?? '') as String?;
-    final workType = (d['work_type'] ?? '') as String?;
+    final workType = _workTypeLabel(widget.layers, context.localeCode,
+        layerId: d['layer_id'] as String?, workType: d['work_type'] as String?);
     final objId = d['object_id'] as String?;
     final contractorId = d['assigned_contractor_id'] as String?;
-    final mineNote = _isAuthor ? ' (вы)' : '';
+    final created = DateTime.tryParse('${d['created_at']}');
+    final createdText = created == null ? '—' : l.dateTime(created);
     final brand = Theme.of(context).colorScheme.primary;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
       children: [
         Row(children: [
-          Expanded(child: Text(title + (recurring ? '  · регламент' : ''),
+          Expanded(child: Text(title + (recurring ? '  · ${l.requestRecurringTag}' : ''),
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800))),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: c[0], borderRadius: BorderRadius.circular(20)),
-              child: Text(_statusLabel(status),
+              child: Text(l.status(status),
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: c[1]))),
         ]),
         const SizedBox(height: 20),
-        _row('Объект', _objNameIn(widget.objects, objId)),
-        _row('Исполнитель', _contractorNameIn(widget.contractors, contractorId)),
-        _row('Вид работ', (workType == null || workType.isEmpty) ? '—' : workType),
-        _row('Приоритет', _priorityLabel(priority)),
-        _row('Тип', recurring ? 'Регламентная' : 'Разовая'),
-        _row('Фотоподтверждение', (d['requires_photo'] == true) ? 'Требуется' : 'Не требуется'),
-        _row('Создана', _fmtDate(d['created_at'] as String?) + mineNote),
+        _row(l.fieldObject, _objNameIn(l, widget.objects, objId)),
+        _row(l.fieldContractor, _contractorNameIn(l, widget.contractors, contractorId)),
+        _row(l.fieldWorkType, workType ?? '—'),
+        _row(l.fieldPriority, l.priority(priority)),
+        _row(l.fieldKind, recurring ? l.kindRecurring : l.kindOneOff),
+        _row(l.fieldPhotoProof, (d['requires_photo'] == true) ? l.photoRequired : l.photoNotRequired),
+        _row(l.fieldCreated, _isAuthor ? l.createdByYou(createdText) : createdText),
         const SizedBox(height: 16),
-        const Text('Описание', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
+        Text(l.fieldDescription, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
         const SizedBox(height: 6),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: _card(),
-          child: Text((desc == null || desc.isEmpty) ? 'Без описания' : desc,
+          child: Text((desc == null || desc.isEmpty) ? l.noDescription : desc,
               style: TextStyle(color: (desc == null || desc.isEmpty) ? _muted : _ink, fontSize: 14)),
         ),
         if ((d['return_reason'] as String?)?.isNotEmpty == true && status == 'returned') ...[
@@ -535,13 +537,13 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(color: const Color(0xFFFBE8E8), borderRadius: BorderRadius.circular(14)),
-            child: Text('Возвращено: ${d['return_reason']}',
+            child: Text(l.returnedWithReason('${d['return_reason']}'),
                 style: const TextStyle(color: Color(0xFFC24444), fontWeight: FontWeight.w600)),
           ),
         ],
         if (_actions(status, contractorId, brand).isNotEmpty) ...[
           const SizedBox(height: 24),
-          const Text('Действия', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
+          Text(l.actionsTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
           const SizedBox(height: 10),
           Wrap(spacing: 10, runSpacing: 10, children: _actions(status, contractorId, brand)),
         ],
@@ -553,48 +555,49 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   List<Widget> _actions(String status, String? contractorId, Color brand) {
     final canWork = _isExecutor || _isManager;
     final canAccept = _isAuthor || _isManager;
+    final l = context.l10n;
     final filled = FilledButton.styleFrom(backgroundColor: brand, foregroundColor: _onBrand);
     return [
       if (_isManager && (status == 'new' || status == 'assigned' || status == 'returned'))
         OutlinedButton.icon(
           onPressed: _assign,
           icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
-          label: Text(contractorId == null ? 'Назначить исполнителя' : 'Сменить исполнителя'),
+          label: Text(contractorId == null ? l.actionAssign : l.actionReassign),
         ),
       if (canWork && (status == 'new' || status == 'assigned' || status == 'returned'))
         FilledButton.icon(
-          onPressed: () => _setStatus('in_progress', 'Заявка в работе'),
+          onPressed: () => _setStatus('in_progress', l.toastInProgress),
           style: filled,
           icon: const Icon(Icons.play_arrow_rounded, size: 18),
-          label: Text(status == 'returned' ? 'Взять на доработку' : 'Взять в работу'),
+          label: Text(status == 'returned' ? l.actionRestart : l.actionStart),
         ),
       if (canWork && status == 'in_progress')
         FilledButton.icon(
-          onPressed: () => _setStatus('on_review', 'Отправлено на проверку'),
+          onPressed: () => _setStatus('on_review', l.toastSubmitted),
           style: filled,
           icon: const Icon(Icons.check_rounded, size: 18),
-          label: const Text('Выполнено, на проверку'),
+          label: Text(l.actionSubmit),
         ),
       if (canAccept && status == 'on_review') ...[
         FilledButton.icon(
-          onPressed: () => _setStatus('done', 'Работа принята'),
+          onPressed: () => _setStatus('done', l.toastAccepted),
           style: filled,
           icon: const Icon(Icons.verified_outlined, size: 18),
-          label: const Text('Принять работу'),
+          label: Text(l.actionAccept),
         ),
         OutlinedButton.icon(
           onPressed: _returnForRework,
           style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFC24444)),
           icon: const Icon(Icons.undo_rounded, size: 18),
-          label: const Text('Вернуть на доработку'),
+          label: Text(l.actionReturn),
         ),
       ],
       if (canAccept && status != 'done' && status != 'cancelled')
         OutlinedButton.icon(
-          onPressed: () => _setStatus('cancelled', 'Заявка отменена'),
+          onPressed: () => _setStatus('cancelled', l.toastCancelled),
           style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFC24444)),
           icon: const Icon(Icons.close_rounded, size: 18),
-          label: const Text('Отменить'),
+          label: Text(l.actionCancel),
         ),
     ];
   }
@@ -615,66 +618,76 @@ Future<bool?> showOrderForm({
   required String companyId,
   Map<String, dynamic>? existing,
 }) async {
-  // Виды работ = слои компании из базы. Если база недоступна — список по умолчанию.
-  List<String> workTypes = const ['Климат', 'Электрика', 'Сантехника', 'Клининг',
-      'Системы безопасности', 'Мебель', 'Другое'];
+  // Виды работ = слои компании из базы; ничего не зашито в приложение.
+  List<Layer> layers = const [];
+  var layersFailed = false;
   try {
-    final fromDb = await DirectoryRepo().layerNames();
-    if (fromDb.isNotEmpty) workTypes = fromDb;
-  } catch (_) {}
+    layers = await DirectoryRepo().layers();
+  } catch (_) {
+    layersFailed = true;
+  }
   if (!context.mounted) return null;
 
   final isEdit = existing != null;
   final titleC = TextEditingController(text: isEdit ? (existing['title'] ?? '') as String : '');
   final descC = TextEditingController(text: isEdit ? (existing['description'] ?? '') as String? ?? '' : '');
-  String? workType = isEdit ? existing['work_type'] as String? : null;
+  Layer? layer = isEdit
+      ? Layer.find(layers, id: existing['layer_id'] as String?, name: existing['work_type'] as String?)
+      : null;
   String priority = isEdit ? (existing['priority'] ?? 'normal') as String : 'normal';
   String? objectId = isEdit ? existing['object_id'] as String? : null;
   bool recurring = isEdit ? existing['recurrence'] != null : false;
 
-  const priorities = [['low', 'Низкий'], ['normal', 'Обычный'], ['high', 'Высокий'], ['critical', 'Критич.']];
+  const priorities = ['low', 'normal', 'high', 'critical'];
   final brand = Theme.of(context).colorScheme.primary;
+  final l = context.l10n;
+  final locale = context.localeCode;
 
   return showModalBottomSheet<bool>(
     context: context, isScrollControlled: true, backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
     builder: (ctx) => Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+      padding: EdgeInsetsDirectional.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
       child: StatefulBuilder(
         builder: (ctx, setSt) => SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 20, 20),
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Center(child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 14),
+              Center(child: Container(width: 40, height: 4, margin: const EdgeInsetsDirectional.only(bottom: 14),
                   decoration: BoxDecoration(color: _line, borderRadius: BorderRadius.circular(4)))),
-              Text(isEdit ? 'Редактировать заявку' : 'Новая заявка',
+              Text(isEdit ? l.formEditTitle : l.formNewTitle,
                   style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
-              _lbl('Что случилось?'),
-              _inp(titleC, 'Например, Протекает кран'),
-              _lbl('Описание'),
-              _inp(descC, 'Подробности', lines: 3),
-              _lbl('Объект'),
+              _lbl(l.formWhat),
+              _inp(titleC, l.formWhatHint),
+              _lbl(l.fieldDescription),
+              _inp(descC, l.formDetailsHint, lines: 3),
+              _lbl(l.fieldObject),
               _Dropdown(
                 value: objectId,
-                hint: objects.isEmpty ? 'Нет объектов (добавь во вкладке Локации)' : 'Выбери объект',
+                hint: objects.isEmpty ? l.formNoObjects(l.tabLocations) : l.formChooseObject,
                 items: [for (final o in objects) DropdownMenuItem(value: o.id, child: Text(o.name))],
                 onChanged: (v) => setSt(() => objectId = v)),
-              _lbl('Вид работ'),
+              _lbl(l.fieldWorkType),
+              if (layersFailed)
+                Text(l.formLayersFailed, style: const TextStyle(color: _muted))
+              else
+                Wrap(spacing: 8, runSpacing: 8, children: [
+                  for (final t in layers)
+                    _chip(t.label(locale), layer?.id == t.id, brand,
+                        () => setSt(() => layer = layer?.id == t.id ? null : t))]),
+              _lbl(l.fieldPriority),
               Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final t in workTypes) _chip(t, workType == t, brand, () => setSt(() => workType = t))]),
-              _lbl('Приоритет'),
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final p in priorities) _chip(p[1], priority == p[0], brand, () => setSt(() => priority = p[0]))]),
+                for (final p in priorities) _chip(l.priority(p), priority == p, brand, () => setSt(() => priority = p))]),
               const SizedBox(height: 16),
               Row(children: [
-                const Expanded(child: Text('Регламентная (повторяющаяся)', style: TextStyle(fontSize: 15))),
+                Expanded(child: Text(l.formRecurring, style: const TextStyle(fontSize: 15))),
                 Switch(value: recurring, activeTrackColor: brand, onChanged: (v) => setSt(() => recurring = v))]),
               const SizedBox(height: 10),
               FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: brand, foregroundColor: _onBrand),
                 onPressed: () async {
                   if (titleC.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Впиши, что случилось')));
+                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(l.formWhatRequired)));
                     return;
                   }
                   try {
@@ -682,20 +695,19 @@ Future<bool?> showOrderForm({
                       await repo.update(existing['id'] as String,
                           title: titleC.text.trim(),
                           description: descC.text.trim().isEmpty ? null : descC.text.trim(),
-                          workType: workType, priority: priority, objectId: objectId, recurring: recurring);
+                          layer: layer, priority: priority, objectId: objectId, recurring: recurring);
                     } else {
                       await repo.create(companyId: companyId, title: titleC.text.trim(),
                           description: descC.text.trim().isEmpty ? null : descC.text.trim(),
-                          workType: workType, priority: priority, objectId: objectId, recurring: recurring);
+                          layer: layer, priority: priority, objectId: objectId, recurring: recurring);
                     }
                     if (ctx.mounted) Navigator.pop(ctx, true);
                   } catch (_) {
                     if (!ctx.mounted) return;
-                    ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-                        content: Text('Не удалось сохранить заявку. Проверьте интернет и попробуйте ещё раз.')));
+                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(l.formSaveFailed)));
                   }
                 },
-                child: Text(isEdit ? 'Сохранить' : 'Создать заявку',
+                child: Text(isEdit ? l.commonSave : l.requestsCreate,
                     style: const TextStyle(fontWeight: FontWeight.w800))),
             ]),
           ),
@@ -705,7 +717,7 @@ Future<bool?> showOrderForm({
   );
 }
 
-Widget _lbl(String t) => Padding(padding: const EdgeInsets.only(top: 16, bottom: 8),
+Widget _lbl(String t) => Padding(padding: const EdgeInsetsDirectional.only(top: 16, bottom: 8),
     child: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _ink)));
 
 Widget _inp(TextEditingController c, String hint, {int lines = 1}) => TextField(

@@ -8,6 +8,7 @@ class Profile {
     this.companyId,
     this.fullName,
     this.phone,
+    this.locale,
   });
 
   final String id;
@@ -16,6 +17,9 @@ class Profile {
   final String? fullName;
   final String? phone;
 
+  /// Язык интерфейса (ru / en), выбранный пользователем. null — не выбирал.
+  final String? locale;
+
   factory Profile.fromMap(Map<String, dynamic> map) {
     return Profile(
       id: map['id'] as String,
@@ -23,9 +27,10 @@ class Profile {
       companyId: map['company_id'] as String?,
       fullName: map['full_name'] as String?,
       phone: map['phone'] as String?,
+      locale: map['locale'] as String?,
     );
   }
 
-  String get displayName =>
-      (fullName == null || fullName!.isEmpty) ? 'Пользователь' : fullName!;
+  /// Имя для показа; null, если не заполнено (подпись по умолчанию — из переводов).
+  String? get displayName => (fullName == null || fullName!.isEmpty) ? null : fullName;
 }

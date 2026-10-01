@@ -13,20 +13,6 @@ enum UserRole {
     );
   }
 
-  String get title {
-    switch (this) {
-      case UserRole.admin:
-        return 'Администратор';
-      case UserRole.manager:
-        return 'Менеджер';
-      case UserRole.requester:
-        return 'Заявитель';
-      case UserRole.contractor:
-        return 'Подрядчик';
-      case UserRole.executor:
-        return 'Исполнитель';
-    }
-  }
 
   bool get canManage => this == UserRole.admin || this == UserRole.manager;
   bool get canSeeReports => this == UserRole.admin || this == UserRole.manager;

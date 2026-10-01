@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../core/l10n_ext.dart';
 import '../directory/directory.dart';
 import 'voice_confirm_screen.dart';
 import 'voice_intake_client.dart';
@@ -15,6 +16,8 @@ const _mint = Color(0xFFD8F0EA);
 const _danger = Color(0xFFC24444);
 
 enum _Phase { starting, recording, processing, error }
+
+enum _Problem { noPermission, micFailed, tooShort, recognizeFailed }
 
 /// Экран голосовой заявки: запись начинается сразу, «Готово» — стоп,
 /// дальше распознавание и переход к подтверждению.
@@ -32,7 +35,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen> {
   final _recorder = VoiceRecorder();
   final _client = createVoiceIntakeClient();
   _Phase _phase = _Phase.starting;
-  String? _error;
+  _Problem? _error;
   double _level = 0;
   Duration _elapsed = Duration.zero;
   Timer? _ticker;
@@ -57,11 +60,11 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen> {
     setState(() { _phase = _Phase.starting; _error = null; _elapsed = Duration.zero; });
     try {
       if (!await _recorder.ensurePermission()) {
-        return _fail('Нужен доступ к микрофону. Разрешите его в настройках телефона и попробуйте снова.');
+        return _fail(_Problem.noPermission);
       }
       await _recorder.start();
     } catch (_) {
-      return _fail('Не удалось включить микрофон. Попробуйте ещё раз.');
+      return _fail(_Problem.micFailed);
     }
     if (!mounted) return;
     _levelSub = _recorder.levels().listen((l) { if (mounted) setState(() => _level = l); });
@@ -76,6 +79,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen> {
 
   Future<void> _finish() async {
     if (_phase != _Phase.recording) return;
+    final locale = context.localeCode;
     _ticker?.cancel();
     await _levelSub?.cancel();
     setState(() { _phase = _Phase.processing; _level = 0; });
@@ -83,15 +87,15 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen> {
     File? audio;
     try {
       audio = await _recorder.stop();
-      if (audio == null) return _fail('Слишком коротко. Нажмите «Ещё раз» и опишите проблему.');
-      final draft = await _client.process(audio);
+      if (audio == null) return _fail(_Problem.tooShort);
+      final draft = await _client.process(audio, locale: locale);
       if (!mounted) return;
       final created = await Navigator.push<bool>(context, MaterialPageRoute(
         builder: (_) => VoiceConfirmScreen(draft: draft, companyId: widget.companyId, objects: widget.objects),
       ));
       if (mounted) Navigator.pop(context, created ?? false);
     } catch (_) {
-      _fail('Не получилось распознать запись. Проверьте интернет и попробуйте ещё раз.');
+      _fail(_Problem.recognizeFailed);
     } finally {
       try {
         if (audio != null && await audio.exists()) await audio.delete();
@@ -99,14 +103,24 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen> {
     }
   }
 
-  void _fail(String message) {
+  void _fail(_Problem problem) {
     _ticker?.cancel();
     _levelSub?.cancel();
     if (!mounted) return;
-    setState(() { _phase = _Phase.error; _error = message; _level = 0; });
+    setState(() { _phase = _Phase.error; _error = problem; _level = 0; });
   }
 
   String _fmt(Duration d) => '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
+
+  String _problemText(_Problem p) {
+    final l = context.l10n;
+    return switch (p) {
+      _Problem.noPermission => l.voiceNoMicPermission,
+      _Problem.micFailed => l.voiceMicFailed,
+      _Problem.tooShort => l.voiceTooShort,
+      _Problem.recognizeFailed => l.voiceRecognizeFailed,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,10 +128,10 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen> {
     final left = VoiceRecorder.maxDuration - _elapsed;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('Голосовая заявка'), backgroundColor: Colors.white),
+      appBar: AppBar(title: Text(context.l10n.voiceTitle), backgroundColor: Colors.white),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 24),
           child: Column(children: [
             const Spacer(),
             _MicCircle(level: _level, active: _phase == _Phase.recording, brand: brand,
@@ -135,39 +149,44 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen> {
                     minimumSize: const Size.fromHeight(56)),
                 onPressed: _finish,
                 icon: const Icon(Icons.stop_rounded),
-                label: const Text('Готово', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17))),
+                label: Text(context.l10n.voiceDone, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17))),
             if (_phase == _Phase.error)
               FilledButton.icon(
                 style: FilledButton.styleFrom(backgroundColor: brand, foregroundColor: _onBrand,
                     minimumSize: const Size.fromHeight(56)),
                 onPressed: _start,
                 icon: const Icon(Icons.mic),
-                label: const Text('Ещё раз', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17))),
+                label: Text(context.l10n.voiceAgain, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17))),
             const SizedBox(height: 8),
             if (_phase != _Phase.processing)
               TextButton(onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Отмена', style: TextStyle(color: Color(0xFF177A65), fontWeight: FontWeight.w700))),
+                  child: Text(context.l10n.commonCancel, style: const TextStyle(color: Color(0xFF177A65), fontWeight: FontWeight.w700))),
           ]),
         ),
       ),
     );
   }
 
-  String _title() => switch (_phase) {
-        _Phase.starting => 'Включаю микрофон…',
-        _Phase.recording => 'Слушаю',
-        _Phase.processing => 'Распознаю…',
-        _Phase.error => 'Не получилось',
-      };
+  String _title() {
+    final l = context.l10n;
+    return switch (_phase) {
+      _Phase.starting => l.voiceStarting,
+      _Phase.recording => l.voiceListening,
+      _Phase.processing => l.voiceProcessing,
+      _Phase.error => l.voiceFailedTitle,
+    };
+  }
 
-  String _subtitle(Duration left) => switch (_phase) {
-        _Phase.recording =>
-          'Скажите, что случилось и где.\nНапример: «В переговорной на третьем этаже не работает кондиционер».\n\n'
-              '${_fmt(_elapsed)} · осталось ${left.inSeconds < 0 ? 0 : left.inSeconds} с',
-        _Phase.processing => 'Это займёт несколько секунд',
-        _Phase.error => _error ?? '',
-        _Phase.starting => '',
-      };
+  String _subtitle(Duration left) {
+    final l = context.l10n;
+    return switch (_phase) {
+      _Phase.recording =>
+        '${l.voicePrompt}\n\n${l.voiceTimer(_fmt(_elapsed), left.inSeconds < 0 ? 0 : left.inSeconds)}',
+      _Phase.processing => l.voiceProcessingHint,
+      _Phase.error => _error == null ? '' : _problemText(_error!),
+      _Phase.starting => '',
+    };
+  }
 }
 
 class _MicCircle extends StatelessWidget {

@@ -5,8 +5,10 @@ class VoiceDraft {
   final String title;
   final String? description;
 
-  /// Название слоя (вид работ). Приложение принимает его, только если
+  /// Слой (вид работ): id из layers — так возвращает серверная функция;
+  /// либо название на любом языке. Приложение принимает его, только если
   /// такой слой есть у компании.
+  final String? layerId;
   final String? layer;
 
   /// Как пользователь назвал место («переговорная на третьем»).
@@ -19,6 +21,7 @@ class VoiceDraft {
     required this.transcript,
     required this.title,
     this.description,
+    this.layerId,
     this.layer,
     this.locationHint,
     this.priority = 'normal',
@@ -32,6 +35,7 @@ class VoiceDraft {
       transcript: (m['transcript'] ?? '') as String,
       title: (m['title'] ?? '') as String,
       description: m['description'] as String?,
+      layerId: m['layer_id'] as String?,
       layer: m['layer'] as String?,
       locationHint: m['location_hint'] as String?,
       priority: priorities.contains(p) ? p! : 'normal',

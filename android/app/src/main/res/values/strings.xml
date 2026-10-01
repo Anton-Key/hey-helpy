@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Подпись под иконкой приложения. Android берёт её отсюда, а не из
+     lib/l10n/*.arb, поэтому название продукта задано ещё и здесь. -->
+<resources>
+    <string name="app_name">Hey Helpy</string>
+</resources>

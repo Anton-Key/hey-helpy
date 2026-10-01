@@ -43,6 +43,44 @@ class Place {
   String get fullName => objectName == null ? name : '$objectName · $name';
 }
 
+/// Слой (вид работ). [name] — основное название, по нему база назначает
+/// подрядчика; [names] — переводы из layers.name_i18n.
+class Layer {
+  final String id;
+  final String name;
+  final Map<String, String> names;
+  const Layer({required this.id, required this.name, this.names = const {}});
+  factory Layer.fromMap(Map<String, dynamic> m) => Layer(
+        id: m['id'] as String,
+        name: (m['name'] ?? '') as String,
+        names: {
+          for (final e in ((m['name_i18n'] as Map?) ?? const {}).entries)
+            if (e.value is String && (e.value as String).isNotEmpty) '${e.key}': e.value as String,
+        },
+      );
+
+  /// Название на языке интерфейса; если перевода нет — русское, затем основное.
+  String label(String localeCode) => names[localeCode] ?? names['ru'] ?? name;
+
+  /// Совпадает ли [text] с названием слоя на любом языке (без учёта регистра).
+  bool matches(String text) {
+    final t = text.trim().toLowerCase();
+    return name.toLowerCase() == t || names.values.any((v) => v.toLowerCase() == t);
+  }
+
+  /// Слой заявки: по layer_id, иначе по тексту work_type.
+  static Layer? find(List<Layer> layers, {String? id, String? name}) {
+    for (final l in layers) {
+      if (id != null && l.id == id) return l;
+    }
+    if (name == null || name.isEmpty) return null;
+    for (final l in layers) {
+      if (l.matches(name)) return l;
+    }
+    return null;
+  }
+}
+
 class DirectoryRepo {
   final SupabaseClient _c = Supabase.instance.client;
   Future<String?> myCompanyId() async {
@@ -72,11 +110,12 @@ class DirectoryRepo {
     return (rows as List).map((e) => Place.fromMap(e as Map<String, dynamic>)).toList();
   }
 
-  /// Названия слоёв компании (климат, электрика, системы безопасности…)
-  /// в порядке отображения. Добавляются в базе без изменения приложения.
-  Future<List<String>> layerNames() async {
-    final rows = await _c.from('layers').select('name').order('sort').order('name');
-    return (rows as List).map((e) => (e as Map<String, dynamic>)['name'] as String).toList();
+  /// Слои компании (климат, электрика, системы безопасности…) в порядке
+  /// отображения. Добавляются в базе без изменения приложения.
+  /// select() без списка полей: name_i18n появляется только после миграции 0007.
+  Future<List<Layer>> layers() async {
+    final rows = await _c.from('layers').select().order('sort').order('name');
+    return (rows as List).map((e) => Layer.fromMap(e as Map<String, dynamic>)).toList();
   }
 }
 

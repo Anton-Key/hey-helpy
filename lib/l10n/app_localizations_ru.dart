@@ -547,4 +547,186 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get voiceSendFailed =>
       'Не удалось отправить заявку. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get objectTypeOffice => 'Офис';
+
+  @override
+  String get objectTypeHotel => 'Гостиница';
+
+  @override
+  String get objectTypeApartments => 'Апартаменты';
+
+  @override
+  String get objectTypeWarehouse => 'Склад';
+
+  @override
+  String get objectTypeOther => 'Другое';
+
+  @override
+  String get commonAdd => 'Добавить';
+
+  @override
+  String get objectsLoadFailed =>
+      'Не удалось загрузить объекты. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get objectsEmpty => 'Пока нет объектов.\nНажмите «Добавить».';
+
+  @override
+  String get objectFormTitle => 'Новая локация';
+
+  @override
+  String get objectFormName => 'Наименование локации';
+
+  @override
+  String get objectFormNameHint => 'Например, БЦ «Северная башня»';
+
+  @override
+  String get objectFormAddress => 'Адрес';
+
+  @override
+  String get objectFormAddressHint => 'Город, улица, дом';
+
+  @override
+  String get objectFormType => 'Тип';
+
+  @override
+  String get objectFormNameRequired => 'Напишите название';
+
+  @override
+  String get objectAdded => 'Локация добавлена';
+
+  @override
+  String get contractorsLoadFailed =>
+      'Не удалось загрузить подрядчиков. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get contractorsEmpty => 'Пока нет подрядчиков.\nНажмите «Добавить».';
+
+  @override
+  String get contractorFormTitle => 'Новый исполнитель';
+
+  @override
+  String get contractorFormName => 'Наименование организации';
+
+  @override
+  String get contractorFormNameHint => 'Например, СтройКом';
+
+  @override
+  String get contractorFormNameRequired => 'Напишите название организации';
+
+  @override
+  String get contractorAdded => 'Исполнитель добавлен';
+
+  @override
+  String get saveFailed =>
+      'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get onboardingTitle => 'Начало работы';
+
+  @override
+  String onboardingChoose(String appName) {
+    return 'Выберите, как вы будете работать в $appName';
+  }
+
+  @override
+  String get onboardingCreateTitle => 'Создать компанию';
+
+  @override
+  String get onboardingCreateSubtitle =>
+      'Для владельцев и управляющих объектами. Вы станете администратором.';
+
+  @override
+  String get onboardingCompanyName => 'Название компании';
+
+  @override
+  String get onboardingCreate => 'Создать';
+
+  @override
+  String get onboardingInviteTitle => 'У меня есть код приглашения';
+
+  @override
+  String get onboardingInviteSubtitle =>
+      'Для исполнителей подрядных организаций.';
+
+  @override
+  String get onboardingInviteCode => 'Код приглашения';
+
+  @override
+  String get onboardingJoin => 'Вступить';
+
+  @override
+  String get onboardingNoConnection =>
+      'Нет связи с сервером. Попробуйте ещё раз.';
+
+  @override
+  String get onbErrNotAuthenticated => 'Войдите в аккаунт, чтобы продолжить.';
+
+  @override
+  String get onbErrCompanyNameRequired => 'Укажите название компании.';
+
+  @override
+  String get onbErrAlreadyInCompany => 'Вы уже состоите в компании.';
+
+  @override
+  String get onbErrInviteNotFound =>
+      'Код приглашения не найден. Проверьте, что он введён полностью.';
+
+  @override
+  String get onbErrInviteUsed => 'Этот код приглашения уже использован.';
+
+  @override
+  String get onbErrInviteExpired =>
+      'Срок действия приглашения истёк. Попросите новый код.';
+
+  @override
+  String get onbErrOtherCompany =>
+      'Ваш аккаунт уже привязан к другой компании.';
+
+  @override
+  String get onbErrAdminOnly => 'Менять роли может только администратор.';
+
+  @override
+  String get onbErrOwnRole => 'Нельзя изменить собственную роль.';
+
+  @override
+  String get onbErrProfileNotFound =>
+      'Пользователь не найден в вашей компании.';
+
+  @override
+  String get onbErrUnknown =>
+      'Не удалось выполнить действие. Попробуйте ещё раз.';
+
+  @override
+  String get adminTitle => 'Администрирование';
+
+  @override
+  String get adminObjects => 'Объекты и геолокация';
+
+  @override
+  String get adminDepartments => 'Направления / департаменты';
+
+  @override
+  String get adminAssets => 'Оборудование и активы';
+
+  @override
+  String get adminContractors => 'Подрядные организации';
+
+  @override
+  String get adminInvites => 'Инвайт-ссылки исполнителям';
+
+  @override
+  String get adminUsers => 'Пользователи и роли';
+
+  @override
+  String get adminComingSoon => 'Появится в Фазе 1';
+
+  @override
+  String get reportsComingTitle => 'Отчёты появятся в Фазе 1';
+
+  @override
+  String get reportsComingBody =>
+      'Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту.';
 }

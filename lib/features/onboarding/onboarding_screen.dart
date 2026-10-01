@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n_ext.dart';
+import '../../l10n/app_localizations.dart';
 import 'onboarding_repository.dart';
 
 /// Экран для пользователя без компании (profiles.company_id == null).
@@ -29,7 +31,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _companyCtrl = TextEditingController();
   final _inviteCtrl = TextEditingController();
   bool _busy = false;
-  String? _error;
+  /// null — ошибки нет; иначе причина (текст подбирается при отрисовке).
+  OnboardingError? _error;
+  bool _offline = false;
 
   @override
   void dispose() {
@@ -42,14 +46,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() {
       _busy = true;
       _error = null;
+      _offline = false;
     });
     try {
       await action();
       await widget.onCompleted();
     } on OnboardingException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e.error);
     } catch (_) {
-      if (mounted) setState(() => _error = 'Нет связи с сервером. Попробуйте ещё раз.');
+      if (mounted) setState(() => _offline = true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -58,9 +63,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l10n;
+    final errorText = _offline ? l.onboardingNoConnection : (_error == null ? null : _errorText(l, _error!));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Начало работы')),
+      appBar: AppBar(title: Text(l.onboardingTitle)),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -68,24 +75,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                Text('Выберите, как вы будете работать в Hey Helpy',
+                Text(l.onboardingChoose(l.appName),
                     style: theme.textTheme.titleMedium),
                 const SizedBox(height: 20),
                 _Section(
                   icon: Icons.apartment_outlined,
-                  title: 'Создать компанию',
-                  subtitle: 'Для владельцев и управляющих объектами. '
-                      'Вы станете администратором.',
+                  title: l.onboardingCreateTitle,
+                  subtitle: l.onboardingCreateSubtitle,
                   field: TextField(
                     controller: _companyCtrl,
                     enabled: !_busy,
                     textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(
-                      labelText: 'Название компании',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.onboardingCompanyName,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
-                  actionLabel: 'Создать',
+                  actionLabel: l.onboardingCreate,
                   onAction: _busy
                       ? null
                       : () => _run(() => _repo.createCompany(_companyCtrl.text)),
@@ -93,18 +99,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const SizedBox(height: 16),
                 _Section(
                   icon: Icons.handyman_outlined,
-                  title: 'У меня есть код приглашения',
-                  subtitle: 'Для исполнителей подрядных организаций.',
+                  title: l.onboardingInviteTitle,
+                  subtitle: l.onboardingInviteSubtitle,
                   field: TextField(
                     controller: _inviteCtrl,
                     enabled: !_busy,
                     autocorrect: false,
-                    decoration: const InputDecoration(
-                      labelText: 'Код приглашения',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.onboardingInviteCode,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
-                  actionLabel: 'Вступить',
+                  actionLabel: l.onboardingJoin,
                   onAction: _busy
                       ? null
                       : () => _run(() => _repo.acceptInvite(_inviteCtrl.text)),
@@ -113,9 +119,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   const SizedBox(height: 20),
                   const Center(child: CircularProgressIndicator()),
                 ],
-                if (_error != null) ...[
+                if (errorText != null) ...[
                   const SizedBox(height: 16),
-                  Text(_error!,
+                  Text(errorText,
                       style: TextStyle(color: theme.colorScheme.error),
                       textAlign: TextAlign.center),
                 ],
@@ -127,6 +133,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
+
+String _errorText(AppLocalizations l, OnboardingError e) => switch (e) {
+      OnboardingError.notAuthenticated => l.onbErrNotAuthenticated,
+      OnboardingError.companyNameRequired => l.onbErrCompanyNameRequired,
+      OnboardingError.alreadyInCompany => l.onbErrAlreadyInCompany,
+      OnboardingError.inviteNotFound => l.onbErrInviteNotFound,
+      OnboardingError.inviteUsed => l.onbErrInviteUsed,
+      OnboardingError.inviteExpired => l.onbErrInviteExpired,
+      OnboardingError.otherCompany => l.onbErrOtherCompany,
+      OnboardingError.adminOnly => l.onbErrAdminOnly,
+      OnboardingError.ownRole => l.onbErrOwnRole,
+      OnboardingError.profileNotFound => l.onbErrProfileNotFound,
+      OnboardingError.unknown => l.onbErrUnknown,
+    };
 
 class _Section extends StatelessWidget {
   const _Section({

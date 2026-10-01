@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/l10n_ext.dart';
+
 class Obj {
   final String id;
   final String name;
@@ -13,10 +15,6 @@ class Obj {
         address: m['address'] as String?,
         type: (m['type'] ?? 'office') as String,
       );
-  String get typeLabel => const {
-        'office': 'Офис', 'hotel': 'Гостиница', 'apartments': 'Апартаменты',
-        'warehouse': 'Склад', 'other': 'Другое',
-      }[type] ?? 'Объект';
 }
 
 class Contractor {
@@ -147,6 +145,7 @@ class _ObjectsTabState extends State<ObjectsTab> {
   @override
   Widget build(BuildContext context) {
     final brand = Theme.of(context).colorScheme.primary;
+    final l = context.l10n;
     return Stack(children: [
       FutureBuilder<List<Obj>>(
         future: _future,
@@ -154,18 +153,18 @@ class _ObjectsTabState extends State<ObjectsTab> {
           if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snap.hasError) return _ErrorView(text: 'Не удалось загрузить объекты:\n${snap.error}');
+          if (snap.hasError) return _ErrorView(text: l.objectsLoadFailed);
           final list = snap.data ?? [];
           if (list.isEmpty) {
-            return const _EmptyView(icon: Icons.apartment_outlined, text: 'Пока нет объектов.\nНажми «+ Добавить».');
+            return _EmptyView(icon: Icons.apartment_outlined, text: l.objectsEmpty);
           }
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 120),
             itemCount: list.length,
             itemBuilder: (_, i) {
               final o = list[i];
               return Container(
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: const EdgeInsetsDirectional.only(bottom: 10),
                 padding: const EdgeInsets.all(14),
                 decoration: _cardDeco(),
                 child: Row(children: [
@@ -178,29 +177,30 @@ class _ObjectsTabState extends State<ObjectsTab> {
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(o.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                       const SizedBox(height: 3),
-                      Text(o.address?.isNotEmpty == true ? o.address! : o.typeLabel,
+                      Text(o.address?.isNotEmpty == true ? o.address! : l.objectType(o.type),
                           style: const TextStyle(color: _muted, fontSize: 13)),
                     ])),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(color: const Color(0xFFF2F3F5), borderRadius: BorderRadius.circular(20)),
-                    child: Text(o.typeLabel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _muted))),
+                    child: Text(l.objectType(o.type), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _muted))),
                 ]),
               );
             },
           );
         },
       ),
-      Positioned(
-        right: 4, bottom: 8,
+      PositionedDirectional(
+        end: 4, bottom: 8,
         child: FloatingActionButton.extended(
           heroTag: 'addObj', backgroundColor: brand, foregroundColor: _onBrand,
           onPressed: () => _openForm(context),
-          icon: const Icon(Icons.add), label: const Text('Добавить', style: TextStyle(fontWeight: FontWeight.w800)))),
+          icon: const Icon(Icons.add), label: Text(l.commonAdd, style: const TextStyle(fontWeight: FontWeight.w800)))),
     ]);
   }
   Future<void> _openForm(BuildContext context) async {
-    if (_companyId == null) { _snack('Профиль без компании (сделай себя админом).'); return; }
+    final l = context.l10n;
+    if (_companyId == null) { _snack(l.requestsNoCompany); return; }
     final nameC = TextEditingController();
     final addrC = TextEditingController();
     String type = 'office';
@@ -208,35 +208,35 @@ class _ObjectsTabState extends State<ObjectsTab> {
       context: context, isScrollControlled: true, backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        padding: EdgeInsetsDirectional.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: StatefulBuilder(
           builder: (ctx, setSt) => _FormSheet(
-            title: 'Новая локация',
+            title: l.objectFormTitle,
             children: [
-              _label('Наименование локации'),
-              _input(nameC, 'Например, БЦ «Северная башня»'),
-              _label('Адрес'),
-              _input(addrC, 'Город, улица, дом'),
-              _label('Тип'),
+              _label(l.objectFormName),
+              _input(nameC, l.objectFormNameHint),
+              _label(l.objectFormAddress),
+              _input(addrC, l.objectFormAddressHint),
+              _label(l.objectFormType),
               Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final t in const [['office', 'Офис'], ['hotel', 'Гостиница'], ['apartments', 'Апартаменты'], ['warehouse', 'Склад']])
-                  _typeChip(t[1], type == t[0], () => setSt(() => type = t[0])),
+                for (final t in const ['office', 'hotel', 'apartments', 'warehouse'])
+                  _typeChip(l.objectType(t), type == t, () => setSt(() => type = t)),
               ]),
             ],
             onSubmit: () async {
-              if (nameC.text.trim().isEmpty) { _snack('Впиши название'); return; }
+              if (nameC.text.trim().isEmpty) { _snack(l.objectFormNameRequired); return; }
               try {
                 await _repo.addObject(name: nameC.text.trim(),
                     address: addrC.text.trim().isEmpty ? null : addrC.text.trim(),
                     type: type, companyId: _companyId!);
                 if (ctx.mounted) Navigator.pop(ctx, true);
-              } catch (e) { _snack('Ошибка: $e'); }
+              } catch (e) { debugPrint('addObject: $e'); _snack(l.saveFailed); }
             },
           ),
         ),
       ),
     );
-    if (saved == true) { _reload(); _snack('Локация добавлена ✅'); }
+    if (saved == true) { _reload(); _snack(l.objectAdded); }
   }
   void _snack(String m) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m))); }
 }
@@ -261,6 +261,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
   @override
   Widget build(BuildContext context) {
     final brand = Theme.of(context).colorScheme.primary;
+    final l = context.l10n;
     return Stack(children: [
       FutureBuilder<List<Contractor>>(
         future: _future,
@@ -268,18 +269,18 @@ class _ContractorsTabState extends State<ContractorsTab> {
           if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snap.hasError) return _ErrorView(text: 'Не удалось загрузить подрядчиков:\n${snap.error}');
+          if (snap.hasError) return _ErrorView(text: l.contractorsLoadFailed);
           final list = snap.data ?? [];
           if (list.isEmpty) {
-            return const _EmptyView(icon: Icons.handshake_outlined, text: 'Пока нет подрядчиков.\nНажми «+ Добавить».');
+            return _EmptyView(icon: Icons.handshake_outlined, text: l.contractorsEmpty);
           }
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 120),
             itemCount: list.length,
             itemBuilder: (_, i) {
               final c = list[i];
               return Container(
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: const EdgeInsetsDirectional.only(bottom: 10),
                 padding: const EdgeInsets.all(14),
                 decoration: _cardDeco(),
                 child: Row(children: [
@@ -295,36 +296,37 @@ class _ContractorsTabState extends State<ContractorsTab> {
           );
         },
       ),
-      Positioned(
-        right: 4, bottom: 8,
+      PositionedDirectional(
+        end: 4, bottom: 8,
         child: FloatingActionButton.extended(
           heroTag: 'addCon', backgroundColor: brand, foregroundColor: _onBrand,
           onPressed: () => _openForm(context),
-          icon: const Icon(Icons.add), label: const Text('Добавить', style: TextStyle(fontWeight: FontWeight.w800)))),
+          icon: const Icon(Icons.add), label: Text(l.commonAdd, style: const TextStyle(fontWeight: FontWeight.w800)))),
     ]);
   }
   Future<void> _openForm(BuildContext context) async {
-    if (_companyId == null) { _snack('Профиль без компании (сделай себя админом).'); return; }
+    final l = context.l10n;
+    if (_companyId == null) { _snack(l.requestsNoCompany); return; }
     final nameC = TextEditingController();
     final saved = await showModalBottomSheet<bool>(
       context: context, isScrollControlled: true, backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        padding: EdgeInsetsDirectional.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: _FormSheet(
-          title: 'Новый исполнитель',
-          children: [_label('Наименование организации'), _input(nameC, 'Например, СтройКом')],
+          title: l.contractorFormTitle,
+          children: [_label(l.contractorFormName), _input(nameC, l.contractorFormNameHint)],
           onSubmit: () async {
-            if (nameC.text.trim().isEmpty) { _snack('Впиши название организации'); return; }
+            if (nameC.text.trim().isEmpty) { _snack(l.contractorFormNameRequired); return; }
             try {
               await _repo.addContractor(orgName: nameC.text.trim(), companyId: _companyId!);
               if (ctx.mounted) Navigator.pop(ctx, true);
-            } catch (e) { _snack('Ошибка: $e'); }
+            } catch (e) { debugPrint('addContractor: $e'); _snack(l.saveFailed); }
           },
         ),
       ),
     );
-    if (saved == true) { _reload(); _snack('Исполнитель добавлен ✅'); }
+    if (saved == true) { _reload(); _snack(l.contractorAdded); }
   }
   void _snack(String m) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m))); }
 }
@@ -339,12 +341,12 @@ class _FormSheet extends StatelessWidget {
     final brand = Theme.of(context).colorScheme.primary;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 20, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 14),
+            Center(child: Container(width: 40, height: 4, margin: const EdgeInsetsDirectional.only(bottom: 14),
                 decoration: BoxDecoration(color: _line, borderRadius: BorderRadius.circular(4)))),
             Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
             ...children,
@@ -352,7 +354,7 @@ class _FormSheet extends StatelessWidget {
             FilledButton(
               onPressed: onSubmit,
               style: FilledButton.styleFrom(backgroundColor: brand, foregroundColor: _onBrand),
-              child: const Text('Сохранить', style: TextStyle(fontWeight: FontWeight.w800))),
+              child: Text(context.l10n.commonSave, style: const TextStyle(fontWeight: FontWeight.w800))),
           ],
         ),
       ),
@@ -360,7 +362,7 @@ class _FormSheet extends StatelessWidget {
   }
 }
 
-Widget _label(String t) => Padding(padding: const EdgeInsets.only(top: 16, bottom: 8),
+Widget _label(String t) => Padding(padding: const EdgeInsetsDirectional.only(top: 16, bottom: 8),
     child: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _ink)));
 
 Widget _input(TextEditingController c, String hint) => TextField(controller: c,

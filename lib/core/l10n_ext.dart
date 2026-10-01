@@ -31,6 +31,14 @@ extension L10nCodes on AppLocalizations {
         _ => code,
       };
 
+  String objectType(String code) => switch (code) {
+        'office' => objectTypeOffice,
+        'hotel' => objectTypeHotel,
+        'apartments' => objectTypeApartments,
+        'warehouse' => objectTypeWarehouse,
+        _ => objectTypeOther,
+      };
+
   String role(UserRole r) => switch (r) {
         UserRole.admin => roleAdmin,
         UserRole.manager => roleManager,

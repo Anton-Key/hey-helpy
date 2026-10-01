@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n_ext.dart';
+
 /// Заготовка раздела отчётов (web, Фаза 1).
 /// Таблицы/графики по заявкам с фильтрами + экспорт CSV/XLSX/PDF/почта.
 class ReportsScreen extends StatelessWidget {
@@ -8,23 +10,22 @@ class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Отчёты')),
-      body: const Center(
+      appBar: AppBar(title: Text(context.l10n.navReports)),
+      body: Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.insert_chart_outlined, size: 56),
-              SizedBox(height: 16),
+              const Icon(Icons.insert_chart_outlined, size: 56),
+              const SizedBox(height: 16),
               Text(
-                'Отчёты появятся в Фазе 1',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                context.l10n.reportsComingTitle,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'Фильтры: объект, тип работ, исполнитель, период, время.\n'
-                'Экспорт: CSV / XLSX / PDF / отправка на почту.',
+                context.l10n.reportsComingBody,
                 textAlign: TextAlign.center,
               ),
             ],

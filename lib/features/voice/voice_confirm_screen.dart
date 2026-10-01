@@ -73,7 +73,7 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
   /// слова, чтобы «переговорной» совпало с «Переговорная».
   static String? _matchWhere(String? hint, List<Place> places, List<Obj> objects) {
     if (hint == null || hint.trim().isEmpty) return null;
-    final words = hint.toLowerCase().split(RegExp(r'[^a-zа-яё0-9]+'))
+    final words = hint.toLowerCase().split(RegExp(r'[^\p{L}\p{N}]+', unicode: true))
         .where((w) => w.length >= 3 || RegExp(r'^\d+$').hasMatch(w))
         .map((w) => w.length > 5 ? w.substring(0, 5) : w)
         .toSet();

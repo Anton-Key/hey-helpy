@@ -1,12 +1,27 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Ошибка онбординга с понятным пользователю текстом.
+/// Причина ошибки онбординга. Текст для пользователя подбирает экран
+/// на языке интерфейса (см. onboarding_screen.dart).
+enum OnboardingError {
+  notAuthenticated,
+  companyNameRequired,
+  alreadyInCompany,
+  inviteNotFound,
+  inviteUsed,
+  inviteExpired,
+  otherCompany,
+  adminOnly,
+  ownRole,
+  profileNotFound,
+  unknown,
+}
+
 class OnboardingException implements Exception {
-  OnboardingException(this.message);
-  final String message;
+  OnboardingException(this.error);
+  final OnboardingError error;
 
   @override
-  String toString() => message;
+  String toString() => 'OnboardingException($error)';
 }
 
 /// Онбординг и управление участниками компании.
@@ -73,22 +88,23 @@ class OnboardingRepository {
     }
   }
 
-  static String _humanize(String raw) {
+  /// Сообщения серверных функций (миграция 0003) → причина ошибки.
+  static OnboardingError _humanize(String raw) {
     const map = {
-      'not authenticated': 'Войдите в аккаунт, чтобы продолжить.',
-      'company name is required': 'Укажите название компании.',
-      'user already belongs to a company': 'Вы уже состоите в компании.',
-      'invite not found': 'Код приглашения не найден. Проверьте, что он введён полностью.',
-      'invite already used': 'Этот код приглашения уже использован.',
-      'invite expired': 'Срок действия приглашения истёк. Попросите новый код.',
-      'user belongs to another company': 'Ваш аккаунт уже привязан к другой компании.',
-      'forbidden: admin only': 'Менять роли может только администратор.',
-      'cannot change own role': 'Нельзя изменить собственную роль.',
-      'profile not found in your company': 'Пользователь не найден в вашей компании.',
+      'not authenticated': OnboardingError.notAuthenticated,
+      'company name is required': OnboardingError.companyNameRequired,
+      'user already belongs to a company': OnboardingError.alreadyInCompany,
+      'invite not found': OnboardingError.inviteNotFound,
+      'invite already used': OnboardingError.inviteUsed,
+      'invite expired': OnboardingError.inviteExpired,
+      'user belongs to another company': OnboardingError.otherCompany,
+      'forbidden: admin only': OnboardingError.adminOnly,
+      'cannot change own role': OnboardingError.ownRole,
+      'profile not found in your company': OnboardingError.profileNotFound,
     };
     for (final e in map.entries) {
       if (raw.contains(e.key)) return e.value;
     }
-    return 'Не удалось выполнить действие. Попробуйте ещё раз.';
+    return OnboardingError.unknown;
   }
 }

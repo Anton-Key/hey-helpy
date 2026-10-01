@@ -1081,6 +1081,342 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не удалось отправить заявку. Проверьте интернет и попробуйте ещё раз.'**
   String get voiceSendFailed;
+
+  /// No description provided for @objectTypeOffice.
+  ///
+  /// In ru, this message translates to:
+  /// **'Офис'**
+  String get objectTypeOffice;
+
+  /// No description provided for @objectTypeHotel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Гостиница'**
+  String get objectTypeHotel;
+
+  /// No description provided for @objectTypeApartments.
+  ///
+  /// In ru, this message translates to:
+  /// **'Апартаменты'**
+  String get objectTypeApartments;
+
+  /// No description provided for @objectTypeWarehouse.
+  ///
+  /// In ru, this message translates to:
+  /// **'Склад'**
+  String get objectTypeWarehouse;
+
+  /// No description provided for @objectTypeOther.
+  ///
+  /// In ru, this message translates to:
+  /// **'Другое'**
+  String get objectTypeOther;
+
+  /// No description provided for @commonAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить'**
+  String get commonAdd;
+
+  /// No description provided for @objectsLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить объекты. Проверьте интернет и попробуйте ещё раз.'**
+  String get objectsLoadFailed;
+
+  /// No description provided for @objectsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока нет объектов.\nНажмите «Добавить».'**
+  String get objectsEmpty;
+
+  /// No description provided for @objectFormTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая локация'**
+  String get objectFormTitle;
+
+  /// No description provided for @objectFormName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Наименование локации'**
+  String get objectFormName;
+
+  /// No description provided for @objectFormNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, БЦ «Северная башня»'**
+  String get objectFormNameHint;
+
+  /// No description provided for @objectFormAddress.
+  ///
+  /// In ru, this message translates to:
+  /// **'Адрес'**
+  String get objectFormAddress;
+
+  /// No description provided for @objectFormAddressHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Город, улица, дом'**
+  String get objectFormAddressHint;
+
+  /// No description provided for @objectFormType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип'**
+  String get objectFormType;
+
+  /// No description provided for @objectFormNameRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напишите название'**
+  String get objectFormNameRequired;
+
+  /// No description provided for @objectAdded.
+  ///
+  /// In ru, this message translates to:
+  /// **'Локация добавлена'**
+  String get objectAdded;
+
+  /// No description provided for @contractorsLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить подрядчиков. Проверьте интернет и попробуйте ещё раз.'**
+  String get contractorsLoadFailed;
+
+  /// No description provided for @contractorsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока нет подрядчиков.\nНажмите «Добавить».'**
+  String get contractorsEmpty;
+
+  /// No description provided for @contractorFormTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый исполнитель'**
+  String get contractorFormTitle;
+
+  /// No description provided for @contractorFormName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Наименование организации'**
+  String get contractorFormName;
+
+  /// No description provided for @contractorFormNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, СтройКом'**
+  String get contractorFormNameHint;
+
+  /// No description provided for @contractorFormNameRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напишите название организации'**
+  String get contractorFormNameRequired;
+
+  /// No description provided for @contractorAdded.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнитель добавлен'**
+  String get contractorAdded;
+
+  /// No description provided for @saveFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.'**
+  String get saveFailed;
+
+  /// No description provided for @onboardingTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начало работы'**
+  String get onboardingTitle;
+
+  /// No description provided for @onboardingChoose.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите, как вы будете работать в {appName}'**
+  String onboardingChoose(String appName);
+
+  /// No description provided for @onboardingCreateTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать компанию'**
+  String get onboardingCreateTitle;
+
+  /// No description provided for @onboardingCreateSubtitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Для владельцев и управляющих объектами. Вы станете администратором.'**
+  String get onboardingCreateSubtitle;
+
+  /// No description provided for @onboardingCompanyName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название компании'**
+  String get onboardingCompanyName;
+
+  /// No description provided for @onboardingCreate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать'**
+  String get onboardingCreate;
+
+  /// No description provided for @onboardingInviteTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'У меня есть код приглашения'**
+  String get onboardingInviteTitle;
+
+  /// No description provided for @onboardingInviteSubtitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Для исполнителей подрядных организаций.'**
+  String get onboardingInviteSubtitle;
+
+  /// No description provided for @onboardingInviteCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код приглашения'**
+  String get onboardingInviteCode;
+
+  /// No description provided for @onboardingJoin.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вступить'**
+  String get onboardingJoin;
+
+  /// No description provided for @onboardingNoConnection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет связи с сервером. Попробуйте ещё раз.'**
+  String get onboardingNoConnection;
+
+  /// No description provided for @onbErrNotAuthenticated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Войдите в аккаунт, чтобы продолжить.'**
+  String get onbErrNotAuthenticated;
+
+  /// No description provided for @onbErrCompanyNameRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите название компании.'**
+  String get onbErrCompanyNameRequired;
+
+  /// No description provided for @onbErrAlreadyInCompany.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы уже состоите в компании.'**
+  String get onbErrAlreadyInCompany;
+
+  /// No description provided for @onbErrInviteNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код приглашения не найден. Проверьте, что он введён полностью.'**
+  String get onbErrInviteNotFound;
+
+  /// No description provided for @onbErrInviteUsed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этот код приглашения уже использован.'**
+  String get onbErrInviteUsed;
+
+  /// No description provided for @onbErrInviteExpired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок действия приглашения истёк. Попросите новый код.'**
+  String get onbErrInviteExpired;
+
+  /// No description provided for @onbErrOtherCompany.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш аккаунт уже привязан к другой компании.'**
+  String get onbErrOtherCompany;
+
+  /// No description provided for @onbErrAdminOnly.
+  ///
+  /// In ru, this message translates to:
+  /// **'Менять роли может только администратор.'**
+  String get onbErrAdminOnly;
+
+  /// No description provided for @onbErrOwnRole.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нельзя изменить собственную роль.'**
+  String get onbErrOwnRole;
+
+  /// No description provided for @onbErrProfileNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пользователь не найден в вашей компании.'**
+  String get onbErrProfileNotFound;
+
+  /// No description provided for @onbErrUnknown.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось выполнить действие. Попробуйте ещё раз.'**
+  String get onbErrUnknown;
+
+  /// No description provided for @adminTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Администрирование'**
+  String get adminTitle;
+
+  /// No description provided for @adminObjects.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объекты и геолокация'**
+  String get adminObjects;
+
+  /// No description provided for @adminDepartments.
+  ///
+  /// In ru, this message translates to:
+  /// **'Направления / департаменты'**
+  String get adminDepartments;
+
+  /// No description provided for @adminAssets.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование и активы'**
+  String get adminAssets;
+
+  /// No description provided for @adminContractors.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядные организации'**
+  String get adminContractors;
+
+  /// No description provided for @adminInvites.
+  ///
+  /// In ru, this message translates to:
+  /// **'Инвайт-ссылки исполнителям'**
+  String get adminInvites;
+
+  /// No description provided for @adminUsers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пользователи и роли'**
+  String get adminUsers;
+
+  /// No description provided for @adminComingSoon.
+  ///
+  /// In ru, this message translates to:
+  /// **'Появится в Фазе 1'**
+  String get adminComingSoon;
+
+  /// No description provided for @reportsComingTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отчёты появятся в Фазе 1'**
+  String get reportsComingTitle;
+
+  /// No description provided for @reportsComingBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту.'**
+  String get reportsComingBody;
 }
 
 class _AppLocalizationsDelegate

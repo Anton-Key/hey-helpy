@@ -546,4 +546,185 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get voiceSendFailed =>
       'Couldn\'t send the request. Check your connection and try again.';
+
+  @override
+  String get objectTypeOffice => 'Office';
+
+  @override
+  String get objectTypeHotel => 'Hotel';
+
+  @override
+  String get objectTypeApartments => 'Apartments';
+
+  @override
+  String get objectTypeWarehouse => 'Warehouse';
+
+  @override
+  String get objectTypeOther => 'Other';
+
+  @override
+  String get commonAdd => 'Add';
+
+  @override
+  String get objectsLoadFailed =>
+      'Couldn\'t load sites. Check your connection and try again.';
+
+  @override
+  String get objectsEmpty => 'No sites yet.\nTap “Add”.';
+
+  @override
+  String get objectFormTitle => 'New location';
+
+  @override
+  String get objectFormName => 'Location name';
+
+  @override
+  String get objectFormNameHint => 'For example, North Tower business center';
+
+  @override
+  String get objectFormAddress => 'Address';
+
+  @override
+  String get objectFormAddressHint => 'City, street, building';
+
+  @override
+  String get objectFormType => 'Type';
+
+  @override
+  String get objectFormNameRequired => 'Enter a name';
+
+  @override
+  String get objectAdded => 'Location added';
+
+  @override
+  String get contractorsLoadFailed =>
+      'Couldn\'t load contractors. Check your connection and try again.';
+
+  @override
+  String get contractorsEmpty => 'No contractors yet.\nTap “Add”.';
+
+  @override
+  String get contractorFormTitle => 'New contractor';
+
+  @override
+  String get contractorFormName => 'Company name';
+
+  @override
+  String get contractorFormNameHint => 'For example, BuildCo';
+
+  @override
+  String get contractorFormNameRequired => 'Enter the company name';
+
+  @override
+  String get contractorAdded => 'Contractor added';
+
+  @override
+  String get saveFailed =>
+      'Couldn\'t save. Check your connection and try again.';
+
+  @override
+  String get onboardingTitle => 'Getting started';
+
+  @override
+  String onboardingChoose(String appName) {
+    return 'Choose how you\'ll work in $appName';
+  }
+
+  @override
+  String get onboardingCreateTitle => 'Create a company';
+
+  @override
+  String get onboardingCreateSubtitle =>
+      'For property owners and managers. You\'ll become the administrator.';
+
+  @override
+  String get onboardingCompanyName => 'Company name';
+
+  @override
+  String get onboardingCreate => 'Create';
+
+  @override
+  String get onboardingInviteTitle => 'I have an invite code';
+
+  @override
+  String get onboardingInviteSubtitle =>
+      'For technicians of contractor companies.';
+
+  @override
+  String get onboardingInviteCode => 'Invite code';
+
+  @override
+  String get onboardingJoin => 'Join';
+
+  @override
+  String get onboardingNoConnection =>
+      'Can\'t reach the server. Please try again.';
+
+  @override
+  String get onbErrNotAuthenticated => 'Sign in to continue.';
+
+  @override
+  String get onbErrCompanyNameRequired => 'Enter the company name.';
+
+  @override
+  String get onbErrAlreadyInCompany => 'You already belong to a company.';
+
+  @override
+  String get onbErrInviteNotFound =>
+      'Invite code not found. Check that you entered all of it.';
+
+  @override
+  String get onbErrInviteUsed => 'This invite code has already been used.';
+
+  @override
+  String get onbErrInviteExpired =>
+      'This invite has expired. Ask for a new code.';
+
+  @override
+  String get onbErrOtherCompany =>
+      'Your account is already linked to another company.';
+
+  @override
+  String get onbErrAdminOnly => 'Only an administrator can change roles.';
+
+  @override
+  String get onbErrOwnRole => 'You can\'t change your own role.';
+
+  @override
+  String get onbErrProfileNotFound => 'User not found in your company.';
+
+  @override
+  String get onbErrUnknown =>
+      'Couldn\'t complete the action. Please try again.';
+
+  @override
+  String get adminTitle => 'Administration';
+
+  @override
+  String get adminObjects => 'Sites and geolocation';
+
+  @override
+  String get adminDepartments => 'Departments';
+
+  @override
+  String get adminAssets => 'Equipment and assets';
+
+  @override
+  String get adminContractors => 'Contractor companies';
+
+  @override
+  String get adminInvites => 'Invite links for technicians';
+
+  @override
+  String get adminUsers => 'Users and roles';
+
+  @override
+  String get adminComingSoon => 'Coming in Phase 1';
+
+  @override
+  String get reportsComingTitle => 'Reports are coming in Phase 1';
+
+  @override
+  String get reportsComingBody =>
+      'Filters: site, work type, contractor, period, time.\nExport: CSV / XLSX / PDF / email.';
 }

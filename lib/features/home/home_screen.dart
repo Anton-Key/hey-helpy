@@ -202,7 +202,7 @@ class _Header extends StatelessWidget {
     final main = cut < 0 ? name : name.substring(cut + 1);
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft,
+        gradient: LinearGradient(begin: AlignmentDirectional.topEnd, end: AlignmentDirectional.bottomStart,
             colors: HeyHelpyTheme.headerGradient),
         border: Border(bottom: BorderSide(color: Color(0xFFE4F3F0)))),
       child: SafeArea(bottom: false,

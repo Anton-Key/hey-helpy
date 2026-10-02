@@ -46,3 +46,10 @@ app.*.map.json
 
 # Archives
 *.zip
+
+# Ключи и локальные настройки — не в git
+env.json
+.env
+*.env
+.env.*
+.claude/settings.local.json

@@ -1,0 +1,80 @@
+# Веб-версия Hey Helpy на GitHub Pages: https://anton-key.github.io/hey-helpy/
+# Сборка — при каждом пуше в main (и вручную: Actions → "Deploy web" → Run workflow).
+# Публикация — только если в репозитории включена переменная WEB_PUBLISH_ENABLED = true
+# (Settings → Secrets and variables → Actions → Variables). Пока не применены исправления
+# безопасности (миграция 0008), переменная должна быть выключена. Подробно — CLAUDE.md, «Веб-ссылка».
+name: Deploy web
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # В веб-сборку попадает только публичный (anon) ключ: он виден любому, кто откроет сайт.
+      # Ключ service_role / secret открыл бы всю базу в обход RLS — такой ключ останавливает сборку.
+      - name: Check Supabase key is public (anon)
+        env:
+          KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          if [ -z "$KEY" ] || [ -z "$URL" ]; then
+            echo "::error::Нет секретов SUPABASE_URL / SUPABASE_ANON_KEY"; exit 1
+          fi
+          case "$KEY" in
+            sb_secret_*) echo "::error::В SUPABASE_ANON_KEY лежит секретный ключ, нужен publishable/anon"; exit 1 ;;
+            sb_publishable_*) exit 0 ;;
+          esac
+          payload=$(echo "$KEY" | cut -d. -f2 | tr '_-' '/+')
+          while [ $(( ${#payload} % 4 )) -ne 0 ]; do payload="$payload="; done
+          role=$(echo "$payload" | base64 -d 2>/dev/null | jq -r '.role // empty')
+          if [ "$role" != "anon" ]; then
+            echo "::error::SUPABASE_ANON_KEY не является anon-ключом (role=$role)"; exit 1
+          fi
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build web
+        run: >
+          flutter build web --release
+          --base-href /hey-helpy/
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+
+      # Если адрес внутри приложения открыть напрямую — Pages отдаст приложение, а не ошибку.
+      - run: cp build/web/index.html build/web/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    if: vars.WEB_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

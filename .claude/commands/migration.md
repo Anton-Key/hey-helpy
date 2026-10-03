@@ -36,8 +36,9 @@ commit;
 Правила (из CLAUDE.md): повторный запуск безопасен (`if not exists`, `create or replace`,
 `drop ... if exists` перед `create policy`/`create trigger`); права — через RLS и триггеры;
 у новых таблиц с данными компании — `enable row level security` и политики по `company_id`;
-у `security definer` функций — `set search_path = public` и `revoke execute ... from anon`
-если функция не для анонимов.
+у `security definer` функций — `set search_path = public`; у каждой новой функции —
+`revoke all ... from public, anon` и явный `grant execute ... to authenticated`, если её вызывает
+приложение или политика (после 0008 новые функции по умолчанию закрыты для всех).
 
 Если в запросе есть, что именно менять — напиши изменения. Если нет — оставь заготовку
 и спроси, что должно быть внутри.

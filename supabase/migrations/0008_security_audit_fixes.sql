@@ -2,13 +2,15 @@
 -- hey_helpy · Миграция 0008: исправления безопасности из аудита
 -- 1) Заявки: исполнитель меняет у своей заявки только статус; заявитель —
 --    только содержание своей заявки; назначение, обязательное фото, время
---    и приёмку меняет только менеджер (или правила в базе).
+--    и приёмку меняет только менеджер (или правила в базе). Обязательное
+--    фото у новой заявки берётся из слоя, а не от приложения.
 -- 2) Чек-листы и история заявки видны тем, кто видит саму заявку.
 -- 3) Приглашения создаёт и видит только менеджер; срок действия по умолчанию.
 -- 4) Справочники (объекты, помещения, подрядчики, исполнители и т. д.)
 --    видит вся компания, меняет только менеджер.
 -- 5) Служебные функции нельзя вызвать без входа; триггерные — вообще
---    нельзя вызвать напрямую.
+--    нельзя вызвать напрямую. Новые функции по умолчанию закрыты —
+--    каждую нужно явно открыть для authenticated (см. CLAUDE.md).
 --
 -- Зависит от: 0004, 0006 (политики фото и правила статусов).
 -- Применяется вручную: Supabase → SQL Editor. Безопасно запускать повторно.
@@ -49,6 +51,13 @@ begin
   if public.is_manager() then return new; end if;
 
   if tg_op = 'INSERT' then
+    -- Обязательное фото и скан задаёт не автор: сбрасываем к значению столбца
+    -- по умолчанию (false), затем trg_wo_layer_and_route (срабатывает после
+    -- этого триггера) берёт requires_photo из настроек слоя.
+    -- company_id и created_by подменить нельзя: их проверяет политика wo_insert
+    -- (своя компания, created_by = auth.uid()) уже после всех BEFORE-триггеров.
+    new.requires_photo         := false;
+    new.requires_scan          := false;
     -- новая заявка всегда начинается с «новой»; назначает правило слоя
     -- (trg_wo_layer_and_route) или менеджер, а не сам автор
     new.status                 := 'new';
@@ -388,8 +397,14 @@ grant execute on function public.my_role()           to authenticated;
 grant execute on function public.is_manager()        to authenticated;
 grant execute on function public.my_contractor_ids() to authenticated;
 
--- Новые функции по умолчанию анонимам недоступны (как таблицы — 0003).
-alter default privileges for role postgres in schema public revoke execute on functions from public;
+-- Новые функции по умолчанию никому не открыты (как таблицы для anon — 0003).
+-- Каждую новую функцию миграция открывает явно:
+--   revoke all on function public.f(...) from public, anon;
+--   grant execute on function public.f(...) to authenticated;  -- если её зовёт приложение или политика
+-- Триггерным функциям grant не нужен.
+-- Право «для всех» (PUBLIC) Postgres даёт глобально, а не по схеме — отзываем глобально.
+alter default privileges for role postgres revoke execute on functions from public;
 alter default privileges for role postgres in schema public revoke execute on functions from anon;
+alter default privileges for role postgres in schema public revoke execute on functions from authenticated;
 
 commit;

@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Проверить файл
         run: bash .github/scripts/check-migration.sh
@@ -71,7 +71,7 @@ jobs:
     timeout-minutes: 15
     environment: production-db
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Повторная проверка: этот шаг идёт на отдельной машине.
       - name: Проверить файл

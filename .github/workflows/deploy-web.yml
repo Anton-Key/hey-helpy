@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # В веб-сборку попадает только публичный (anon) ключ: он виден любому, кто откроет сайт.
       # Ключ service_role / secret открыл бы всю базу в обход RLS — такой ключ останавливает сборку.

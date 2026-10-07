@@ -787,4 +787,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoMockLocation => 'Location may be spoofed';
+
+  @override
+  String get visitsTitle => 'Visits';
+
+  @override
+  String visitOnSiteRange(String from, String to) {
+    return 'On site $from–$to';
+  }
+
+  @override
+  String visitOnSiteSince(String from) {
+    return 'On site since $from';
+  }
+
+  @override
+  String get visitInGeofence => 'inside geofence ✓';
+
+  @override
+  String get visitOutsideGeofence => 'outside geofence ⚠';
+
+  @override
+  String get visitGeofenceUnknown => 'geofence not checked';
+
+  @override
+  String visitDistance(String meters) {
+    return '$meters m from the site';
+  }
+
+  @override
+  String get visitMockLocation => 'Possible GPS spoofing';
+
+  @override
+  String get visitOutsideWarning =>
+      'The executor checked in outside the site geofence or with spoofed GPS. Please check they were on site.';
+
+  @override
+  String get visitsLoadFailed => 'Couldn\'t load visits';
+
+  @override
+  String get visitNotRecorded =>
+      'Work started, but the visit wasn\'t recorded. Check your internet connection.';
+
+  @override
+  String get visitNoLocation =>
+      'Work started without location. Turn it on so the visit can be checked against the geofence.';
 }

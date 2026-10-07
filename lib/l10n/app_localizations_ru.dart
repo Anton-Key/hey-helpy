@@ -789,4 +789,49 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get photoMockLocation => 'Координаты могли быть подменены';
+
+  @override
+  String get visitsTitle => 'Посещения';
+
+  @override
+  String visitOnSiteRange(String from, String to) {
+    return 'На объекте $from–$to';
+  }
+
+  @override
+  String visitOnSiteSince(String from) {
+    return 'На объекте с $from';
+  }
+
+  @override
+  String get visitInGeofence => 'в геозоне ✓';
+
+  @override
+  String get visitOutsideGeofence => 'вне геозоны ⚠';
+
+  @override
+  String get visitGeofenceUnknown => 'геозона не проверена';
+
+  @override
+  String visitDistance(String meters) {
+    return '$meters м от объекта';
+  }
+
+  @override
+  String get visitMockLocation => 'Подозрение на подмену GPS';
+
+  @override
+  String get visitOutsideWarning =>
+      'Исполнитель отметился вне геозоны объекта или с подменой GPS. Проверьте, был ли он на месте.';
+
+  @override
+  String get visitsLoadFailed => 'Не удалось загрузить посещения';
+
+  @override
+  String get visitNotRecorded =>
+      'Работа начата, но посещение не отмечено. Проверьте интернет.';
+
+  @override
+  String get visitNoLocation =>
+      'Работа начата без геолокации. Включите её, чтобы посещение проверялось по геозоне.';
 }

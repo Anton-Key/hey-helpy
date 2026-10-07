@@ -335,5 +335,41 @@
   },
   "photoNoLocation": "Без геометки",
   "photoWithLocation": "С геометкой",
-  "photoMockLocation": "Координаты могли быть подменены"
+  "photoMockLocation": "Координаты могли быть подменены",
+  "visitsTitle": "Посещения",
+  "visitOnSiteRange": "На объекте {from}–{to}",
+  "@visitOnSiteRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "visitOnSiteSince": "На объекте с {from}",
+  "@visitOnSiteSince": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      }
+    }
+  },
+  "visitInGeofence": "в геозоне ✓",
+  "visitOutsideGeofence": "вне геозоны ⚠",
+  "visitGeofenceUnknown": "геозона не проверена",
+  "visitDistance": "{meters} м от объекта",
+  "@visitDistance": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "visitMockLocation": "Подозрение на подмену GPS",
+  "visitOutsideWarning": "Исполнитель отметился вне геозоны объекта или с подменой GPS. Проверьте, был ли он на месте.",
+  "visitsLoadFailed": "Не удалось загрузить посещения",
+  "visitNotRecorded": "Работа начата, но посещение не отмечено. Проверьте интернет.",
+  "visitNoLocation": "Работа начата без геолокации. Включите её, чтобы посещение проверялось по геозоне."
 }

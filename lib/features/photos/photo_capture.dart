@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/location.dart';
 import 'photo_repository.dart';
 
 enum CaptureProblem { cameraDenied, failed }
@@ -17,8 +18,8 @@ class CaptureException implements Exception {
 Future<CapturedPhoto?> capturePhoto() async {
   // Сначала разрешение на геолокацию (отдельным окном, до камеры),
   // затем координаты ищутся, пока человек снимает.
-  final canLocate = await _ensureLocationPermission();
-  final locationFuture = canLocate ? _currentPosition() : Future<Position?>.value(null);
+  final canLocate = await ensureLocationPermission();
+  final locationFuture = canLocate ? currentPosition() : Future<Position?>.value(null);
   final XFile? file;
   try {
     file = await ImagePicker().pickImage(
@@ -39,31 +40,4 @@ Future<CapturedPhoto?> capturePhoto() async {
   final pos = await locationFuture;
   return CapturedPhoto(bytes: bytes, takenAt: takenAt,
       lat: pos?.latitude, lng: pos?.longitude, mockLocation: pos?.isMocked ?? false);
-}
-
-Future<bool> _ensureLocationPermission() async {
-  try {
-    if (!await Geolocator.isLocationServiceEnabled()) return false;
-    var perm = await Geolocator.checkPermission();
-    if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
-    return perm == LocationPermission.whileInUse || perm == LocationPermission.always;
-  } catch (_) {
-    return false;
-  }
-}
-
-/// Текущее местоположение или null (не успели за 10 секунд и нет
-/// последнего известного). Фото загружается и без координат.
-Future<Position?> _currentPosition() async {
-  try {
-    return await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 10)),
-    );
-  } catch (_) {
-    try {
-      return await Geolocator.getLastKnownPosition();
-    } catch (_) {
-      return null;
-    }
-  }
 }

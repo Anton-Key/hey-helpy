@@ -1525,6 +1525,78 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Координаты могли быть подменены'**
   String get photoMockLocation;
+
+  /// No description provided for @visitsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Посещения'**
+  String get visitsTitle;
+
+  /// No description provided for @visitOnSiteRange.
+  ///
+  /// In ru, this message translates to:
+  /// **'На объекте {from}–{to}'**
+  String visitOnSiteRange(String from, String to);
+
+  /// No description provided for @visitOnSiteSince.
+  ///
+  /// In ru, this message translates to:
+  /// **'На объекте с {from}'**
+  String visitOnSiteSince(String from);
+
+  /// No description provided for @visitInGeofence.
+  ///
+  /// In ru, this message translates to:
+  /// **'в геозоне ✓'**
+  String get visitInGeofence;
+
+  /// No description provided for @visitOutsideGeofence.
+  ///
+  /// In ru, this message translates to:
+  /// **'вне геозоны ⚠'**
+  String get visitOutsideGeofence;
+
+  /// No description provided for @visitGeofenceUnknown.
+  ///
+  /// In ru, this message translates to:
+  /// **'геозона не проверена'**
+  String get visitGeofenceUnknown;
+
+  /// No description provided for @visitDistance.
+  ///
+  /// In ru, this message translates to:
+  /// **'{meters} м от объекта'**
+  String visitDistance(String meters);
+
+  /// No description provided for @visitMockLocation.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подозрение на подмену GPS'**
+  String get visitMockLocation;
+
+  /// No description provided for @visitOutsideWarning.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнитель отметился вне геозоны объекта или с подменой GPS. Проверьте, был ли он на месте.'**
+  String get visitOutsideWarning;
+
+  /// No description provided for @visitsLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить посещения'**
+  String get visitsLoadFailed;
+
+  /// No description provided for @visitNotRecorded.
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа начата, но посещение не отмечено. Проверьте интернет.'**
+  String get visitNotRecorded;
+
+  /// No description provided for @visitNoLocation.
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа начата без геолокации. Включите её, чтобы посещение проверялось по геозоне.'**
+  String get visitNoLocation;
 }
 
 class _AppLocalizationsDelegate

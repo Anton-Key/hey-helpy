@@ -237,5 +237,17 @@
   "photoTakenAt": "Taken {date}",
   "photoNoLocation": "No location",
   "photoWithLocation": "With location",
-  "photoMockLocation": "Location may be spoofed"
+  "photoMockLocation": "Location may be spoofed",
+  "visitsTitle": "Visits",
+  "visitOnSiteRange": "On site {from}–{to}",
+  "visitOnSiteSince": "On site since {from}",
+  "visitInGeofence": "inside geofence ✓",
+  "visitOutsideGeofence": "outside geofence ⚠",
+  "visitGeofenceUnknown": "geofence not checked",
+  "visitDistance": "{meters} m from the site",
+  "visitMockLocation": "Possible GPS spoofing",
+  "visitOutsideWarning": "The executor checked in outside the site geofence or with spoofed GPS. Please check they were on site.",
+  "visitsLoadFailed": "Couldn't load visits",
+  "visitNotRecorded": "Work started, but the visit wasn't recorded. Check your internet connection.",
+  "visitNoLocation": "Work started without location. Turn it on so the visit can be checked against the geofence."
 }

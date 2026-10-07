@@ -5,11 +5,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/directional.dart';
 import '../../core/l10n_ext.dart';
+import '../../core/location.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import '../photos/photo_capture.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
+import '../visits/visit_repository.dart';
+import '../visits/visit_section.dart';
 import '../voice/voice_record_screen.dart';
 import '../voice/wake_word_service.dart';
 
@@ -373,6 +376,10 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   List<WorkPhoto> _photos = const [];
   bool _photosFailed = false;
   bool _uploading = false;
+  final _visitRepo = VisitRepository();
+  List<Visit> _visits = const [];
+  bool _visitsFailed = false;
+  bool _starting = false;
 
   @override
   void initState() {
@@ -386,7 +393,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       final d = await widget.repo.detail(widget.order.id);
       if (!mounted) return;
       setState(() { _d = d; _loading = false; });
-      await _loadPhotos();
+      await Future.wait([_loadPhotos(), if (_isManager) _loadVisits()]);
     } catch (e) {
       debugPrint('WorkOrderDetail: $e');
       if (!mounted) return;
@@ -401,6 +408,53 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     } catch (e) {
       debugPrint('photos: $e');
       if (mounted) setState(() => _photosFailed = true);
+    }
+  }
+
+  Future<void> _loadVisits() async {
+    try {
+      final visits = await _visitRepo.list(widget.order.id);
+      if (mounted) setState(() { _visits = visits; _visitsFailed = false; });
+    } catch (e) {
+      debugPrint('visits: $e');
+      if (mounted) setState(() => _visitsFailed = true);
+    }
+  }
+
+  /// «Начать работу»: статус «в работе» и, у исполнителя, отметка посещения
+  /// с координатами. Вне геозоны работать можно — база лишь помечает визит.
+  Future<void> _startWork() async {
+    final l = context.l10n;
+    final d = _d!;
+    final recordVisit = _isExecutor && d['object_id'] != null;
+    setState(() => _starting = true);
+    try {
+      // Координаты ищутся, пока меняется статус.
+      final positionFuture = recordVisit
+          ? ensureLocationPermission().then((ok) => ok ? currentPosition() : null)
+          : Future.value(null);
+      try {
+        await widget.repo.setStatus(widget.order.id, 'in_progress');
+      } catch (e) {
+        _ok(l.statusError(e));
+        return;
+      }
+      var message = l.toastInProgress;
+      if (recordVisit) {
+        final position = await positionFuture;
+        try {
+          await _visitRepo.start(workOrderId: widget.order.id,
+              companyId: widget.companyId ?? (d['company_id'] as String), position: position);
+          if (position == null) message = l.visitNoLocation;
+        } catch (e) {
+          debugPrint('visit: $e');
+          message = l.visitNotRecorded;
+        }
+      }
+      await _load();
+      _ok(message);
+    } finally {
+      if (mounted) setState(() => _starting = false);
     }
   }
 
@@ -596,6 +650,10 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
             onAddAfter: _canAddAfter(status) ? () => _addPhoto('after') : null,
           ),
         ],
+        if (_isManager && (_visits.isNotEmpty || _visitsFailed)) ...[
+          const SizedBox(height: 20),
+          VisitsSection(visits: _visits, loadFailed: _visitsFailed),
+        ],
         if (_actions(status, contractorId, brand).isNotEmpty) ...[
           const SizedBox(height: 24),
           Text(l.actionsTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
@@ -627,7 +685,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         ),
       if (canWork && (status == 'new' || status == 'assigned' || status == 'returned'))
         FilledButton.icon(
-          onPressed: () => _setStatus('in_progress', l.toastInProgress),
+          onPressed: _starting ? null : _startWork,
           style: filled,
           icon: const Icon(Icons.play_arrow_rounded, size: 18),
           label: Text(status == 'returned' ? l.actionRestart : l.actionStart),

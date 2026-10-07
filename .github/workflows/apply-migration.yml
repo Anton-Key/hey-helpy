@@ -29,6 +29,7 @@ concurrency:
 
 env:
   # Имя файла — только через переменную окружения, не подставляется в команды напрямую.
+  # Скрипт проверки обрезает пробелы по краям и передаёт дальше MIGRATION_FILE.
   FILE: ${{ inputs.file }}
 
 jobs:
@@ -44,8 +45,8 @@ jobs:
 
       - name: Полный текст миграции
         run: |
-          echo "===== supabase/migrations/$FILE ====="
-          cat -n -- "supabase/migrations/$FILE"
+          echo "===== supabase/migrations/$MIGRATION_FILE ====="
+          cat -n -- "supabase/migrations/$MIGRATION_FILE"
           echo "===== конец файла ====="
 
       - name: Сводка
@@ -54,7 +55,7 @@ jobs:
           {
             echo "## Проверка миграции"
             echo
-            echo "Файл: \`${FILE}\`"
+            echo "Файл: \`${MIGRATION_FILE:-$FILE}\`"
             echo
             if [ "${{ job.status }}" = "success" ]; then
               echo "✅ Проверка пройдена. Прочитайте текст файла в логе шага «Полный текст миграции» и одобрите применение (Review deployments → production-db → Approve)."
@@ -103,9 +104,9 @@ jobs:
               if part:
                   print(f"::add-mask::{unquote(part)}")
           PY
-          echo "Применяю supabase/migrations/$FILE …"
+          echo "Применяю supabase/migrations/$MIGRATION_FILE …"
           psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --single-transaction \
-            -f "supabase/migrations/$FILE"
+            -f "supabase/migrations/$MIGRATION_FILE"
 
       - name: Сводка
         if: always()
@@ -113,11 +114,11 @@ jobs:
           {
             echo "## Применение миграции"
             echo
-            echo "Файл: \`${FILE}\`"
+            echo "Файл: \`${MIGRATION_FILE:-$FILE}\`"
             echo
             case "${{ steps.apply.outcome }}" in
               success)
-                echo "✅ Миграция применена. Напишите Claude Code: «применена ${FILE%%_*}» — он допишет номер в CLAUDE.md." ;;
+                echo "✅ Миграция применена. Напишите Claude Code: «применена ${MIGRATION_FILE%%_*}» — он допишет номер в CLAUDE.md." ;;
               failure)
                 echo "❌ Ошибка — база не изменилась (вся миграция откатилась). Текст ошибки — в логе шага «Применить миграцию»." ;;
               *)

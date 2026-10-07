@@ -1,0 +1,126 @@
+# Применение одной миграции базы из supabase/migrations/ — только вручную и только
+# после одобрения владельца: Actions → "Apply migration" → Run workflow → имя файла.
+#
+# Два шага:
+#   1. check — без доступа к базе: проверяет имя и номер файла, печатает его полный текст.
+#      Прочитайте лог этого шага, прежде чем одобрять.
+#   2. apply — в окружении production-db (там секрет SUPABASE_DB_URL и обязательное
+#      одобрение). Запускается, только когда вы нажмёте Approve; выполняет файл через psql
+#      одной транзакцией.
+#
+# Claude Code этот workflow НЕ запускает (см. CLAUDE.md → «Миграции»).
+name: Apply migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "Имя файла миграции из supabase/migrations/, например 0011_example.sql"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# Две миграции одновременно не применяются.
+concurrency:
+  group: apply-migration
+  cancel-in-progress: false
+
+env:
+  # Имя файла — только через переменную окружения, не подставляется в команды напрямую.
+  FILE: ${{ inputs.file }}
+
+jobs:
+  check:
+    name: Проверка и текст миграции
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Проверить файл
+        run: bash .github/scripts/check-migration.sh
+
+      - name: Полный текст миграции
+        run: |
+          echo "===== supabase/migrations/$FILE ====="
+          cat -n -- "supabase/migrations/$FILE"
+          echo "===== конец файла ====="
+
+      - name: Сводка
+        if: always()
+        run: |
+          {
+            echo "## Проверка миграции"
+            echo
+            echo "Файл: \`${FILE}\`"
+            echo
+            if [ "${{ job.status }}" = "success" ]; then
+              echo "✅ Проверка пройдена. Прочитайте текст файла в логе шага «Полный текст миграции» и одобрите применение (Review deployments → production-db → Approve)."
+            else
+              echo "❌ Проверка не пройдена — миграция не применялась. Причина — в логе шага «Проверить файл»."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    name: Применение (после одобрения)
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production-db
+    steps:
+      - uses: actions/checkout@v4
+
+      # Повторная проверка: этот шаг идёт на отдельной машине.
+      - name: Проверить файл
+        run: bash .github/scripts/check-migration.sh
+
+      - name: Установить psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          psql --version
+
+      - name: Применить миграцию
+        id: apply
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGSSLMODE: require
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "::error::В окружении production-db нет секрета SUPABASE_DB_URL"
+            exit 1
+          fi
+          # Строку подключения GitHub скрывает сам. Дополнительно скрываем её части
+          # (хост, пользователь, пароль) — psql может упомянуть их в тексте ошибки.
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit, unquote
+          u = urlsplit(os.environ["SUPABASE_DB_URL"])
+          for part in (u.hostname, u.username, u.password):
+              if part:
+                  print(f"::add-mask::{unquote(part)}")
+          PY
+          echo "Применяю supabase/migrations/$FILE …"
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --single-transaction \
+            -f "supabase/migrations/$FILE"
+
+      - name: Сводка
+        if: always()
+        run: |
+          {
+            echo "## Применение миграции"
+            echo
+            echo "Файл: \`${FILE}\`"
+            echo
+            case "${{ steps.apply.outcome }}" in
+              success)
+                echo "✅ Миграция применена. Напишите Claude Code: «применена ${FILE%%_*}» — он допишет номер в CLAUDE.md." ;;
+              failure)
+                echo "❌ Ошибка — база не изменилась (вся миграция откатилась). Текст ошибки — в логе шага «Применить миграцию»." ;;
+              *)
+                echo "⚠️ Миграция не применялась: остановлено до шага «Применить миграцию»." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"

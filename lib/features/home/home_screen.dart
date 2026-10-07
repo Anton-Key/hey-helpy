@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../../core/language_picker.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/locale_controller.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
 import '../../models/profile.dart';
 import '../auth/auth_repository.dart';
 import '../directory/directory.dart';
 import '../history/history_screen.dart';
+import '../notifications/notification_repository.dart';
+import '../notifications/notifications_screen.dart';
+import '../profile/company_screen.dart';
+import '../profile/settings_screen.dart';
 import '../reports/reports_screen.dart';
 import '../requests/requests.dart';
 
@@ -27,12 +31,66 @@ class _HomeScreenState extends State<HomeScreen> {
   int _section = 0;
   int _tab = 0;
   Profile? _profile;
+  final _notifications = NotificationRepository();
+
+  /// Новых уведомлений с прошлого открытия — число у колокольчика.
+  int _unread = 0;
+
   @override
   void initState() {
     super.initState();
-    _auth.fetchMyProfile().then((p) {
-      if (mounted) setState(() => _profile = p);
-    });
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final p = await _auth.fetchMyProfile();
+    if (!mounted) return;
+    setState(() => _profile = p);
+    await _loadUnread();
+  }
+
+  Future<void> _loadUnread() async {
+    final me = _profile;
+    if (me == null) return;
+    try {
+      final list = await _notifications.load(me);
+      final seen = await _notifications.seenAt(me.id);
+      if (mounted) {
+        setState(() => _unread = NotificationRepository.unread(list, seen));
+      }
+    } catch (e) {
+      debugPrint('Unread: $e');
+    }
+  }
+
+  Future<void> _openNotifications() async {
+    final me = _profile;
+    if (me == null) return;
+    setState(() => _unread = 0);
+    await Navigator.push(context,
+        MaterialPageRoute(builder: (_) => NotificationsScreen(me: me)));
+    await _loadUnread();
+  }
+
+  Future<void> _openCompany() async {
+    final me = _profile;
+    if (me == null) return;
+    final tab = await Navigator.push<int>(
+        context, MaterialPageRoute(builder: (_) => MyCompanyScreen(me: me)));
+    if (tab != null && mounted) {
+      setState(() {
+        _section = 0;
+        _tab = tab;
+      });
+    }
+  }
+
+  Future<void> _openSettings() async {
+    final me = _profile;
+    if (me == null) return;
+    final changed = await Navigator.push<bool>(
+        context, MaterialPageRoute(builder: (_) => SettingsScreen(me: me)));
+    if (changed == true) await _loadProfile();
   }
 
   @override
@@ -50,28 +108,38 @@ class _HomeScreenState extends State<HomeScreen> {
         _Header(
             section: section,
             tab: _tab,
+            unread: _unread,
+            onBell: _profile == null ? null : _openNotifications,
             onTab: (i) => setState(() => _tab = i)),
         Expanded(child: _body(section)),
       ]),
       bottomNavigationBar: NavigationBar(
         selectedIndex: sections.indexOf(section),
-        onDestinationSelected: (i) => setState(() => _section = sections[i]),
+        onDestinationSelected: (i) {
+          setState(() => _section = sections[i]);
+          _loadUnread();
+        },
         destinations: [
           NavigationDestination(
               icon: const Icon(Icons.home_outlined),
               selectedIcon: const Icon(Icons.home),
-              label: l.navHome),
+              label: l.navHome,
+              tooltip: ''),
           NavigationDestination(
-              icon: const Icon(Icons.history), label: l.navHistory),
+              icon: const Icon(Icons.history),
+              label: l.navHistory,
+              tooltip: ''),
           if (showReports)
             NavigationDestination(
                 icon: const Icon(Icons.bar_chart_outlined),
                 selectedIcon: const Icon(Icons.bar_chart),
-                label: l.navReports),
+                label: l.navReports,
+                tooltip: ''),
           NavigationDestination(
               icon: const Icon(Icons.person_outline),
               selectedIcon: const Icon(Icons.person),
-              label: l.navProfile),
+              label: l.navProfile,
+              tooltip: ''),
         ],
       ),
     );
@@ -101,8 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final l = context.l10n;
     final name = _profile?.displayName ?? l.profileDefaultName;
     final role = _profile == null ? '' : l.role(_profile!.role);
-    final langName =
-        LocaleController.nativeNames[context.localeCode] ?? context.localeCode;
+    final langName = currentLanguageName(context);
     return ListView(
         padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 120),
         children: [
@@ -132,63 +199,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ]),
               ])),
           const SizedBox(height: 16),
-          _row(Icons.apartment_outlined, l.profileMyCompany),
-          _row(Icons.notifications_none, l.profileNotifications),
+          _row(Icons.apartment_outlined, l.profileMyCompany,
+              onTap: _openCompany),
+          _row(Icons.notifications_none, l.profileNotifications,
+              badge: _unread, onTap: _openNotifications),
           _row(Icons.language, '${l.profileLanguage} · $langName',
-              onTap: _pickLanguage),
-          _row(Icons.settings_outlined, l.profileSettings),
+              onTap: () => pickLanguage(context)),
+          _row(Icons.settings_outlined, l.profileSettings,
+              onTap: _openSettings),
           _row(Icons.logout, l.profileSignOut,
               danger: true, onTap: () => _auth.signOut()),
         ]);
   }
 
-  Future<void> _pickLanguage() async {
-    final controller = LocaleScope.of(context);
-    final chosen = await showModalBottomSheet<Locale>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                  color: _line, borderRadius: BorderRadius.circular(4))),
-          Padding(
-              padding: const EdgeInsetsDirectional.only(bottom: 6),
-              child: Text(ctx.l10n.profileLanguage,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w800))),
-          for (final loc in LocaleController.supported)
-            ListTile(
-              title: Text(LocaleController.nativeNames[loc.languageCode] ??
-                  loc.languageCode),
-              trailing: loc == controller.locale
-                  ? Icon(Icons.check_rounded,
-                      color: Theme.of(ctx).colorScheme.primary)
-                  : null,
-              onTap: () => Navigator.pop(ctx, loc),
-            ),
-          const SizedBox(height: 8),
-        ]),
-      ),
-    );
-    if (chosen == null || chosen == controller.locale) return;
-    final synced = await controller.select(chosen);
-    if (!synced && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.profileLanguageNotSynced)));
-    }
-  }
-
-  /// Строка профиля. Стрелка «дальше» — только у строк, которые что-то
-  /// открывают; «Выйти» — действие, без стрелки; без [onTap] — просто текст
-  /// (раздел ещё не готов) и без эффекта нажатия.
+  /// Строка профиля. Стрелка «дальше» — у строк, которые что-то открывают;
+  /// «Выйти» — действие, без стрелки. [badge] — число новых событий.
   Widget _row(IconData icon, String text,
-      {bool danger = false, VoidCallback? onTap}) {
+      {bool danger = false, int badge = 0, VoidCallback? onTap}) {
     final color =
         danger ? const Color(0xFFC24444) : (onTap == null ? _muted : _ink);
     return TapCard(
@@ -203,6 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(text,
                 style: TextStyle(fontWeight: FontWeight.w600, color: color)),
           ),
+          if (badge > 0) Badge(label: Text('$badge')),
         ]));
   }
 }
@@ -214,10 +242,16 @@ BoxDecoration _cardDeco() => BoxDecoration(
 
 class _Header extends StatelessWidget {
   const _Header(
-      {required this.section, required this.tab, required this.onTab});
+      {required this.section,
+      required this.tab,
+      required this.onTab,
+      required this.unread,
+      required this.onBell});
   final int section;
   final int tab;
   final ValueChanged<int> onTab;
+  final int unread;
+  final VoidCallback? onBell;
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -258,7 +292,18 @@ class _Header extends StatelessWidget {
                                             fontWeight: FontWeight.w600)),
                                   TextSpan(text: main),
                                 ])),
-                            const Icon(Icons.notifications_none, color: _ink),
+                            IconButton(
+                              onPressed: onBell,
+                              // Без всплывающей подсказки: в веб-версии она
+                              // остаётся висеть. Подпись — для экранного диктора.
+                              icon: Badge(
+                                isLabelVisible: unread > 0,
+                                label: Text(unread > 99 ? '99+' : '$unread'),
+                                child: Icon(Icons.notifications_none,
+                                    color: _ink,
+                                    semanticLabel: l.notifBellTooltip(unread)),
+                              ),
+                            ),
                           ]),
                       const SizedBox(height: 12),
                       if (section == 0)

@@ -276,6 +276,28 @@ class DirectoryRepo {
         .toList();
   }
 
+  /// Все закрепления компании (RLS) — для выбора подрядчика к заявке.
+  Future<List<Binding>> allBindings() async {
+    final rows = await _c
+        .from('contractor_layers')
+        .select(_bindingFields)
+        .order('created_at');
+    return (rows as List)
+        .map((e) => Binding.fromMap(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Сколько исполнителей у каждого подрядчика компании.
+  Future<Map<String, int>> executorCounts() async {
+    final rows = await _c.from('executors').select('contractor_id');
+    final out = <String, int>{};
+    for (final r in rows as List) {
+      final id = (r as Map<String, dynamic>)['contractor_id'] as String;
+      out[id] = (out[id] ?? 0) + 1;
+    }
+    return out;
+  }
+
   /// Подрядчики объекта: закреплённые за ним и «на все объекты».
   Future<List<Binding>> bindingsOfObject(String objectId) async {
     final rows = await _c

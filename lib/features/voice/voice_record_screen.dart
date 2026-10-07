@@ -160,7 +160,13 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen> {
                 level: _level,
                 active: _phase == _Phase.recording,
                 brand: brand,
-                busy: _phase == _Phase.processing || _phase == _Phase.starting),
+                busy: _phase == _Phase.processing || _phase == _Phase.starting,
+                // Круг нажимается так же, как кнопка под ним: «Готово» или «Ещё раз».
+                onTap: switch (_phase) {
+                  _Phase.recording => _finish,
+                  _Phase.error => _start,
+                  _ => null,
+                }),
             const SizedBox(height: 28),
             Text(_title(),
                 textAlign: TextAlign.center,
@@ -237,10 +243,12 @@ class _MicCircle extends StatelessWidget {
       {required this.level,
       required this.active,
       required this.busy,
-      required this.brand});
+      required this.brand,
+      this.onTap});
   final double level;
   final bool active, busy;
   final Color brand;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -255,16 +263,24 @@ class _MicCircle extends StatelessWidget {
           height: active ? ring : 150,
           decoration: const BoxDecoration(color: _mint, shape: BoxShape.circle),
         ),
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(color: brand, shape: BoxShape.circle),
-          child: busy
-              ? const Padding(
-                  padding: EdgeInsets.all(38),
-                  child: CircularProgressIndicator(
-                      color: _onBrand, strokeWidth: 3))
-              : const Icon(Icons.mic, size: 56, color: _onBrand),
+        Material(
+          color: brand,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: SizedBox(
+              width: 120,
+              height: 120,
+              child: busy
+                  ? const Padding(
+                      padding: EdgeInsets.all(38),
+                      child: CircularProgressIndicator(
+                          color: _onBrand, strokeWidth: 3))
+                  : Icon(active ? Icons.stop_rounded : Icons.mic,
+                      size: 56, color: _onBrand),
+            ),
+          ),
         ),
       ]),
     );

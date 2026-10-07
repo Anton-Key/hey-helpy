@@ -155,9 +155,11 @@ class ReportStats {
   int returned = 0;
   int overdue = 0;
 
-  /// Принятые с дедлайном и из них — принятые до дедлайна.
-  int acceptedWithDue = 0;
-  int acceptedOnTime = 0;
+  /// Заявки с дедлайном, по которым уже ясно, в срок ли они: принятые и
+  /// не закрытые с прошедшим дедлайном (отменённые не считаются).
+  /// Из них в срок — принятые не позже дедлайна.
+  int withDue = 0;
+  int onTime = 0;
   int firstPass = 0;
   Duration _reaction = Duration.zero;
   int _reactionCount = 0;
@@ -181,9 +183,15 @@ class ReportStats {
     if (o.accepted) {
       accepted++;
       if (o.returnCount == 0) firstPass++;
-      if (o.dueAt != null && o.acceptedAt != null) {
-        acceptedWithDue++;
-        if (!o.acceptedAt!.isAfter(o.dueAt!)) acceptedOnTime++;
+    }
+    final due = o.dueAt;
+    if (due != null && !o.cancelled) {
+      if (o.accepted && o.acceptedAt != null) {
+        withDue++;
+        if (!o.acceptedAt!.isAfter(due)) onTime++;
+      } else if (!o.accepted && now.isAfter(due)) {
+        // не закрыта, а дедлайн прошёл — не в срок
+        withDue++;
       }
     }
     if (o.startedAt != null && !o.startedAt!.isBefore(o.createdAt)) {
@@ -213,7 +221,7 @@ class ReportStats {
       whole == 0 ? null : part / whole;
 
   /// Доли от 0 до 1; null — не из чего считать.
-  double? get onTimeShare => _share(acceptedOnTime, acceptedWithDue);
+  double? get onTimeShare => _share(onTime, withDue);
   double? get firstPassShare => _share(firstPass, accepted);
   double? get photoShare => _share(submittedWithPhotos, submitted);
   double? get geofenceShare => _share(visitsInGeofence, visits);

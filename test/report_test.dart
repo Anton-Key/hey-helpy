@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hey_helpy/core/period.dart';
 import 'package:hey_helpy/features/reports/report_repository.dart';
+import 'package:hey_helpy/features/reports/reports_screen.dart';
 
 void main() {
   final from = DateTime.utc(2026, 10, 1);
@@ -81,7 +82,8 @@ void main() {
     expect(c.accepted, 2);
     expect(c.returned, 1);
     expect(c.overdue, 2); // №2 принята поздно, №3 не сделана к сроку
-    expect(c.onTimeShare, 0.5);
+    // с дедлайном: №1 в срок, №2 принята поздно, №3 не закрыта к сроку; №4 отменена
+    expect(c.onTimeShare, closeTo(1 / 3, 1e-9));
     expect(c.firstPassShare, 0.5);
     expect(c.avgReaction, const Duration(minutes: 120)); // (1 ч + 3 ч) / 2
     expect(c.avgExecution, const Duration(minutes: 90)); // (2 ч + 1 ч) / 2
@@ -140,11 +142,16 @@ void main() {
     expect(r.contractors.single.stats.visitNorm, closeTo(0.46, 0.01));
   });
 
-  test('границы периода: неделя с понедельника, месяц, свой диапазон', () {
+  test('границы периода: неделя с понедельника, 30 дней, месяц, свой диапазон',
+      () {
     final wed = DateTime(2026, 10, 7, 15); // среда
     final week = const Period(PeriodKind.week).range(wed);
     expect(week.from, DateTime(2026, 10, 5));
     expect(week.to, DateTime(2026, 10, 12));
+    final last30 = const Period(PeriodKind.last30).range(wed);
+    expect(
+        last30.from, DateTime(2026, 9, 8)); // 30 дней по сегодня включительно
+    expect(last30.to, DateTime(2026, 10, 8));
     final month = const Period(PeriodKind.month).range(wed);
     expect(month.from, DateTime(2026, 10));
     expect(month.to, DateTime(2026, 11));
@@ -155,5 +162,49 @@ void main() {
         .range(wed);
     expect(custom.from, DateTime(2026, 9, 1));
     expect(custom.to, DateTime(2026, 9, 4)); // последний день включительно
+  });
+
+  test('«В срок» — среди всех заявок с дедлайном (как у «ЭлектроПро»)', () {
+    final late = [
+      // 6 приняты до дедлайна
+      for (var i = 0; i < 6; i++)
+        ReportOrder(
+            id: 'ok$i',
+            status: 'done',
+            createdAt: d(1),
+            acceptedAt: d(2),
+            dueAt: d(3)),
+      // 2 не закрыты, дедлайн прошёл
+      ReportOrder(id: 'r', status: 'returned', createdAt: d(1), dueAt: d(5)),
+      ReportOrder(id: 'a', status: 'assigned', createdAt: d(1), dueAt: d(6)),
+      // не закрыта, но дедлайн впереди — пока не считается
+      ReportOrder(
+          id: 'p', status: 'in_progress', createdAt: d(1), dueAt: d(25)),
+      // отменена — не считается
+      ReportOrder(id: 'c', status: 'cancelled', createdAt: d(1), dueAt: d(2)),
+    ];
+    final s = ReportStats();
+    for (final o in late) {
+      s.addOrder(o, now);
+    }
+    expect(s.withDue, 8);
+    expect(s.onTime, 6);
+    expect(s.onTimeShare, 0.75);
+    expect(s.overdue, 2);
+  });
+
+  test('норма визитов: от 1 — целым, меньше 1 — с одним знаком', () {
+    expect(formatVisitNorm(3.94, 'ru'), '4');
+    expect(formatVisitNorm(1.97, 'en'), '2');
+    expect(formatVisitNorm(0.46, 'ru'), '0,5');
+    expect(formatVisitNorm(0.46, 'en'), '0.5');
+    expect(formatVisitNorm(0.01, 'ru'), isNull);
+  });
+
+  test('недобор визитов — по округлённой норме', () {
+    expect(visitsBelowNorm(4, 4.07), isFalse);
+    expect(visitsBelowNorm(1, 1.97), isTrue);
+    expect(visitsBelowNorm(0, 0.46), isTrue);
+    expect(visitsBelowNorm(1, 0.46), isFalse);
   });
 }

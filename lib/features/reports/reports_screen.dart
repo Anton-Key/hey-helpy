@@ -47,7 +47,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   List<Contractor> _contractors = const [];
   List<Layer> _layers = const [];
 
-  Period _period = const Period(PeriodKind.month);
+  Period _period = const Period(PeriodKind.last30);
   String? _objectId;
   late String? _contractorId = widget.initialContractorId;
   String? _layerId;
@@ -313,9 +313,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           _Kpi(
               value: f.pct(c.onTimeShare),
               title: l.reportsKpiOnTime,
-              hint: c.acceptedWithDue == 0
-                  ? null
-                  : l.reportsKpiOf(c.acceptedWithDue)),
+              hint: c.withDue == 0 ? null : l.reportsKpiOf(c.withDue)),
           _Kpi(
               value: f.pct(c.firstPassShare),
               title: l.reportsKpiFirstPass,
@@ -405,15 +403,27 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 }
 
+/// Норма визитов за период: от 1 визита — целым числом («15 / 4»); меньше 1 —
+/// с одним знаком после запятой («1 / 0,5»), чтобы за короткий период она
+/// не округлялась до 0. Меньше 0,05 визита — null (показывается «—»).
+String? formatVisitNorm(double v, String locale) {
+  if (v < 0.05) return null;
+  if (v >= 1) return NumberFormat.decimalPattern(locale).format(v.round());
+  return NumberFormat('#,##0.#', locale).format(v);
+}
+
+/// Недобор визитов — по тому же округлению, что видно в отчёте:
+/// при норме 4,07 четыре визита — не недобор («4 / 4»).
+bool visitsBelowNorm(int visits, double norm) =>
+    norm >= 1 ? visits < norm.round() : visits < norm;
+
 /// Форматирование чисел, долей и длительностей по языку интерфейса.
 class _Fmt {
   _Fmt(this.l)
       : _num = NumberFormat.decimalPattern(l.localeName),
-        _norm = NumberFormat('#,##0.#', l.localeName),
         _pct = NumberFormat.percentPattern(l.localeName);
   final AppLocalizations l;
   final NumberFormat _num;
-  final NumberFormat _norm;
   final NumberFormat _pct;
 
   String count(int n) => _num.format(n);
@@ -421,9 +431,7 @@ class _Fmt {
 
   String duration(Duration? d) => d == null ? l.reportsNoValue : l.duration(d);
 
-  /// Норма за период — с одним знаком после запятой («1 / 0,5»), чтобы за
-  /// короткий период она не округлялась до 0; меньше 0,05 визита — «—».
-  String norm(double v) => v < 0.05 ? l.reportsNoValue : _norm.format(v);
+  String norm(double v) => formatVisitNorm(v, l.localeName) ?? l.reportsNoValue;
 
   String visits(ReportStats s) => s.visitNorm == null
       ? count(s.visits)
@@ -442,7 +450,7 @@ class _Fmt {
         (
           s.visitNorm == null ? l.reportsVisits : l.reportsVisitNorm,
           visits(s),
-          s.visitNorm != null && s.visits < s.visitNorm!
+          s.visitNorm != null && visitsBelowNorm(s.visits, s.visitNorm!)
         ),
         (l.reportsVisitsInZone, count(s.visitsInGeofence), false),
         (

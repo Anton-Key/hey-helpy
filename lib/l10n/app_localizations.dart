@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// No description provided for @fieldContractor.
   ///
   /// In ru, this message translates to:
-  /// **'Исполнитель'**
+  /// **'Подрядчик'**
   String get fieldContractor;
 
   /// No description provided for @fieldWorkType.
@@ -659,19 +659,19 @@ abstract class AppLocalizations {
   /// No description provided for @actionAssign.
   ///
   /// In ru, this message translates to:
-  /// **'Назначить исполнителя'**
+  /// **'Назначить подрядчика'**
   String get actionAssign;
 
   /// No description provided for @actionReassign.
   ///
   /// In ru, this message translates to:
-  /// **'Сменить исполнителя'**
+  /// **'Сменить подрядчика'**
   String get actionReassign;
 
   /// No description provided for @actionStart.
   ///
   /// In ru, this message translates to:
-  /// **'Взять в работу'**
+  /// **'Начать работу'**
   String get actionStart;
 
   /// No description provided for @actionRestart.
@@ -743,7 +743,7 @@ abstract class AppLocalizations {
   /// No description provided for @toastAssigned.
   ///
   /// In ru, this message translates to:
-  /// **'Исполнитель назначен'**
+  /// **'Подрядчик назначен'**
   String get toastAssigned;
 
   /// No description provided for @assignNoContractors.
@@ -1262,54 +1262,6 @@ abstract class AppLocalizations {
   /// **'Не удалось выполнить действие. Попробуйте ещё раз.'**
   String get onbErrUnknown;
 
-  /// No description provided for @adminTitle.
-  ///
-  /// In ru, this message translates to:
-  /// **'Администрирование'**
-  String get adminTitle;
-
-  /// No description provided for @adminObjects.
-  ///
-  /// In ru, this message translates to:
-  /// **'Объекты и геолокация'**
-  String get adminObjects;
-
-  /// No description provided for @adminDepartments.
-  ///
-  /// In ru, this message translates to:
-  /// **'Направления / департаменты'**
-  String get adminDepartments;
-
-  /// No description provided for @adminAssets.
-  ///
-  /// In ru, this message translates to:
-  /// **'Оборудование и активы'**
-  String get adminAssets;
-
-  /// No description provided for @adminContractors.
-  ///
-  /// In ru, this message translates to:
-  /// **'Подрядные организации'**
-  String get adminContractors;
-
-  /// No description provided for @adminInvites.
-  ///
-  /// In ru, this message translates to:
-  /// **'Инвайт-ссылки исполнителям'**
-  String get adminInvites;
-
-  /// No description provided for @adminUsers.
-  ///
-  /// In ru, this message translates to:
-  /// **'Пользователи и роли'**
-  String get adminUsers;
-
-  /// No description provided for @adminComingSoon.
-  ///
-  /// In ru, this message translates to:
-  /// **'Появится в Фазе 1'**
-  String get adminComingSoon;
-
   /// No description provided for @photosTitle.
   ///
   /// In ru, this message translates to:
@@ -1511,7 +1463,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportsPeriodCustom.
   ///
   /// In ru, this message translates to:
-  /// **'Свой период'**
+  /// **'Свой'**
   String get reportsPeriodCustom;
 
   /// No description provided for @reportsRange.
@@ -1691,7 +1643,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportsHelp.
   ///
   /// In ru, this message translates to:
-  /// **'В срок — доля принятых до дедлайна среди заявок с дедлайном. С первого раза — принятые без возврата на доработку. Реакция — от создания заявки до «В работе», выполнение — от «В работе» до «На проверке». Норма визитов пересчитана на длину периода.'**
+  /// **'В срок — доля заявок, принятых не позже дедлайна, среди всех заявок с дедлайном: не в срок — принятые после дедлайна и не закрытые, у которых дедлайн прошёл; отменённые не считаются. С первого раза — принятые без возврата на доработку. Реакция — от создания заявки до «В работе», выполнение — от «В работе» до «На проверке». Норма визитов пересчитана на длину периода и округлена до целого (меньше 1 — до десятых).'**
   String get reportsHelp;
 
   /// No description provided for @reportsOrdersEmpty.
@@ -1987,6 +1939,517 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Визит вне геозоны или с подменой GPS'**
   String get historyVisitOutside;
+
+  /// No description provided for @reportsPeriod30.
+  ///
+  /// In ru, this message translates to:
+  /// **'30 дней'**
+  String get reportsPeriod30;
+
+  /// No description provided for @companyNameLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания'**
+  String get companyNameLabel;
+
+  /// No description provided for @companyRenameTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название компании'**
+  String get companyRenameTitle;
+
+  /// No description provided for @companyRenamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название сохранено'**
+  String get companyRenamed;
+
+  /// No description provided for @companyRenameUnavailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название пока нельзя изменить: нужно обновить базу. Сообщите администратору.'**
+  String get companyRenameUnavailable;
+
+  /// No description provided for @companyLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить данные компании. Проверьте интернет.'**
+  String get companyLoadFailed;
+
+  /// No description provided for @companyMembers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сотрудники: {count}'**
+  String companyMembers(int count);
+
+  /// No description provided for @companyMemberYou.
+  ///
+  /// In ru, this message translates to:
+  /// **'{name} (вы)'**
+  String companyMemberYou(String name);
+
+  /// No description provided for @companyNoPhone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Телефон не указан'**
+  String get companyNoPhone;
+
+  /// No description provided for @companyRoleChange.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить роль'**
+  String get companyRoleChange;
+
+  /// No description provided for @companyRoleTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Роль: {name}'**
+  String companyRoleTitle(String name);
+
+  /// No description provided for @companyRoleExecutorHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чтобы исполнитель видел заявки, его нужно привязать к подрядчику — через приглашение.'**
+  String get companyRoleExecutorHint;
+
+  /// No description provided for @companyRoleChanged.
+  ///
+  /// In ru, this message translates to:
+  /// **'Роль изменена'**
+  String get companyRoleChanged;
+
+  /// No description provided for @companyInvites.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приглашения'**
+  String get companyInvites;
+
+  /// No description provided for @companyInvite.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пригласить'**
+  String get companyInvite;
+
+  /// No description provided for @companyNoInvites.
+  ///
+  /// In ru, this message translates to:
+  /// **'Активных приглашений нет.'**
+  String get companyNoInvites;
+
+  /// No description provided for @companyInviteRow.
+  ///
+  /// In ru, this message translates to:
+  /// **'{contractor} · до {date}'**
+  String companyInviteRow(String contractor, String date);
+
+  /// No description provided for @companyDirectory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Справочники'**
+  String get companyDirectory;
+
+  /// No description provided for @inviteTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пригласить исполнителя'**
+  String get inviteTitle;
+
+  /// No description provided for @inviteContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get inviteContractor;
+
+  /// No description provided for @inviteRoleInfo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Роль: исполнитель этого подрядчика. Он увидит заявки подрядчика и сможет их выполнять. Другую роль можно назначить потом в списке сотрудников.'**
+  String get inviteRoleInfo;
+
+  /// No description provided for @inviteValidity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок действия'**
+  String get inviteValidity;
+
+  /// No description provided for @inviteDays.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} день} few{{count} дня} other{{count} дней}}'**
+  String inviteDays(int count);
+
+  /// No description provided for @inviteCreate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать'**
+  String get inviteCreate;
+
+  /// No description provided for @inviteFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось создать приглашение. Попробуйте ещё раз.'**
+  String get inviteFailed;
+
+  /// No description provided for @inviteNoContractors.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала добавьте подрядчика на вкладке «Подрядчики».'**
+  String get inviteNoContractors;
+
+  /// No description provided for @inviteReadyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приглашение в «{contractor}»'**
+  String inviteReadyTitle(String contractor);
+
+  /// No description provided for @inviteValidUntil.
+  ///
+  /// In ru, this message translates to:
+  /// **'Действует до {date}, один раз'**
+  String inviteValidUntil(String date);
+
+  /// No description provided for @inviteCodeLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код'**
+  String get inviteCodeLabel;
+
+  /// No description provided for @inviteLinkLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка (веб-версия)'**
+  String get inviteLinkLabel;
+
+  /// No description provided for @inviteHowTo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый сотрудник регистрируется в приложении и вводит код в блоке «У меня есть код приглашения». По ссылке на сайте код подставится сам.'**
+  String get inviteHowTo;
+
+  /// No description provided for @inviteCopyMessage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скопировать приглашение'**
+  String get inviteCopyMessage;
+
+  /// No description provided for @inviteCopyCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скопировать код'**
+  String get inviteCopyCode;
+
+  /// No description provided for @inviteCopied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приглашение скопировано — отправьте его в мессенджере'**
+  String get inviteCopied;
+
+  /// No description provided for @inviteCodeCopied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код скопирован'**
+  String get inviteCodeCopied;
+
+  /// No description provided for @inviteRevoke.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отозвать приглашение'**
+  String get inviteRevoke;
+
+  /// No description provided for @inviteRevoked.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приглашение отозвано'**
+  String get inviteRevoked;
+
+  /// No description provided for @inviteMessage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вас приглашают в {app} как исполнителя «{contractor}».\nОткройте ссылку: {link}\nили установите приложение и введите код: {code}\nДействует до {date}.'**
+  String inviteMessage(
+      String app, String contractor, String link, String code, String date);
+
+  /// No description provided for @settingsProfile.
+  ///
+  /// In ru, this message translates to:
+  /// **'Профиль'**
+  String get settingsProfile;
+
+  /// No description provided for @settingsName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Имя и фамилия'**
+  String get settingsName;
+
+  /// No description provided for @settingsPhone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Телефон'**
+  String get settingsPhone;
+
+  /// No description provided for @settingsPhoneHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'+7 900 000-00-00'**
+  String get settingsPhoneHint;
+
+  /// No description provided for @settingsSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранено'**
+  String get settingsSaved;
+
+  /// No description provided for @settingsSaveFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.'**
+  String get settingsSaveFailed;
+
+  /// No description provided for @settingsPassword.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пароль'**
+  String get settingsPassword;
+
+  /// No description provided for @settingsNewPassword.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый пароль'**
+  String get settingsNewPassword;
+
+  /// No description provided for @settingsRepeatPassword.
+  ///
+  /// In ru, this message translates to:
+  /// **'Повторите пароль'**
+  String get settingsRepeatPassword;
+
+  /// No description provided for @settingsChangePassword.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сменить пароль'**
+  String get settingsChangePassword;
+
+  /// No description provided for @settingsPasswordShort.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пароль — не короче {count} символов'**
+  String settingsPasswordShort(int count);
+
+  /// No description provided for @settingsPasswordMismatch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пароли не совпадают'**
+  String get settingsPasswordMismatch;
+
+  /// No description provided for @settingsPasswordChanged.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пароль изменён'**
+  String get settingsPasswordChanged;
+
+  /// No description provided for @settingsPasswordFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сменить пароль. Возможно, он совпадает со старым или слишком простой.'**
+  String get settingsPasswordFailed;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In ru, this message translates to:
+  /// **'О приложении'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsAboutApp.
+  ///
+  /// In ru, this message translates to:
+  /// **'О приложении {app}'**
+  String settingsAboutApp(String app);
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Версия {version} (сборка {build})'**
+  String settingsVersion(String version, String build);
+
+  /// No description provided for @settingsAboutText.
+  ///
+  /// In ru, this message translates to:
+  /// **'{app} — сервис эксплуатации зданий: приём заявок текстом, голосом и с фото, отправка подрядчику, контроль визитов и приёмка работ.'**
+  String settingsAboutText(String app);
+
+  /// No description provided for @notifPeriod.
+  ///
+  /// In ru, this message translates to:
+  /// **'За последние {days} дней'**
+  String notifPeriod(int days);
+
+  /// No description provided for @notifEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новых событий нет'**
+  String get notifEmpty;
+
+  /// No description provided for @notifLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить уведомления. Проверьте интернет.'**
+  String get notifLoadFailed;
+
+  /// No description provided for @notifAssigned.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая заявка для вашего подрядчика'**
+  String get notifAssigned;
+
+  /// No description provided for @notifReturned.
+  ///
+  /// In ru, this message translates to:
+  /// **'Работу вернули на доработку'**
+  String get notifReturned;
+
+  /// No description provided for @notifOnReview.
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа ждёт приёмки'**
+  String get notifOnReview;
+
+  /// No description provided for @notifOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок прошёл, заявка не закрыта'**
+  String get notifOverdue;
+
+  /// No description provided for @notifVisitOutside.
+  ///
+  /// In ru, this message translates to:
+  /// **'Визит вне геозоны'**
+  String get notifVisitOutside;
+
+  /// No description provided for @notifVisitOutsideM.
+  ///
+  /// In ru, this message translates to:
+  /// **'Визит вне геозоны: {meters} м от объекта'**
+  String notifVisitOutsideM(String meters);
+
+  /// No description provided for @notifVisitMock.
+  ///
+  /// In ru, this message translates to:
+  /// **'Визит с подменой GPS'**
+  String get notifVisitMock;
+
+  /// No description provided for @notifInProgress.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вашу заявку взяли в работу'**
+  String get notifInProgress;
+
+  /// No description provided for @notifAccepted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа по вашей заявке принята'**
+  String get notifAccepted;
+
+  /// No description provided for @notifBellTooltip.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уведомления: новых {count}'**
+  String notifBellTooltip(int count);
+
+  /// No description provided for @assignSearch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск подрядчика'**
+  String get assignSearch;
+
+  /// No description provided for @assignBound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закреплены за этим видом работ'**
+  String get assignBound;
+
+  /// No description provided for @assignOthers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Другие подрядчики'**
+  String get assignOthers;
+
+  /// No description provided for @assignAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчики'**
+  String get assignAll;
+
+  /// No description provided for @assignNobodyBound.
+  ///
+  /// In ru, this message translates to:
+  /// **'За «{layer}» никто не закреплён — выберите вручную или закрепите в карточке подрядчика'**
+  String assignNobodyBound(String layer);
+
+  /// No description provided for @assignNoLayer.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вид работ не указан — выберите подрядчика вручную'**
+  String get assignNoLayer;
+
+  /// No description provided for @assignNothingFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не найдено'**
+  String get assignNothingFound;
+
+  /// No description provided for @assignBindingsFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить закрепления — список без подсказок.'**
+  String get assignBindingsFailed;
+
+  /// No description provided for @assignExecutors.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =0{Исполнителей нет} one{{count} исполнитель} few{{count} исполнителя} other{{count} исполнителей}}'**
+  String assignExecutors(int count);
+
+  /// No description provided for @assignNorm.
+  ///
+  /// In ru, this message translates to:
+  /// **'норма {count} в мес.'**
+  String assignNorm(int count);
+
+  /// No description provided for @assignAllObjects.
+  ///
+  /// In ru, this message translates to:
+  /// **'все объекты'**
+  String get assignAllObjects;
+
+  /// No description provided for @assignCurrent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Назначен сейчас'**
+  String get assignCurrent;
+
+  /// No description provided for @assignInline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Назначить'**
+  String get assignInline;
+
+  /// No description provided for @assignChangeInline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get assignChangeInline;
+
+  /// No description provided for @toastAssignedTo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Назначено: {name}'**
+  String toastAssignedTo(String name);
+
+  /// No description provided for @fieldExecutor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнитель'**
+  String get fieldExecutor;
 }
 
 class _AppLocalizationsDelegate

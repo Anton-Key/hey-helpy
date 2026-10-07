@@ -3,10 +3,11 @@ import 'package:intl/intl.dart';
 
 import 'l10n_ext.dart';
 
-enum PeriodKind { week, month, custom }
+enum PeriodKind { week, last30, month, custom }
 
-/// Период для отчётов и истории: неделя (с понедельника), календарный месяц
-/// или свой диапазон дат. [to] — не включительно (начало следующего дня).
+/// Период для отчётов и истории: неделя (с понедельника), последние 30 дней
+/// (по сегодня включительно), календарный месяц или свой диапазон дат.
+/// [to] — не включительно (начало следующего дня).
 class Period {
   const Period(this.kind, [this.custom]);
   final PeriodKind kind;
@@ -21,6 +22,11 @@ class Period {
         return (
           from: monday,
           to: DateTime(monday.year, monday.month, monday.day + 7)
+        );
+      case PeriodKind.last30:
+        return (
+          from: DateTime(today.year, today.month, today.day - 29),
+          to: DateTime(today.year, today.month, today.day + 1)
         );
       case PeriodKind.month:
         return (
@@ -48,7 +54,7 @@ class Period {
   }
 }
 
-/// Переключатель «Неделя / Месяц / Свой период» и строка с датами.
+/// Переключатель «Неделя / 30 дней / Месяц / Свой» и строка с датами.
 /// Нажатие на даты открывает календарь.
 class PeriodBar extends StatelessWidget {
   const PeriodBar({super.key, required this.period, required this.onChanged});
@@ -61,7 +67,10 @@ class PeriodBar extends StatelessWidget {
       return;
     }
     final now = DateTime.now();
-    final r = period.range();
+    // Свой период, пока его не выбирали, начинается с последних 30 дней.
+    final r = period.kind == PeriodKind.custom
+        ? period.range()
+        : const Period(PeriodKind.last30).range();
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(now.year - 3),
@@ -84,11 +93,11 @@ class PeriodBar extends StatelessWidget {
             ButtonSegment(
                 value: PeriodKind.week, label: Text(l.reportsPeriodWeek)),
             ButtonSegment(
+                value: PeriodKind.last30, label: Text(l.reportsPeriod30)),
+            ButtonSegment(
                 value: PeriodKind.month, label: Text(l.reportsPeriodMonth)),
             ButtonSegment(
-                value: PeriodKind.custom,
-                label: Text(l.reportsPeriodCustom),
-                icon: const Icon(Icons.date_range, size: 18)),
+                value: PeriodKind.custom, label: Text(l.reportsPeriodCustom)),
           ],
           selected: {period.kind},
           onSelectionChanged: (s) => _pick(context, s.first),

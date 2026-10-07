@@ -36,6 +36,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _offline = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Ссылка-приглашение из веб-версии: …/hey-helpy/?invite=<код>.
+    final code = Uri.base.queryParameters['invite']?.trim();
+    if (code != null && code.isNotEmpty) _inviteCtrl.text = code;
+  }
+
+  @override
   void dispose() {
     _companyCtrl.dispose();
     _inviteCtrl.dispose();
@@ -64,7 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l = context.l10n;
-    final errorText = _offline ? l.onboardingNoConnection : (_error == null ? null : _errorText(l, _error!));
+    final errorText = _offline ? l.onboardingNoConnection : (_error == null ? null : onboardingErrorText(l, _error!));
 
     return Scaffold(
       appBar: AppBar(title: Text(l.onboardingTitle)),
@@ -134,7 +142,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-String _errorText(AppLocalizations l, OnboardingError e) => switch (e) {
+/// Понятный текст ошибки онбординга и управления участниками.
+String onboardingErrorText(AppLocalizations l, OnboardingError e) =>
+    switch (e) {
       OnboardingError.notAuthenticated => l.onbErrNotAuthenticated,
       OnboardingError.companyNameRequired => l.onbErrCompanyNameRequired,
       OnboardingError.alreadyInCompany => l.onbErrAlreadyInCompany,

@@ -99,7 +99,7 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   final _repo = HistoryRepository();
-  Period _period = const Period(PeriodKind.month);
+  Period _period = const Period(PeriodKind.last30);
   OrderContext? _ctx;
   List<HistoryItem> _items = const [];
   bool _loading = true;

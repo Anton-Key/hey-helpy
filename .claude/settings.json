@@ -4,13 +4,31 @@
       {
         "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
         "hooks": [
-          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect_migrations.sh", "timeout": 10 }
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect_migrations.sh",
+            "timeout": 10
+          }
         ]
       },
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block_secrets.sh", "timeout": 30 }
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block_secrets.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block_workflow_dispatch.sh",
+            "timeout": 10
+          }
         ]
       }
     ],
@@ -18,9 +36,22 @@
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
-          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/dart_after_edit.sh", "timeout": 120 }
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/dart_after_edit.sh",
+            "timeout": 120
+          }
         ]
       }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Bash(gh api *dispatches*)",
+      "Bash(gh api *pending_deployments*)",
+      "Bash(gh run rerun *)",
+      "Bash(gh workflow enable *)",
+      "Bash(gh workflow run *)"
     ]
   }
 }

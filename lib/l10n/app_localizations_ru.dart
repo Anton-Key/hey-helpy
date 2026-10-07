@@ -263,7 +263,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get fieldObject => 'Объект';
 
   @override
-  String get fieldContractor => 'Исполнитель';
+  String get fieldContractor => 'Подрядчик';
 
   @override
   String get fieldWorkType => 'Вид работ';
@@ -312,13 +312,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get actionsTitle => 'Действия';
 
   @override
-  String get actionAssign => 'Назначить исполнителя';
+  String get actionAssign => 'Назначить подрядчика';
 
   @override
-  String get actionReassign => 'Сменить исполнителя';
+  String get actionReassign => 'Сменить подрядчика';
 
   @override
-  String get actionStart => 'Взять в работу';
+  String get actionStart => 'Начать работу';
 
   @override
   String get actionRestart => 'Взять на доработку';
@@ -354,7 +354,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get toastSaved => 'Сохранено';
 
   @override
-  String get toastAssigned => 'Исполнитель назначен';
+  String get toastAssigned => 'Подрядчик назначен';
 
   @override
   String assignNoContractors(String tab) {
@@ -648,30 +648,6 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось выполнить действие. Попробуйте ещё раз.';
 
   @override
-  String get adminTitle => 'Администрирование';
-
-  @override
-  String get adminObjects => 'Объекты и геолокация';
-
-  @override
-  String get adminDepartments => 'Направления / департаменты';
-
-  @override
-  String get adminAssets => 'Оборудование и активы';
-
-  @override
-  String get adminContractors => 'Подрядные организации';
-
-  @override
-  String get adminInvites => 'Инвайт-ссылки исполнителям';
-
-  @override
-  String get adminUsers => 'Пользователи и роли';
-
-  @override
-  String get adminComingSoon => 'Появится в Фазе 1';
-
-  @override
   String get photosTitle => 'Фото';
 
   @override
@@ -787,7 +763,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reportsPeriodMonth => 'Месяц';
 
   @override
-  String get reportsPeriodCustom => 'Свой период';
+  String get reportsPeriodCustom => 'Свой';
 
   @override
   String reportsRange(String from, String to) {
@@ -886,7 +862,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get reportsHelp =>
-      'В срок — доля принятых до дедлайна среди заявок с дедлайном. С первого раза — принятые без возврата на доработку. Реакция — от создания заявки до «В работе», выполнение — от «В работе» до «На проверке». Норма визитов пересчитана на длину периода.';
+      'В срок — доля заявок, принятых не позже дедлайна, среди всех заявок с дедлайном: не в срок — принятые после дедлайна и не закрытые, у которых дедлайн прошёл; отменённые не считаются. С первого раза — принятые без возврата на доработку. Реакция — от создания заявки до «В работе», выполнение — от «В работе» до «На проверке». Норма визитов пересчитана на длину периода и округлена до целого (меньше 1 — до десятых).';
 
   @override
   String get reportsOrdersEmpty => 'Заявок за период нет.';
@@ -1080,4 +1056,326 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get historyVisitOutside => 'Визит вне геозоны или с подменой GPS';
+
+  @override
+  String get reportsPeriod30 => '30 дней';
+
+  @override
+  String get companyNameLabel => 'Компания';
+
+  @override
+  String get companyRenameTitle => 'Название компании';
+
+  @override
+  String get companyRenamed => 'Название сохранено';
+
+  @override
+  String get companyRenameUnavailable =>
+      'Название пока нельзя изменить: нужно обновить базу. Сообщите администратору.';
+
+  @override
+  String get companyLoadFailed =>
+      'Не удалось загрузить данные компании. Проверьте интернет.';
+
+  @override
+  String companyMembers(int count) {
+    return 'Сотрудники: $count';
+  }
+
+  @override
+  String companyMemberYou(String name) {
+    return '$name (вы)';
+  }
+
+  @override
+  String get companyNoPhone => 'Телефон не указан';
+
+  @override
+  String get companyRoleChange => 'Изменить роль';
+
+  @override
+  String companyRoleTitle(String name) {
+    return 'Роль: $name';
+  }
+
+  @override
+  String get companyRoleExecutorHint =>
+      'Чтобы исполнитель видел заявки, его нужно привязать к подрядчику — через приглашение.';
+
+  @override
+  String get companyRoleChanged => 'Роль изменена';
+
+  @override
+  String get companyInvites => 'Приглашения';
+
+  @override
+  String get companyInvite => 'Пригласить';
+
+  @override
+  String get companyNoInvites => 'Активных приглашений нет.';
+
+  @override
+  String companyInviteRow(String contractor, String date) {
+    return '$contractor · до $date';
+  }
+
+  @override
+  String get companyDirectory => 'Справочники';
+
+  @override
+  String get inviteTitle => 'Пригласить исполнителя';
+
+  @override
+  String get inviteContractor => 'Подрядчик';
+
+  @override
+  String get inviteRoleInfo =>
+      'Роль: исполнитель этого подрядчика. Он увидит заявки подрядчика и сможет их выполнять. Другую роль можно назначить потом в списке сотрудников.';
+
+  @override
+  String get inviteValidity => 'Срок действия';
+
+  @override
+  String inviteDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count дней',
+      few: '$count дня',
+      one: '$count день',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inviteCreate => 'Создать';
+
+  @override
+  String get inviteFailed =>
+      'Не удалось создать приглашение. Попробуйте ещё раз.';
+
+  @override
+  String get inviteNoContractors =>
+      'Сначала добавьте подрядчика на вкладке «Подрядчики».';
+
+  @override
+  String inviteReadyTitle(String contractor) {
+    return 'Приглашение в «$contractor»';
+  }
+
+  @override
+  String inviteValidUntil(String date) {
+    return 'Действует до $date, один раз';
+  }
+
+  @override
+  String get inviteCodeLabel => 'Код';
+
+  @override
+  String get inviteLinkLabel => 'Ссылка (веб-версия)';
+
+  @override
+  String get inviteHowTo =>
+      'Новый сотрудник регистрируется в приложении и вводит код в блоке «У меня есть код приглашения». По ссылке на сайте код подставится сам.';
+
+  @override
+  String get inviteCopyMessage => 'Скопировать приглашение';
+
+  @override
+  String get inviteCopyCode => 'Скопировать код';
+
+  @override
+  String get inviteCopied =>
+      'Приглашение скопировано — отправьте его в мессенджере';
+
+  @override
+  String get inviteCodeCopied => 'Код скопирован';
+
+  @override
+  String get inviteRevoke => 'Отозвать приглашение';
+
+  @override
+  String get inviteRevoked => 'Приглашение отозвано';
+
+  @override
+  String inviteMessage(
+      String app, String contractor, String link, String code, String date) {
+    return 'Вас приглашают в $app как исполнителя «$contractor».\nОткройте ссылку: $link\nили установите приложение и введите код: $code\nДействует до $date.';
+  }
+
+  @override
+  String get settingsProfile => 'Профиль';
+
+  @override
+  String get settingsName => 'Имя и фамилия';
+
+  @override
+  String get settingsPhone => 'Телефон';
+
+  @override
+  String get settingsPhoneHint => '+7 900 000-00-00';
+
+  @override
+  String get settingsSaved => 'Сохранено';
+
+  @override
+  String get settingsSaveFailed =>
+      'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get settingsPassword => 'Пароль';
+
+  @override
+  String get settingsNewPassword => 'Новый пароль';
+
+  @override
+  String get settingsRepeatPassword => 'Повторите пароль';
+
+  @override
+  String get settingsChangePassword => 'Сменить пароль';
+
+  @override
+  String settingsPasswordShort(int count) {
+    return 'Пароль — не короче $count символов';
+  }
+
+  @override
+  String get settingsPasswordMismatch => 'Пароли не совпадают';
+
+  @override
+  String get settingsPasswordChanged => 'Пароль изменён';
+
+  @override
+  String get settingsPasswordFailed =>
+      'Не удалось сменить пароль. Возможно, он совпадает со старым или слишком простой.';
+
+  @override
+  String get settingsAbout => 'О приложении';
+
+  @override
+  String settingsAboutApp(String app) {
+    return 'О приложении $app';
+  }
+
+  @override
+  String settingsVersion(String version, String build) {
+    return 'Версия $version (сборка $build)';
+  }
+
+  @override
+  String settingsAboutText(String app) {
+    return '$app — сервис эксплуатации зданий: приём заявок текстом, голосом и с фото, отправка подрядчику, контроль визитов и приёмка работ.';
+  }
+
+  @override
+  String notifPeriod(int days) {
+    return 'За последние $days дней';
+  }
+
+  @override
+  String get notifEmpty => 'Новых событий нет';
+
+  @override
+  String get notifLoadFailed =>
+      'Не удалось загрузить уведомления. Проверьте интернет.';
+
+  @override
+  String get notifAssigned => 'Новая заявка для вашего подрядчика';
+
+  @override
+  String get notifReturned => 'Работу вернули на доработку';
+
+  @override
+  String get notifOnReview => 'Работа ждёт приёмки';
+
+  @override
+  String get notifOverdue => 'Срок прошёл, заявка не закрыта';
+
+  @override
+  String get notifVisitOutside => 'Визит вне геозоны';
+
+  @override
+  String notifVisitOutsideM(String meters) {
+    return 'Визит вне геозоны: $meters м от объекта';
+  }
+
+  @override
+  String get notifVisitMock => 'Визит с подменой GPS';
+
+  @override
+  String get notifInProgress => 'Вашу заявку взяли в работу';
+
+  @override
+  String get notifAccepted => 'Работа по вашей заявке принята';
+
+  @override
+  String notifBellTooltip(int count) {
+    return 'Уведомления: новых $count';
+  }
+
+  @override
+  String get assignSearch => 'Поиск подрядчика';
+
+  @override
+  String get assignBound => 'Закреплены за этим видом работ';
+
+  @override
+  String get assignOthers => 'Другие подрядчики';
+
+  @override
+  String get assignAll => 'Подрядчики';
+
+  @override
+  String assignNobodyBound(String layer) {
+    return 'За «$layer» никто не закреплён — выберите вручную или закрепите в карточке подрядчика';
+  }
+
+  @override
+  String get assignNoLayer =>
+      'Вид работ не указан — выберите подрядчика вручную';
+
+  @override
+  String get assignNothingFound => 'Ничего не найдено';
+
+  @override
+  String get assignBindingsFailed =>
+      'Не удалось загрузить закрепления — список без подсказок.';
+
+  @override
+  String assignExecutors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count исполнителей',
+      few: '$count исполнителя',
+      one: '$count исполнитель',
+      zero: 'Исполнителей нет',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assignNorm(int count) {
+    return 'норма $count в мес.';
+  }
+
+  @override
+  String get assignAllObjects => 'все объекты';
+
+  @override
+  String get assignCurrent => 'Назначен сейчас';
+
+  @override
+  String get assignInline => 'Назначить';
+
+  @override
+  String get assignChangeInline => 'Изменить';
+
+  @override
+  String toastAssignedTo(String name) {
+    return 'Назначено: $name';
+  }
+
+  @override
+  String get fieldExecutor => 'Исполнитель';
 }

@@ -645,30 +645,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t complete the action. Please try again.';
 
   @override
-  String get adminTitle => 'Administration';
-
-  @override
-  String get adminObjects => 'Sites and geolocation';
-
-  @override
-  String get adminDepartments => 'Departments';
-
-  @override
-  String get adminAssets => 'Equipment and assets';
-
-  @override
-  String get adminContractors => 'Contractor companies';
-
-  @override
-  String get adminInvites => 'Invite links for technicians';
-
-  @override
-  String get adminUsers => 'Users and roles';
-
-  @override
-  String get adminComingSoon => 'Coming in Phase 1';
-
-  @override
   String get photosTitle => 'Photos';
 
   @override
@@ -883,7 +859,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportsHelp =>
-      'On time — share accepted before the deadline, among requests with a deadline. First time — accepted without being returned. Response — from creation to “In progress”; execution — from “In progress” to “In review”. Visit targets are prorated to the period length.';
+      'On time — share of requests accepted by the deadline, among all requests with a deadline: accepted after the deadline and still open past the deadline count as late; cancelled ones are not counted. First time — accepted without being returned. Response — from creation to “In progress”; execution — from “In progress” to “In review”. Visit targets are prorated to the period length and rounded to a whole number (below 1 — to one decimal).';
 
   @override
   String get reportsOrdersEmpty => 'No requests in this period.';
@@ -1075,4 +1051,322 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get historyVisitOutside =>
       'Visit outside geofence or with spoofed GPS';
+
+  @override
+  String get reportsPeriod30 => '30 days';
+
+  @override
+  String get companyNameLabel => 'Company';
+
+  @override
+  String get companyRenameTitle => 'Company name';
+
+  @override
+  String get companyRenamed => 'Name saved';
+
+  @override
+  String get companyRenameUnavailable =>
+      'The name can\'t be changed yet: the database needs an update. Let your administrator know.';
+
+  @override
+  String get companyLoadFailed =>
+      'Couldn\'t load company data. Check your connection.';
+
+  @override
+  String companyMembers(int count) {
+    return 'People: $count';
+  }
+
+  @override
+  String companyMemberYou(String name) {
+    return '$name (you)';
+  }
+
+  @override
+  String get companyNoPhone => 'No phone number';
+
+  @override
+  String get companyRoleChange => 'Change role';
+
+  @override
+  String companyRoleTitle(String name) {
+    return 'Role: $name';
+  }
+
+  @override
+  String get companyRoleExecutorHint =>
+      'To see requests, a technician must be linked to a contractor — use an invitation.';
+
+  @override
+  String get companyRoleChanged => 'Role changed';
+
+  @override
+  String get companyInvites => 'Invitations';
+
+  @override
+  String get companyInvite => 'Invite';
+
+  @override
+  String get companyNoInvites => 'No active invitations.';
+
+  @override
+  String companyInviteRow(String contractor, String date) {
+    return '$contractor · until $date';
+  }
+
+  @override
+  String get companyDirectory => 'Directories';
+
+  @override
+  String get inviteTitle => 'Invite a technician';
+
+  @override
+  String get inviteContractor => 'Contractor';
+
+  @override
+  String get inviteRoleInfo =>
+      'Role: technician of this contractor. They will see the contractor\'s requests and can work on them. You can assign a different role later in the people list.';
+
+  @override
+  String get inviteValidity => 'Valid for';
+
+  @override
+  String inviteDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '$count day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inviteCreate => 'Create';
+
+  @override
+  String get inviteFailed =>
+      'Couldn\'t create the invitation. Please try again.';
+
+  @override
+  String get inviteNoContractors =>
+      'Add a contractor on the Contractors tab first.';
+
+  @override
+  String inviteReadyTitle(String contractor) {
+    return 'Invitation to $contractor';
+  }
+
+  @override
+  String inviteValidUntil(String date) {
+    return 'Valid until $date, single use';
+  }
+
+  @override
+  String get inviteCodeLabel => 'Code';
+
+  @override
+  String get inviteLinkLabel => 'Link (web app)';
+
+  @override
+  String get inviteHowTo =>
+      'The new person signs up in the app and enters the code in the “I have an invite code” box. Opening the link on the website fills in the code automatically.';
+
+  @override
+  String get inviteCopyMessage => 'Copy invitation';
+
+  @override
+  String get inviteCopyCode => 'Copy code';
+
+  @override
+  String get inviteCopied => 'Invitation copied — send it in a messenger';
+
+  @override
+  String get inviteCodeCopied => 'Code copied';
+
+  @override
+  String get inviteRevoke => 'Revoke invitation';
+
+  @override
+  String get inviteRevoked => 'Invitation revoked';
+
+  @override
+  String inviteMessage(
+      String app, String contractor, String link, String code, String date) {
+    return 'You\'re invited to $app as a technician of $contractor.\nOpen the link: $link\nor install the app and enter the code: $code\nValid until $date.';
+  }
+
+  @override
+  String get settingsProfile => 'Profile';
+
+  @override
+  String get settingsName => 'Full name';
+
+  @override
+  String get settingsPhone => 'Phone';
+
+  @override
+  String get settingsPhoneHint => '+1 555 000 0000';
+
+  @override
+  String get settingsSaved => 'Saved';
+
+  @override
+  String get settingsSaveFailed =>
+      'Couldn\'t save. Check your connection and try again.';
+
+  @override
+  String get settingsPassword => 'Password';
+
+  @override
+  String get settingsNewPassword => 'New password';
+
+  @override
+  String get settingsRepeatPassword => 'Repeat password';
+
+  @override
+  String get settingsChangePassword => 'Change password';
+
+  @override
+  String settingsPasswordShort(int count) {
+    return 'Password must be at least $count characters';
+  }
+
+  @override
+  String get settingsPasswordMismatch => 'Passwords don\'t match';
+
+  @override
+  String get settingsPasswordChanged => 'Password changed';
+
+  @override
+  String get settingsPasswordFailed =>
+      'Couldn\'t change the password. It may match the old one or be too simple.';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String settingsAboutApp(String app) {
+    return 'About $app';
+  }
+
+  @override
+  String settingsVersion(String version, String build) {
+    return 'Version $version (build $build)';
+  }
+
+  @override
+  String settingsAboutText(String app) {
+    return '$app is a building operations service: requests by text, voice or photo, routing to contractors, visit control and work acceptance.';
+  }
+
+  @override
+  String notifPeriod(int days) {
+    return 'Last $days days';
+  }
+
+  @override
+  String get notifEmpty => 'Nothing new';
+
+  @override
+  String get notifLoadFailed =>
+      'Couldn\'t load notifications. Check your connection.';
+
+  @override
+  String get notifAssigned => 'New request for your contractor';
+
+  @override
+  String get notifReturned => 'Work returned for rework';
+
+  @override
+  String get notifOnReview => 'Work awaits acceptance';
+
+  @override
+  String get notifOverdue => 'Deadline passed, request still open';
+
+  @override
+  String get notifVisitOutside => 'Visit outside the geofence';
+
+  @override
+  String notifVisitOutsideM(String meters) {
+    return 'Visit outside the geofence: $meters m from the site';
+  }
+
+  @override
+  String get notifVisitMock => 'Visit with spoofed GPS';
+
+  @override
+  String get notifInProgress => 'Your request is in progress';
+
+  @override
+  String get notifAccepted => 'Work on your request was accepted';
+
+  @override
+  String notifBellTooltip(int count) {
+    return 'Notifications: $count new';
+  }
+
+  @override
+  String get assignSearch => 'Search contractors';
+
+  @override
+  String get assignBound => 'Assigned to this work type';
+
+  @override
+  String get assignOthers => 'Other contractors';
+
+  @override
+  String get assignAll => 'Contractors';
+
+  @override
+  String assignNobodyBound(String layer) {
+    return 'Nobody is assigned to “$layer” — choose manually or set it up in the contractor card';
+  }
+
+  @override
+  String get assignNoLayer => 'No work type — choose a contractor manually';
+
+  @override
+  String get assignNothingFound => 'Nothing found';
+
+  @override
+  String get assignBindingsFailed =>
+      'Couldn\'t load assignments — the list has no hints.';
+
+  @override
+  String assignExecutors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count technicians',
+      one: '$count technician',
+      zero: 'No technicians',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assignNorm(int count) {
+    return 'target $count/mo';
+  }
+
+  @override
+  String get assignAllObjects => 'all sites';
+
+  @override
+  String get assignCurrent => 'Currently assigned';
+
+  @override
+  String get assignInline => 'Assign';
+
+  @override
+  String get assignChangeInline => 'Change';
+
+  @override
+  String toastAssignedTo(String name) {
+    return 'Assigned: $name';
+  }
+
+  @override
+  String get fieldExecutor => 'Technician';
 }

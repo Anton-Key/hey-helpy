@@ -17,6 +17,7 @@ import '../photos/photo_section.dart';
 import '../visits/visit_repository.dart';
 import '../visits/visit_section.dart';
 import '../voice/voice_record_screen.dart';
+import 'contractor_picker.dart';
 import '../voice/wake_word_service.dart';
 
 class WorkOrder {
@@ -139,6 +140,16 @@ class RequestsRepo {
       'recurrence': recurring ? {'kind': 'regular'} : null,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }).eq('id', id);
+  }
+
+  /// Имя конкретного исполнителя заявки (executors → profiles).
+  Future<String?> executorName(String executorId) async {
+    final r = await _c
+        .from('executors')
+        .select('profiles(full_name)')
+        .eq('id', executorId)
+        .maybeSingle();
+    return (r?['profiles'] as Map<String, dynamic>?)?['full_name'] as String?;
   }
 
   Future<void> assign(String id, String contractorId) async {
@@ -506,6 +517,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   List<Visit> _visits = const [];
   bool _visitsFailed = false;
   bool _starting = false;
+  String? _executorName;
 
   @override
   void initState() {
@@ -525,7 +537,11 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         _d = d;
         _loading = false;
       });
-      await Future.wait([_loadPhotos(), if (_isManager) _loadVisits()]);
+      await Future.wait([
+        _loadPhotos(),
+        if (_isManager) _loadVisits(),
+        _loadExecutor(d?['assigned_executor_id'] as String?),
+      ]);
     } catch (e) {
       debugPrint('WorkOrderDetail: $e');
       if (!mounted) return;
@@ -533,6 +549,19 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         _error = '$e';
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _loadExecutor(String? executorId) async {
+    if (executorId == null) {
+      if (mounted) setState(() => _executorName = null);
+      return;
+    }
+    try {
+      final name = await widget.repo.executorName(executorId);
+      if (mounted) setState(() => _executorName = name);
+    } catch (e) {
+      debugPrint('executor: $e');
     }
   }
 
@@ -669,43 +698,23 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       _ok(l.assignNoContractors(l.tabContractors));
       return;
     }
-    final chosen = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                  color: _line, borderRadius: BorderRadius.circular(4))),
-          Padding(
-              padding: const EdgeInsetsDirectional.only(bottom: 6),
-              child: Text(l.actionAssign,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w800))),
-          for (final c in widget.contractors)
-            ListTile(
-              leading: const Icon(Icons.business),
-              title: Text(c.orgName),
-              onTap: () => Navigator.pop(ctx, c.id),
-            ),
-          const SizedBox(height: 8),
-        ]),
-      ),
-    );
-    if (chosen != null) {
-      try {
-        await widget.repo.assign(widget.order.id, chosen);
-        await _load();
-        _ok(l.toastAssigned);
-      } catch (e) {
-        debugPrint('assign: $e');
-        _ok(l.errorGeneric);
-      }
+    final d = _d!;
+    final chosen = await pickContractor(context,
+        contractors: widget.contractors,
+        layerId: d['layer_id'] as String?,
+        layerLabel: _workTypeLabel(widget.layers, context.localeCode,
+            layerId: d['layer_id'] as String?,
+            workType: d['work_type'] as String?),
+        objectId: d['object_id'] as String?,
+        currentId: d['assigned_contractor_id'] as String?);
+    if (chosen == null) return;
+    try {
+      await widget.repo.assign(widget.order.id, chosen.id);
+      await _load();
+      _ok(l.toastAssignedTo(chosen.orgName));
+    } catch (e) {
+      debugPrint('assign: $e');
+      _ok(l.errorGeneric);
     }
   }
 
@@ -788,6 +797,30 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
                   child: Text(l.detailLoadFailed,
                       style: const TextStyle(color: Color(0xFFC24444))))
               : _content(),
+      bottomNavigationBar: _loading || _error != null ? null : _bottomBar(),
+    );
+  }
+
+  /// Главные действия по роли и статусу — внизу экрана, не уезжают при
+  /// прокрутке. У заявителя панели нет (его кнопки — в блоке «Действия»).
+  Widget? _bottomBar() {
+    final buttons = _primary();
+    if (buttons.isEmpty) return null;
+    return Container(
+      decoration: const BoxDecoration(
+          color: Colors.white, border: Border(top: BorderSide(color: _line))),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 10),
+          child: Row(children: [
+            for (var i = 0; i < buttons.length; i++) ...[
+              if (i > 0) const SizedBox(width: 10),
+              Expanded(child: buttons[i]),
+            ],
+          ]),
+        ),
+      ),
     );
   }
 
@@ -805,7 +838,6 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final contractorId = d['assigned_contractor_id'] as String?;
     final created = DateTime.tryParse('${d['created_at']}');
     final createdText = created == null ? '—' : l.dateTime(created);
-    const brand = HeyHelpyTheme.brand;
 
     return ListView(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
@@ -821,7 +853,21 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         const SizedBox(height: 20),
         _row(l.fieldObject, _objNameIn(l, widget.objects, objId)),
         _row(l.fieldContractor,
-            _contractorNameIn(l, widget.contractors, contractorId)),
+            _contractorNameIn(l, widget.contractors, contractorId),
+            action: _canAssign(status)
+                ? TextButton.icon(
+                    onPressed: _assign,
+                    icon: Icon(
+                        contractorId == null
+                            ? Icons.person_add_alt_1_outlined
+                            : Icons.swap_horiz,
+                        size: 18),
+                    label: Text(contractorId == null
+                        ? l.assignInline
+                        : l.assignChangeInline))
+                : null),
+        if (_executorName != null && _executorName!.isNotEmpty)
+          _row(l.fieldExecutor, _executorName!),
         _row(l.fieldWorkType, workType ?? '—'),
         _row(l.fieldPriority, l.priority(priority)),
         _row(l.fieldKind, recurring ? l.kindRecurring : l.kindOneOff),
@@ -878,16 +924,13 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
           const SizedBox(height: 20),
           VisitsSection(visits: _visits, loadFailed: _visitsFailed),
         ],
-        if (_actions(status, contractorId, brand).isNotEmpty) ...[
+        if (_actions(status).isNotEmpty) ...[
           const SizedBox(height: 24),
           Text(l.actionsTitle,
               style: const TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
           const SizedBox(height: 10),
-          Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: _actions(status, contractorId, brand)),
+          Wrap(spacing: 10, runSpacing: 10, children: _actions(status)),
         ],
       ],
     );
@@ -899,64 +942,116 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   bool _canAddAfter(String status) =>
       status == 'in_progress' && (_isExecutor || _isManager);
 
-  /// Кнопки зависят от роли и статуса. Те же правила проверяет база.
-  List<Widget> _actions(String status, String? contractorId, Color brand) {
-    final canWork = _isExecutor || _isManager;
+  /// Менеджер назначает или меняет подрядчика, пока работу не начали.
+  /// Те же правила проверяет база (trg_wo_guard, trg_wo_status_flow).
+  bool _canAssign(String status) =>
+      _isManager &&
+      (status == 'new' || status == 'assigned' || status == 'returned');
+
+  bool _canStart(String status) =>
+      (_isExecutor || _isManager) &&
+      (status == 'new' || status == 'assigned' || status == 'returned');
+
+  // Без фото «после» кнопка «На проверку» неактивна; база проверяет то же.
+  bool get _needPhoto => _d?['requires_photo'] == true && !_hasAfterPhoto;
+
+  ButtonStyle get _filled => FilledButton.styleFrom(
+      backgroundColor: HeyHelpyTheme.brand,
+      foregroundColor: _onBrand,
+      minimumSize: const Size.fromHeight(48));
+
+  Widget _startButton(String status) => FilledButton.icon(
+        onPressed: _starting ? null : _startWork,
+        style: _filled,
+        icon: const Icon(Icons.play_arrow_rounded, size: 18),
+        label: Text(status == 'returned'
+            ? context.l10n.actionRestart
+            : context.l10n.actionStart),
+      );
+
+  Widget _photoButton() => FilledButton.icon(
+        onPressed: _uploading ? null : () => _addPhoto('after'),
+        style: _filled,
+        icon: const Icon(Icons.photo_camera_outlined, size: 18),
+        label: Text(context.l10n.photoTakeResult),
+      );
+
+  Widget _submitButton() => FilledButton.icon(
+        onPressed: _needPhoto
+            ? null
+            : () => _setStatus('on_review', context.l10n.toastSubmitted),
+        style: _filled,
+        icon: const Icon(Icons.check_rounded, size: 18),
+        label: Text(context.l10n.actionSubmit),
+      );
+
+  Widget _acceptButton() => FilledButton.icon(
+        onPressed: () => _setStatus('done', context.l10n.toastAccepted),
+        style: _filled,
+        icon: const Icon(Icons.verified_outlined, size: 18),
+        label: Text(context.l10n.actionAccept),
+      );
+
+  Widget _returnButton() => OutlinedButton.icon(
+        onPressed: _returnForRework,
+        style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFFC24444),
+            minimumSize: const Size.fromHeight(48)),
+        icon: const Icon(Icons.undo_rounded, size: 18),
+        label: Text(context.l10n.actionReturn),
+      );
+
+  /// 1–2 главных действия для нижней панели.
+  /// Менеджер: «Новая» → назначить; «На проверке» → принять / вернуть.
+  /// Исполнитель: «Назначена» / «Возвращена» → начать; «В работе» → фото и сдать.
+  List<Widget> _primary() {
+    final d = _d;
+    if (d == null) return const [];
+    final l = context.l10n;
+    final status = (d['status'] ?? 'new') as String;
+    if (_isManager) {
+      if (status == 'new') {
+        return [
+          FilledButton.icon(
+            onPressed: _assign,
+            style: _filled,
+            icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
+            label: Text(l.actionAssign),
+          ),
+        ];
+      }
+      if (status == 'on_review') return [_returnButton(), _acceptButton()];
+      return const [];
+    }
+    if (_isExecutor) {
+      if (_canStart(status)) return [_startButton(status)];
+      if (status == 'in_progress') {
+        return [if (_needPhoto) _photoButton(), _submitButton()];
+      }
+    }
+    return const [];
+  }
+
+  /// Остальные действия — в блоке «Действия» (без повторов с нижней панелью).
+  /// Те же правила проверяет база.
+  List<Widget> _actions(String status) {
     final canAccept = _isAuthor || _isManager;
     final l = context.l10n;
-    // Без фото «после» кнопка «На проверку» неактивна; база проверяет то же.
-    final needPhoto = _d?['requires_photo'] == true && !_hasAfterPhoto;
-    final filled = FilledButton.styleFrom(
-        backgroundColor: brand, foregroundColor: _onBrand);
+    final inBar = _isManager || _isExecutor;
     return [
-      if (_isManager &&
-          (status == 'new' || status == 'assigned' || status == 'returned'))
-        OutlinedButton.icon(
-          onPressed: _assign,
-          icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
-          label: Text(contractorId == null ? l.actionAssign : l.actionReassign),
-        ),
-      if (canWork &&
-          (status == 'new' || status == 'assigned' || status == 'returned'))
-        FilledButton.icon(
-          onPressed: _starting ? null : _startWork,
-          style: filled,
-          icon: const Icon(Icons.play_arrow_rounded, size: 18),
-          label: Text(status == 'returned' ? l.actionRestart : l.actionStart),
-        ),
-      if (canWork && status == 'in_progress' && needPhoto) ...[
-        FilledButton.icon(
-          onPressed: _uploading ? null : () => _addPhoto('after'),
-          style: filled,
-          icon: const Icon(Icons.photo_camera_outlined, size: 18),
-          label: Text(l.photoTakeResult),
-        ),
+      // Менеджер может начать и сдать работу сам — эти кнопки у него здесь.
+      if (_isManager && _canStart(status)) _startButton(status),
+      if (_isManager && status == 'in_progress') ...[
+        if (_needPhoto) _photoButton(),
+        _submitButton(),
+      ],
+      if (_needPhoto && status == 'in_progress' && (_isManager || _isExecutor))
         Text(l.photoNeededHint,
             style: const TextStyle(color: _muted, fontSize: 13)),
-      ],
-      if (canWork && status == 'in_progress')
-        FilledButton.icon(
-          onPressed: needPhoto
-              ? null
-              : () => _setStatus('on_review', l.toastSubmitted),
-          style: filled,
-          icon: const Icon(Icons.check_rounded, size: 18),
-          label: Text(l.actionSubmit),
-        ),
-      if (canAccept && status == 'on_review') ...[
-        FilledButton.icon(
-          onPressed: () => _setStatus('done', l.toastAccepted),
-          style: filled,
-          icon: const Icon(Icons.verified_outlined, size: 18),
-          label: Text(l.actionAccept),
-        ),
-        OutlinedButton.icon(
-          onPressed: _returnForRework,
-          style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFC24444)),
-          icon: const Icon(Icons.undo_rounded, size: 18),
-          label: Text(l.actionReturn),
-        ),
+      // Заявитель принимает свою работу здесь: нижней панели у него нет.
+      if (!inBar && canAccept && status == 'on_review') ...[
+        _acceptButton(),
+        _returnButton(),
       ],
       if (canAccept && status != 'done' && status != 'cancelled')
         OutlinedButton.icon(
@@ -969,18 +1064,26 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     ];
   }
 
-  Widget _row(String k, String v) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(
-              width: 150,
-              child:
-                  Text(k, style: const TextStyle(color: _muted, fontSize: 14))),
-          Expanded(
-              child: Text(v,
-                  style: const TextStyle(
-                      color: _ink, fontSize: 14, fontWeight: FontWeight.w600))),
-        ]),
+  /// Строка сведений «подпись — значение»; [action] — кнопка в конце строки.
+  Widget _row(String k, String v, {Widget? action}) => Padding(
+        padding: EdgeInsets.symmetric(vertical: action == null ? 8 : 2),
+        child: Row(
+            crossAxisAlignment: action == null
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                  width: 150,
+                  child: Text(k,
+                      style: const TextStyle(color: _muted, fontSize: 14))),
+              Expanded(
+                  child: Text(v,
+                      style: const TextStyle(
+                          color: _ink,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600))),
+              if (action != null) action,
+            ]),
       );
 }
 

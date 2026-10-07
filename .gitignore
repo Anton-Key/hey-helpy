@@ -56,3 +56,6 @@ env.json
 
 # Отчёты Claude Code для проверки — не в git
 /reports/
+
+# Личные заметки — не в git
+/notes/

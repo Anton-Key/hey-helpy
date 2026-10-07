@@ -53,3 +53,6 @@ env.json
 *.env
 .env.*
 .claude/settings.local.json
+
+# Отчёты Claude Code для проверки — не в git
+/reports/

@@ -151,28 +151,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyDone => 'Done';
 
   @override
-  String get reportsKpiRequests => 'requests this month';
+  String get reportsKpiRequests => 'requests';
 
   @override
   String get reportsKpiOnTime => 'on time';
-
-  @override
-  String get reportsKpiAvgTime => 'avg. time';
-
-  @override
-  String hoursShort(String value) {
-    return '$value h';
-  }
-
-  @override
-  String get reportsWeeklyChart => 'Requests by week';
-
-  @override
-  String get reportsExportPdf => 'Export to PDF';
-
-  @override
-  String get reportsWebHint =>
-      'Full reports and filters are in the web version';
 
   @override
   String get profileDefaultName => 'User';
@@ -722,13 +704,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminComingSoon => 'Coming in Phase 1';
 
   @override
-  String get reportsComingTitle => 'Reports are coming in Phase 1';
-
-  @override
-  String get reportsComingBody =>
-      'Filters: site, work type, contractor, period, time.\nExport: CSV / XLSX / PDF / email.';
-
-  @override
   String get photosTitle => 'Photos';
 
   @override
@@ -832,4 +807,149 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get visitNoLocation =>
       'Work started without location. Turn it on so the visit can be checked against the geofence.';
+
+  @override
+  String get reportsManagerOnly =>
+      'Reports are available to managers and admins.';
+
+  @override
+  String get reportsPeriodWeek => 'Week';
+
+  @override
+  String get reportsPeriodMonth => 'Month';
+
+  @override
+  String get reportsPeriodCustom => 'Custom';
+
+  @override
+  String reportsRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String get reportsFilterObject => 'Site';
+
+  @override
+  String get reportsFilterContractor => 'Contractor';
+
+  @override
+  String get reportsFilterLayer => 'Work type';
+
+  @override
+  String get reportsFilterAll => 'All';
+
+  @override
+  String get reportsLoadFailed =>
+      'Couldn\'t load the report. Check your connection and try again.';
+
+  @override
+  String get reportsEmpty => 'No requests or visits in this period.';
+
+  @override
+  String get reportsKpiFirstPass => 'accepted first time';
+
+  @override
+  String get reportsKpiGeofence => 'visits in geofence';
+
+  @override
+  String reportsKpiOf(int count) {
+    return 'of $count';
+  }
+
+  @override
+  String get reportsByContractor => 'By contractor';
+
+  @override
+  String get reportsNoContractor => 'No contractor';
+
+  @override
+  String get reportsOrders => 'Requests';
+
+  @override
+  String get reportsAccepted => 'Accepted';
+
+  @override
+  String get reportsReturned => 'Returned';
+
+  @override
+  String get reportsOverdue => 'Overdue';
+
+  @override
+  String get reportsOnTime => 'On time';
+
+  @override
+  String get reportsFirstPass => 'First time';
+
+  @override
+  String get reportsReaction => 'Response';
+
+  @override
+  String get reportsExecution => 'Execution';
+
+  @override
+  String get reportsVisits => 'Visits';
+
+  @override
+  String get reportsVisitsInZone => 'In geofence';
+
+  @override
+  String get reportsVisitsSuspicious => 'Outside geofence or spoofed GPS';
+
+  @override
+  String get reportsOnSite => 'Time on site';
+
+  @override
+  String get reportsPhotos => 'With before & after photos';
+
+  @override
+  String get reportsVisitNorm => 'Visits: actual / target';
+
+  @override
+  String reportsFactNorm(String fact, String norm) {
+    return '$fact / $norm';
+  }
+
+  @override
+  String get reportsNoValue => '—';
+
+  @override
+  String get reportsNormsMissing =>
+      'Contract visit targets will appear after the database update.';
+
+  @override
+  String get reportsHelp =>
+      'On time — share accepted before the deadline, among requests with a deadline. First time — accepted without being returned. Response — from creation to “In progress”; execution — from “In progress” to “In review”. Visit targets are prorated to the period length.';
+
+  @override
+  String get reportsOrdersEmpty => 'No requests in this period.';
+
+  @override
+  String reportsReturnedTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'returned $count times',
+      one: 'returned once',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(String minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String durationHoursMinutes(String hours, String minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String durationDaysHours(String days, String hours) {
+    return '$days d $hours h';
+  }
+
+  @override
+  String get visitAlreadyOpen =>
+      'Your visit is already recorded — you\'re on site. Carry on with the work.';
 }

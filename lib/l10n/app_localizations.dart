@@ -371,7 +371,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportsKpiRequests.
   ///
   /// In ru, this message translates to:
-  /// **'заявок за месяц'**
+  /// **'заявок'**
   String get reportsKpiRequests;
 
   /// No description provided for @reportsKpiOnTime.
@@ -379,36 +379,6 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'в срок'**
   String get reportsKpiOnTime;
-
-  /// No description provided for @reportsKpiAvgTime.
-  ///
-  /// In ru, this message translates to:
-  /// **'ср. время'**
-  String get reportsKpiAvgTime;
-
-  /// No description provided for @hoursShort.
-  ///
-  /// In ru, this message translates to:
-  /// **'{value} ч'**
-  String hoursShort(String value);
-
-  /// No description provided for @reportsWeeklyChart.
-  ///
-  /// In ru, this message translates to:
-  /// **'Заявки по неделям'**
-  String get reportsWeeklyChart;
-
-  /// No description provided for @reportsExportPdf.
-  ///
-  /// In ru, this message translates to:
-  /// **'Экспорт в PDF'**
-  String get reportsExportPdf;
-
-  /// No description provided for @reportsWebHint.
-  ///
-  /// In ru, this message translates to:
-  /// **'Полные отчёты и фильтры — в web-версии'**
-  String get reportsWebHint;
 
   /// No description provided for @profileDefaultName.
   ///
@@ -1406,18 +1376,6 @@ abstract class AppLocalizations {
   /// **'Появится в Фазе 1'**
   String get adminComingSoon;
 
-  /// No description provided for @reportsComingTitle.
-  ///
-  /// In ru, this message translates to:
-  /// **'Отчёты появятся в Фазе 1'**
-  String get reportsComingTitle;
-
-  /// No description provided for @reportsComingBody.
-  ///
-  /// In ru, this message translates to:
-  /// **'Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту.'**
-  String get reportsComingBody;
-
   /// No description provided for @photosTitle.
   ///
   /// In ru, this message translates to:
@@ -1597,6 +1555,246 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Работа начата без геолокации. Включите её, чтобы посещение проверялось по геозоне.'**
   String get visitNoLocation;
+
+  /// No description provided for @reportsManagerOnly.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отчёты доступны менеджеру и администратору.'**
+  String get reportsManagerOnly;
+
+  /// No description provided for @reportsPeriodWeek.
+  ///
+  /// In ru, this message translates to:
+  /// **'Неделя'**
+  String get reportsPeriodWeek;
+
+  /// No description provided for @reportsPeriodMonth.
+  ///
+  /// In ru, this message translates to:
+  /// **'Месяц'**
+  String get reportsPeriodMonth;
+
+  /// No description provided for @reportsPeriodCustom.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свой период'**
+  String get reportsPeriodCustom;
+
+  /// No description provided for @reportsRange.
+  ///
+  /// In ru, this message translates to:
+  /// **'{from} – {to}'**
+  String reportsRange(String from, String to);
+
+  /// No description provided for @reportsFilterObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get reportsFilterObject;
+
+  /// No description provided for @reportsFilterContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get reportsFilterContractor;
+
+  /// No description provided for @reportsFilterLayer.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вид работ'**
+  String get reportsFilterLayer;
+
+  /// No description provided for @reportsFilterAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все'**
+  String get reportsFilterAll;
+
+  /// No description provided for @reportsLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить отчёт. Проверьте интернет и попробуйте ещё раз.'**
+  String get reportsLoadFailed;
+
+  /// No description provided for @reportsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'За этот период заявок и посещений нет.'**
+  String get reportsEmpty;
+
+  /// No description provided for @reportsKpiFirstPass.
+  ///
+  /// In ru, this message translates to:
+  /// **'приняты с первого раза'**
+  String get reportsKpiFirstPass;
+
+  /// No description provided for @reportsKpiGeofence.
+  ///
+  /// In ru, this message translates to:
+  /// **'визитов в геозоне'**
+  String get reportsKpiGeofence;
+
+  /// No description provided for @reportsKpiOf.
+  ///
+  /// In ru, this message translates to:
+  /// **'из {count}'**
+  String reportsKpiOf(int count);
+
+  /// No description provided for @reportsByContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'По подрядчикам'**
+  String get reportsByContractor;
+
+  /// No description provided for @reportsNoContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без подрядчика'**
+  String get reportsNoContractor;
+
+  /// No description provided for @reportsOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявок'**
+  String get reportsOrders;
+
+  /// No description provided for @reportsAccepted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Принято'**
+  String get reportsAccepted;
+
+  /// No description provided for @reportsReturned.
+  ///
+  /// In ru, this message translates to:
+  /// **'Возвращено'**
+  String get reportsReturned;
+
+  /// No description provided for @reportsOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просрочено'**
+  String get reportsOverdue;
+
+  /// No description provided for @reportsOnTime.
+  ///
+  /// In ru, this message translates to:
+  /// **'В срок'**
+  String get reportsOnTime;
+
+  /// No description provided for @reportsFirstPass.
+  ///
+  /// In ru, this message translates to:
+  /// **'С первого раза'**
+  String get reportsFirstPass;
+
+  /// No description provided for @reportsReaction.
+  ///
+  /// In ru, this message translates to:
+  /// **'Реакция'**
+  String get reportsReaction;
+
+  /// No description provided for @reportsExecution.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнение'**
+  String get reportsExecution;
+
+  /// No description provided for @reportsVisits.
+  ///
+  /// In ru, this message translates to:
+  /// **'Визиты'**
+  String get reportsVisits;
+
+  /// No description provided for @reportsVisitsInZone.
+  ///
+  /// In ru, this message translates to:
+  /// **'В геозоне'**
+  String get reportsVisitsInZone;
+
+  /// No description provided for @reportsVisitsSuspicious.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вне геозоны или подмена GPS'**
+  String get reportsVisitsSuspicious;
+
+  /// No description provided for @reportsOnSite.
+  ///
+  /// In ru, this message translates to:
+  /// **'Время на объекте'**
+  String get reportsOnSite;
+
+  /// No description provided for @reportsPhotos.
+  ///
+  /// In ru, this message translates to:
+  /// **'С фото «до» и «после»'**
+  String get reportsPhotos;
+
+  /// No description provided for @reportsVisitNorm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Визиты: факт / норма'**
+  String get reportsVisitNorm;
+
+  /// No description provided for @reportsFactNorm.
+  ///
+  /// In ru, this message translates to:
+  /// **'{fact} / {norm}'**
+  String reportsFactNorm(String fact, String norm);
+
+  /// No description provided for @reportsNoValue.
+  ///
+  /// In ru, this message translates to:
+  /// **'—'**
+  String get reportsNoValue;
+
+  /// No description provided for @reportsNormsMissing.
+  ///
+  /// In ru, this message translates to:
+  /// **'Норма посещений по договору появится после обновления базы.'**
+  String get reportsNormsMissing;
+
+  /// No description provided for @reportsHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'В срок — доля принятых до дедлайна среди заявок с дедлайном. С первого раза — принятые без возврата на доработку. Реакция — от создания заявки до «В работе», выполнение — от «В работе» до «На проверке». Норма визитов пересчитана на длину периода.'**
+  String get reportsHelp;
+
+  /// No description provided for @reportsOrdersEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявок за период нет.'**
+  String get reportsOrdersEmpty;
+
+  /// No description provided for @reportsReturnedTimes.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{возвращали {count} раз} few{возвращали {count} раза} many{возвращали {count} раз} other{возвращали {count} раза}}'**
+  String reportsReturnedTimes(int count);
+
+  /// No description provided for @durationMinutes.
+  ///
+  /// In ru, this message translates to:
+  /// **'{minutes} мин'**
+  String durationMinutes(String minutes);
+
+  /// No description provided for @durationHoursMinutes.
+  ///
+  /// In ru, this message translates to:
+  /// **'{hours} ч {minutes} мин'**
+  String durationHoursMinutes(String hours, String minutes);
+
+  /// No description provided for @durationDaysHours.
+  ///
+  /// In ru, this message translates to:
+  /// **'{days} д {hours} ч'**
+  String durationDaysHours(String days, String hours);
+
+  /// No description provided for @visitAlreadyOpen.
+  ///
+  /// In ru, this message translates to:
+  /// **'Посещение уже отмечено — вы на объекте. Продолжайте работу.'**
+  String get visitAlreadyOpen;
 }
 
 class _AppLocalizationsDelegate

@@ -25,8 +25,15 @@ class WorkOrder {
   final String status;
   final String? objectId;
   final bool recurring;
-  WorkOrder({required this.id, required this.title, this.workType, this.layerId, required this.priority,
-      required this.status, this.objectId, required this.recurring});
+  WorkOrder(
+      {required this.id,
+      required this.title,
+      this.workType,
+      this.layerId,
+      required this.priority,
+      required this.status,
+      this.objectId,
+      required this.recurring});
   factory WorkOrder.fromMap(Map<String, dynamic> m) {
     return WorkOrder(
       id: m['id'] as String,
@@ -49,40 +56,67 @@ class RequestsRepo {
   Future<String?> myRole() async {
     final id = uid;
     if (id == null) return null;
-    final r = await _c.from('profiles').select('role').eq('id', id).maybeSingle();
+    final r =
+        await _c.from('profiles').select('role').eq('id', id).maybeSingle();
     return r?['role'] as String?;
   }
 
   Future<List<WorkOrder>> list() async {
     final rows = await _c
         .from('work_orders')
-        .select('id,title,work_type,layer_id,priority,status,recurrence,object_id')
+        .select(
+            'id,title,work_type,layer_id,priority,status,recurrence,object_id')
         .order('created_at', ascending: false);
-    return (rows as List).map((e) => WorkOrder.fromMap(e as Map<String, dynamic>)).toList();
+    return (rows as List)
+        .map((e) => WorkOrder.fromMap(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Map<String, dynamic>?> detail(String id) async {
     return await _c.from('work_orders').select().eq('id', id).maybeSingle();
   }
 
-  Future<void> create({required String companyId, required String title, String? description,
-      Layer? layer, required String priority, String? objectId, required bool recurring,
-      String? locationId, String inputChannel = 'button'}) async {
+  Future<void> create(
+      {required String companyId,
+      required String title,
+      String? description,
+      Layer? layer,
+      required String priority,
+      String? objectId,
+      required bool recurring,
+      String? locationId,
+      String inputChannel = 'button'}) async {
     // Слой передаём явно: тогда назначение подрядчика не зависит от языка интерфейса.
     await _c.from('work_orders').insert({
-      'company_id': companyId, 'title': title, 'description': description,
-      'work_type': layer?.name, 'layer_id': layer?.id,
-      'priority': priority, 'status': 'new', 'input_channel': inputChannel, 'object_id': objectId,
+      'company_id': companyId,
+      'title': title,
+      'description': description,
+      'work_type': layer?.name,
+      'layer_id': layer?.id,
+      'priority': priority,
+      'status': 'new',
+      'input_channel': inputChannel,
+      'object_id': objectId,
       'location_id': locationId,
-      'recurrence': recurring ? {'kind': 'regular'} : null, 'created_by': uid,
+      'recurrence': recurring ? {'kind': 'regular'} : null,
+      'created_by': uid,
     });
   }
 
-  Future<void> update(String id, {required String title, String? description,
-      Layer? layer, required String priority, String? objectId, required bool recurring}) async {
+  Future<void> update(String id,
+      {required String title,
+      String? description,
+      Layer? layer,
+      required String priority,
+      String? objectId,
+      required bool recurring}) async {
     await _c.from('work_orders').update({
-      'title': title, 'description': description, 'work_type': layer?.name, 'layer_id': layer?.id,
-      'priority': priority, 'object_id': objectId,
+      'title': title,
+      'description': description,
+      'work_type': layer?.name,
+      'layer_id': layer?.id,
+      'priority': priority,
+      'object_id': objectId,
       'recurrence': recurring ? {'kind': 'regular'} : null,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }).eq('id', id);
@@ -90,7 +124,9 @@ class RequestsRepo {
 
   Future<void> assign(String id, String contractorId) async {
     await _c.from('work_orders').update({
-      'assigned_contractor_id': contractorId, 'status': 'assigned', 'assigned_by': 'manager',
+      'assigned_contractor_id': contractorId,
+      'status': 'assigned',
+      'assigned_by': 'manager',
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }).eq('id', id);
   }
@@ -101,7 +137,9 @@ class RequestsRepo {
 
   /// Вернуть работу на доработку с комментарием (только автор или менеджер).
   Future<void> returnForRework(String id, String reason) async {
-    await _c.from('work_orders').update({'status': 'returned', 'return_reason': reason}).eq('id', id);
+    await _c
+        .from('work_orders')
+        .update({'status': 'returned', 'return_reason': reason}).eq('id', id);
   }
 }
 
@@ -111,7 +149,9 @@ const _line = Color(0xFFE8EAED);
 const _onBrand = Color(0xFF06342A);
 
 BoxDecoration _card() => BoxDecoration(
-    color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: _line));
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(color: _line));
 
 List<Color> _statusColors(String s) {
   switch (s) {
@@ -133,18 +173,24 @@ List<Color> _statusColors(String s) {
 
 String _objNameIn(AppLocalizations l, List<Obj> objects, String? id) {
   if (id == null) return l.objectNone;
-  for (final o in objects) { if (o.id == id) return o.name; }
+  for (final o in objects) {
+    if (o.id == id) return o.name;
+  }
   return l.objectUnknown;
 }
 
-String _contractorNameIn(AppLocalizations l, List<Contractor> list, String? id) {
+String _contractorNameIn(
+    AppLocalizations l, List<Contractor> list, String? id) {
   if (id == null) return l.contractorNone;
-  for (final c in list) { if (c.id == id) return c.orgName; }
+  for (final c in list) {
+    if (c.id == id) return c.orgName;
+  }
   return l.contractorUnknown;
 }
 
 /// Вид работ заявки на языке интерфейса.
-String? _workTypeLabel(List<Layer> layers, String locale, {String? layerId, String? workType}) {
+String? _workTypeLabel(List<Layer> layers, String locale,
+    {String? layerId, String? workType}) {
   final layer = Layer.find(layers, id: layerId, name: workType);
   if (layer != null) return layer.label(locale);
   return (workType == null || workType.isEmpty) ? null : workType;
@@ -159,6 +205,7 @@ class RequestsTab extends StatefulWidget {
 class _RequestsTabState extends State<RequestsTab> {
   final _repo = RequestsRepo();
   final _dir = DirectoryRepo();
+
   /// Сейчас — кнопка «Нажми и говори»; позже сюда же подключится «Эй, Хелпи».
   final _wake = PushToTalkWakeWord();
   StreamSubscription<void>? _wakeSub;
@@ -188,7 +235,10 @@ class _RequestsTabState extends State<RequestsTab> {
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       _companyId ??= await _dir.myCompanyId();
       _role ??= await _repo.myRole();
@@ -196,13 +246,24 @@ class _RequestsTabState extends State<RequestsTab> {
       final cons = await _dir.contractors();
       final data = await _repo.list();
       List<Layer> layers = _layers;
-      try { layers = await _dir.layers(); } catch (_) {}
+      try {
+        layers = await _dir.layers();
+      } catch (_) {}
       if (!mounted) return;
-      setState(() { _objects = objs; _contractors = cons; _layers = layers; _items = data; _loading = false; });
+      setState(() {
+        _objects = objs;
+        _contractors = cons;
+        _layers = layers;
+        _items = data;
+        _loading = false;
+      });
     } catch (e) {
       debugPrint('RequestsTab: $e');
       if (!mounted) return;
-      setState(() { _error = '$e'; _loading = false; });
+      setState(() {
+        _error = '$e';
+        _loading = false;
+      });
     }
   }
 
@@ -214,12 +275,20 @@ class _RequestsTabState extends State<RequestsTab> {
   }
 
   Future<void> _openDetail(WorkOrder w) async {
-    await Navigator.push(context, MaterialPageRoute(
-      builder: (_) => WorkOrderDetailScreen(
-        order: w, objects: _objects, contractors: _contractors, layers: _layers,
-        uid: _repo.uid, role: _role, repo: _repo, companyId: _companyId,
-      ),
-    ));
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => WorkOrderDetailScreen(
+            order: w,
+            objects: _objects,
+            contractors: _contractors,
+            layers: _layers,
+            uid: _repo.uid,
+            role: _role,
+            repo: _repo,
+            companyId: _companyId,
+          ),
+        ));
     _load();
   }
 
@@ -228,33 +297,50 @@ class _RequestsTabState extends State<RequestsTab> {
     final brand = Theme.of(context).colorScheme.primary;
     return Stack(children: [
       Positioned.fill(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(18, 14, 18, 6),
             child: Text(_statusText(),
-                style: const TextStyle(color: _muted, fontWeight: FontWeight.w700, fontSize: 13)),
+                style: const TextStyle(
+                    color: _muted, fontWeight: FontWeight.w700, fontSize: 13)),
           ),
           Expanded(child: _body()),
         ]),
       ),
       PositionedDirectional(
-        end: 4, bottom: 8,
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [
-          FloatingActionButton.small(
-            heroTag: 'refreshReq', backgroundColor: Colors.white, foregroundColor: brand,
-            tooltip: context.l10n.commonRefresh, onPressed: _load, child: const Icon(Icons.refresh)),
-          const SizedBox(height: 10),
-          Tooltip(message: context.l10n.requestsVoice,
-            child: FloatingActionButton.large(
-              heroTag: 'voiceReq', backgroundColor: brand, foregroundColor: _onBrand,
-              onPressed: _wake.trigger, child: const Icon(Icons.mic, size: 44))),
-          const SizedBox(height: 10),
-          FloatingActionButton.extended(
-            heroTag: 'addReq', backgroundColor: brand, foregroundColor: _onBrand,
-            onPressed: _openCreate,
-            icon: const Icon(Icons.add),
-            label: Text(context.l10n.requestsCreate, style: const TextStyle(fontWeight: FontWeight.w800))),
-        ]),
+        end: 4,
+        bottom: 8,
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              FloatingActionButton.small(
+                  heroTag: 'refreshReq',
+                  backgroundColor: Colors.white,
+                  foregroundColor: brand,
+                  tooltip: context.l10n.commonRefresh,
+                  onPressed: _load,
+                  child: const Icon(Icons.refresh)),
+              const SizedBox(height: 10),
+              Tooltip(
+                  message: context.l10n.requestsVoice,
+                  child: FloatingActionButton.large(
+                      heroTag: 'voiceReq',
+                      backgroundColor: brand,
+                      foregroundColor: _onBrand,
+                      onPressed: _wake.trigger,
+                      child: const Icon(Icons.mic, size: 44))),
+              const SizedBox(height: 10),
+              FloatingActionButton.extended(
+                  heroTag: 'addReq',
+                  backgroundColor: brand,
+                  foregroundColor: _onBrand,
+                  onPressed: _openCreate,
+                  icon: const Icon(Icons.add),
+                  label: Text(context.l10n.requestsCreate,
+                      style: const TextStyle(fontWeight: FontWeight.w800))),
+            ]),
       ),
     ]);
   }
@@ -266,14 +352,17 @@ class _RequestsTabState extends State<RequestsTab> {
     if (_error != null) {
       return Padding(
         padding: const EdgeInsets.all(24),
-        child: Text(l.requestsLoadFailed, style: const TextStyle(color: Color(0xFFC24444))),
+        child: Text(l.requestsLoadFailed,
+            style: const TextStyle(color: Color(0xFFC24444))),
       );
     }
     if (_items.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(28),
-          child: Text(l.requestsEmpty, textAlign: TextAlign.center, style: const TextStyle(color: _muted)),
+          child: Text(l.requestsEmpty,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: _muted)),
         ),
       );
     }
@@ -284,7 +373,8 @@ class _RequestsTabState extends State<RequestsTab> {
         final w = _items[i];
         final c = _statusColors(w.status);
         final high = w.priority == 'high' || w.priority == 'critical';
-        final workType = _workTypeLabel(_layers, locale, layerId: w.layerId, workType: w.workType);
+        final workType = _workTypeLabel(_layers, locale,
+            layerId: w.layerId, workType: w.workType);
         return Padding(
           padding: const EdgeInsetsDirectional.only(bottom: 10),
           child: InkWell(
@@ -294,28 +384,50 @@ class _RequestsTabState extends State<RequestsTab> {
               padding: const EdgeInsets.all(14),
               decoration: _card(),
               child: IntrinsicHeight(
-                child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Container(width: 6, decoration: BoxDecoration(
-                      color: high ? const Color(0xFFC24444) : const Color(0xFFD7DBE0),
-                      borderRadius: BorderRadius.circular(4))),
-                  const SizedBox(width: 11),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(w.title + (w.recurring ? '  · ${l.requestRecurringTag}' : ''),
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 3),
-                    Text('${_objNameIn(l, _objects, w.objectId)}'
-                        '${workType != null ? ' · $workType' : ''}',
-                        style: const TextStyle(color: _muted, fontSize: 13)),
-                  ])),
-                  const SizedBox(width: 8),
-                  Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: c[0], borderRadius: BorderRadius.circular(20)),
-                      child: Text(l.status(w.status),
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: c[1]))),
-                  const SizedBox(width: 4),
-                  const ChevronEnd(color: _muted, size: 20),
-                ]),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                          width: 6,
+                          decoration: BoxDecoration(
+                              color: high
+                                  ? const Color(0xFFC24444)
+                                  : const Color(0xFFD7DBE0),
+                              borderRadius: BorderRadius.circular(4))),
+                      const SizedBox(width: 11),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text(
+                                w.title +
+                                    (w.recurring
+                                        ? '  · ${l.requestRecurringTag}'
+                                        : ''),
+                                style: const TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 3),
+                            Text(
+                                '${_objNameIn(l, _objects, w.objectId)}'
+                                '${workType != null ? ' · $workType' : ''}',
+                                style: const TextStyle(
+                                    color: _muted, fontSize: 13)),
+                          ])),
+                      const SizedBox(width: 8),
+                      Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                              color: c[0],
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Text(l.status(w.status),
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: c[1]))),
+                      const SizedBox(width: 4),
+                      const ChevronEnd(color: _muted, size: 20),
+                    ]),
               ),
             ),
           ),
@@ -325,36 +437,70 @@ class _RequestsTabState extends State<RequestsTab> {
   }
 
   Future<void> _openCreate() async {
-    if (_companyId == null) { _snack(context.l10n.requestsNoCompany); return; }
+    if (_companyId == null) {
+      _snack(context.l10n.requestsNoCompany);
+      return;
+    }
     final ok = await showOrderForm(
-      context: context, repo: _repo, objects: _objects, companyId: _companyId!, existing: null);
-    if (ok == true) { await _load(); if (mounted) _snackOk(context.l10n.requestsCreated); }
+        context: context,
+        repo: _repo,
+        objects: _objects,
+        companyId: _companyId!,
+        existing: null);
+    if (ok == true) {
+      await _load();
+      if (mounted) _snackOk(context.l10n.requestsCreated);
+    }
   }
 
   Future<void> _openVoice() async {
     if (_voiceOpen || !mounted) return;
-    if (_companyId == null) { _snack(context.l10n.requestsNoCompany); return; }
+    if (_companyId == null) {
+      _snack(context.l10n.requestsNoCompany);
+      return;
+    }
     _voiceOpen = true;
-    final ok = await Navigator.push<bool>(context, MaterialPageRoute(
-        builder: (_) => VoiceRecordScreen(companyId: _companyId!, objects: _objects)));
+    final ok = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                VoiceRecordScreen(companyId: _companyId!, objects: _objects)));
     _voiceOpen = false;
-    if (ok == true) { await _load(); if (mounted) _snackOk(context.l10n.requestsCreated); }
+    if (ok == true) {
+      await _load();
+      if (mounted) _snackOk(context.l10n.requestsCreated);
+    }
   }
 
-  void _snack(String m) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m))); }
+  void _snack(String m) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+    }
+  }
+
   void _snackOk(String m) {
     if (!mounted) return;
     final brand = Theme.of(context).colorScheme.primary;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.check_circle_rounded, color: brand), const SizedBox(width: 10), Text(m),
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(Icons.check_circle_rounded, color: brand),
+      const SizedBox(width: 10),
+      Text(m),
     ])));
   }
 }
 
 class WorkOrderDetailScreen extends StatefulWidget {
-  const WorkOrderDetailScreen({super.key, required this.order, required this.objects,
-      required this.contractors, required this.layers, required this.uid, required this.role,
-      required this.repo, required this.companyId});
+  const WorkOrderDetailScreen(
+      {super.key,
+      required this.order,
+      required this.objects,
+      required this.contractors,
+      required this.layers,
+      required this.uid,
+      required this.role,
+      required this.repo,
+      required this.companyId});
   final WorkOrder order;
   final List<Obj> objects;
   final List<Contractor> contractors;
@@ -388,23 +534,37 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final d = await widget.repo.detail(widget.order.id);
       if (!mounted) return;
-      setState(() { _d = d; _loading = false; });
+      setState(() {
+        _d = d;
+        _loading = false;
+      });
       await Future.wait([_loadPhotos(), if (_isManager) _loadVisits()]);
     } catch (e) {
       debugPrint('WorkOrderDetail: $e');
       if (!mounted) return;
-      setState(() { _error = '$e'; _loading = false; });
+      setState(() {
+        _error = '$e';
+        _loading = false;
+      });
     }
   }
 
   Future<void> _loadPhotos() async {
     try {
       final photos = await _photoRepo.list(widget.order.id);
-      if (mounted) setState(() { _photos = photos; _photosFailed = false; });
+      if (mounted) {
+        setState(() {
+          _photos = photos;
+          _photosFailed = false;
+        });
+      }
     } catch (e) {
       debugPrint('photos: $e');
       if (mounted) setState(() => _photosFailed = true);
@@ -414,7 +574,12 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   Future<void> _loadVisits() async {
     try {
       final visits = await _visitRepo.list(widget.order.id);
-      if (mounted) setState(() { _visits = visits; _visitsFailed = false; });
+      if (mounted) {
+        setState(() {
+          _visits = visits;
+          _visitsFailed = false;
+        });
+      }
     } catch (e) {
       debugPrint('visits: $e');
       if (mounted) setState(() => _visitsFailed = true);
@@ -431,7 +596,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     try {
       // Координаты ищутся, пока меняется статус.
       final positionFuture = recordVisit
-          ? ensureLocationPermission().then((ok) => ok ? currentPosition() : null)
+          ? ensureLocationPermission()
+              .then((ok) => ok ? currentPosition() : null)
           : Future.value(null);
       try {
         await widget.repo.setStatus(widget.order.id, 'in_progress');
@@ -443,9 +609,16 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       if (recordVisit) {
         final position = await positionFuture;
         try {
-          await _visitRepo.start(workOrderId: widget.order.id,
-              companyId: widget.companyId ?? (d['company_id'] as String), position: position);
+          await _visitRepo.start(
+              workOrderId: widget.order.id,
+              companyId: widget.companyId ?? (d['company_id'] as String),
+              position: position);
           if (position == null) message = l.visitNoLocation;
+        } on PostgrestException catch (e) {
+          // 23505 — у человека уже есть открытый визит по заявке (uq_visits_open,
+          // миграция 0009): кнопку нажали повторно или с устаревшего экрана.
+          debugPrint('visit: $e');
+          message = e.code == '23505' ? l.visitAlreadyOpen : l.visitNotRecorded;
         } catch (e) {
           debugPrint('visit: $e');
           message = l.visitNotRecorded;
@@ -468,13 +641,19 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     try {
       photo = await capturePhoto();
     } on CaptureException catch (e) {
-      _ok(e.problem == CaptureProblem.cameraDenied ? l.photoCameraDenied : l.photoCameraFailed);
+      _ok(e.problem == CaptureProblem.cameraDenied
+          ? l.photoCameraDenied
+          : l.photoCameraFailed);
       return;
     }
     if (photo == null || !mounted) return;
     setState(() => _uploading = true);
     try {
-      await _photoRepo.upload(companyId: companyId, workOrderId: widget.order.id, stage: stage, photo: photo);
+      await _photoRepo.upload(
+          companyId: companyId,
+          workOrderId: widget.order.id,
+          stage: stage,
+          photo: photo);
       await _loadPhotos();
       _ok(l.photoUploaded);
     } catch (e) {
@@ -487,14 +666,21 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
 
   bool get _isAuthor => widget.uid != null && _d?['created_by'] == widget.uid;
   bool get _isManager => widget.role == 'admin' || widget.role == 'manager';
-  bool get _isExecutor => widget.role == 'executor' || widget.role == 'contractor';
+  bool get _isExecutor =>
+      widget.role == 'executor' || widget.role == 'contractor';
   bool get _canEdit => _d != null && (_isAuthor || widget.role == 'admin');
 
   Future<void> _edit() async {
     final ok = await showOrderForm(
-      context: context, repo: widget.repo, objects: widget.objects,
-      companyId: widget.companyId ?? (_d!['company_id'] as String), existing: _d);
-    if (ok == true) { await _load(); if (mounted) _ok(context.l10n.toastSaved); }
+        context: context,
+        repo: widget.repo,
+        objects: widget.objects,
+        companyId: widget.companyId ?? (_d!['company_id'] as String),
+        existing: _d);
+    if (ok == true) {
+      await _load();
+      if (mounted) _ok(context.l10n.toastSaved);
+    }
   }
 
   Future<void> _assign() async {
@@ -504,14 +690,23 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       return;
     }
     final chosen = await showModalBottomSheet<String>(
-      context: context, backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 40, height: 4, margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(color: _line, borderRadius: BorderRadius.circular(4))),
-          Padding(padding: const EdgeInsetsDirectional.only(bottom: 6),
-              child: Text(l.actionAssign, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+          Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                  color: _line, borderRadius: BorderRadius.circular(4))),
+          Padding(
+              padding: const EdgeInsetsDirectional.only(bottom: 6),
+              child: Text(l.actionAssign,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800))),
           for (final c in widget.contractors)
             ListTile(
               leading: const Icon(Icons.business),
@@ -523,15 +718,26 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       ),
     );
     if (chosen != null) {
-      try { await widget.repo.assign(widget.order.id, chosen); await _load(); _ok(l.toastAssigned); }
-      catch (e) { debugPrint('assign: $e'); _ok(l.errorGeneric); }
+      try {
+        await widget.repo.assign(widget.order.id, chosen);
+        await _load();
+        _ok(l.toastAssigned);
+      } catch (e) {
+        debugPrint('assign: $e');
+        _ok(l.errorGeneric);
+      }
     }
   }
 
   Future<void> _setStatus(String status, String okText) async {
     final l = context.l10n;
-    try { await widget.repo.setStatus(widget.order.id, status); await _load(); _ok(okText); }
-    catch (e) { _ok(l.statusError(e)); }
+    try {
+      await widget.repo.setStatus(widget.order.id, status);
+      await _load();
+      _ok(okText);
+    } catch (e) {
+      _ok(l.statusError(e));
+    }
   }
 
   Future<void> _returnForRework() async {
@@ -541,25 +747,42 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.actionReturn),
-        content: TextField(controller: c, autofocus: true, maxLines: 3,
+        content: TextField(
+            controller: c,
+            autofocus: true,
+            maxLines: 3,
             decoration: InputDecoration(hintText: l.returnHint)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, c.text.trim()), child: Text(l.returnConfirm)),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: Text(l.commonCancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, c.text.trim()),
+              child: Text(l.returnConfirm)),
         ],
       ),
     );
     if (reason == null) return;
-    if (reason.isEmpty) { _ok(l.returnReasonRequired); return; }
-    try { await widget.repo.returnForRework(widget.order.id, reason); await _load(); _ok(l.toastReturned); }
-    catch (e) { _ok(l.statusError(e)); }
+    if (reason.isEmpty) {
+      _ok(l.returnReasonRequired);
+      return;
+    }
+    try {
+      await widget.repo.returnForRework(widget.order.id, reason);
+      await _load();
+      _ok(l.toastReturned);
+    } catch (e) {
+      _ok(l.statusError(e));
+    }
   }
 
   void _ok(String m) {
     if (!mounted) return;
     final brand = Theme.of(context).colorScheme.primary;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.check_circle_rounded, color: brand), const SizedBox(width: 10), Flexible(child: Text(m)),
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(Icons.check_circle_rounded, color: brand),
+      const SizedBox(width: 10),
+      Flexible(child: Text(m)),
     ])));
   }
 
@@ -571,14 +794,19 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         title: Text(l.detailTitle),
         actions: [
           if (_canEdit)
-            IconButton(tooltip: l.detailEdit, icon: const Icon(Icons.edit_outlined), onPressed: _edit),
+            IconButton(
+                tooltip: l.detailEdit,
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: _edit),
         ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Padding(padding: const EdgeInsets.all(24),
-                  child: Text(l.detailLoadFailed, style: const TextStyle(color: Color(0xFFC24444))))
+              ? Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(l.detailLoadFailed,
+                      style: const TextStyle(color: Color(0xFFC24444))))
               : _content(),
     );
   }
@@ -604,49 +832,72 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
       children: [
         Row(children: [
-          Expanded(child: Text(title + (recurring ? '  · ${l.requestRecurringTag}' : ''),
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800))),
+          Expanded(
+              child: Text(
+                  title + (recurring ? '  · ${l.requestRecurringTag}' : ''),
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.w800))),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: c[0], borderRadius: BorderRadius.circular(20)),
+              decoration: BoxDecoration(
+                  color: c[0], borderRadius: BorderRadius.circular(20)),
               child: Text(l.status(status),
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: c[1]))),
+                  style: TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w800, color: c[1]))),
         ]),
         const SizedBox(height: 20),
         _row(l.fieldObject, _objNameIn(l, widget.objects, objId)),
-        _row(l.fieldContractor, _contractorNameIn(l, widget.contractors, contractorId)),
+        _row(l.fieldContractor,
+            _contractorNameIn(l, widget.contractors, contractorId)),
         _row(l.fieldWorkType, workType ?? '—'),
         _row(l.fieldPriority, l.priority(priority)),
         _row(l.fieldKind, recurring ? l.kindRecurring : l.kindOneOff),
-        _row(l.fieldPhotoProof, (d['requires_photo'] == true) ? l.photoRequired : l.photoNotRequired),
-        _row(l.fieldCreated, _isAuthor ? l.createdByYou(createdText) : createdText),
+        _row(
+            l.fieldPhotoProof,
+            (d['requires_photo'] == true)
+                ? l.photoRequired
+                : l.photoNotRequired),
+        _row(l.fieldCreated,
+            _isAuthor ? l.createdByYou(createdText) : createdText),
         const SizedBox(height: 16),
-        Text(l.fieldDescription, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
+        Text(l.fieldDescription,
+            style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
         const SizedBox(height: 6),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: _card(),
           child: Text((desc == null || desc.isEmpty) ? l.noDescription : desc,
-              style: TextStyle(color: (desc == null || desc.isEmpty) ? _muted : _ink, fontSize: 14)),
+              style: TextStyle(
+                  color: (desc == null || desc.isEmpty) ? _muted : _ink,
+                  fontSize: 14)),
         ),
-        if ((d['return_reason'] as String?)?.isNotEmpty == true && status == 'returned') ...[
+        if ((d['return_reason'] as String?)?.isNotEmpty == true &&
+            status == 'returned') ...[
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: const Color(0xFFFBE8E8), borderRadius: BorderRadius.circular(14)),
+            decoration: BoxDecoration(
+                color: const Color(0xFFFBE8E8),
+                borderRadius: BorderRadius.circular(14)),
             child: Text(l.returnedWithReason('${d['return_reason']}'),
-                style: const TextStyle(color: Color(0xFFC24444), fontWeight: FontWeight.w600)),
+                style: const TextStyle(
+                    color: Color(0xFFC24444), fontWeight: FontWeight.w600)),
           ),
         ],
-        if (_photos.isNotEmpty || _photosFailed || _canAddBefore(status) || _canAddAfter(status)) ...[
+        if (_photos.isNotEmpty ||
+            _photosFailed ||
+            _canAddBefore(status) ||
+            _canAddAfter(status)) ...[
           const SizedBox(height: 20),
           WorkPhotosSection(
             photos: _photos,
             loadFailed: _photosFailed,
             busy: _uploading,
-            onAddBefore: _canAddBefore(status) ? () => _addPhoto('before') : null,
+            onAddBefore:
+                _canAddBefore(status) ? () => _addPhoto('before') : null,
             onAddAfter: _canAddAfter(status) ? () => _addPhoto('after') : null,
           ),
         ],
@@ -656,17 +907,24 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         ],
         if (_actions(status, contractorId, brand).isNotEmpty) ...[
           const SizedBox(height: 24),
-          Text(l.actionsTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
+          Text(l.actionsTitle,
+              style: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
           const SizedBox(height: 10),
-          Wrap(spacing: 10, runSpacing: 10, children: _actions(status, contractorId, brand)),
+          Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: _actions(status, contractorId, brand)),
         ],
       ],
     );
   }
 
   // Те же правила проверяет база (миграция 0006).
-  bool _canAddBefore(String status) => (status == 'new' || status == 'assigned') && (_isAuthor || _isManager);
-  bool _canAddAfter(String status) => status == 'in_progress' && (_isExecutor || _isManager);
+  bool _canAddBefore(String status) =>
+      (status == 'new' || status == 'assigned') && (_isAuthor || _isManager);
+  bool _canAddAfter(String status) =>
+      status == 'in_progress' && (_isExecutor || _isManager);
 
   /// Кнопки зависят от роли и статуса. Те же правила проверяет база.
   List<Widget> _actions(String status, String? contractorId, Color brand) {
@@ -675,15 +933,18 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final l = context.l10n;
     // Без фото «после» кнопка «На проверку» неактивна; база проверяет то же.
     final needPhoto = _d?['requires_photo'] == true && !_hasAfterPhoto;
-    final filled = FilledButton.styleFrom(backgroundColor: brand, foregroundColor: _onBrand);
+    final filled = FilledButton.styleFrom(
+        backgroundColor: brand, foregroundColor: _onBrand);
     return [
-      if (_isManager && (status == 'new' || status == 'assigned' || status == 'returned'))
+      if (_isManager &&
+          (status == 'new' || status == 'assigned' || status == 'returned'))
         OutlinedButton.icon(
           onPressed: _assign,
           icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
           label: Text(contractorId == null ? l.actionAssign : l.actionReassign),
         ),
-      if (canWork && (status == 'new' || status == 'assigned' || status == 'returned'))
+      if (canWork &&
+          (status == 'new' || status == 'assigned' || status == 'returned'))
         FilledButton.icon(
           onPressed: _starting ? null : _startWork,
           style: filled,
@@ -697,11 +958,14 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
           icon: const Icon(Icons.photo_camera_outlined, size: 18),
           label: Text(l.photoTakeResult),
         ),
-        Text(l.photoNeededHint, style: const TextStyle(color: _muted, fontSize: 13)),
+        Text(l.photoNeededHint,
+            style: const TextStyle(color: _muted, fontSize: 13)),
       ],
       if (canWork && status == 'in_progress')
         FilledButton.icon(
-          onPressed: needPhoto ? null : () => _setStatus('on_review', l.toastSubmitted),
+          onPressed: needPhoto
+              ? null
+              : () => _setStatus('on_review', l.toastSubmitted),
           style: filled,
           icon: const Icon(Icons.check_rounded, size: 18),
           label: Text(l.actionSubmit),
@@ -715,7 +979,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         ),
         OutlinedButton.icon(
           onPressed: _returnForRework,
-          style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFC24444)),
+          style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFC24444)),
           icon: const Icon(Icons.undo_rounded, size: 18),
           label: Text(l.actionReturn),
         ),
@@ -723,7 +988,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       if (canAccept && status != 'done' && status != 'cancelled')
         OutlinedButton.icon(
           onPressed: () => _setStatus('cancelled', l.toastCancelled),
-          style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFC24444)),
+          style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFC24444)),
           icon: const Icon(Icons.close_rounded, size: 18),
           label: Text(l.actionCancel),
         ),
@@ -733,8 +999,14 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   Widget _row(String k, String v) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(width: 150, child: Text(k, style: const TextStyle(color: _muted, fontSize: 14))),
-          Expanded(child: Text(v, style: const TextStyle(color: _ink, fontSize: 14, fontWeight: FontWeight.w600))),
+          SizedBox(
+              width: 150,
+              child:
+                  Text(k, style: const TextStyle(color: _muted, fontSize: 14))),
+          Expanded(
+              child: Text(v,
+                  style: const TextStyle(
+                      color: _ink, fontSize: 14, fontWeight: FontWeight.w600))),
         ]),
       );
 }
@@ -757,12 +1029,17 @@ Future<bool?> showOrderForm({
   if (!context.mounted) return null;
 
   final isEdit = existing != null;
-  final titleC = TextEditingController(text: isEdit ? (existing['title'] ?? '') as String : '');
-  final descC = TextEditingController(text: isEdit ? (existing['description'] ?? '') as String? ?? '' : '');
+  final titleC = TextEditingController(
+      text: isEdit ? (existing['title'] ?? '') as String : '');
+  final descC = TextEditingController(
+      text: isEdit ? (existing['description'] ?? '') as String? ?? '' : '');
   Layer? layer = isEdit
-      ? Layer.find(layers, id: existing['layer_id'] as String?, name: existing['work_type'] as String?)
+      ? Layer.find(layers,
+          id: existing['layer_id'] as String?,
+          name: existing['work_type'] as String?)
       : null;
-  String priority = isEdit ? (existing['priority'] ?? 'normal') as String : 'normal';
+  String priority =
+      isEdit ? (existing['priority'] ?? 'normal') as String : 'normal';
   String? objectId = isEdit ? existing['object_id'] as String? : null;
   bool recurring = isEdit ? existing['recurrence'] != null : false;
 
@@ -772,72 +1049,121 @@ Future<bool?> showOrderForm({
   final locale = context.localeCode;
 
   return showModalBottomSheet<bool>(
-    context: context, isScrollControlled: true, backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
     builder: (ctx) => Padding(
-      padding: EdgeInsetsDirectional.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+      padding: EdgeInsetsDirectional.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom),
       child: StatefulBuilder(
         builder: (ctx, setSt) => SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 20, 20),
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Center(child: Container(width: 40, height: 4, margin: const EdgeInsetsDirectional.only(bottom: 14),
-                  decoration: BoxDecoration(color: _line, borderRadius: BorderRadius.circular(4)))),
-              Text(isEdit ? l.formEditTitle : l.formNewTitle,
-                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
-              _lbl(l.formWhat),
-              _inp(titleC, l.formWhatHint),
-              _lbl(l.fieldDescription),
-              _inp(descC, l.formDetailsHint, lines: 3),
-              _lbl(l.fieldObject),
-              _Dropdown(
-                value: objectId,
-                hint: objects.isEmpty ? l.formNoObjects(l.tabLocations) : l.formChooseObject,
-                items: [for (final o in objects) DropdownMenuItem(value: o.id, child: Text(o.name))],
-                onChanged: (v) => setSt(() => objectId = v)),
-              _lbl(l.fieldWorkType),
-              if (layersFailed)
-                Text(l.formLayersFailed, style: const TextStyle(color: _muted))
-              else
-                Wrap(spacing: 8, runSpacing: 8, children: [
-                  for (final t in layers)
-                    _chip(t.label(locale), layer?.id == t.id, brand,
-                        () => setSt(() => layer = layer?.id == t.id ? null : t))]),
-              _lbl(l.fieldPriority),
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final p in priorities) _chip(l.priority(p), priority == p, brand, () => setSt(() => priority = p))]),
-              const SizedBox(height: 16),
-              Row(children: [
-                Expanded(child: Text(l.formRecurring, style: const TextStyle(fontSize: 15))),
-                Switch(value: recurring, activeTrackColor: brand, onChanged: (v) => setSt(() => recurring = v))]),
-              const SizedBox(height: 10),
-              FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: brand, foregroundColor: _onBrand),
-                onPressed: () async {
-                  if (titleC.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(l.formWhatRequired)));
-                    return;
-                  }
-                  try {
-                    if (isEdit) {
-                      await repo.update(existing['id'] as String,
-                          title: titleC.text.trim(),
-                          description: descC.text.trim().isEmpty ? null : descC.text.trim(),
-                          layer: layer, priority: priority, objectId: objectId, recurring: recurring);
-                    } else {
-                      await repo.create(companyId: companyId, title: titleC.text.trim(),
-                          description: descC.text.trim().isEmpty ? null : descC.text.trim(),
-                          layer: layer, priority: priority, objectId: objectId, recurring: recurring);
-                    }
-                    if (ctx.mounted) Navigator.pop(ctx, true);
-                  } catch (_) {
-                    if (!ctx.mounted) return;
-                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(l.formSaveFailed)));
-                  }
-                },
-                child: Text(isEdit ? l.commonSave : l.requestsCreate,
-                    style: const TextStyle(fontWeight: FontWeight.w800))),
-            ]),
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                      child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsetsDirectional.only(bottom: 14),
+                          decoration: BoxDecoration(
+                              color: _line,
+                              borderRadius: BorderRadius.circular(4)))),
+                  Text(isEdit ? l.formEditTitle : l.formNewTitle,
+                      style: const TextStyle(
+                          fontSize: 19, fontWeight: FontWeight.w800)),
+                  _lbl(l.formWhat),
+                  _inp(titleC, l.formWhatHint),
+                  _lbl(l.fieldDescription),
+                  _inp(descC, l.formDetailsHint, lines: 3),
+                  _lbl(l.fieldObject),
+                  _Dropdown(
+                      value: objectId,
+                      hint: objects.isEmpty
+                          ? l.formNoObjects(l.tabLocations)
+                          : l.formChooseObject,
+                      items: [
+                        for (final o in objects)
+                          DropdownMenuItem(value: o.id, child: Text(o.name))
+                      ],
+                      onChanged: (v) => setSt(() => objectId = v)),
+                  _lbl(l.fieldWorkType),
+                  if (layersFailed)
+                    Text(l.formLayersFailed,
+                        style: const TextStyle(color: _muted))
+                  else
+                    Wrap(spacing: 8, runSpacing: 8, children: [
+                      for (final t in layers)
+                        _chip(
+                            t.label(locale),
+                            layer?.id == t.id,
+                            brand,
+                            () => setSt(
+                                () => layer = layer?.id == t.id ? null : t))
+                    ]),
+                  _lbl(l.fieldPriority),
+                  Wrap(spacing: 8, runSpacing: 8, children: [
+                    for (final p in priorities)
+                      _chip(l.priority(p), priority == p, brand,
+                          () => setSt(() => priority = p))
+                  ]),
+                  const SizedBox(height: 16),
+                  Row(children: [
+                    Expanded(
+                        child: Text(l.formRecurring,
+                            style: const TextStyle(fontSize: 15))),
+                    Switch(
+                        value: recurring,
+                        activeTrackColor: brand,
+                        onChanged: (v) => setSt(() => recurring = v))
+                  ]),
+                  const SizedBox(height: 10),
+                  FilledButton(
+                      style: FilledButton.styleFrom(
+                          backgroundColor: brand, foregroundColor: _onBrand),
+                      onPressed: () async {
+                        if (titleC.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                              SnackBar(content: Text(l.formWhatRequired)));
+                          return;
+                        }
+                        try {
+                          if (isEdit) {
+                            await repo.update(existing['id'] as String,
+                                title: titleC.text.trim(),
+                                description: descC.text.trim().isEmpty
+                                    ? null
+                                    : descC.text.trim(),
+                                layer: layer,
+                                priority: priority,
+                                objectId: objectId,
+                                recurring: recurring);
+                          } else {
+                            await repo.create(
+                                companyId: companyId,
+                                title: titleC.text.trim(),
+                                description: descC.text.trim().isEmpty
+                                    ? null
+                                    : descC.text.trim(),
+                                layer: layer,
+                                priority: priority,
+                                objectId: objectId,
+                                recurring: recurring);
+                          }
+                          if (ctx.mounted) Navigator.pop(ctx, true);
+                        } catch (_) {
+                          if (!ctx.mounted) return;
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                              SnackBar(content: Text(l.formSaveFailed)));
+                        }
+                      },
+                      child: Text(isEdit ? l.commonSave : l.requestsCreate,
+                          style: const TextStyle(fontWeight: FontWeight.w800))),
+                ]),
           ),
         ),
       ),
@@ -845,24 +1171,43 @@ Future<bool?> showOrderForm({
   );
 }
 
-Widget _lbl(String t) => Padding(padding: const EdgeInsetsDirectional.only(top: 16, bottom: 8),
-    child: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _ink)));
+Widget _lbl(String t) => Padding(
+    padding: const EdgeInsetsDirectional.only(top: 16, bottom: 8),
+    child: Text(t,
+        style: const TextStyle(
+            fontSize: 14, fontWeight: FontWeight.w600, color: _ink)));
 
 Widget _inp(TextEditingController c, String hint, {int lines = 1}) => TextField(
-    controller: c, maxLines: lines,
-    decoration: InputDecoration(hintText: hint,
+    controller: c,
+    maxLines: lines,
+    decoration: InputDecoration(
+        hintText: hint,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 14)));
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 15, vertical: 14)));
 
-Widget _chip(String label, bool on, Color brand, VoidCallback onTap) => GestureDetector(onTap: onTap,
-    child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(color: on ? const Color(0xFFE8F6F2) : Colors.white,
-            borderRadius: BorderRadius.circular(14), border: Border.all(color: on ? brand : _line)),
-        child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
-            color: on ? const Color(0xFF249F88) : _ink))));
+Widget _chip(
+        String label, bool on, Color brand, VoidCallback onTap) =>
+    GestureDetector(
+        onTap: onTap,
+        child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+                color: on ? const Color(0xFFE8F6F2) : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: on ? brand : _line)),
+            child: Text(label,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: on ? const Color(0xFF249F88) : _ink))));
 
 class _Dropdown extends StatelessWidget {
-  const _Dropdown({required this.value, required this.hint, required this.items, required this.onChanged});
+  const _Dropdown(
+      {required this.value,
+      required this.hint,
+      required this.items,
+      required this.onChanged});
   final String? value;
   final String hint;
   final List<DropdownMenuItem<String>> items;
@@ -870,12 +1215,17 @@ class _Dropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), border: Border.all(color: _line)),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value, isExpanded: true,
-          hint: Text(hint, style: const TextStyle(color: _muted, fontSize: 15)),
-          items: items, onChanged: items.isEmpty ? null : onChanged)));
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _line)),
+        child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+                value: value,
+                isExpanded: true,
+                hint: Text(hint,
+                    style: const TextStyle(color: _muted, fontSize: 15)),
+                items: items,
+                onChanged: items.isEmpty ? null : onChanged)));
   }
 }

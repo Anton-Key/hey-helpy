@@ -23,7 +23,8 @@ Future<void> main() async {
 
   await Supabase.initialize(
     url: SupabaseConfig.url,
-    anonKey: SupabaseConfig.anonKey,
+    // Тот же anon-ключ: в supabase_flutter 2.17 publishableKey заменил anonKey.
+    publishableKey: SupabaseConfig.anonKey,
   );
 
   runApp(HeyHelpyApp(locale: locale));

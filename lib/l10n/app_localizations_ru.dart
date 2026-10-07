@@ -151,27 +151,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get historyDone => 'Готово';
 
   @override
-  String get reportsKpiRequests => 'заявок за месяц';
+  String get reportsKpiRequests => 'заявок';
 
   @override
   String get reportsKpiOnTime => 'в срок';
-
-  @override
-  String get reportsKpiAvgTime => 'ср. время';
-
-  @override
-  String hoursShort(String value) {
-    return '$value ч';
-  }
-
-  @override
-  String get reportsWeeklyChart => 'Заявки по неделям';
-
-  @override
-  String get reportsExportPdf => 'Экспорт в PDF';
-
-  @override
-  String get reportsWebHint => 'Полные отчёты и фильтры — в web-версии';
 
   @override
   String get profileDefaultName => 'Пользователь';
@@ -724,13 +707,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get adminComingSoon => 'Появится в Фазе 1';
 
   @override
-  String get reportsComingTitle => 'Отчёты появятся в Фазе 1';
-
-  @override
-  String get reportsComingBody =>
-      'Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту.';
-
-  @override
   String get photosTitle => 'Фото';
 
   @override
@@ -834,4 +810,151 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get visitNoLocation =>
       'Работа начата без геолокации. Включите её, чтобы посещение проверялось по геозоне.';
+
+  @override
+  String get reportsManagerOnly =>
+      'Отчёты доступны менеджеру и администратору.';
+
+  @override
+  String get reportsPeriodWeek => 'Неделя';
+
+  @override
+  String get reportsPeriodMonth => 'Месяц';
+
+  @override
+  String get reportsPeriodCustom => 'Свой период';
+
+  @override
+  String reportsRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String get reportsFilterObject => 'Объект';
+
+  @override
+  String get reportsFilterContractor => 'Подрядчик';
+
+  @override
+  String get reportsFilterLayer => 'Вид работ';
+
+  @override
+  String get reportsFilterAll => 'Все';
+
+  @override
+  String get reportsLoadFailed =>
+      'Не удалось загрузить отчёт. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get reportsEmpty => 'За этот период заявок и посещений нет.';
+
+  @override
+  String get reportsKpiFirstPass => 'приняты с первого раза';
+
+  @override
+  String get reportsKpiGeofence => 'визитов в геозоне';
+
+  @override
+  String reportsKpiOf(int count) {
+    return 'из $count';
+  }
+
+  @override
+  String get reportsByContractor => 'По подрядчикам';
+
+  @override
+  String get reportsNoContractor => 'Без подрядчика';
+
+  @override
+  String get reportsOrders => 'Заявок';
+
+  @override
+  String get reportsAccepted => 'Принято';
+
+  @override
+  String get reportsReturned => 'Возвращено';
+
+  @override
+  String get reportsOverdue => 'Просрочено';
+
+  @override
+  String get reportsOnTime => 'В срок';
+
+  @override
+  String get reportsFirstPass => 'С первого раза';
+
+  @override
+  String get reportsReaction => 'Реакция';
+
+  @override
+  String get reportsExecution => 'Выполнение';
+
+  @override
+  String get reportsVisits => 'Визиты';
+
+  @override
+  String get reportsVisitsInZone => 'В геозоне';
+
+  @override
+  String get reportsVisitsSuspicious => 'Вне геозоны или подмена GPS';
+
+  @override
+  String get reportsOnSite => 'Время на объекте';
+
+  @override
+  String get reportsPhotos => 'С фото «до» и «после»';
+
+  @override
+  String get reportsVisitNorm => 'Визиты: факт / норма';
+
+  @override
+  String reportsFactNorm(String fact, String norm) {
+    return '$fact / $norm';
+  }
+
+  @override
+  String get reportsNoValue => '—';
+
+  @override
+  String get reportsNormsMissing =>
+      'Норма посещений по договору появится после обновления базы.';
+
+  @override
+  String get reportsHelp =>
+      'В срок — доля принятых до дедлайна среди заявок с дедлайном. С первого раза — принятые без возврата на доработку. Реакция — от создания заявки до «В работе», выполнение — от «В работе» до «На проверке». Норма визитов пересчитана на длину периода.';
+
+  @override
+  String get reportsOrdersEmpty => 'Заявок за период нет.';
+
+  @override
+  String reportsReturnedTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'возвращали $count раза',
+      many: 'возвращали $count раз',
+      few: 'возвращали $count раза',
+      one: 'возвращали $count раз',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(String minutes) {
+    return '$minutes мин';
+  }
+
+  @override
+  String durationHoursMinutes(String hours, String minutes) {
+    return '$hours ч $minutes мин';
+  }
+
+  @override
+  String durationDaysHours(String days, String hours) {
+    return '$days д $hours ч';
+  }
+
+  @override
+  String get visitAlreadyOpen =>
+      'Посещение уже отмечено — вы на объекте. Продолжайте работу.';
 }

@@ -62,20 +62,8 @@
   "mockHistory3Place": "Москва · 1 этаж",
   "mockHistory3Meta": "11 авг · 55 мин",
   "historyDone": "Готово",
-  "reportsKpiRequests": "заявок за месяц",
+  "reportsKpiRequests": "заявок",
   "reportsKpiOnTime": "в срок",
-  "reportsKpiAvgTime": "ср. время",
-  "hoursShort": "{value} ч",
-  "@hoursShort": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
-  "reportsWeeklyChart": "Заявки по неделям",
-  "reportsExportPdf": "Экспорт в PDF",
-  "reportsWebHint": "Полные отчёты и фильтры — в web-версии",
   "profileDefaultName": "Пользователь",
   "profileMyCompany": "Моя компания",
   "profileNotifications": "Уведомления",
@@ -309,8 +297,6 @@
   "adminInvites": "Инвайт-ссылки исполнителям",
   "adminUsers": "Пользователи и роли",
   "adminComingSoon": "Появится в Фазе 1",
-  "reportsComingTitle": "Отчёты появятся в Фазе 1",
-  "reportsComingBody": "Фильтры: объект, тип работ, исполнитель, период, время.\nЭкспорт: CSV / XLSX / PDF / отправка на почту.",
   "photosTitle": "Фото",
   "photosBefore": "До",
   "photosAfter": "После",
@@ -371,5 +357,106 @@
   "visitOutsideWarning": "Исполнитель отметился вне геозоны объекта или с подменой GPS. Проверьте, был ли он на месте.",
   "visitsLoadFailed": "Не удалось загрузить посещения",
   "visitNotRecorded": "Работа начата, но посещение не отмечено. Проверьте интернет.",
-  "visitNoLocation": "Работа начата без геолокации. Включите её, чтобы посещение проверялось по геозоне."
+  "visitNoLocation": "Работа начата без геолокации. Включите её, чтобы посещение проверялось по геозоне.",
+  "reportsManagerOnly": "Отчёты доступны менеджеру и администратору.",
+  "reportsPeriodWeek": "Неделя",
+  "reportsPeriodMonth": "Месяц",
+  "reportsPeriodCustom": "Свой период",
+  "reportsRange": "{from} – {to}",
+  "@reportsRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsFilterObject": "Объект",
+  "reportsFilterContractor": "Подрядчик",
+  "reportsFilterLayer": "Вид работ",
+  "reportsFilterAll": "Все",
+  "reportsLoadFailed": "Не удалось загрузить отчёт. Проверьте интернет и попробуйте ещё раз.",
+  "reportsEmpty": "За этот период заявок и посещений нет.",
+  "reportsKpiFirstPass": "приняты с первого раза",
+  "reportsKpiGeofence": "визитов в геозоне",
+  "reportsKpiOf": "из {count}",
+  "@reportsKpiOf": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportsByContractor": "По подрядчикам",
+  "reportsNoContractor": "Без подрядчика",
+  "reportsOrders": "Заявок",
+  "reportsAccepted": "Принято",
+  "reportsReturned": "Возвращено",
+  "reportsOverdue": "Просрочено",
+  "reportsOnTime": "В срок",
+  "reportsFirstPass": "С первого раза",
+  "reportsReaction": "Реакция",
+  "reportsExecution": "Выполнение",
+  "reportsVisits": "Визиты",
+  "reportsVisitsInZone": "В геозоне",
+  "reportsVisitsSuspicious": "Вне геозоны или подмена GPS",
+  "reportsOnSite": "Время на объекте",
+  "reportsPhotos": "С фото «до» и «после»",
+  "reportsVisitNorm": "Визиты: факт / норма",
+  "reportsFactNorm": "{fact} / {norm}",
+  "@reportsFactNorm": {
+    "placeholders": {
+      "fact": {
+        "type": "String"
+      },
+      "norm": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsNoValue": "—",
+  "reportsNormsMissing": "Норма посещений по договору появится после обновления базы.",
+  "reportsHelp": "В срок — доля принятых до дедлайна среди заявок с дедлайном. С первого раза — принятые без возврата на доработку. Реакция — от создания заявки до «В работе», выполнение — от «В работе» до «На проверке». Норма визитов пересчитана на длину периода.",
+  "reportsOrdersEmpty": "Заявок за период нет.",
+  "reportsReturnedTimes": "{count, plural, one{возвращали {count} раз} few{возвращали {count} раза} many{возвращали {count} раз} other{возвращали {count} раза}}",
+  "@reportsReturnedTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutes": "{minutes} мин",
+  "@durationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "durationHoursMinutes": "{hours} ч {minutes} мин",
+  "@durationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "durationDaysHours": "{days} д {hours} ч",
+  "@durationDaysHours": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "visitAlreadyOpen": "Посещение уже отмечено — вы на объекте. Продолжайте работу."
 }

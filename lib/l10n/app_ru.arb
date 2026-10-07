@@ -38,30 +38,11 @@
   "navReports": "Отчёты",
   "navProfile": "Профиль",
   "tabRequests": "Заявки",
-  "tabContractors": "Исполнитель",
+  "tabContractors": "Подрядчики",
   "@tabContractors": {
     "description": "Вкладка со списком подрядчиков"
   },
   "tabLocations": "Локации",
-  "mockHistoryDoneThisMonth": "Выполнено за месяц: {count}",
-  "@mockHistoryDoneThisMonth": {
-    "description": "Временно: выдуманные данные",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "mockHistory1Title": "Ремонт стула",
-  "mockHistory1Place": "Астана · Кабинет 512",
-  "mockHistory1Meta": "12 авг · 40 мин",
-  "mockHistory2Title": "Замена фильтров",
-  "mockHistory2Place": "Москва · Серверная",
-  "mockHistory2Meta": "11 авг · 1 ч 20 мин",
-  "mockHistory3Title": "Уборка холла",
-  "mockHistory3Place": "Москва · 1 этаж",
-  "mockHistory3Meta": "11 авг · 55 мин",
-  "historyDone": "Готово",
   "reportsKpiRequests": "заявок",
   "reportsKpiOnTime": "в срок",
   "profileDefaultName": "Пользователь",
@@ -458,5 +439,97 @@
       }
     }
   },
-  "visitAlreadyOpen": "Посещение уже отмечено — вы на объекте. Продолжайте работу."
+  "visitAlreadyOpen": "Посещение уже отмечено — вы на объекте. Продолжайте работу.",
+  "cardLoadFailed": "Не удалось загрузить карточку. Проверьте интернет и попробуйте ещё раз.",
+  "cardContractorOrders": "Заявки подрядчика",
+  "cardContractorReport": "Отчёт",
+  "cardBindingsTitle": "Виды работ и объекты",
+  "cardBindingsEmpty": "Закреплений пока нет.",
+  "cardAllObjects": "Все объекты",
+  "cardNormHint": "Нажмите на строку, чтобы изменить норму визитов.",
+  "cardNormNotSet": "Норма визитов не задана",
+  "cardNormPerMonth": "{count, plural, one{Норма: {count} визит в месяц} few{Норма: {count} визита в месяц} many{Норма: {count} визитов в месяц} other{Норма: {count} визита в месяц}}",
+  "@cardNormPerMonth": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cardNormDialogTitle": "Норма визитов в месяц",
+  "cardNormDialogHint": "Например, 4. Пусто — без нормы",
+  "cardNormInvalid": "Введите число от 0 до 1000",
+  "cardExecutorsTitle": "Исполнители и контакты",
+  "cardExecutorsEmpty": "Исполнителей пока нет. Пригласите их по коду приглашения.",
+  "cardCoordinates": "Координаты",
+  "cardCoordinatesNotSet": "не заданы",
+  "cardGeofenceRadius": "Радиус геозоны",
+  "cardMeters": "{value} м",
+  "@cardMeters": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "cardNoCoordinatesHint": "Без координат визиты на этом объекте не проверяются по геозоне.",
+  "cardEditGeo": "Адрес и геозона",
+  "cardLatitude": "Широта",
+  "cardLongitude": "Долгота",
+  "cardUseMyLocation": "Взять мои координаты",
+  "cardLocationFailed": "Не удалось определить местоположение. Включите геолокацию и разрешите её приложению.",
+  "cardGeofenceRadiusInput": "Радиус геозоны, м (20–5000)",
+  "cardCoordinatesBoth": "Укажите и широту, и долготу — или оставьте обе пустыми.",
+  "cardCoordinatesInvalid": "Проверьте координаты: широта от −90 до 90, долгота от −180 до 180.",
+  "cardRadiusInvalid": "Радиус — целое число от 20 до 5000 м.",
+  "cardPlacesTitle": "Помещения",
+  "cardPlacesEmpty": "Помещений пока нет.",
+  "cardObjectContractorsTitle": "Подрядчики по видам работ",
+  "cardRecentOrders": "Последние заявки",
+  "cardOrdersEmpty": "Заявок пока нет.",
+  "cardAllObjectOrders": "Все заявки по объекту",
+  "historyLoadFailed": "Не удалось загрузить историю. Проверьте интернет и попробуйте ещё раз.",
+  "historyDoneInPeriod": "Выполнено за период: {count}",
+  "@historyDoneInPeriod": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "historyEmpty": "За этот период завершённых заявок нет.",
+  "historyAcceptedAt": "Принята {date}",
+  "@historyAcceptedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "historyCancelledAt": "Отменена {date}",
+  "@historyCancelledAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "historyExecution": "Выполнение: {time}",
+  "@historyExecution": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "historyExecutor": "Исполнитель: {name}",
+  "@historyExecutor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "historyVisitInGeofence": "Визит в геозоне ✓",
+  "historyVisitOutside": "Визит вне геозоны или с подменой GPS"
 }

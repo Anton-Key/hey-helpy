@@ -116,41 +116,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabLocations => 'Locations';
 
   @override
-  String mockHistoryDoneThisMonth(int count) {
-    return 'Completed this month: $count';
-  }
-
-  @override
-  String get mockHistory1Title => 'Chair repair';
-
-  @override
-  String get mockHistory1Place => 'Astana · Office 512';
-
-  @override
-  String get mockHistory1Meta => 'Aug 12 · 40 min';
-
-  @override
-  String get mockHistory2Title => 'Filter replacement';
-
-  @override
-  String get mockHistory2Place => 'Moscow · Server room';
-
-  @override
-  String get mockHistory2Meta => 'Aug 11 · 1 h 20 min';
-
-  @override
-  String get mockHistory3Title => 'Lobby cleaning';
-
-  @override
-  String get mockHistory3Place => 'Moscow · 1st floor';
-
-  @override
-  String get mockHistory3Meta => 'Aug 11 · 55 min';
-
-  @override
-  String get historyDone => 'Done';
-
-  @override
   String get reportsKpiRequests => 'requests';
 
   @override
@@ -952,4 +917,162 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get visitAlreadyOpen =>
       'Your visit is already recorded — you\'re on site. Carry on with the work.';
+
+  @override
+  String get cardLoadFailed =>
+      'Couldn\'t load this card. Check your connection and try again.';
+
+  @override
+  String get cardContractorOrders => 'Contractor requests';
+
+  @override
+  String get cardContractorReport => 'Report';
+
+  @override
+  String get cardBindingsTitle => 'Work types and sites';
+
+  @override
+  String get cardBindingsEmpty => 'No assignments yet.';
+
+  @override
+  String get cardAllObjects => 'All sites';
+
+  @override
+  String get cardNormHint => 'Tap a row to change the visit target.';
+
+  @override
+  String get cardNormNotSet => 'No visit target';
+
+  @override
+  String cardNormPerMonth(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Target: $count visits a month',
+      one: 'Target: 1 visit a month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cardNormDialogTitle => 'Visits per month';
+
+  @override
+  String get cardNormDialogHint => 'E.g. 4. Leave empty for no target';
+
+  @override
+  String get cardNormInvalid => 'Enter a number from 0 to 1000';
+
+  @override
+  String get cardExecutorsTitle => 'Workers and contacts';
+
+  @override
+  String get cardExecutorsEmpty =>
+      'No workers yet. Invite them with an invite code.';
+
+  @override
+  String get cardCoordinates => 'Coordinates';
+
+  @override
+  String get cardCoordinatesNotSet => 'not set';
+
+  @override
+  String get cardGeofenceRadius => 'Geofence radius';
+
+  @override
+  String cardMeters(String value) {
+    return '$value m';
+  }
+
+  @override
+  String get cardNoCoordinatesHint =>
+      'Without coordinates, visits to this site can\'t be checked against the geofence.';
+
+  @override
+  String get cardEditGeo => 'Address and geofence';
+
+  @override
+  String get cardLatitude => 'Latitude';
+
+  @override
+  String get cardLongitude => 'Longitude';
+
+  @override
+  String get cardUseMyLocation => 'Use my location';
+
+  @override
+  String get cardLocationFailed =>
+      'Couldn\'t get your location. Turn on location and allow it for the app.';
+
+  @override
+  String get cardGeofenceRadiusInput => 'Geofence radius, m (20–5000)';
+
+  @override
+  String get cardCoordinatesBoth =>
+      'Enter both latitude and longitude, or leave both empty.';
+
+  @override
+  String get cardCoordinatesInvalid =>
+      'Check the coordinates: latitude −90 to 90, longitude −180 to 180.';
+
+  @override
+  String get cardRadiusInvalid =>
+      'Radius must be a whole number from 20 to 5000 m.';
+
+  @override
+  String get cardPlacesTitle => 'Rooms';
+
+  @override
+  String get cardPlacesEmpty => 'No rooms yet.';
+
+  @override
+  String get cardObjectContractorsTitle => 'Contractors by work type';
+
+  @override
+  String get cardRecentOrders => 'Recent requests';
+
+  @override
+  String get cardOrdersEmpty => 'No requests yet.';
+
+  @override
+  String get cardAllObjectOrders => 'All site requests';
+
+  @override
+  String get historyLoadFailed =>
+      'Couldn\'t load history. Check your connection and try again.';
+
+  @override
+  String historyDoneInPeriod(int count) {
+    return 'Completed in period: $count';
+  }
+
+  @override
+  String get historyEmpty => 'No completed requests in this period.';
+
+  @override
+  String historyAcceptedAt(String date) {
+    return 'Accepted $date';
+  }
+
+  @override
+  String historyCancelledAt(String date) {
+    return 'Cancelled $date';
+  }
+
+  @override
+  String historyExecution(String time) {
+    return 'Execution: $time';
+  }
+
+  @override
+  String historyExecutor(String name) {
+    return 'Done by: $name';
+  }
+
+  @override
+  String get historyVisitInGeofence => 'Visit in geofence ✓';
+
+  @override
+  String get historyVisitOutside =>
+      'Visit outside geofence or with spoofed GPS';
 }

@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hey_helpy/core/period.dart';
 import 'package:hey_helpy/features/reports/report_repository.dart';
 
 void main() {
@@ -99,11 +101,11 @@ void main() {
   test('норма визитов пересчитывается на период и учитывает фильтр объекта',
       () {
     final a = build().contractors.firstWhere((c) => c.contractorId == 'a');
-    expect(a.stats.visitNorm, 6); // 31 день ≈ месяц: 4 + 2
+    expect(a.stats.visitNorm, closeTo(6.11, 0.01)); // 31 день ≈ месяц: 4 + 2
     final onX = build(objectId: 'X')
         .contractors
         .firstWhere((c) => c.contractorId == 'a');
-    expect(onX.stats.visitNorm, 2);
+    expect(onX.stats.visitNorm, closeTo(2.04, 0.01));
   });
 
   test('возврат до миграции 0010 — по причине возврата', () {
@@ -122,5 +124,36 @@ void main() {
       'return_count': 2,
     });
     expect(fresh.returnCount, 2);
+  });
+
+  test('норма за неделю не округляется до нуля', () {
+    final r = Report.build(
+      query: ReportQuery(from: d(5), to: d(12)),
+      orders: const [],
+      visits: const [],
+      norms: const [
+        VisitNorm(contractorId: 'e', layerId: 'L', visitsPerMonth: 2),
+      ],
+      contractorOrder: const [],
+      now: now,
+    );
+    expect(r.contractors.single.stats.visitNorm, closeTo(0.46, 0.01));
+  });
+
+  test('границы периода: неделя с понедельника, месяц, свой диапазон', () {
+    final wed = DateTime(2026, 10, 7, 15); // среда
+    final week = const Period(PeriodKind.week).range(wed);
+    expect(week.from, DateTime(2026, 10, 5));
+    expect(week.to, DateTime(2026, 10, 12));
+    final month = const Period(PeriodKind.month).range(wed);
+    expect(month.from, DateTime(2026, 10));
+    expect(month.to, DateTime(2026, 11));
+    final custom = Period(
+            PeriodKind.custom,
+            DateTimeRange(
+                start: DateTime(2026, 9, 1), end: DateTime(2026, 9, 3)))
+        .range(wed);
+    expect(custom.from, DateTime(2026, 9, 1));
+    expect(custom.to, DateTime(2026, 9, 4)); // последний день включительно
   });
 }

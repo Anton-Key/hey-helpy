@@ -6,6 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/directional.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
+import '../../core/status_style.dart';
+import '../../core/theme.dart';
+import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import '../photos/photo_capture.dart';
@@ -59,6 +62,22 @@ class RequestsRepo {
     final r =
         await _c.from('profiles').select('role').eq('id', id).maybeSingle();
     return r?['role'] as String?;
+  }
+
+  /// Заявки подрядчика, объекта или помещения (сначала новые). Сколько видно —
+  /// решает RLS: менеджер — все, заявитель — свои, исполнитель — своего подрядчика.
+  Future<List<Map<String, dynamic>>> listBy(
+      {String? contractorId,
+      String? objectId,
+      String? locationId,
+      int limit = 200}) async {
+    var q = _c.from('work_orders').select(
+        'id,title,work_type,layer_id,priority,status,recurrence,object_id,location_id,'
+        'assigned_contractor_id,created_at,accepted_at,return_count,locations(name)');
+    if (contractorId != null) q = q.eq('assigned_contractor_id', contractorId);
+    if (objectId != null) q = q.eq('object_id', objectId);
+    if (locationId != null) q = q.eq('location_id', locationId);
+    return await q.order('created_at', ascending: false).limit(limit);
   }
 
   Future<List<WorkOrder>> list() async {
@@ -152,24 +171,6 @@ BoxDecoration _card() => BoxDecoration(
     color: Colors.white,
     borderRadius: BorderRadius.circular(18),
     border: Border.all(color: _line));
-
-List<Color> _statusColors(String s) {
-  switch (s) {
-    case 'in_progress':
-    case 'assigned':
-      return const [Color(0xFFFBF0D9), Color(0xFFA9790C)];
-    case 'on_review':
-      return const [Color(0xFFE6EEFC), Color(0xFF2F6FE0)];
-    case 'overdue':
-    case 'returned':
-      return const [Color(0xFFFBE8E8), Color(0xFFC24444)];
-    case 'done':
-    case 'cancelled':
-      return const [Color(0xFFEAECEF), Color(0xFF6B7480)];
-    default:
-      return const [Color(0xFFE8F6F2), Color(0xFF249F88)];
-  }
-}
 
 String _objNameIn(AppLocalizations l, List<Obj> objects, String? id) {
   if (id == null) return l.objectNone;
@@ -294,7 +295,7 @@ class _RequestsTabState extends State<RequestsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final brand = Theme.of(context).colorScheme.primary;
+    const brand = HeyHelpyTheme.brand;
     return Stack(children: [
       Positioned.fill(
         child:
@@ -318,7 +319,7 @@ class _RequestsTabState extends State<RequestsTab> {
               FloatingActionButton.small(
                   heroTag: 'refreshReq',
                   backgroundColor: Colors.white,
-                  foregroundColor: brand,
+                  foregroundColor: HeyHelpyTheme.link,
                   tooltip: context.l10n.commonRefresh,
                   onPressed: _load,
                   child: const Icon(Icons.refresh)),
@@ -371,65 +372,44 @@ class _RequestsTabState extends State<RequestsTab> {
       itemCount: _items.length,
       itemBuilder: (_, i) {
         final w = _items[i];
-        final c = _statusColors(w.status);
         final high = w.priority == 'high' || w.priority == 'critical';
         final workType = _workTypeLabel(_layers, locale,
             layerId: w.layerId, workType: w.workType);
-        return Padding(
-          padding: const EdgeInsetsDirectional.only(bottom: 10),
-          child: InkWell(
-            onTap: () => _openDetail(w),
-            borderRadius: BorderRadius.circular(18),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: _card(),
-              child: IntrinsicHeight(
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                          width: 6,
-                          decoration: BoxDecoration(
-                              color: high
-                                  ? const Color(0xFFC24444)
-                                  : const Color(0xFFD7DBE0),
-                              borderRadius: BorderRadius.circular(4))),
-                      const SizedBox(width: 11),
-                      Expanded(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                            Text(
-                                w.title +
-                                    (w.recurring
-                                        ? '  · ${l.requestRecurringTag}'
-                                        : ''),
-                                style: const TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w700)),
-                            const SizedBox(height: 3),
-                            Text(
-                                '${_objNameIn(l, _objects, w.objectId)}'
-                                '${workType != null ? ' · $workType' : ''}',
-                                style: const TextStyle(
-                                    color: _muted, fontSize: 13)),
-                          ])),
-                      const SizedBox(width: 8),
-                      Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                              color: c[0],
-                              borderRadius: BorderRadius.circular(20)),
-                          child: Text(l.status(w.status),
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  color: c[1]))),
-                      const SizedBox(width: 4),
-                      const ChevronEnd(color: _muted, size: 20),
-                    ]),
-              ),
-            ),
+        return TapCard(
+          onTap: () => _openDetail(w),
+          chevron: false,
+          radius: 18,
+          child: IntrinsicHeight(
+            child:
+                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Container(
+                  width: 6,
+                  decoration: BoxDecoration(
+                      color: high
+                          ? StatusStyle.urgentAccent
+                          : const Color(0xFFD7DBE0),
+                      borderRadius: BorderRadius.circular(4))),
+              const SizedBox(width: 11),
+              Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text(
+                        w.title +
+                            (w.recurring ? '  · ${l.requestRecurringTag}' : ''),
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 3),
+                    Text(
+                        '${_objNameIn(l, _objects, w.objectId)}'
+                        '${workType != null ? ' · $workType' : ''}',
+                        style: const TextStyle(color: _muted, fontSize: 13)),
+                  ])),
+              const SizedBox(width: 8),
+              StatusPill(w.status),
+              const SizedBox(width: 4),
+              const ChevronEnd(color: _muted, size: 20),
+            ]),
           ),
         );
       },
@@ -480,10 +460,10 @@ class _RequestsTabState extends State<RequestsTab> {
 
   void _snackOk(String m) {
     if (!mounted) return;
-    final brand = Theme.of(context).colorScheme.primary;
+    const brand = HeyHelpyTheme.brand;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.check_circle_rounded, color: brand),
+      const Icon(Icons.check_circle_rounded, color: brand),
       const SizedBox(width: 10),
       Text(m),
     ])));
@@ -777,10 +757,10 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
 
   void _ok(String m) {
     if (!mounted) return;
-    final brand = Theme.of(context).colorScheme.primary;
+    const brand = HeyHelpyTheme.brand;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.check_circle_rounded, color: brand),
+      const Icon(Icons.check_circle_rounded, color: brand),
       const SizedBox(width: 10),
       Flexible(child: Text(m)),
     ])));
@@ -815,7 +795,6 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final l = context.l10n;
     final d = _d!;
     final status = (d['status'] ?? 'new') as String;
-    final c = _statusColors(status);
     final priority = (d['priority'] ?? 'normal') as String;
     final recurring = d['recurrence'] != null;
     final title = (d['title'] ?? '') as String;
@@ -826,7 +805,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final contractorId = d['assigned_contractor_id'] as String?;
     final created = DateTime.tryParse('${d['created_at']}');
     final createdText = created == null ? '—' : l.dateTime(created);
-    final brand = Theme.of(context).colorScheme.primary;
+    const brand = HeyHelpyTheme.brand;
 
     return ListView(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
@@ -837,13 +816,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
                   title + (recurring ? '  · ${l.requestRecurringTag}' : ''),
                   style: const TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w800))),
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                  color: c[0], borderRadius: BorderRadius.circular(20)),
-              child: Text(l.status(status),
-                  style: TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w800, color: c[1]))),
+          StatusPill(status, large: true),
         ]),
         const SizedBox(height: 20),
         _row(l.fieldObject, _objNameIn(l, widget.objects, objId)),
@@ -1044,7 +1017,7 @@ Future<bool?> showOrderForm({
   bool recurring = isEdit ? existing['recurrence'] != null : false;
 
   const priorities = ['low', 'normal', 'high', 'critical'];
-  final brand = Theme.of(context).colorScheme.primary;
+  const brand = HeyHelpyTheme.brand;
   final l = context.l10n;
   final locale = context.localeCode;
 
@@ -1186,21 +1159,8 @@ Widget _inp(TextEditingController c, String hint, {int lines = 1}) => TextField(
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 15, vertical: 14)));
 
-Widget _chip(
-        String label, bool on, Color brand, VoidCallback onTap) =>
-    GestureDetector(
-        onTap: onTap,
-        child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-            decoration: BoxDecoration(
-                color: on ? const Color(0xFFE8F6F2) : Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: on ? brand : _line)),
-            child: Text(label,
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: on ? const Color(0xFF249F88) : _ink))));
+Widget _chip(String label, bool on, Color brand, VoidCallback onTap) =>
+    ChoiceTag(label: label, selected: on, onTap: onTap);
 
 class _Dropdown extends StatelessWidget {
   const _Dropdown(

@@ -56,6 +56,18 @@ extension L10nCodes on AppLocalizations {
     return errorGeneric;
   }
 
+  /// Длительность: «45 мин», «2 ч 5 мин», «3 д 4 ч».
+  String duration(Duration d) {
+    final n = NumberFormat.decimalPattern(localeName);
+    final minutes = d.inMinutes;
+    if (minutes < 60) return durationMinutes(n.format(minutes));
+    if (d.inHours < 24) {
+      return durationHoursMinutes(n.format(d.inHours), n.format(minutes % 60));
+    }
+    return durationDaysHours(n.format(d.inDays), n.format(d.inHours % 24));
+  }
+
   /// Дата и время по правилам выбранного языка.
-  String dateTime(DateTime d) => DateFormat.yMMMd(localeName).add_Hm().format(d.toLocal());
+  String dateTime(DateTime d) =>
+      DateFormat.yMMMd(localeName).add_Hm().format(d.toLocal());
 }

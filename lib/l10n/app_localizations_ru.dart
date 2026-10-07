@@ -110,45 +110,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get tabRequests => 'Заявки';
 
   @override
-  String get tabContractors => 'Исполнитель';
+  String get tabContractors => 'Подрядчики';
 
   @override
   String get tabLocations => 'Локации';
-
-  @override
-  String mockHistoryDoneThisMonth(int count) {
-    return 'Выполнено за месяц: $count';
-  }
-
-  @override
-  String get mockHistory1Title => 'Ремонт стула';
-
-  @override
-  String get mockHistory1Place => 'Астана · Кабинет 512';
-
-  @override
-  String get mockHistory1Meta => '12 авг · 40 мин';
-
-  @override
-  String get mockHistory2Title => 'Замена фильтров';
-
-  @override
-  String get mockHistory2Place => 'Москва · Серверная';
-
-  @override
-  String get mockHistory2Meta => '11 авг · 1 ч 20 мин';
-
-  @override
-  String get mockHistory3Title => 'Уборка холла';
-
-  @override
-  String get mockHistory3Place => 'Москва · 1 этаж';
-
-  @override
-  String get mockHistory3Meta => '11 авг · 55 мин';
-
-  @override
-  String get historyDone => 'Готово';
 
   @override
   String get reportsKpiRequests => 'заявок';
@@ -957,4 +922,162 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get visitAlreadyOpen =>
       'Посещение уже отмечено — вы на объекте. Продолжайте работу.';
+
+  @override
+  String get cardLoadFailed =>
+      'Не удалось загрузить карточку. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get cardContractorOrders => 'Заявки подрядчика';
+
+  @override
+  String get cardContractorReport => 'Отчёт';
+
+  @override
+  String get cardBindingsTitle => 'Виды работ и объекты';
+
+  @override
+  String get cardBindingsEmpty => 'Закреплений пока нет.';
+
+  @override
+  String get cardAllObjects => 'Все объекты';
+
+  @override
+  String get cardNormHint => 'Нажмите на строку, чтобы изменить норму визитов.';
+
+  @override
+  String get cardNormNotSet => 'Норма визитов не задана';
+
+  @override
+  String cardNormPerMonth(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Норма: $count визита в месяц',
+      many: 'Норма: $count визитов в месяц',
+      few: 'Норма: $count визита в месяц',
+      one: 'Норма: $count визит в месяц',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cardNormDialogTitle => 'Норма визитов в месяц';
+
+  @override
+  String get cardNormDialogHint => 'Например, 4. Пусто — без нормы';
+
+  @override
+  String get cardNormInvalid => 'Введите число от 0 до 1000';
+
+  @override
+  String get cardExecutorsTitle => 'Исполнители и контакты';
+
+  @override
+  String get cardExecutorsEmpty =>
+      'Исполнителей пока нет. Пригласите их по коду приглашения.';
+
+  @override
+  String get cardCoordinates => 'Координаты';
+
+  @override
+  String get cardCoordinatesNotSet => 'не заданы';
+
+  @override
+  String get cardGeofenceRadius => 'Радиус геозоны';
+
+  @override
+  String cardMeters(String value) {
+    return '$value м';
+  }
+
+  @override
+  String get cardNoCoordinatesHint =>
+      'Без координат визиты на этом объекте не проверяются по геозоне.';
+
+  @override
+  String get cardEditGeo => 'Адрес и геозона';
+
+  @override
+  String get cardLatitude => 'Широта';
+
+  @override
+  String get cardLongitude => 'Долгота';
+
+  @override
+  String get cardUseMyLocation => 'Взять мои координаты';
+
+  @override
+  String get cardLocationFailed =>
+      'Не удалось определить местоположение. Включите геолокацию и разрешите её приложению.';
+
+  @override
+  String get cardGeofenceRadiusInput => 'Радиус геозоны, м (20–5000)';
+
+  @override
+  String get cardCoordinatesBoth =>
+      'Укажите и широту, и долготу — или оставьте обе пустыми.';
+
+  @override
+  String get cardCoordinatesInvalid =>
+      'Проверьте координаты: широта от −90 до 90, долгота от −180 до 180.';
+
+  @override
+  String get cardRadiusInvalid => 'Радиус — целое число от 20 до 5000 м.';
+
+  @override
+  String get cardPlacesTitle => 'Помещения';
+
+  @override
+  String get cardPlacesEmpty => 'Помещений пока нет.';
+
+  @override
+  String get cardObjectContractorsTitle => 'Подрядчики по видам работ';
+
+  @override
+  String get cardRecentOrders => 'Последние заявки';
+
+  @override
+  String get cardOrdersEmpty => 'Заявок пока нет.';
+
+  @override
+  String get cardAllObjectOrders => 'Все заявки по объекту';
+
+  @override
+  String get historyLoadFailed =>
+      'Не удалось загрузить историю. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String historyDoneInPeriod(int count) {
+    return 'Выполнено за период: $count';
+  }
+
+  @override
+  String get historyEmpty => 'За этот период завершённых заявок нет.';
+
+  @override
+  String historyAcceptedAt(String date) {
+    return 'Принята $date';
+  }
+
+  @override
+  String historyCancelledAt(String date) {
+    return 'Отменена $date';
+  }
+
+  @override
+  String historyExecution(String time) {
+    return 'Выполнение: $time';
+  }
+
+  @override
+  String historyExecutor(String name) {
+    return 'Исполнитель: $name';
+  }
+
+  @override
+  String get historyVisitInGeofence => 'Визит в геозоне ✓';
+
+  @override
+  String get historyVisitOutside => 'Визит вне геозоны или с подменой GPS';
 }

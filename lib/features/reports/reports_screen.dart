@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/directional.dart';
 import '../../core/l10n_ext.dart';
+import '../../core/period.dart';
+import '../../core/directional.dart';
+import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'report_repository.dart';
 
@@ -21,12 +24,13 @@ BoxDecoration _card() => BoxDecoration(
     borderRadius: BorderRadius.circular(16),
     border: Border.all(color: _line));
 
-enum _Period { week, month, custom }
-
 /// Вкладка «Отчёты» (только менеджер и администратор): период, фильтры,
 /// четыре главные цифры по компании и показатели по каждому подрядчику.
 class ReportsScreen extends StatefulWidget {
-  const ReportsScreen({super.key});
+  const ReportsScreen({super.key, this.initialContractorId});
+
+  /// Сразу включить фильтр по подрядчику (кнопка «Отчёт» в его карточке).
+  final String? initialContractorId;
 
   @override
   State<ReportsScreen> createState() => _ReportsScreenState();
@@ -43,10 +47,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
   List<Contractor> _contractors = const [];
   List<Layer> _layers = const [];
 
-  _Period _period = _Period.month;
-  DateTimeRange? _custom;
+  Period _period = const Period(PeriodKind.month);
   String? _objectId;
-  String? _contractorId;
+  late String? _contractorId = widget.initialContractorId;
   String? _layerId;
 
   Report? _report;
@@ -97,32 +100,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  /// Границы периода в местном времени; конец — не включительно.
-  ({DateTime from, DateTime to}) _range() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    switch (_period) {
-      case _Period.week:
-        final monday = today.subtract(Duration(days: today.weekday - 1));
-        return (from: monday, to: monday.add(const Duration(days: 7)));
-      case _Period.month:
-        return (
-          from: DateTime(now.year, now.month),
-          to: DateTime(now.year, now.month + 1)
-        );
-      case _Period.custom:
-        final r = _custom ??
-            DateTimeRange(
-                start: today.subtract(const Duration(days: 29)), end: today);
-        final start = DateTime(r.start.year, r.start.month, r.start.day);
-        final end = DateTime(r.end.year, r.end.month, r.end.day + 1);
-        return (from: start, to: end);
-    }
-  }
-
   Future<void> _load() async {
     final seq = ++_seq;
-    final r = _range();
+    final r = _period.range();
     setState(() {
       _loading = true;
       _failed = false;
@@ -152,20 +132,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  Future<void> _pickPeriod(_Period p) async {
-    if (p == _Period.custom) {
-      final now = DateTime.now();
-      final r = _range();
-      final picked = await showDateRangePicker(
-        context: context,
-        firstDate: DateTime(now.year - 3),
-        lastDate: DateTime(now.year + 1, 12, 31),
-        initialDateRange: DateTimeRange(
-            start: r.from, end: r.to.subtract(const Duration(days: 1))),
-      );
-      if (picked == null) return;
-      _custom = picked;
-    }
+  Future<void> _setPeriod(Period p) async {
     setState(() => _period = p);
     await _load();
   }
@@ -268,7 +235,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       child: ListView(
         padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 120),
         children: [
-          _periodBar(l),
+          PeriodBar(period: _period, onChanged: _setPeriod),
           const SizedBox(height: 10),
           _filters(l),
           const SizedBox(height: 14),
@@ -276,44 +243,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ],
       ),
     );
-  }
-
-  Widget _periodBar(AppLocalizations l) {
-    final r = _range();
-    final date = DateFormat.yMMMd(l.localeName);
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SizedBox(
-        width: double.infinity,
-        child: SegmentedButton<_Period>(
-          showSelectedIcon: false,
-          segments: [
-            ButtonSegment(
-                value: _Period.week, label: Text(l.reportsPeriodWeek)),
-            ButtonSegment(
-                value: _Period.month, label: Text(l.reportsPeriodMonth)),
-            ButtonSegment(
-                value: _Period.custom,
-                label: Text(l.reportsPeriodCustom),
-                icon: const Icon(Icons.date_range, size: 18)),
-          ],
-          selected: {_period},
-          onSelectionChanged: (s) => _pickPeriod(s.first),
-        ),
-      ),
-      const SizedBox(height: 8),
-      InkWell(
-        // Нажатие на даты открывает календарь — и когда «Свой период» уже выбран.
-        onTap: () => _pickPeriod(_Period.custom),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Text(
-              l.reportsRange(date.format(r.from),
-                  date.format(r.to.subtract(const Duration(days: 1)))),
-              style: const TextStyle(
-                  color: _muted, fontWeight: FontWeight.w700, fontSize: 13)),
-        ),
-      ),
-    ]);
   }
 
   Widget _filters(AppLocalizations l) {
@@ -456,15 +385,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Future<void> _openContractor(ContractorReport row) async {
     final l = context.l10n;
-    final r = _range();
-    final date = DateFormat.yMMMd(l.localeName);
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ContractorOrdersScreen(
           title: _contractorName(l, row.contractorId),
-          subtitle: l.reportsRange(date.format(r.from),
-              date.format(r.to.subtract(const Duration(days: 1)))),
+          subtitle: _period.label(context),
           orders: row.orders,
           objects: _objects,
           contractors: _contractors,
@@ -483,29 +409,25 @@ class _ReportsScreenState extends State<ReportsScreen> {
 class _Fmt {
   _Fmt(this.l)
       : _num = NumberFormat.decimalPattern(l.localeName),
+        _norm = NumberFormat('#,##0.#', l.localeName),
         _pct = NumberFormat.percentPattern(l.localeName);
   final AppLocalizations l;
   final NumberFormat _num;
+  final NumberFormat _norm;
   final NumberFormat _pct;
 
   String count(int n) => _num.format(n);
   String pct(double? v) => v == null ? l.reportsNoValue : _pct.format(v);
 
-  String duration(Duration? d) {
-    if (d == null) return l.reportsNoValue;
-    final minutes = d.inMinutes;
-    if (minutes < 60) return l.durationMinutes(_num.format(minutes));
-    if (d.inHours < 24) {
-      return l.durationHoursMinutes(
-          _num.format(d.inHours), _num.format(minutes % 60));
-    }
-    return l.durationDaysHours(
-        _num.format(d.inDays), _num.format(d.inHours % 24));
-  }
+  String duration(Duration? d) => d == null ? l.reportsNoValue : l.duration(d);
+
+  /// Норма за период — с одним знаком после запятой («1 / 0,5»), чтобы за
+  /// короткий период она не округлялась до 0; меньше 0,05 визита — «—».
+  String norm(double v) => v < 0.05 ? l.reportsNoValue : _norm.format(v);
 
   String visits(ReportStats s) => s.visitNorm == null
       ? count(s.visits)
-      : l.reportsFactNorm(count(s.visits), count(s.visitNorm!));
+      : l.reportsFactNorm(count(s.visits), norm(s.visitNorm!));
 
   /// Пары «подпись — значение» для строки подрядчика.
   List<(String, String, bool)> metrics(ReportStats s) => [
@@ -575,47 +497,38 @@ class _ContractorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(bottom: 10),
-      child: InkWell(
-        onTap: onOpen,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: _card(),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              Expanded(
-                  child: Text(name,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w800))),
-              const ChevronEnd(color: _muted, size: 20),
-            ]),
-            const SizedBox(height: 10),
-            LayoutBuilder(builder: (context, box) {
-              final w = (box.maxWidth - 8) / 2;
-              return Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final (label, value, alert) in fmt.metrics(row.stats))
-                  SizedBox(
-                    width: w,
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(label,
-                              style:
-                                  const TextStyle(color: _muted, fontSize: 12)),
-                          Text(value,
-                              style: TextStyle(
-                                  color: alert ? _danger : _ink,
-                                  fontWeight: FontWeight.w700)),
-                        ]),
-                  ),
-              ]);
-            }),
-          ]),
-        ),
-      ),
+    return TapCard(
+      onTap: onOpen,
+      chevron: false,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [
+          Expanded(
+              child: Text(name,
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w800))),
+          const ChevronEnd(color: _muted, size: 20),
+        ]),
+        const SizedBox(height: 10),
+        LayoutBuilder(builder: (context, box) {
+          final w = (box.maxWidth - 8) / 2;
+          return Wrap(spacing: 8, runSpacing: 8, children: [
+            for (final (label, value, alert) in fmt.metrics(row.stats))
+              SizedBox(
+                width: w,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label,
+                          style: const TextStyle(color: _muted, fontSize: 12)),
+                      Text(value,
+                          style: TextStyle(
+                              color: alert ? _danger : _ink,
+                              fontWeight: FontWeight.w700)),
+                    ]),
+              ),
+          ]);
+        }),
+      ]),
     );
   }
 }
@@ -732,57 +645,18 @@ class ContractorOrdersScreen extends StatelessWidget {
                   if (o.isOverdue(now)) l.statusOverdue,
                   if (o.returnCount > 0) l.reportsReturnedTimes(o.returnCount),
                 ];
-                return Padding(
-                  padding: const EdgeInsetsDirectional.only(bottom: 10),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () => _open(context, o),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: _card(),
-                      child: Row(children: [
-                        Expanded(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(o.title,
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700)),
-                                const SizedBox(height: 3),
-                                Text(
-                                    [
-                                      _objectName(l, o.objectId),
-                                      if (workType != null &&
-                                          workType.isNotEmpty)
-                                        workType,
-                                      l.dateTime(o.createdAt),
-                                    ].join(' · '),
-                                    style: const TextStyle(
-                                        color: _muted, fontSize: 13)),
-                                if (flags.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsetsDirectional.only(
-                                        top: 3),
-                                    child: Text(flags.join(' · '),
-                                        style: const TextStyle(
-                                            color: _danger,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600)),
-                                  ),
-                              ]),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(l.status(o.status),
-                            style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: _muted)),
-                        const SizedBox(width: 4),
-                        const ChevronEnd(color: _muted, size: 20),
-                      ]),
-                    ),
-                  ),
+                return OrderTile(
+                  title: o.title,
+                  status: o.status,
+                  lines: [
+                    [
+                      _objectName(l, o.objectId),
+                      if (workType != null && workType.isNotEmpty) workType,
+                    ].join(' · '),
+                    l.dateTime(o.createdAt),
+                  ],
+                  alerts: flags,
+                  onTap: () => _open(context, o),
                 );
               },
             ),

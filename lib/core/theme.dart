@@ -7,6 +7,14 @@ class HeyHelpyTheme {
   static const Color seed = Color(0xFF35C4AB); // мягкий мятно-бирюзовый Helpy
   static const Color ink = Color(0xFF1C1E22); // почти чёрный (текст, акценты)
 
+  // Цвета бренда (раздел «Дизайн» в CLAUDE.md):
+  // бирюзовые кнопки — с тёмно-зелёным текстом [onBrand];
+  // тёмно-зелёные [link] (ссылки, мелкий цветной текст, обычные кнопки) — с белым.
+  static const Color brand = Color(0xFF2DB89A);
+  static const Color onBrand = Color(0xFF06342A);
+  static const Color link = Color(0xFF177A65);
+  static const Color mint = Color(0xFFD8F0EA);
+
   // Светлый градиент шапки (по референсу): светлее вверху-справа → белый
   static const List<Color> headerGradient = [
     Color(0xFFC3F5EF),
@@ -15,7 +23,11 @@ class HeyHelpyTheme {
   ];
 
   static ThemeData light() {
-    final scheme = ColorScheme.fromSeed(seedColor: seed);
+    // primary — тёмно-зелёный с белым текстом: из него Flutter красит обычные
+    // кнопки, ссылки и галочки. Без этого fromSeed давал #056B5B, и бирюзовые
+    // кнопки с тёмным текстом получались тёмно-зелёными (плохой контраст).
+    final scheme = ColorScheme.fromSeed(seedColor: seed)
+        .copyWith(primary: link, onPrimary: Colors.white);
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,

@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// Вкладка со списком подрядчиков
   ///
   /// In ru, this message translates to:
-  /// **'Исполнитель'**
+  /// **'Подрядчики'**
   String get tabContractors;
 
   /// No description provided for @tabLocations.
@@ -301,72 +301,6 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Локации'**
   String get tabLocations;
-
-  /// Временно: выдуманные данные
-  ///
-  /// In ru, this message translates to:
-  /// **'Выполнено за месяц: {count}'**
-  String mockHistoryDoneThisMonth(int count);
-
-  /// No description provided for @mockHistory1Title.
-  ///
-  /// In ru, this message translates to:
-  /// **'Ремонт стула'**
-  String get mockHistory1Title;
-
-  /// No description provided for @mockHistory1Place.
-  ///
-  /// In ru, this message translates to:
-  /// **'Астана · Кабинет 512'**
-  String get mockHistory1Place;
-
-  /// No description provided for @mockHistory1Meta.
-  ///
-  /// In ru, this message translates to:
-  /// **'12 авг · 40 мин'**
-  String get mockHistory1Meta;
-
-  /// No description provided for @mockHistory2Title.
-  ///
-  /// In ru, this message translates to:
-  /// **'Замена фильтров'**
-  String get mockHistory2Title;
-
-  /// No description provided for @mockHistory2Place.
-  ///
-  /// In ru, this message translates to:
-  /// **'Москва · Серверная'**
-  String get mockHistory2Place;
-
-  /// No description provided for @mockHistory2Meta.
-  ///
-  /// In ru, this message translates to:
-  /// **'11 авг · 1 ч 20 мин'**
-  String get mockHistory2Meta;
-
-  /// No description provided for @mockHistory3Title.
-  ///
-  /// In ru, this message translates to:
-  /// **'Уборка холла'**
-  String get mockHistory3Title;
-
-  /// No description provided for @mockHistory3Place.
-  ///
-  /// In ru, this message translates to:
-  /// **'Москва · 1 этаж'**
-  String get mockHistory3Place;
-
-  /// No description provided for @mockHistory3Meta.
-  ///
-  /// In ru, this message translates to:
-  /// **'11 авг · 55 мин'**
-  String get mockHistory3Meta;
-
-  /// No description provided for @historyDone.
-  ///
-  /// In ru, this message translates to:
-  /// **'Готово'**
-  String get historyDone;
 
   /// No description provided for @reportsKpiRequests.
   ///
@@ -1795,6 +1729,264 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Посещение уже отмечено — вы на объекте. Продолжайте работу.'**
   String get visitAlreadyOpen;
+
+  /// No description provided for @cardLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить карточку. Проверьте интернет и попробуйте ещё раз.'**
+  String get cardLoadFailed;
+
+  /// No description provided for @cardContractorOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявки подрядчика'**
+  String get cardContractorOrders;
+
+  /// No description provided for @cardContractorReport.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отчёт'**
+  String get cardContractorReport;
+
+  /// No description provided for @cardBindingsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Виды работ и объекты'**
+  String get cardBindingsTitle;
+
+  /// No description provided for @cardBindingsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закреплений пока нет.'**
+  String get cardBindingsEmpty;
+
+  /// No description provided for @cardAllObjects.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все объекты'**
+  String get cardAllObjects;
+
+  /// No description provided for @cardNormHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажмите на строку, чтобы изменить норму визитов.'**
+  String get cardNormHint;
+
+  /// No description provided for @cardNormNotSet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Норма визитов не задана'**
+  String get cardNormNotSet;
+
+  /// No description provided for @cardNormPerMonth.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{Норма: {count} визит в месяц} few{Норма: {count} визита в месяц} many{Норма: {count} визитов в месяц} other{Норма: {count} визита в месяц}}'**
+  String cardNormPerMonth(int count);
+
+  /// No description provided for @cardNormDialogTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Норма визитов в месяц'**
+  String get cardNormDialogTitle;
+
+  /// No description provided for @cardNormDialogHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, 4. Пусто — без нормы'**
+  String get cardNormDialogHint;
+
+  /// No description provided for @cardNormInvalid.
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите число от 0 до 1000'**
+  String get cardNormInvalid;
+
+  /// No description provided for @cardExecutorsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнители и контакты'**
+  String get cardExecutorsTitle;
+
+  /// No description provided for @cardExecutorsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнителей пока нет. Пригласите их по коду приглашения.'**
+  String get cardExecutorsEmpty;
+
+  /// No description provided for @cardCoordinates.
+  ///
+  /// In ru, this message translates to:
+  /// **'Координаты'**
+  String get cardCoordinates;
+
+  /// No description provided for @cardCoordinatesNotSet.
+  ///
+  /// In ru, this message translates to:
+  /// **'не заданы'**
+  String get cardCoordinatesNotSet;
+
+  /// No description provided for @cardGeofenceRadius.
+  ///
+  /// In ru, this message translates to:
+  /// **'Радиус геозоны'**
+  String get cardGeofenceRadius;
+
+  /// No description provided for @cardMeters.
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} м'**
+  String cardMeters(String value);
+
+  /// No description provided for @cardNoCoordinatesHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без координат визиты на этом объекте не проверяются по геозоне.'**
+  String get cardNoCoordinatesHint;
+
+  /// No description provided for @cardEditGeo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Адрес и геозона'**
+  String get cardEditGeo;
+
+  /// No description provided for @cardLatitude.
+  ///
+  /// In ru, this message translates to:
+  /// **'Широта'**
+  String get cardLatitude;
+
+  /// No description provided for @cardLongitude.
+  ///
+  /// In ru, this message translates to:
+  /// **'Долгота'**
+  String get cardLongitude;
+
+  /// No description provided for @cardUseMyLocation.
+  ///
+  /// In ru, this message translates to:
+  /// **'Взять мои координаты'**
+  String get cardUseMyLocation;
+
+  /// No description provided for @cardLocationFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось определить местоположение. Включите геолокацию и разрешите её приложению.'**
+  String get cardLocationFailed;
+
+  /// No description provided for @cardGeofenceRadiusInput.
+  ///
+  /// In ru, this message translates to:
+  /// **'Радиус геозоны, м (20–5000)'**
+  String get cardGeofenceRadiusInput;
+
+  /// No description provided for @cardCoordinatesBoth.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите и широту, и долготу — или оставьте обе пустыми.'**
+  String get cardCoordinatesBoth;
+
+  /// No description provided for @cardCoordinatesInvalid.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверьте координаты: широта от −90 до 90, долгота от −180 до 180.'**
+  String get cardCoordinatesInvalid;
+
+  /// No description provided for @cardRadiusInvalid.
+  ///
+  /// In ru, this message translates to:
+  /// **'Радиус — целое число от 20 до 5000 м.'**
+  String get cardRadiusInvalid;
+
+  /// No description provided for @cardPlacesTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещения'**
+  String get cardPlacesTitle;
+
+  /// No description provided for @cardPlacesEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещений пока нет.'**
+  String get cardPlacesEmpty;
+
+  /// No description provided for @cardObjectContractorsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчики по видам работ'**
+  String get cardObjectContractorsTitle;
+
+  /// No description provided for @cardRecentOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'Последние заявки'**
+  String get cardRecentOrders;
+
+  /// No description provided for @cardOrdersEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявок пока нет.'**
+  String get cardOrdersEmpty;
+
+  /// No description provided for @cardAllObjectOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все заявки по объекту'**
+  String get cardAllObjectOrders;
+
+  /// No description provided for @historyLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить историю. Проверьте интернет и попробуйте ещё раз.'**
+  String get historyLoadFailed;
+
+  /// No description provided for @historyDoneInPeriod.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнено за период: {count}'**
+  String historyDoneInPeriod(int count);
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'За этот период завершённых заявок нет.'**
+  String get historyEmpty;
+
+  /// No description provided for @historyAcceptedAt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Принята {date}'**
+  String historyAcceptedAt(String date);
+
+  /// No description provided for @historyCancelledAt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменена {date}'**
+  String historyCancelledAt(String date);
+
+  /// No description provided for @historyExecution.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнение: {time}'**
+  String historyExecution(String time);
+
+  /// No description provided for @historyExecutor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнитель: {name}'**
+  String historyExecutor(String name);
+
+  /// No description provided for @historyVisitInGeofence.
+  ///
+  /// In ru, this message translates to:
+  /// **'Визит в геозоне ✓'**
+  String get historyVisitInGeofence;
+
+  /// No description provided for @historyVisitOutside.
+  ///
+  /// In ru, this message translates to:
+  /// **'Визит вне геозоны или с подменой GPS'**
+  String get historyVisitOutside;
 }
 
 class _AppLocalizationsDelegate

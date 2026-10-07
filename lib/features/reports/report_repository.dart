@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/paging.dart';
+
 /// Период и фильтры отчёта. [to] — не включительно.
 class ReportQuery {
   final DateTime from;
@@ -168,8 +170,9 @@ class ReportStats {
   int submitted = 0;
   int submittedWithPhotos = 0;
 
-  /// Норма визитов за период; null — нормы нет.
-  int? visitNorm;
+  /// Норма визитов за период (дробная: за неделю при норме 2 в месяц ≈ 0,5);
+  /// null — нормы нет.
+  double? visitNorm;
 
   void addOrder(ReportOrder o, DateTime now) {
     total++;
@@ -282,9 +285,9 @@ class Report {
       perMonth.update(n.contractorId, (v) => v + n.visitsPerMonth,
           ifAbsent: () => n.visitsPerMonth);
     }
-    var companyNorm = 0;
+    var companyNorm = 0.0;
     for (final e in perMonth.entries) {
-      final norm = (e.value * days / 30.44).round();
+      final norm = e.value * days / 30.44;
       byContractor.putIfAbsent(e.key, ReportStats.new).visitNorm = norm;
       companyNorm += norm;
     }
@@ -319,26 +322,13 @@ class Report {
 class ReportRepository {
   final SupabaseClient _c = Supabase.instance.client;
 
-  /// Сервер отдаёт не больше 1000 строк за раз — читаем страницами.
-  static const _page = 1000;
-
-  Future<List<Map<String, dynamic>>> _all(
-      PostgrestTransformBuilder<PostgrestList> Function() query) async {
-    final out = <Map<String, dynamic>>[];
-    for (var start = 0;; start += _page) {
-      final rows = await query().range(start, start + _page - 1);
-      out.addAll(rows);
-      if (rows.length < _page) return out;
-    }
-  }
-
   Future<Report> load(ReportQuery q,
       {required List<String> contractorOrder}) async {
     final from = q.from.toUtc().toIso8601String();
     final to = q.to.toUtc().toIso8601String();
 
     // select() без списка полей: return_count появляется только после 0010.
-    final orderRows = await _all(() {
+    final orderRows = await fetchAll(() {
       var b = _c
           .from('work_orders')
           .select()
@@ -355,7 +345,7 @@ class ReportRepository {
     // Слой визита — из его заявки; связь нужна только при фильтре по слою.
     const visitFields =
         'id,contractor_id,started_at,ended_at,in_geofence,mock_location';
-    final visitRows = await _all(() {
+    final visitRows = await fetchAll(() {
       var b = _c
           .from('visits')
           .select(q.layerId == null
@@ -369,14 +359,12 @@ class ReportRepository {
       return b.order('started_at').order('id');
     });
 
-    // Фото «до/после» по заявкам периода. Список id — порциями,
-    // чтобы адрес запроса не стал слишком длинным.
+    // Фото «до/после» по заявкам периода.
     final ids = [for (final r in orderRows) r['id'] as String];
     final before = <String>{};
     final after = <String>{};
-    for (var i = 0; i < ids.length; i += 100) {
-      final chunk = ids.sublist(i, i + 100 > ids.length ? ids.length : i + 100);
-      final rows = await _all(() => _c
+    for (final chunk in chunks(ids)) {
+      final rows = await fetchAll(() => _c
           .from('attachments')
           .select('id,work_order_id,stage')
           .eq('kind', 'photo')

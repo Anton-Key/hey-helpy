@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../core/directional.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/locale_controller.dart';
 import '../../core/theme.dart';
+import '../../core/ui.dart';
 import '../../models/profile.dart';
 import '../auth/auth_repository.dart';
 import '../directory/directory.dart';
+import '../history/history_screen.dart';
 import '../reports/reports_screen.dart';
 import '../requests/requests.dart';
 
@@ -79,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _body(int section) {
     switch (section) {
       case 1:
-        return _history();
+        return const HistoryScreen();
       case 2:
         return const ReportsScreen();
       case 3:
@@ -96,36 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Временно: выдуманные данные, пока «История» не переведена на реальные.
-  Widget _history() {
-    final l = context.l10n;
-    return ListView(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 120),
-        children: [
-          Text(l.mockHistoryDoneThisMonth(12),
-              style: const TextStyle(
-                  color: _muted, fontWeight: FontWeight.w600, fontSize: 13)),
-          const SizedBox(height: 10),
-          _DoneCard(
-              title: l.mockHistory1Title,
-              place: l.mockHistory1Place,
-              meta: l.mockHistory1Meta,
-              who: 'IP'),
-          _DoneCard(
-              title: l.mockHistory2Title,
-              place: l.mockHistory2Place,
-              meta: l.mockHistory2Meta,
-              who: 'SK'),
-          _DoneCard(
-              title: l.mockHistory3Title,
-              place: l.mockHistory3Place,
-              meta: l.mockHistory3Meta,
-              who: 'KL'),
-        ]);
-  }
-
   Widget _profileView() {
-    final brand = Theme.of(context).colorScheme.primary;
     final l = context.l10n;
     final name = _profile?.displayName ?? l.profileDefaultName;
     final role = _profile == null ? '' : l.role(_profile!.role);
@@ -140,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(children: [
                 CircleAvatar(
                     radius: 28,
-                    backgroundColor: brand,
+                    backgroundColor: HeyHelpyTheme.brand,
                     child: Text(
                         name.isNotEmpty
                             ? name.characters.first.toUpperCase()
@@ -212,27 +184,26 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Строка профиля. Стрелка «дальше» — только у строк, которые что-то
+  /// открывают; «Выйти» — действие, без стрелки; без [onTap] — просто текст
+  /// (раздел ещё не готов) и без эффекта нажатия.
   Widget _row(IconData icon, String text,
       {bool danger = false, VoidCallback? onTap}) {
-    final color = danger ? const Color(0xFFC24444) : _ink;
-    return Padding(
-        padding: const EdgeInsetsDirectional.only(bottom: 10),
-        child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
-                decoration: _cardDeco(),
-                child: Row(children: [
-                  Icon(icon, size: 20, color: color),
-                  const SizedBox(width: 12),
-                  Text(text,
-                      style:
-                          TextStyle(fontWeight: FontWeight.w600, color: color)),
-                  if (!danger) const Spacer(),
-                  if (!danger) const ChevronEnd(color: _muted),
-                ]))));
+    final color =
+        danger ? const Color(0xFFC24444) : (onTap == null ? _muted : _ink);
+    return TapCard(
+        onTap: onTap,
+        chevron: !danger,
+        radius: 14,
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
+        child: Row(children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(text,
+                style: TextStyle(fontWeight: FontWeight.w600, color: color)),
+          ),
+        ]));
   }
 }
 
@@ -315,82 +286,34 @@ class _TopTabs extends StatelessWidget {
     final labels = [l.tabRequests, l.tabContractors, l.tabLocations];
     return Row(children: [
       for (int i = 0; i < labels.length; i++)
-        GestureDetector(
-            onTap: () => onTab(i),
-            child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: 22),
-                child: Container(
-                    padding: const EdgeInsetsDirectional.only(bottom: 12),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: tab == i ? _ink : Colors.transparent,
-                                width: 3))),
-                    child: Text(labels[i],
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: tab == i
-                                ? _ink
-                                : _ink.withValues(alpha: 0.5)))))),
+        // Material + InkWell: на градиенте шапки виден эффект нажатия.
+        Padding(
+            padding: const EdgeInsetsDirectional.only(end: 10),
+            child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                    onTap: () => onTab(i),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                            start: 6, end: 6, top: 4),
+                        child: Container(
+                            padding:
+                                const EdgeInsetsDirectional.only(bottom: 12),
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    bottom: BorderSide(
+                                        color: tab == i
+                                            ? _ink
+                                            : Colors.transparent,
+                                        width: 3))),
+                            child: Text(labels[i],
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: tab == i
+                                        ? _ink
+                                        : _ink.withValues(alpha: 0.5)))))))),
     ]);
-  }
-}
-
-class _DoneCard extends StatelessWidget {
-  const _DoneCard(
-      {required this.title,
-      required this.place,
-      required this.meta,
-      required this.who});
-  final String title, place, meta, who;
-  @override
-  Widget build(BuildContext context) {
-    final brand = Theme.of(context).colorScheme.primary;
-    return Container(
-        margin: const EdgeInsetsDirectional.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: _cardDeco(),
-        child: Column(children: [
-          Row(children: [
-            Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 3),
-                  Text(place,
-                      style: const TextStyle(color: _muted, fontSize: 13)),
-                ])),
-            Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                    color: const Color(0xFFEAECEF),
-                    borderRadius: BorderRadius.circular(20)),
-                child: Text(context.l10n.historyDone,
-                    style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF6B7480)))),
-          ]),
-          const SizedBox(height: 11),
-          const Divider(height: 1, color: _line),
-          const SizedBox(height: 9),
-          Row(children: [
-            Text(meta, style: const TextStyle(color: _muted, fontSize: 12)),
-            const Spacer(),
-            CircleAvatar(
-                radius: 11,
-                backgroundColor: brand,
-                child: Text(who,
-                    style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: _onBrand))),
-          ]),
-        ]));
   }
 }

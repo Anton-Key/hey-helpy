@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../core/l10n_ext.dart';
@@ -6,6 +8,7 @@ import '../../core/ui.dart';
 import '../directory/directory.dart';
 import '../requests/requests.dart';
 import 'voice_draft.dart';
+import 'voice_intake_client.dart';
 
 const _ink = Color(0xFF1C1E22);
 const _muted = Color(0xFF8A9098);
@@ -15,17 +18,26 @@ const _danger = Color(0xFFC24444);
 
 const _priorities = ['low', 'normal', 'high', 'critical'];
 
-/// Проверка черновика голосовой заявки. Заявка создаётся только по кнопке
-/// «Отправить»; подрядчика затем назначает база по слою.
+/// Проверка черновика голосовой заявки: что распознано, заголовок и описание
+/// (можно поправить), вид работ, место, срочность. Заявка создаётся только по
+/// кнопке «Отправить»; подрядчика затем назначает база по слою.
 class VoiceConfirmScreen extends StatefulWidget {
   const VoiceConfirmScreen(
       {super.key,
       required this.draft,
       required this.companyId,
-      required this.objects});
+      required this.objects,
+      this.catalog,
+      this.typed = false});
   final VoiceDraft draft;
   final String companyId;
   final List<Obj> objects;
+
+  /// Уже загруженные слои и помещения; если пусто — экран загрузит сам.
+  final IntakeCatalog? catalog;
+
+  /// Текст набран, а не сказан: «Вы написали», канал заявки — text.
+  final bool typed;
 
   @override
   State<VoiceConfirmScreen> createState() => _VoiceConfirmScreenState();
@@ -61,23 +73,39 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
   }
 
   Future<void> _load() async {
-    List<Layer> layers = const [];
-    List<Place> places = const [];
-    try {
-      layers = await _dir.layers();
-    } catch (_) {}
-    try {
-      places = await _dir.places();
-    } catch (_) {}
+    var layers = widget.catalog?.layers ?? const <Layer>[];
+    var places = widget.catalog?.places ?? const <Place>[];
+    if (layers.isEmpty) {
+      try {
+        layers = await _dir.layers();
+      } catch (_) {}
+    }
+    if (places.isEmpty) {
+      try {
+        places = await _dir.places();
+      } catch (_) {}
+    }
     if (!mounted) return;
     setState(() {
       _layers = layers;
       _places = places;
       _layer = Layer.find(layers,
           id: widget.draft.layerId, name: widget.draft.layer);
-      _where = _matchWhere(widget.draft.locationHint, places, widget.objects);
+      _where = _initialWhere(widget.draft, places, widget.objects);
       _loading = false;
     });
+  }
+
+  /// Место из разбора: точное помещение или объект, иначе — по подсказке.
+  static String? _initialWhere(
+      VoiceDraft d, List<Place> places, List<Obj> objects) {
+    if (d.locationId != null && places.any((p) => p.id == d.locationId)) {
+      return 'p:${d.locationId}';
+    }
+    if (d.objectId != null && objects.any((o) => o.id == d.objectId)) {
+      return 'o:${d.objectId}';
+    }
+    return _matchWhere(d.locationHint, places, objects);
   }
 
   /// Подбирает помещение (или объект) по словам из подсказки:
@@ -144,7 +172,7 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
         objectId: objectId,
         locationId: locationId,
         recurring: false,
-        inputChannel: 'voice',
+        inputChannel: widget.typed ? 'text' : 'voice',
       );
       if (mounted) Navigator.pop(context, true);
     } catch (_) {
@@ -160,6 +188,7 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
     const brand = HeyHelpyTheme.brand;
     final l = context.l10n;
     final locale = context.localeCode;
+    final side = math.max(16.0, (MediaQuery.sizeOf(context).width - 640) / 2);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -167,7 +196,8 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32),
+              // На широком экране — колонка до 640 px по центру.
+              padding: EdgeInsetsDirectional.fromSTEB(side, 8, side, 32),
               children: [
                   Container(
                     padding: const EdgeInsets.all(14),
@@ -176,7 +206,7 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(l.voiceYouSaid,
+                          Text(widget.typed ? l.voiceYouWrote : l.voiceYouSaid,
                               style: const TextStyle(
                                   color: _onBrand,
                                   fontWeight: FontWeight.w700,
@@ -187,7 +217,10 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
                                   color: _ink, fontSize: 15, height: 1.35)),
                         ]),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
+                  Text(l.voiceEditHint,
+                      style: const TextStyle(color: _muted, fontSize: 13)),
+                  const SizedBox(height: 12),
                   TextField(
                       controller: _titleC,
                       textCapitalization: TextCapitalization.sentences,

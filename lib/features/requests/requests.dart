@@ -342,7 +342,11 @@ class _RequestsTabState extends State<RequestsTab> {
                       backgroundColor: brand,
                       foregroundColor: _onBrand,
                       onPressed: _wake.trigger,
-                      child: const Icon(Icons.mic, size: 44))),
+                      // Подпись — имя кнопки для экранного чтеца
+                      // (и для /screens: Tooltip его не задаёт).
+                      child: Icon(Icons.mic,
+                          size: 44,
+                          semanticLabel: context.l10n.requestsVoice))),
               const SizedBox(height: 10),
               FloatingActionButton.extended(
                   heroTag: 'addReq',

@@ -424,7 +424,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get voiceListening => 'Слушаю';
 
   @override
-  String get voiceProcessing => 'Распознаю…';
+  String get voiceProcessing => 'Разбираю заявку…';
 
   @override
   String get voiceFailedTitle => 'Не получилось';
@@ -439,29 +439,18 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get voiceProcessingHint => 'Это займёт несколько секунд';
-
-  @override
   String get voiceDone => 'Готово';
 
   @override
   String get voiceAgain => 'Ещё раз';
 
   @override
-  String get voiceNoMicPermission =>
-      'Нужен доступ к микрофону. Разрешите его в настройках телефона и попробуйте снова.';
-
-  @override
   String get voiceMicFailed =>
       'Не удалось включить микрофон. Попробуйте ещё раз.';
 
   @override
-  String get voiceTooShort =>
-      'Слишком коротко. Нажмите «Ещё раз» и опишите проблему.';
-
-  @override
   String get voiceRecognizeFailed =>
-      'Не получилось распознать запись. Проверьте интернет и попробуйте ещё раз.';
+      'Не получилось распознать речь. Попробуйте ещё раз или введите заявку текстом.';
 
   @override
   String get voiceConfirmTitle => 'Проверьте заявку';
@@ -495,6 +484,54 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get voiceSendFailed =>
       'Не удалось отправить заявку. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get voiceAutoStop => 'После паузы в 3 секунды закончу сам';
+
+  @override
+  String get voiceNoMicPermissionWeb =>
+      'Браузер не дал доступ к микрофону. Нажмите на значок замка или микрофона в адресной строке → «Микрофон» → «Разрешить» и нажмите «Ещё раз». На iPhone: Настройки → Safari → Микрофон → «Разрешить»; ещё должна быть включена диктовка (Настройки → Основные → Клавиатура).';
+
+  @override
+  String voiceNoMicPermissionApp(String app) {
+    return 'Нужен доступ к микрофону: Настройки телефона → Приложения → $app → Разрешения → Микрофон → «Разрешить». Затем нажмите «Ещё раз».';
+  }
+
+  @override
+  String get voiceUnsupportedWeb =>
+      'В этом браузере нет распознавания речи (например, в Firefox). Откройте приложение в Chrome, Edge или Safari — или введите заявку текстом.';
+
+  @override
+  String get voiceUnsupportedApp =>
+      'На телефоне не найден сервис распознавания речи (обычно это приложение Google). Введите заявку текстом.';
+
+  @override
+  String get voiceNetwork =>
+      'Нет связи с сервисом распознавания речи. Проверьте интернет или введите заявку текстом.';
+
+  @override
+  String get voiceNothingHeard =>
+      'Ничего не услышал. Нажмите «Ещё раз» и скажите, что случилось, — или введите текстом.';
+
+  @override
+  String get voiceTypeInstead => 'Ввести текстом';
+
+  @override
+  String get voiceTypeTitle => 'Опишите заявку';
+
+  @override
+  String get voiceTypeHint =>
+      'Что случилось и где? Например: «В переговорной на третьем этаже не работает кондиционер»';
+
+  @override
+  String get voiceNext => 'Далее';
+
+  @override
+  String get voiceYouWrote => 'Вы написали';
+
+  @override
+  String get voiceEditHint =>
+      'Заголовок и описание можно поправить перед отправкой.';
 
   @override
   String get objectTypeOffice => 'Офис';

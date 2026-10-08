@@ -534,6 +534,12 @@ class AppLocalizationsRu extends AppLocalizations {
       'Заголовок и описание можно поправить перед отправкой.';
 
   @override
+  String get voiceParsedByAi => 'Разобрано ИИ';
+
+  @override
+  String get voiceParsedByDictionary => 'Разобрано по словарю';
+
+  @override
   String get objectTypeOffice => 'Офис';
 
   @override

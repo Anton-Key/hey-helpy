@@ -158,6 +158,8 @@
   "voiceNext": "Next",
   "voiceYouWrote": "You wrote",
   "voiceEditHint": "You can edit the title and description before sending.",
+  "voiceParsedByAi": "Parsed by AI",
+  "voiceParsedByDictionary": "Parsed by keywords",
   "objectTypeOffice": "Office",
   "objectTypeHotel": "Hotel",
   "objectTypeApartments": "Apartments",

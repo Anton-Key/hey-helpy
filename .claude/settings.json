@@ -51,7 +51,11 @@
       "Bash(gh api *pending_deployments*)",
       "Bash(gh run rerun *)",
       "Bash(gh workflow enable *)",
-      "Bash(gh workflow run *)"
+      "Bash(gh workflow run *)",
+      "Bash(supabase functions deploy*)",
+      "Bash(supabase link*)",
+      "Bash(supabase login*)",
+      "Bash(supabase secrets set*)"
     ]
   }
 }

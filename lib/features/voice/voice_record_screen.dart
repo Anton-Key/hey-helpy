@@ -158,7 +158,10 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
 
   Future<void> _process(String text, {required bool typed}) async {
     final locale = context.localeCode;
-    setState(() => _phase = _Phase.processing);
+    setState(() {
+      _phase = _Phase.processing;
+      _text = text;
+    });
     try {
       final catalog = await _catalog;
       final draft =

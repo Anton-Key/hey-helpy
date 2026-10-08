@@ -228,6 +228,8 @@
   "voiceNext": "Далее",
   "voiceYouWrote": "Вы написали",
   "voiceEditHint": "Заголовок и описание можно поправить перед отправкой.",
+  "voiceParsedByAi": "Разобрано ИИ",
+  "voiceParsedByDictionary": "Разобрано по словарю",
   "objectTypeOffice": "Офис",
   "objectTypeHotel": "Гостиница",
   "objectTypeApartments": "Апартаменты",

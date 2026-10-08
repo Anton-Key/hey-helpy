@@ -1,6 +1,14 @@
 {
   "name": "Hey Helpy Flutter",
   "image": "ghcr.io/cirruslabs/flutter:stable",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "containerEnv": {
+    "PLAYWRIGHT_BROWSERS_PATH": "/opt/pw-browsers"
+  },
   "forwardPorts": [8080],
-  "postCreateCommand": "flutter create . --platforms=web --project-name hey_helpy && flutter pub get"
+  "postCreateCommand": "flutter create . --platforms=web --project-name hey_helpy && flutter pub get && cd tools/screens && npm ci --no-audit --no-fund && npx playwright install --with-deps chromium"
 }

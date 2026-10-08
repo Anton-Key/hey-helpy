@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PreToolUse (Bash): перед git commit — проверка, что в коммит не попадают секреты:
-# env.json, *.env, токены Supabase (sbp_…), ключ service_role.
+# env.json, *.env, .env.demo (логины демо-пользователей для /screens), токены Supabase
+# (sbp_…), ключ service_role, пароли вида DEMO_…_PASSWORD=….
 # Найдено — коммит останавливается (код 2), Claude должен сказать пользователю.
 set -uo pipefail
 
@@ -34,6 +35,8 @@ check_text() { # $1 — файл, stdin — проверяемый текст
   grep -qE 'sbp_[A-Za-z0-9]{20,}' <<<"$text" && problems+=("$f: токен доступа Supabase (sbp_…)")
   grep -qiE 'service_role_key["'\'']?[[:space:]]*[:=][[:space:]]*["'\'']?[A-Za-z0-9._-]{20,}' <<<"$text" \
     && problems+=("$f: ключ service_role")
+  grep -qE 'DEMO_[A-Z]+_PASSWORD[[:space:]]*=[[:space:]]*[^[:space:]]+' <<<"$text" \
+    && problems+=("$f: пароль демо-пользователя (DEMO_…_PASSWORD)")
   for jwt in $(grep -oE 'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}' <<<"$text" | sort -u); do
     is_service_role_jwt "$jwt" && { problems+=("$f: ключ service_role (JWT)"); break; }
   done
@@ -42,7 +45,7 @@ check_text() { # $1 — файл, stdin — проверяемый текст
 while IFS= read -r f; do
   [[ -n "$f" ]] || continue
   base=$(basename "$f")
-  if [[ "$base" == "env.json" || "$base" == ".env" || "$base" == *.env || "$base" == .env.* ]]; then
+  if [[ "$base" == "env.json" || "$base" == ".env" || "$base" == *.env || "$base" == .env.* || "$base" == ".env.demo" ]]; then
     problems+=("$f: файл с ключами не должен попадать в git")
     continue
   fi
@@ -54,7 +57,7 @@ while IFS= read -r f; do
   [[ -n "$f" && -f "$f" ]] || continue
   grep -qxF -- "$f" <<<"$staged" && continue
   base=$(basename "$f")
-  if [[ "$base" == "env.json" || "$base" == ".env" || "$base" == *.env || "$base" == .env.* ]]; then
+  if [[ "$base" == "env.json" || "$base" == ".env" || "$base" == *.env || "$base" == .env.* || "$base" == ".env.demo" ]]; then
     problems+=("$f: файл с ключами не должен попадать в git")
     continue
   fi

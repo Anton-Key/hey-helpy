@@ -10,5 +10,5 @@
     "PLAYWRIGHT_BROWSERS_PATH": "/opt/pw-browsers"
   },
   "forwardPorts": [8080],
-  "postCreateCommand": "flutter create . --platforms=web --project-name hey_helpy && flutter pub get && cd tools/screens && npm ci --no-audit --no-fund && npx playwright install --with-deps chromium"
+  "postCreateCommand": "([ -d web ] || flutter create . --platforms=web --project-name hey_helpy) && flutter pub get && cd tools/screens && npm ci --no-audit --no-fund && npx playwright install --with-deps chromium"
 }

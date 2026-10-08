@@ -10,6 +10,7 @@
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
 -- и миграций 0001–0010. Подробно: docs/DEMO_SETUP.md, шаг 4.
+-- Или без SQL Editor: GitHub → Actions → «Refresh demo» (CLAUDE.md, «Перезаливка демо-данных»).
 --
 -- Даты считаются от момента запуска: «29 дней назад», «вчера» и т. д.
 -- Повторный запуск безопасен: записи с постоянными id (de300000-…-000000000101
@@ -74,14 +75,21 @@ set local session_replication_role = replica;
 
 do $$
 declare
-  -- ▼▼▼ ТЕ ЖЕ EMAIL, ЧТО В demo.sql ▼▼▼
-  v_manager_email   text := 'manager@example.com';
-  v_executor_email  text := 'executor@example.com';
-  v_requester_email text := 'requester@example.com';
+  -- ▼▼▼ ТЕ ЖЕ EMAIL, ЧТО В demo.sql (впишите вместо example.com) ▼▼▼
+  -- При запуске через GitHub Actions «Refresh demo» email берутся из секретов
+  -- окружения production-db (настройки demo.*_email) — тогда строки ниже не важны.
+  -- В SQL Editor настроек нет, и действуют email, вписанные здесь.
+  v_manager_email   text := coalesce(nullif(current_setting('demo.manager_email', true), ''),
+                                     'manager@example.com');
+  v_executor_email  text := coalesce(nullif(current_setting('demo.executor_email', true), ''),
+                                     'executor@example.com');
+  v_requester_email text := coalesce(nullif(current_setting('demo.requester_email', true), ''),
+                                     'requester@example.com');
   -- Необязательно: четвёртый тестовый пользователь — исполнитель «ЭлектроПро».
   -- Если указать, он станет исполнителем «ЭлектроПро», и у подрядчика появится
   -- визит с подменой GPS. Если оставить пустым — у «ЭлектроПро» визитов не будет.
-  v_elec_executor_email text := '';
+  v_elec_executor_email text := coalesce(nullif(current_setting('demo.elec_executor_email', true), ''),
+                                         '');
   -- ▲▲▲ ДАЛЬШЕ НИЧЕГО МЕНЯТЬ НЕ НУЖНО ▲▲▲
 
   c_company    constant uuid := 'de300000-0000-4000-8000-000000000001';

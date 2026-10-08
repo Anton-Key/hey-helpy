@@ -227,4 +227,37 @@ void main() {
       expect(d.locationHint, 'entrance');
     });
   });
+
+  group('Лифты', () {
+    // В рабочей базе слой «Лифты» без переводов (name_i18n пустой).
+    final withLifts = TextIntake(
+        layers: [..._layers, const Layer(id: 'lift', name: 'Лифты')],
+        places: _places,
+        objects: _objects);
+
+    test('в лифте застряла женщина — Лифты, срочно', () {
+      final d = withLifts.parse('Эй, Хелпи, в лифте застряла женщина, срочно');
+      expect(d.layerId, 'lift');
+      expect(d.priority, 'high');
+      expect(d.title, 'В лифте застряла женщина, срочно');
+    });
+
+    test('двери лифта не закрываются; elevator stuck', () {
+      expect(withLifts.parse('Двери лифта не закрываются').layerId, 'lift');
+      expect(
+          withLifts.parse('The elevator is stuck on floor 2').layerId, 'lift');
+    });
+
+    test('в лифте не горит свет — Электрика', () {
+      expect(withLifts.parse('В лифте не горит свет').layerId, 'elec');
+    });
+
+    test('нет слоя «Лифты» у компании — слой не выбран', () {
+      expect(parse('В лифте застряла женщина').layerId, isNull);
+    });
+
+    test('без справочника — «Лифты»', () {
+      expect(_intake.parse('Лифт застрял между этажами').layer, 'Лифты');
+    });
+  });
 }

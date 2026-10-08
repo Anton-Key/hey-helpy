@@ -1,3 +1,6 @@
+/// Кто разобрал текст: ИИ на сервере (voice-intake) или словарь на устройстве.
+enum DraftSource { ai, dictionary }
+
 /// Черновик заявки, разобранный из голоса (или из набранного текста). Заявку из него создаёт
 /// только пользователь — после проверки на экране подтверждения.
 class VoiceDraft {
@@ -21,6 +24,9 @@ class VoiceDraft {
   /// low / normal / high / critical — как в work_orders.priority.
   final String priority;
 
+  /// Чем разобран текст — показывается пометкой на экране подтверждения.
+  final DraftSource source;
+
   const VoiceDraft({
     required this.transcript,
     required this.title,
@@ -31,6 +37,7 @@ class VoiceDraft {
     this.locationId,
     this.objectId,
     this.priority = 'normal',
+    this.source = DraftSource.dictionary,
   });
 
   static const priorities = {'low', 'normal', 'high', 'critical'};
@@ -47,6 +54,7 @@ class VoiceDraft {
       locationId: m['location_id'] as String?,
       objectId: m['object_id'] as String?,
       priority: priorities.contains(p) ? p! : 'normal',
+      source: m['source'] == 'ai' ? DraftSource.ai : DraftSource.dictionary,
     );
   }
 }

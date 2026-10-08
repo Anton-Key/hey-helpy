@@ -29,6 +29,18 @@ jobs:
       - name: Миграции в PR
         run: bash .github/scripts/check-pr-migrations.sh
 
+      # Edge Functions (supabase/functions): типы и тесты Deno. Без секретов;
+      # тесты в сеть не ходят (вызов YandexGPT подменён).
+      - uses: denoland/setup-deno@v2.0.5
+        with:
+          deno-version: 2.x
+
+      - name: Функции — проверка типов
+        run: deno check supabase/functions/*/*.ts
+
+      - name: Функции — тесты
+        run: deno test supabase/functions
+
       # Та же установка Flutter, что в build-apk.yml.
       - uses: subosito/flutter-action@v2
         with:

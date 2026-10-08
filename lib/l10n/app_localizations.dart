@@ -1046,6 +1046,18 @@ abstract class AppLocalizations {
   /// **'Заголовок и описание можно поправить перед отправкой.'**
   String get voiceEditHint;
 
+  /// No description provided for @voiceParsedByAi.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разобрано ИИ'**
+  String get voiceParsedByAi;
+
+  /// No description provided for @voiceParsedByDictionary.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разобрано по словарю'**
+  String get voiceParsedByDictionary;
+
   /// No description provided for @objectTypeOffice.
   ///
   /// In ru, this message translates to:

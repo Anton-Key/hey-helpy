@@ -532,6 +532,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can edit the title and description before sending.';
 
   @override
+  String get voiceParsedByAi => 'Parsed by AI';
+
+  @override
+  String get voiceParsedByDictionary => 'Parsed by keywords';
+
+  @override
   String get objectTypeOffice => 'Office';
 
   @override

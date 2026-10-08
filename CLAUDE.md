@@ -13,7 +13,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 ## Стек
 - Flutter (мобильное приложение + веб), Dart ≥ 3.4. Пакеты: `supabase_flutter`, `go_router`, `flutter_localizations` + `intl` (переводы), `shared_preferences`, `speech_to_text` (голос → текст средствами платформы), `image_picker` + `geolocator` (фото).
 - Backend: Supabase (Postgres + RLS + Auth + Storage), регион eu-west-1. Позже — self-hosted Supabase в Yandex Cloud для РФ.
-- Речь → текст сейчас — средствами платформы (Web Speech API в браузере, системный распознаватель на Android), без ключей. ИИ (план): YandexGPT для разбора заявки (шаг 12, Edge Function), позже Yandex SpeechKit для РФ, Picovoice Porcupine (ключевая фраза на устройстве).
+- Речь → текст сейчас — средствами платформы (Web Speech API в браузере, системный распознаватель на Android), без ключей. ИИ: YandexGPT разбирает заявку в Edge Function `voice-intake` (шаг 12, см. «Edge Functions»), позже Yandex SpeechKit для РФ, Picovoice Porcupine (ключевая фраза на устройстве).
 - **MVP только под Android.** APK собирается GitHub Actions (`.github/workflows/build-apk.yml`), ключи — в секретах репозитория. После каждого пуша в `main` свежий APK лежит по постоянной ссылке (релиз `latest-apk`, перезаписывается): https://github.com/Anton-Key/hey-helpy/releases/download/latest-apk/hey-helpy.apk
 - Ключи Supabase передаются при запуске: `--dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...`
 
@@ -36,6 +36,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 - `lib/features/notifications/` — уведомления за 14 дней по роли (из заявок и визитов под RLS), отметка «прочитано» на устройстве и в `profiles.notifications_seen_at` (0011); колокольчик в шапке.
 - `lib/features/requests/contractor_picker.dart` — окно выбора подрядчика (закреплённые за слоем и объектом сверху, поиск); карточка заявки — главные действия в нижней панели.
 - `lib/features/home/`, `auth/`, `lib/models/`.
+- `supabase/functions/voice-intake/` — Edge Function ИИ-разбора заявки (см. «Edge Functions»).
 
 ## База данных (Supabase)
 Миграции применяет только пользователь: GitHub Actions «Apply migration» с его одобрением или вручную в Supabase → SQL Editor (у Claude Code нет доступа к базе на запись, см. «Миграции»):
@@ -86,9 +87,23 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 - Кнопка «Нажми и говори» → `VoiceRecordScreen`: распознавание начинается сразу, текст виден по ходу речи. Стоп — «Готово», пауза 3 с или 30 с. Язык речи — по языку интерфейса (`ru-RU` / `en-US`).
 - Распознавание — пакет `speech_to_text` (`SpeechInput` в `speech_input.dart`): в браузере Web Speech API (Chrome, Edge, Safari; в Firefox нет — экран предлагает «Ввести текстом»), на Android системный распознаватель (нужны `RECORD_AUDIO` и `<queries>` с `android.speech.RecognitionService` в манифесте). Ключей и своего сервера нет; браузер отправляет звук своему сервису (Google / Apple), поэтому нужен интернет.
 - Ошибки (нет поддержки, нет доступа к микрофону, нет сети, ничего не услышали) — понятным текстом и кнопкой «Ввести текстом»: дальше тот же разбор и тот же экран подтверждения (канал заявки `text`).
-- Разбор — `TextIntake` в `text_intake.dart`, локально, без ИИ: убирает «Эй, Хелпи» в начале, делает заголовок (≤ 60 символов) и описание, слой — по словарю `TextIntake.layerRules` (основы слов RU и EN с весами, названия слоёв как в базе), помещение — по основам слов названий помещений и этажу, срочность — `highPriority` / `lowPriority`. Новые слова — только в этот словарь; после правки — `flutter test test/text_intake_test.dart`.
-- `VoiceIntakeClient` (текст → `VoiceDraft`): сейчас `LocalVoiceIntake`. **Шаг 12**: `ServerVoiceIntake` — Edge Function (текст + язык → те же поля, ключи YandexGPT только на сервере), при ошибке — откат на локальный разбор.
-- Флаг `--dart-define=VOICE_MOCK=true` — без микрофона: `MockVoiceIntake` «произносит» заготовленную фразу и ждёт «Готово», разбор настоящий. Его включает `/screens` (в Playwright нет микрофона); в рабочие сборки не добавлять.
+- **Схема (шаг 12):** речь → текст (на устройстве) → Edge Function `voice-intake` (YandexGPT, под RLS пользователя) → поля черновика; любая ошибка или таймаут 10 с → разбор по словарю. Чего ИИ не нашёл (слой, место, срочность) — подставляется из словаря. На экране подтверждения — пометка «Разобрано ИИ» ✨ или «Разобрано по словарю».
+- `VoiceIntakeClient` (текст → `VoiceDraft`, поле `source`: `ai` / `dictionary`): по умолчанию `ServerVoiceIntake` (`supabase.functions.invoke('voice-intake', body: {text, locale, objectId})`, откат — `LocalVoiceIntake`, слияние — `ServerVoiceIntake.merge`); с `VOICE_MOCK` — только `LocalVoiceIntake`, без сети. Тесты — `test/server_voice_intake_test.dart`.
+- Разбор по словарю — `TextIntake` в `text_intake.dart`, локально, без ИИ: убирает «Эй, Хелпи» в начале, делает заголовок (≤ 60 символов) и описание, слой — по словарю `TextIntake.layerRules` (основы слов RU и EN с весами, названия слоёв как в базе), помещение — по основам слов названий помещений и этажу, срочность — `highPriority` / `lowPriority`. Новые слова — только в этот словарь; после правки — `flutter test test/text_intake_test.dart`.
+- Флаг `--dart-define=VOICE_MOCK=true` — без микрофона: `MockVoiceIntake` «произносит» заготовленную фразу и ждёт «Готово», разбор — по словарю (ИИ не вызывается). Его включает `/screens` (в Playwright нет микрофона); в рабочие сборки не добавлять.
+
+## Edge Functions (Supabase)
+- Код — `supabase/functions/<имя>/` (Deno, TypeScript); настройки — `supabase/config.toml` (`verify_jwt = true`).
+- **`voice-intake`** — ИИ-разбор заявки: `index.ts` (HTTP, CORS, проверка пользователя, справочники под RLS), `yandex.ts` (вызов YandexGPT, OpenAI-совместимый API, таймаут 8 с), `schema.ts` (вход, промпт, проверка ответа модели — чистые функции), `schema_test.ts`.
+  - Вход `POST {text (1..1000), locale: ru|en, objectId?}`; ответ `{source: "ai", title, description, layer_id, layer, location_id, location_hint, priority, confidence, transcript}`. Ошибки: 400 (вход), 401 (не вошёл), 500 `not_configured` (нет секретов), 502 `ai_unavailable`.
+  - service_role не используется: слои и помещения читаются с JWT пользователя. Всё от модели сверяется со справочниками и списком срочностей, чужое → `null`. Текст заявки передаётся модели отдельным сообщением как данные (защита от prompt injection).
+  - Логи — только служебные (длина текста, время, код ошибки, токены); текст заявки, ответ модели и ключи не логируются. Смотреть: Supabase → Edge Functions → voice-intake → Logs.
+- Проверка: `deno check supabase/functions/*/*.ts` и `deno test supabase/functions` (без сети и секретов); то же делает «PR check».
+- **Выкладка — только workflow «Deploy functions»** (`.github/workflows/deploy-functions.yml`): запускает и одобряет **только пользователь** — Actions → Deploy functions → Run workflow (ветка `main`) → Review deployments → `production-db` → Approve and deploy. Выкладывает `voice-intake` в проект `oguiwftspuzmffynkykl` и проверяет: запрос без токена → 401. Итог — в Summary.
+- Где секреты (только имена, значения нигде в репозитории):
+  - Supabase → Edge Functions → Secrets: `YANDEX_API_KEY`, `YANDEX_FOLDER_ID`, необязательный `YANDEX_MODEL` (по умолчанию `yandexgpt/latest`). `SUPABASE_URL` и `SUPABASE_ANON_KEY` функция получает сама.
+  - GitHub → окружение `production-db`: `SUPABASE_ACCESS_TOKEN` (для выкладки).
+- **Claude Code функции не выкладывает и секреты не задаёт**: команды Supabase CLI `functions deploy`, `secrets set`, `link`, `login` запрещены (хук `block_workflow_dispatch.sh` и `permissions.deny`).
 
 ## Перезаливка демо-данных (Refresh demo)
 - Workflow `.github/workflows/refresh-demo.yml` («Refresh demo») заново выполняет `supabase/seed/demo_history.sql` в рабочей базе: 25 заявок и до 16 визитов компании «Демо БЦ» с датами от сегодняшнего дня. Нужен перед питчем, чтобы «История» и «Отчёты» были свежими. Одной транзакцией: при ошибке база не меняется. В конце — проверка select-ом (число заявок и визитов «Демо БЦ») в Summary запуска.
@@ -108,6 +123,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 - Любое изменение базы — отдельный SQL-файл миграции в папке `supabase/migrations/` со следующим номером в имени (см. «Миграции»). Миграции должны безопасно запускаться повторно (`if not exists`, `drop ... if exists`). Права проверяются в базе (RLS и триггеры), а не только в интерфейсе.
 - **После 0008 новые функции в базе по умолчанию закрыты для всех** (anon, authenticated). Каждую новую функцию миграция открывает явно: `revoke all on function public.f(...) from public, anon;` и, если её вызывает приложение (RPC) или она используется в политиках RLS, — `grant execute on function public.f(...) to authenticated;`. Без этого вызов из приложения или политика упадут с «permission denied». Триггерным функциям grant не нужен.
 - После изменений Dart-кода запускать `flutter analyze lib` и исправлять ошибки.
+- **Edge Functions не выкладывать и секреты не задавать** (ни Supabase CLI, ни API): выкладывает пользователь через workflow «Deploy functions» (см. «Edge Functions»). Значения ключей не писать в код, логи и отчёты.
 - `git push` — только ветки шага `step-N` в конце шага (см. «Порядок работы»). В `main` не пушить никогда; любой другой push — спросить разрешения у пользователя.
 - Пользователь не программист: объяснять по-русски, простыми словами, пошагово.
 - Интерфейс приложения — на русском и английском (см. «Языки»). Текст ошибок для пользователя — понятный, без технических деталей.
@@ -145,7 +161,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 Хуки (`.claude/settings.json`, скрипты в `.claude/hooks/`) срабатывают сами, когда работает Claude Code:
 - `dart_after_edit.sh` — после правки `.dart`-файла: `dart format` и `dart analyze` по нему. Ошибки и предупреждения возвращаются Claude, и он их сразу исправляет.
 - `protect_migrations.sh` — запрещает менять или удалять файлы миграций, номера которых указаны в строке «Применённые миграции» (раздел «Миграции»). Нужно изменение — новая миграция.
-- `block_workflow_dispatch.sh` — запрещает Claude запускать, перезапускать и одобрять GitHub Actions: `gh workflow run/enable`, `gh run rerun`, вызовы API `…/dispatches` и `…/pending_deployments` (в том числе с флагами `gh -R …` и в цепочках команд). Дублируется правилами `permissions.deny` в `.claude/settings.json`. Чтение (`gh run list/view/watch`) разрешено. Срабатывает и на эти слова внутри текста команды (например, в сообщении коммита) — их там не писать.
+- `block_workflow_dispatch.sh` — запрещает Claude запускать, перезапускать и одобрять GitHub Actions: `gh workflow run/enable`, `gh run rerun`, вызовы API `…/dispatches` и `…/pending_deployments` (в том числе с флагами `gh -R …` и в цепочках команд). Дублируется правилами `permissions.deny` в `.claude/settings.json`. Чтение (`gh run list/view/watch`) разрешено. Срабатывает и на эти слова внутри текста команды (например, в сообщении коммита) — их там не писать. Так же запрещает команды Supabase CLI `functions deploy`, `secrets set/unset`, `link`, `login` (и через `npx`) — правку файлов с этими словами делать через Edit/Write, а не через Bash.
 - `block_secrets.sh` — останавливает `git commit`, если в коммит попадают `env.json`, `*.env`, `.env.demo`, пароли `DEMO_…_PASSWORD=…`, токен `sbp_…` или ключ service_role. Claude не обходит проверку, а сообщает пользователю.
 Хуки не проверяют коммиты, сделанные руками вне Claude Code.
 
@@ -171,7 +187,7 @@ Hey Helpy — ИИ-сервис эксплуатации зданий (CMMS / fa
 
 ## План MVP (2–3 недели до демо-дня)
 1. Проверить, что обновления 1 и 2 (онбординг, роли, приёмка работ, слои из базы) установлены и собираются.
-2. Голосовая заявка: ✅ шаг 11 — распознавание на устройстве + локальный разбор по словарю → черновик на подтверждение. Дальше (шаг 12): разбор YandexGPT через Edge Function. Ключевая фраза «Эй, Хелпи» работает, пока приложение открыто. Ключи Yandex — только на сервере (Supabase Edge Function), не в приложении.
+2. Голосовая заявка: ✅ шаг 11 — распознавание на устройстве + локальный разбор по словарю → черновик на подтверждение. ✅ шаг 12 — разбор YandexGPT через Edge Function `voice-intake` с откатом на словарь (выкладка — пользователем). Ключевая фраза «Эй, Хелпи» работает, пока приложение открыто. Ключи Yandex — только на сервере (Supabase Edge Function), не в приложении.
 3. Экран исполнителя: фото «после» только камерой приложения (загрузка в Supabase Storage + `attachments`), после этого включить `requires_photo` для слоёв.
 4. Отметка визита по геозоне при открытии заявки (таблица `visits`, флаг подмены GPS).
 5. Реальные данные во вкладках «История» и «Отчёты»: посещения, время, доля в срок, приёмка с первого раза.

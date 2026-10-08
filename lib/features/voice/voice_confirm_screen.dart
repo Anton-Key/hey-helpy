@@ -217,7 +217,9 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
                                   color: _ink, fontSize: 15, height: 1.35)),
                         ]),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
+                  _SourceNote(source: widget.draft.source),
+                  const SizedBox(height: 8),
                   Text(l.voiceEditHint,
                       style: const TextStyle(color: _muted, fontSize: 13)),
                   const SizedBox(height: 12),
@@ -322,4 +324,27 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
 
   Widget _chip(String text, bool selected, Color brand, VoidCallback onTap) =>
       ChoiceTag(label: text, selected: selected, onTap: onTap, filled: true);
+}
+
+/// Пометка «Разобрано ИИ» / «Разобрано по словарю».
+class _SourceNote extends StatelessWidget {
+  const _SourceNote({required this.source});
+  final DraftSource source;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final ai = source == DraftSource.ai;
+    return Row(children: [
+      Icon(ai ? Icons.auto_awesome : Icons.menu_book_outlined,
+          size: 16, color: ai ? HeyHelpyTheme.link : _muted),
+      const SizedBox(width: 6),
+      Flexible(
+          child: Text(ai ? l.voiceParsedByAi : l.voiceParsedByDictionary,
+              style: TextStyle(
+                  color: ai ? HeyHelpyTheme.link : _muted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600))),
+    ]);
+  }
 }

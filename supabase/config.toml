@@ -1,0 +1,9 @@
+# Настройки Supabase CLI — только то, что нужно для выкладки Edge Functions
+# (workflow «Deploy functions»). База этим файлом не меняется: миграции
+# применяет пользователь (CLAUDE.md → «Миграции»).
+project_id = "hey-helpy"
+
+# Функция доступна только с JWT (шлюз Supabase отвечает 401 без токена);
+# внутри она дополнительно проверяет, что это вошедший пользователь.
+[functions.voice-intake]
+verify_jwt = true

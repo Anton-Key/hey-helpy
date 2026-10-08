@@ -203,6 +203,16 @@ class TextIntake {
       'flood': 3, 'drip': 1, 'plumb': 3,
     }),
     LayerRule(names: [
+      'Лифты',
+      'Elevators'
+    ], keywords: {
+      'лифт': 3, 'кабин': 2, 'застрял': 3, 'застрят': 2, 'этажн': 1,
+      'двери лифта': 3, 'подъемник': 3, 'эскалатор': 3,
+      // EN
+      'elevator': 3, 'lift=': 3, 'lifts=': 3, 'escalator': 3, 'stuck': 2,
+      'trapped': 3,
+    }),
+    LayerRule(names: [
       'Системы безопасности',
       'Security systems'
     ], keywords: {

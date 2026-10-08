@@ -1,6 +1,6 @@
 # Скриншоты веб-версии
 
-Снято: 2026-10-08 15:02 UTC, команда `/screens` (`tools/screens/screens.mjs`).
+Снято: 2026-10-08 16:45 UTC, команда `/screens` (`tools/screens/screens.mjs`).
 
 | Роль | Ширина | Экран | Итог | Файл | Примечание |
 |---|---|---|---|---|---|
@@ -8,8 +8,8 @@
 | Менеджер | 1280 | Список заявок — конец списка | ✅ | [manager-1280-requests-end.png](manager-1280-requests-end.png) 92 КБ |  |
 | Менеджер | 1280 | Карточка заявки «Шумит вентилятор в переговорной» | ✅ | [manager-1280-order.png](manager-1280-order.png) 60 КБ |  |
 | Менеджер | 1280 | Выбор подрядчика | ✅ | [manager-1280-picker.png](manager-1280-picker.png) 75 КБ | заявка «Нет питания на розетках в переговорной» |
-| Менеджер | 1280 | Голосовая заявка — распознавание | ✅ | [manager-1280-voice.png](manager-1280-voice.png) 42 КБ |  |
-| Менеджер | 1280 | Голосовая заявка — подтверждение | ✅ | [manager-1280-voice-confirm.png](manager-1280-voice-confirm.png) 67 КБ |  |
+| Менеджер | 1280 | Голосовая заявка — распознавание | ✅ | [manager-1280-voice.png](manager-1280-voice.png) 44 КБ |  |
+| Менеджер | 1280 | Голосовая заявка — подтверждение | ✅ | [manager-1280-voice-confirm.png](manager-1280-voice-confirm.png) 69 КБ |  |
 | Менеджер | 1280 | Отчёты (30 дней) | ✅ | [manager-1280-reports.png](manager-1280-reports.png) 127 КБ |  |
 | Менеджер | 1280 | История | ✅ | [manager-1280-history.png](manager-1280-history.png) 111 КБ |  |
 | Менеджер | 1280 | Подрядчики | ✅ | [manager-1280-contractors.png](manager-1280-contractors.png) 62 КБ |  |
@@ -20,8 +20,8 @@
 | Менеджер | 412 | Список заявок — конец списка | ✅ | [manager-412-requests-end.png](manager-412-requests-end.png) 75 КБ |  |
 | Менеджер | 412 | Карточка заявки «Шумит вентилятор в переговорной» | ✅ | [manager-412-order.png](manager-412-order.png) 55 КБ |  |
 | Менеджер | 412 | Выбор подрядчика | ✅ | [manager-412-picker.png](manager-412-picker.png) 27 КБ | заявка «Нет питания на розетках в переговорной» |
-| Менеджер | 412 | Голосовая заявка — распознавание | ✅ | [manager-412-voice.png](manager-412-voice.png) 39 КБ |  |
-| Менеджер | 412 | Голосовая заявка — подтверждение | ✅ | [manager-412-voice-confirm.png](manager-412-voice-confirm.png) 62 КБ |  |
+| Менеджер | 412 | Голосовая заявка — распознавание | ✅ | [manager-412-voice.png](manager-412-voice.png) 40 КБ |  |
+| Менеджер | 412 | Голосовая заявка — подтверждение | ✅ | [manager-412-voice-confirm.png](manager-412-voice-confirm.png) 64 КБ |  |
 | Менеджер | 412 | Отчёты (30 дней) | ✅ | [manager-412-reports.png](manager-412-reports.png) 75 КБ |  |
 | Менеджер | 412 | История | ✅ | [manager-412-history.png](manager-412-history.png) 84 КБ |  |
 | Менеджер | 412 | Подрядчики | ✅ | [manager-412-contractors.png](manager-412-contractors.png) 40 КБ |  |

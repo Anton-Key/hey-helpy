@@ -1421,4 +1421,25 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get fieldExecutor => 'Исполнитель';
+
+  @override
+  String get voiceNetworkWeb =>
+      'Нет связи с сервисом распознавания речи браузера. Проверьте интернет и нажмите «Ещё раз» — или введите заявку текстом.';
+
+  @override
+  String get voiceMicFailedWeb =>
+      'Браузер не получает звук с микрофона. Проверьте, какой микрофон выбран: chrome://settings/content/microphone (в Edge — edge://settings/content/microphone), и нажмите «Ещё раз».';
+
+  @override
+  String voiceErrorCode(String code) {
+    return 'код: $code';
+  }
+
+  @override
+  String get voiceMicSilent =>
+      'Микрофон не слышит звук — проверьте, какой микрофон выбран';
+
+  @override
+  String get voiceBrowserHint =>
+      'Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge';
 }

@@ -2522,6 +2522,36 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Исполнитель'**
   String get fieldExecutor;
+
+  /// No description provided for @voiceNetworkWeb.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет связи с сервисом распознавания речи браузера. Проверьте интернет и нажмите «Ещё раз» — или введите заявку текстом.'**
+  String get voiceNetworkWeb;
+
+  /// No description provided for @voiceMicFailedWeb.
+  ///
+  /// In ru, this message translates to:
+  /// **'Браузер не получает звук с микрофона. Проверьте, какой микрофон выбран: chrome://settings/content/microphone (в Edge — edge://settings/content/microphone), и нажмите «Ещё раз».'**
+  String get voiceMicFailedWeb;
+
+  /// No description provided for @voiceErrorCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'код: {code}'**
+  String voiceErrorCode(String code);
+
+  /// No description provided for @voiceMicSilent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Микрофон не слышит звук — проверьте, какой микрофон выбран'**
+  String get voiceMicSilent;
+
+  /// No description provided for @voiceBrowserHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge'**
+  String get voiceBrowserHint;
 }
 
 class _AppLocalizationsDelegate

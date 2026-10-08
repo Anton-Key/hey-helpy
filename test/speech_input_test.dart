@@ -40,7 +40,7 @@ void main() {
       pauseFor: const Duration(seconds: 3),
       onText: (t) => text = t,
       onDone: () => done = true,
-      onError: (_) {},
+      onError: (_, __) {},
     );
     await Future<void>.delayed(const Duration(seconds: 3));
     expect(text, MockVoiceIntake.phrases['ru']);

@@ -213,6 +213,25 @@ const SCREENS = [
       await see(p, 'Вы сказали').waitFor({ timeout: 20000 });
       await settle(p, 2000);
     } },
+  // То же при низком окне (ноутбук 1280×720, телефон 412×700): кнопка
+  // «Отправить» закреплена внизу и должна быть видна без прокрутки.
+  { key: 'voice-confirm-low', title: 'Голосовая заявка — подтверждение, низкое окно', managerOnly: true, run: async (p) => {
+      const vp = p.viewportSize();
+      const low = { width: vp.width, height: vp.width > 600 ? 720 : 700 };
+      await p.setViewportSize(low);
+      await openVoice(p);
+      await btn(p, 'Готово').click();
+      await see(p, 'Проверьте заявку').waitFor({ timeout: 20000 });
+      await settle(p, 2000);
+      const box = await btn(p, 'Отправить').boundingBox();
+      if (!box || box.y < 0 || box.y + box.height > low.height) {
+        throw new Error(`Кнопка «Отправить» не видна в окне ${low.width}×${low.height}`);
+      }
+      return `окно ${low.width}×${low.height}, «Отправить» видна (низ кнопки — ${Math.round(box.y + box.height)} px)`;
+    }, after: async (p) => {
+      const vp = p.viewportSize();
+      await p.setViewportSize({ width: vp.width, height: vp.width > 600 ? 800 : 915 });
+    } },
   { key: 'reports', title: 'Отчёты (30 дней)', managerOnly: true, run: async (p) => {
       await home(p);
       await nav(p, 'Отчёты').click();

@@ -1,0 +1,12 @@
+{
+  "name": "hey-helpy-screens",
+  "private": true,
+  "description": "Скриншоты веб-версии для отчётов (/screens). Не часть приложения.",
+  "type": "module",
+  "scripts": {
+    "screens": "node screens.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.64.0"
+  }
+}

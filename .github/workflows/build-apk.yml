@@ -1,12 +1,17 @@
 # Сборка Android APK для MVP в GitHub Actions.
 # Запуск: вкладка Actions → "Build Android APK" → Run workflow.
 # Готовый APK: страница запуска → раздел Artifacts → hey-helpy-apk.
+# При пуше в main APK ещё и публикуется по постоянной ссылке (релиз latest-apk, перезаписывается):
+# https://github.com/Anton-Key/hey-helpy/releases/download/latest-apk/hey-helpy.apk
 name: Build Android APK
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -37,3 +42,32 @@ jobs:
           name: hey-helpy-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14
+
+  # Постоянная ссылка на APK: релиз latest-apk пересоздаётся при каждом пуше в main.
+  # Право на запись (contents: write) есть только у этой задачи.
+  release:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: latest-apk
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: hey-helpy-apk
+
+      - name: Publish release latest-apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mv app-release.apk hey-helpy.apk
+          gh release delete latest-apk --yes --cleanup-tag || true
+          gh release create latest-apk hey-helpy.apk \
+            --target "$GITHUB_SHA" \
+            --title "Последняя сборка APK (main)" \
+            --notes "Сборка из main, коммит ${GITHUB_SHA::7}. Перезаписывается при каждом пуше в main." \
+            --prerelease

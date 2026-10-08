@@ -53,9 +53,14 @@ env.json
 *.env
 .env.*
 .claude/settings.local.json
+# Логины демо-пользователей для /screens
+.env.demo
 
-# Отчёты Claude Code для проверки — не в git
+# Старые локальные отчёты Claude Code (теперь отчёты — docs/reports/, в git)
 /reports/
 
 # Личные заметки — не в git
 /notes/
+
+# Скрипт скриншотов: зависимости ставятся локально
+/tools/screens/node_modules/

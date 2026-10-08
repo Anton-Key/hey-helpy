@@ -195,124 +195,140 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
           title: Text(l.voiceConfirmTitle), backgroundColor: Colors.white),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              // На широком экране — колонка до 640 px по центру.
-              padding: EdgeInsetsDirectional.fromSTEB(side, 8, side, 32),
-              children: [
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                        color: _mint, borderRadius: BorderRadius.circular(16)),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(widget.typed ? l.voiceYouWrote : l.voiceYouSaid,
-                              style: const TextStyle(
-                                  color: _onBrand,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13)),
-                          const SizedBox(height: 6),
-                          Text(l.quoted(widget.draft.transcript),
-                              style: const TextStyle(
-                                  color: _ink, fontSize: 15, height: 1.35)),
+          // Поля прокручиваются, «Отправить» закреплена внизу и видна всегда.
+          : Column(children: [
+              Expanded(
+                child: Scrollbar(
+                  child: ListView(
+                      // На широком экране — колонка до 640 px по центру.
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(side, 8, side, 24),
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                              color: _mint,
+                              borderRadius: BorderRadius.circular(16)),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    widget.typed
+                                        ? l.voiceYouWrote
+                                        : l.voiceYouSaid,
+                                    style: const TextStyle(
+                                        color: _onBrand,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 13)),
+                                const SizedBox(height: 6),
+                                Text(l.quoted(widget.draft.transcript),
+                                    style: const TextStyle(
+                                        color: _ink,
+                                        fontSize: 15,
+                                        height: 1.35)),
+                              ]),
+                        ),
+                        const SizedBox(height: 10),
+                        _SourceNote(source: widget.draft.source),
+                        const SizedBox(height: 8),
+                        Text(l.voiceEditHint,
+                            style:
+                                const TextStyle(color: _muted, fontSize: 13)),
+                        const SizedBox(height: 12),
+                        TextField(
+                            controller: _titleC,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: InputDecoration(
+                                labelText: l.formWhat,
+                                border: const OutlineInputBorder())),
+                        const SizedBox(height: 12),
+                        TextField(
+                            controller: _descC,
+                            minLines: 2,
+                            maxLines: 5,
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: InputDecoration(
+                                labelText: l.formDetailsHint,
+                                border: const OutlineInputBorder())),
+                        const SizedBox(height: 18),
+                        _label(l.fieldWorkType),
+                        if (_layers.isEmpty)
+                          Text(l.formLayersFailed,
+                              style: const TextStyle(color: _muted))
+                        else
+                          Wrap(spacing: 8, runSpacing: 8, children: [
+                            for (final t in _layers)
+                              _chip(
+                                  t.label(locale),
+                                  _layer?.id == t.id,
+                                  brand,
+                                  () => setState(() =>
+                                      _layer = _layer?.id == t.id ? null : t)),
+                          ]),
+                        if (_layer == null && _layers.isNotEmpty)
+                          Padding(
+                              padding: const EdgeInsetsDirectional.only(top: 6),
+                              child: Text(l.voicePickLayer,
+                                  style: const TextStyle(
+                                      color: _danger, fontSize: 13))),
+                        const SizedBox(height: 18),
+                        _label(l.voiceWhere),
+                        DropdownButtonFormField<String?>(
+                          initialValue: _where,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                              border: OutlineInputBorder()),
+                          items: [
+                            DropdownMenuItem<String?>(
+                                value: null, child: Text(l.commonNotSpecified)),
+                            for (final o in widget.objects)
+                              DropdownMenuItem<String?>(
+                                  value: 'o:${o.id}',
+                                  child: Text(o.name,
+                                      overflow: TextOverflow.ellipsis)),
+                            for (final p in _places)
+                              DropdownMenuItem<String?>(
+                                  value: 'p:${p.id}',
+                                  child: Text(p.fullName,
+                                      overflow: TextOverflow.ellipsis)),
+                          ],
+                          onChanged: (v) => setState(() => _where = v),
+                        ),
+                        if (widget.draft.locationHint != null)
+                          Padding(
+                              padding: const EdgeInsetsDirectional.only(top: 6),
+                              child: Text(
+                                  l.voiceHeard(widget.draft.locationHint!),
+                                  style: const TextStyle(
+                                      color: _muted, fontSize: 13))),
+                        const SizedBox(height: 18),
+                        _label(l.voiceUrgency),
+                        Wrap(spacing: 8, runSpacing: 8, children: [
+                          for (final p in _priorities)
+                            _chip(l.priority(p), _priority == p, brand,
+                                () => setState(() => _priority = p)),
                         ]),
-                  ),
-                  const SizedBox(height: 10),
-                  _SourceNote(source: widget.draft.source),
-                  const SizedBox(height: 8),
-                  Text(l.voiceEditHint,
-                      style: const TextStyle(color: _muted, fontSize: 13)),
-                  const SizedBox(height: 12),
-                  TextField(
-                      controller: _titleC,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
-                          labelText: l.formWhat,
-                          border: const OutlineInputBorder())),
-                  const SizedBox(height: 12),
-                  TextField(
-                      controller: _descC,
-                      minLines: 2,
-                      maxLines: 5,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
-                          labelText: l.formDetailsHint,
-                          border: const OutlineInputBorder())),
-                  const SizedBox(height: 18),
-                  _label(l.fieldWorkType),
-                  if (_layers.isEmpty)
-                    Text(l.formLayersFailed,
-                        style: const TextStyle(color: _muted))
-                  else
-                    Wrap(spacing: 8, runSpacing: 8, children: [
-                      for (final t in _layers)
-                        _chip(
-                            t.label(locale),
-                            _layer?.id == t.id,
-                            brand,
-                            () => setState(
-                                () => _layer = _layer?.id == t.id ? null : t)),
-                    ]),
-                  if (_layer == null && _layers.isNotEmpty)
-                    Padding(
-                        padding: const EdgeInsetsDirectional.only(top: 6),
-                        child: Text(l.voicePickLayer,
-                            style:
-                                const TextStyle(color: _danger, fontSize: 13))),
-                  const SizedBox(height: 18),
-                  _label(l.voiceWhere),
-                  DropdownButtonFormField<String?>(
-                    initialValue: _where,
-                    isExpanded: true,
-                    decoration:
-                        const InputDecoration(border: OutlineInputBorder()),
-                    items: [
-                      DropdownMenuItem<String?>(
-                          value: null, child: Text(l.commonNotSpecified)),
-                      for (final o in widget.objects)
-                        DropdownMenuItem<String?>(
-                            value: 'o:${o.id}',
-                            child:
-                                Text(o.name, overflow: TextOverflow.ellipsis)),
-                      for (final p in _places)
-                        DropdownMenuItem<String?>(
-                            value: 'p:${p.id}',
-                            child: Text(p.fullName,
-                                overflow: TextOverflow.ellipsis)),
-                    ],
-                    onChanged: (v) => setState(() => _where = v),
-                  ),
-                  if (widget.draft.locationHint != null)
-                    Padding(
-                        padding: const EdgeInsetsDirectional.only(top: 6),
-                        child: Text(l.voiceHeard(widget.draft.locationHint!),
-                            style:
-                                const TextStyle(color: _muted, fontSize: 13))),
-                  const SizedBox(height: 18),
-                  _label(l.voiceUrgency),
-                  Wrap(spacing: 8, runSpacing: 8, children: [
-                    for (final p in _priorities)
-                      _chip(l.priority(p), _priority == p, brand,
-                          () => setState(() => _priority = p)),
-                  ]),
-                  const SizedBox(height: 28),
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                        backgroundColor: brand,
-                        foregroundColor: _onBrand,
-                        minimumSize: const Size.fromHeight(56)),
-                    onPressed: _saving ? null : _submit,
-                    child: _saving
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2.5, color: _onBrand))
-                        : Text(l.voiceSend,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w800, fontSize: 17)),
-                  ),
-                ]),
+                      ]),
+                ),
+              ),
+              BottomActionBar(
+                  child: FilledButton(
+                style: FilledButton.styleFrom(
+                    backgroundColor: brand,
+                    foregroundColor: _onBrand,
+                    minimumSize: const Size.fromHeight(56)),
+                onPressed: _saving ? null : _submit,
+                child: _saving
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2.5, color: _onBrand))
+                    : Text(l.voiceSend,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 17)),
+              )),
+            ]),
     );
   }
 

@@ -49,6 +49,13 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
 
   _Phase _phase = _Phase.starting;
   SpeechProblem? _error;
+
+  /// Технический код ошибки (`network`, `audio-capture`, …) — мелко под
+  /// текстом ошибки, чтобы было проще разбираться.
+  String? _errorCode;
+
+  /// Индикатор громкости в браузере: микрофон всё время молчит.
+  bool _micSilent = false;
   String _text = '';
   double _level = 0;
   Duration _elapsed = Duration.zero;
@@ -93,6 +100,8 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     setState(() {
       _phase = _Phase.starting;
       _error = null;
+      _errorCode = null;
+      _micSilent = false;
       _text = '';
       _elapsed = Duration.zero;
     });
@@ -117,14 +126,17 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
       onLevel: (l) {
         if (mounted) setState(() => _level = l);
       },
+      onMicSilent: (silent) {
+        if (mounted) setState(() => _micSilent = silent);
+      },
       onDone: _onSpeechDone,
-      onError: (p) {
+      onError: (p, code) {
         if (!mounted || _phase != _Phase.listening) return;
         // «Не расслышал» после сказанного — просто конец речи.
         if (p == SpeechProblem.nothingHeard && _text.trim().isNotEmpty) {
           _onSpeechDone();
         } else {
-          _fail(p);
+          _fail(p, code: code);
         }
       },
     );
@@ -150,10 +162,14 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     _process(text, typed: false);
   }
 
+  /// Перестать слушать. Распознаватель тоже останавливаем: если его итог
+  /// не пришёл за 2 с, в браузере иначе остался бы включённым микрофон.
   void _stopListening() {
     _ticker?.cancel();
     _pulse.stop();
     _level = 0;
+    _micSilent = false;
+    _speech.cancel();
   }
 
   Future<void> _process(String text, {required bool typed}) async {
@@ -190,7 +206,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     }
   }
 
-  void _fail(SpeechProblem problem) {
+  void _fail(SpeechProblem problem, {String? code}) {
     _stopGuard?.cancel();
     _stopGuard = null;
     _stopListening();
@@ -198,14 +214,12 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     setState(() {
       _phase = _Phase.error;
       _error = problem;
+      _errorCode = code;
     });
   }
 
   void _typeInstead() {
-    if (_phase == _Phase.listening) {
-      _stopListening();
-      _speech.cancel();
-    }
+    if (_phase == _Phase.listening) _stopListening();
     if (_typeC.text.isEmpty) _typeC.text = TextIntake.stripWakePhrase(_text);
     setState(() => _phase = _Phase.typing);
   }
@@ -231,8 +245,9 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
       SpeechProblem.noPermission => kIsWeb
           ? l.voiceNoMicPermissionWeb
           : l.voiceNoMicPermissionApp(l.appName),
-      SpeechProblem.network => l.voiceNetwork,
-      SpeechProblem.micFailed => l.voiceMicFailed,
+      SpeechProblem.network => kIsWeb ? l.voiceNetworkWeb : l.voiceNetwork,
+      SpeechProblem.micFailed =>
+        kIsWeb ? l.voiceMicFailedWeb : l.voiceMicFailed,
       SpeechProblem.nothingHeard => l.voiceNothingHeard,
       SpeechProblem.failed => l.voiceRecognizeFailed,
     };
@@ -244,22 +259,24 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
       backgroundColor: Colors.white,
       appBar: AppBar(
           title: Text(context.l10n.voiceTitle), backgroundColor: Colors.white),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, box) => SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 24),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: box.maxHeight - 36),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  child: _phase == _Phase.typing ? _typing() : _voice(),
+      body: _phase == _Phase.typing
+          ? _typingBody()
+          : SafeArea(
+              child: LayoutBuilder(
+                builder: (context, box) => SingleChildScrollView(
+                  padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 24),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: box.maxHeight - 36),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: _voice(),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -270,6 +287,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     final canRetry =
         _phase == _Phase.error && _error != SpeechProblem.unsupported;
     return Column(mainAxisSize: MainAxisSize.min, children: [
+      if (_speech.weakBrowser) _Notice(text: l.voiceBrowserHint),
       const SizedBox(height: 8),
       _MicCircle(
           pulse: _pulse,
@@ -287,16 +305,27 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
       if (listening || _phase == _Phase.processing) ...[
         _LiveText(text: _text, placeholder: l.voicePrompt),
         const SizedBox(height: 10),
+        if (listening && _micSilent) ...[
+          _Notice(text: l.voiceMicSilent),
+          const SizedBox(height: 10),
+        ],
         if (listening)
           Text(
               '${l.voiceTimer(_fmt(_elapsed), left.inSeconds < 0 ? 0 : left.inSeconds)}\n${l.voiceAutoStop}',
               textAlign: TextAlign.center,
               style: const TextStyle(color: _muted, fontSize: 13, height: 1.4)),
       ],
-      if (_phase == _Phase.error && _error != null)
+      if (_phase == _Phase.error && _error != null) ...[
         Text(_problemText(_error!),
             textAlign: TextAlign.center,
             style: const TextStyle(color: _danger, fontSize: 15, height: 1.4)),
+        if (_errorCode?.isNotEmpty ?? false) ...[
+          const SizedBox(height: 6),
+          SelectableText(l.voiceErrorCode(_errorCode!),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: _muted, fontSize: 12)),
+        ],
+      ],
       const SizedBox(height: 28),
       if (listening)
         FilledButton.icon(
@@ -332,6 +361,32 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     ]);
   }
 
+  /// «Ввести текстом»: поле прокручивается, «Далее» закреплена внизу и
+  /// видна всегда, в том числе с открытой клавиатурой.
+  Widget _typingBody() => Column(children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 24),
+            child: Center(
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: _typing()),
+            ),
+          ),
+        ),
+        BottomActionBar(
+          maxWidth: 520,
+          child: FilledButton(
+              style: brandButtonStyle().copyWith(
+                  minimumSize:
+                      const WidgetStatePropertyAll(Size.fromHeight(56))),
+              onPressed: _submitTyped,
+              child: Text(context.l10n.voiceNext,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 17))),
+        ),
+      ]);
+
   Widget _typing() {
     final l = context.l10n;
     return Column(
@@ -353,16 +408,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
                 hintMaxLines: 3,
                 border: const OutlineInputBorder()),
           ),
-          const SizedBox(height: 20),
-          FilledButton(
-              style: brandButtonStyle().copyWith(
-                  minimumSize:
-                      const WidgetStatePropertyAll(Size.fromHeight(56))),
-              onPressed: _submitTyped,
-              child: Text(l.voiceNext,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 17))),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                   foregroundColor: HeyHelpyTheme.link,
@@ -420,8 +466,33 @@ class _LiveText extends StatelessWidget {
   }
 }
 
-/// Кнопка-микрофон. Пока слушаем — от неё расходятся волны («слушаю»),
-/// на Android они ещё и растут с громкостью голоса.
+/// Подсказка в рамке: совет открыть в Chrome / Edge, «микрофон молчит».
+class _Notice extends StatelessWidget {
+  const _Notice({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: double.infinity,
+        margin: const EdgeInsetsDirectional.only(bottom: 8),
+        padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 14, 10),
+        decoration: BoxDecoration(
+            color: const Color(0xFFFFF6DB),
+            borderRadius: BorderRadius.circular(12)),
+        child: Row(children: [
+          const Icon(Icons.info_outline_rounded,
+              size: 20, color: Color(0xFF8A6D00)),
+          const SizedBox(width: 10),
+          Expanded(
+              child: Text(text,
+                  style: const TextStyle(
+                      color: _ink, fontSize: 14, height: 1.35))),
+        ]),
+      );
+}
+
+/// Кнопка-микрофон. Пока слушаем — от неё расходятся волны («слушаю»);
+/// на Android и в браузере на компьютере они растут с громкостью голоса.
 class _MicCircle extends StatelessWidget {
   const _MicCircle(
       {required this.pulse,
@@ -446,7 +517,7 @@ class _MicCircle extends StatelessWidget {
             animation: pulse,
             builder: (_, __) => Stack(alignment: Alignment.center, children: [
               for (final shift in const [0.0, 0.5])
-                _wave(((pulse.value + shift) % 1.0)),
+                _wave(((pulse.value + shift) % 1.0), level),
             ]),
           ),
         AnimatedContainer(
@@ -478,13 +549,15 @@ class _MicCircle extends StatelessWidget {
     );
   }
 
-  Widget _wave(double t) => Container(
-        width: 120 + 80 * t,
-        height: 120 + 80 * t,
+  /// Волна: [t] — фаза 0…1, [level] — громкость (громче — шире и ярче).
+  Widget _wave(double t, double level) => Container(
+        width: 120 + (50 + 30 * level) * t,
+        height: 120 + (50 + 30 * level) * t,
         decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-                color: HeyHelpyTheme.brand.withValues(alpha: 0.6 * (1 - t)),
-                width: 3)),
+                color: HeyHelpyTheme.brand
+                    .withValues(alpha: (0.4 + 0.5 * level) * (1 - t)),
+                width: 3 + 3 * level)),
       );
 }

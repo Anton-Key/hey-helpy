@@ -4,6 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import 'speech_session.dart';
+import 'web_speech_stub.dart'
+    if (dart.library.js_interop) 'web_speech_input.dart';
+
 /// Режим без микрофона — для скриншотов (/screens, в Playwright микрофона нет)
 /// и показа без звука: `--dart-define=VOICE_MOCK=true`.
 const voiceMock = bool.fromEnvironment('VOICE_MOCK');
@@ -37,16 +41,23 @@ abstract class SpeechInput {
 
   /// [localeId] — язык речи (ru-RU, en-US). [onText] — весь распознанный
   /// текст на сейчас (промежуточный), [onDone] — распознаватель остановился
-  /// (пауза, лимит или [stop]), [onError] — ошибка, [onLevel] — громкость 0…1.
+  /// (пауза, лимит или [stop]), [onError] — ошибка и её технический код
+  /// (`network`, `error_no_match`, …), [onLevel] — громкость 0…1,
+  /// [onMicSilent] — микрофон молчит (true) / снова слышит звук (false).
   Future<void> start({
     required String localeId,
     required Duration listenFor,
     required Duration pauseFor,
     required void Function(String text) onText,
     required void Function() onDone,
-    required void Function(SpeechProblem problem) onError,
+    required void Function(SpeechProblem problem, String code) onError,
     void Function(double level)? onLevel,
+    void Function(bool silent)? onMicSilent,
   });
+
+  /// Браузер, где голосовой ввод обычно работает плохо: стоит посоветовать
+  /// Chrome или Edge.
+  bool get weakBrowser;
 
   /// Остановить и дождаться последнего результата (придёт [onDone]).
   Future<void> stop();
@@ -55,22 +66,26 @@ abstract class SpeechInput {
   Future<void> cancel();
 }
 
-SpeechInput createSpeechInput() =>
-    voiceMock ? MockVoiceIntake() : DeviceSpeechInput();
+/// Мок — для скриншотов; в браузере — своя обёртка над Web Speech API
+/// (`web_speech_input.dart`), в приложении — пакет speech_to_text.
+SpeechInput createSpeechInput() => voiceMock
+    ? MockVoiceIntake()
+    : (kIsWeb ? createWebSpeechInput() : DeviceSpeechInput());
 
 /// Язык распознавания по языку интерфейса.
 String speechLocaleId(String localeCode) =>
     localeCode == 'ru' ? 'ru-RU' : 'en-US';
 
-/// Распознавание средствами платформы через пакет speech_to_text:
-/// Web Speech API в браузере, системный распознаватель на Android.
-/// Ключей и своего сервера не нужно.
+/// Распознавание системным распознавателем Android через пакет
+/// speech_to_text. Ключей и своего сервера не нужно.
 class DeviceSpeechInput implements SpeechInput {
   final SpeechToText _stt = SpeechToText();
   void Function(String)? _onText;
-  void Function()? _onDone;
-  void Function(SpeechProblem)? _onError;
+  DoneErrorGate<(SpeechProblem, String)>? _gate;
   bool _active = false;
+
+  @override
+  bool get weakBrowser => false;
 
   @override
   Future<SpeechProblem?> init() async {
@@ -105,12 +120,22 @@ class DeviceSpeechInput implements SpeechInput {
     required Duration pauseFor,
     required void Function(String text) onText,
     required void Function() onDone,
-    required void Function(SpeechProblem problem) onError,
+    required void Function(SpeechProblem problem, String code) onError,
     void Function(double level)? onLevel,
+    void Function(bool silent)? onMicSilent,
   }) async {
     _onText = onText;
-    _onDone = onDone;
-    _onError = onError;
+    _gate?.close();
+    _gate = DoneErrorGate(
+      onDone: () {
+        _active = false;
+        onDone();
+      },
+      onError: (e) {
+        _active = false;
+        onError(e.$1, e.$2);
+      },
+    );
     _active = true;
     try {
       await _stt.listen(
@@ -131,29 +156,25 @@ class DeviceSpeechInput implements SpeechInput {
         ),
       );
     } catch (_) {
-      _active = false;
-      onError(SpeechProblem.micFailed);
+      _gate?.error((SpeechProblem.micFailed, 'listen-failed'));
     }
   }
 
+  // «done» иногда приходит раньше ошибки: [DoneErrorGate] ждёт ~300 мс,
+  // и пришедшая за это время ошибка показывается вместо «Ничего не услышал».
   void _handleStatus(String status) {
-    if (_active && status == SpeechToText.doneStatus) {
-      _active = false;
-      _onDone?.call();
-    }
+    if (_active && status == SpeechToText.doneStatus) _gate?.done();
   }
 
   void _handleError(SpeechRecognitionError e) {
     if (!_active) return;
     final problem = problemOf(e.errorMsg);
     if (problem == null) return;
-    _active = false;
-    _onError?.call(problem);
+    _gate?.error((problem, e.errorMsg));
   }
 
   /// Код ошибки браузера (Web Speech) или Android → понятная причина.
   /// null — ошибку можно не показывать (сами остановили).
-  @visibleForTesting
   static SpeechProblem? problemOf(String code) => switch (code) {
         'aborted' => null,
         'not-allowed' ||
@@ -167,8 +188,13 @@ class DeviceSpeechInput implements SpeechInput {
         'error_server' ||
         'error_server_disconnected' =>
           SpeechProblem.network,
-        'audio-capture' || 'error_audio_error' => SpeechProblem.micFailed,
+        'audio-capture' ||
+        'error_audio_error' ||
+        'start-failed' ||
+        'listen-failed' =>
+          SpeechProblem.micFailed,
         'no-speech' ||
+        noSpeechTimeout ||
         'error_no_match' ||
         'error_speech_timeout' =>
           SpeechProblem.nothingHeard,
@@ -191,6 +217,7 @@ class DeviceSpeechInput implements SpeechInput {
   @override
   Future<void> cancel() async {
     _active = false;
+    _gate?.close();
     try {
       await _stt.cancel();
     } catch (_) {}
@@ -213,6 +240,9 @@ class MockVoiceIntake implements SpeechInput {
   void Function()? _onDone;
 
   @override
+  bool get weakBrowser => false;
+
+  @override
   Future<SpeechProblem?> init() async => null;
 
   @override
@@ -222,8 +252,9 @@ class MockVoiceIntake implements SpeechInput {
     required Duration pauseFor,
     required void Function(String text) onText,
     required void Function() onDone,
-    required void Function(SpeechProblem problem) onError,
+    required void Function(SpeechProblem problem, String code) onError,
     void Function(double level)? onLevel,
+    void Function(bool silent)? onMicSilent,
   }) async {
     _onDone = onDone;
     final words = phrases[localeId.substring(0, 2)]!.split(' ');

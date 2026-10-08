@@ -130,3 +130,32 @@ class SectionTitle extends StatelessWidget {
 ButtonStyle brandButtonStyle() => FilledButton.styleFrom(
     backgroundColor: HeyHelpyTheme.brand,
     foregroundColor: HeyHelpyTheme.onBrand);
+
+/// Нижняя панель с главной кнопкой экрана: всегда видна, при любой высоте
+/// окна. Ставится под прокручиваемую область в Column тела Scaffold (а не в
+/// bottomNavigationBar — ту закрывает клавиатура), поэтому с открытой
+/// клавиатурой поднимается вместе с ней. Ширина — как у колонки
+/// содержимого: до [maxWidth] по центру.
+class BottomActionBar extends StatelessWidget {
+  const BottomActionBar({super.key, required this.child, this.maxWidth = 640});
+  final Widget child;
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: const BoxDecoration(
+            color: Colors.white, border: Border(top: BorderSide(color: _line))),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 16),
+            child: Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxWidth),
+                  child: child),
+            ),
+          ),
+        ),
+      );
+}

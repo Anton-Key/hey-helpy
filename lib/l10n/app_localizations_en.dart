@@ -1412,4 +1412,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldExecutor => 'Technician';
+
+  @override
+  String get voiceNetworkWeb =>
+      'Can\'t reach the browser\'s speech recognition service. Check your connection and tap “Try again” — or type your request.';
+
+  @override
+  String get voiceMicFailedWeb =>
+      'The browser isn\'t getting sound from the microphone. Check which microphone is selected: chrome://settings/content/microphone (in Edge — edge://settings/content/microphone), then tap “Try again”.';
+
+  @override
+  String voiceErrorCode(String code) {
+    return 'code: $code';
+  }
+
+  @override
+  String get voiceMicSilent =>
+      'The microphone doesn\'t hear any sound — check which microphone is selected';
+
+  @override
+  String get voiceBrowserHint =>
+      'For voice input, it\'s best to open this in Google Chrome or Microsoft Edge';
 }

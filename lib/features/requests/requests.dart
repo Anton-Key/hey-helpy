@@ -1141,9 +1141,13 @@ Future<bool?> showOrderForm({
       padding: EdgeInsetsDirectional.only(
           bottom: MediaQuery.of(ctx).viewInsets.bottom),
       child: StatefulBuilder(
-        builder: (ctx, setSt) => SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 20, 20),
+        // Поля прокручиваются, кнопка «Создать» / «Сохранить» закреплена
+        // внизу окна и видна при любой высоте и с открытой клавиатурой.
+        builder: (ctx, setSt) =>
+            Column(mainAxisSize: MainAxisSize.min, children: [
+          Flexible(
+              child: SingleChildScrollView(
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 20, 12),
             child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1204,51 +1208,53 @@ Future<bool?> showOrderForm({
                         activeTrackColor: brand,
                         onChanged: (v) => setSt(() => recurring = v))
                   ]),
-                  const SizedBox(height: 10),
-                  FilledButton(
-                      style: FilledButton.styleFrom(
-                          backgroundColor: brand, foregroundColor: _onBrand),
-                      onPressed: () async {
-                        if (titleC.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(ctx).showSnackBar(
-                              SnackBar(content: Text(l.formWhatRequired)));
-                          return;
-                        }
-                        try {
-                          if (isEdit) {
-                            await repo.update(existing['id'] as String,
-                                title: titleC.text.trim(),
-                                description: descC.text.trim().isEmpty
-                                    ? null
-                                    : descC.text.trim(),
-                                layer: layer,
-                                priority: priority,
-                                objectId: objectId,
-                                recurring: recurring);
-                          } else {
-                            await repo.create(
-                                companyId: companyId,
-                                title: titleC.text.trim(),
-                                description: descC.text.trim().isEmpty
-                                    ? null
-                                    : descC.text.trim(),
-                                layer: layer,
-                                priority: priority,
-                                objectId: objectId,
-                                recurring: recurring);
-                          }
-                          if (ctx.mounted) Navigator.pop(ctx, true);
-                        } catch (_) {
-                          if (!ctx.mounted) return;
-                          ScaffoldMessenger.of(ctx).showSnackBar(
-                              SnackBar(content: Text(l.formSaveFailed)));
-                        }
-                      },
-                      child: Text(isEdit ? l.commonSave : l.requestsCreate,
-                          style: const TextStyle(fontWeight: FontWeight.w800))),
                 ]),
-          ),
-        ),
+          )),
+          BottomActionBar(
+              child: FilledButton(
+                  style: FilledButton.styleFrom(
+                      backgroundColor: brand,
+                      foregroundColor: _onBrand,
+                      minimumSize: const Size.fromHeight(52)),
+                  onPressed: () async {
+                    if (titleC.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                          SnackBar(content: Text(l.formWhatRequired)));
+                      return;
+                    }
+                    try {
+                      if (isEdit) {
+                        await repo.update(existing['id'] as String,
+                            title: titleC.text.trim(),
+                            description: descC.text.trim().isEmpty
+                                ? null
+                                : descC.text.trim(),
+                            layer: layer,
+                            priority: priority,
+                            objectId: objectId,
+                            recurring: recurring);
+                      } else {
+                        await repo.create(
+                            companyId: companyId,
+                            title: titleC.text.trim(),
+                            description: descC.text.trim().isEmpty
+                                ? null
+                                : descC.text.trim(),
+                            layer: layer,
+                            priority: priority,
+                            objectId: objectId,
+                            recurring: recurring);
+                      }
+                      if (ctx.mounted) Navigator.pop(ctx, true);
+                    } catch (_) {
+                      if (!ctx.mounted) return;
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                          SnackBar(content: Text(l.formSaveFailed)));
+                    }
+                  },
+                  child: Text(isEdit ? l.commonSave : l.requestsCreate,
+                      style: const TextStyle(fontWeight: FontWeight.w800)))),
+        ]),
       ),
     ),
   );

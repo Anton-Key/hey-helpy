@@ -403,5 +403,10 @@
   "assignInline": "Assign",
   "assignChangeInline": "Change",
   "toastAssignedTo": "Assigned: {name}",
-  "fieldExecutor": "Technician"
+  "fieldExecutor": "Technician",
+  "voiceNetworkWeb": "Can't reach the browser's speech recognition service. Check your connection and tap “Try again” — or type your request.",
+  "voiceMicFailedWeb": "The browser isn't getting sound from the microphone. Check which microphone is selected: chrome://settings/content/microphone (in Edge — edge://settings/content/microphone), then tap “Try again”.",
+  "voiceErrorCode": "code: {code}",
+  "voiceMicSilent": "The microphone doesn't hear any sound — check which microphone is selected",
+  "voiceBrowserHint": "For voice input, it's best to open this in Google Chrome or Microsoft Edge"
 }

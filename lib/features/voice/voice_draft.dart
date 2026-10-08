@@ -1,4 +1,4 @@
-/// Черновик заявки, разобранный из голоса. Заявку из него создаёт
+/// Черновик заявки, разобранный из голоса (или из набранного текста). Заявку из него создаёт
 /// только пользователь — после проверки на экране подтверждения.
 class VoiceDraft {
   final String transcript;
@@ -11,8 +11,12 @@ class VoiceDraft {
   final String? layerId;
   final String? layer;
 
-  /// Как пользователь назвал место («переговорная на третьем»).
+  /// Как пользователь назвал место («переговорной, на третьем этаже»).
   final String? locationHint;
+
+  /// Помещение и объект из справочника, если их удалось узнать по тексту.
+  final String? locationId;
+  final String? objectId;
 
   /// low / normal / high / critical — как в work_orders.priority.
   final String priority;
@@ -24,6 +28,8 @@ class VoiceDraft {
     this.layerId,
     this.layer,
     this.locationHint,
+    this.locationId,
+    this.objectId,
     this.priority = 'normal',
   });
 
@@ -38,6 +44,8 @@ class VoiceDraft {
       layerId: m['layer_id'] as String?,
       layer: m['layer'] as String?,
       locationHint: m['location_hint'] as String?,
+      locationId: m['location_id'] as String?,
+      objectId: m['object_id'] as String?,
       priority: priorities.contains(p) ? p! : 'normal',
     );
   }

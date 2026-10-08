@@ -1,45 +1,48 @@
-import 'dart:io';
-
+import '../directory/directory.dart';
+import 'text_intake.dart';
 import 'voice_draft.dart';
 
-/// Превращает запись в черновик заявки: речь → текст → поля.
-/// Заявку не создаёт.
-abstract class VoiceIntakeClient {
-  /// [locale] — язык интерфейса (ru / en): на нём распознаётся речь
-  /// и возвращаются поля заявки.
-  Future<VoiceDraft> process(File audio, {required String locale});
+/// Справочники компании, по которым текст раскладывается в поля заявки.
+class IntakeCatalog {
+  const IntakeCatalog(
+      {this.layers = const [],
+      this.places = const [],
+      this.objects = const []});
+  final List<Layer> layers;
+  final List<Place> places;
+  final List<Obj> objects;
 }
 
-/// Текущая реализация. На шаге 2 здесь будет вызов Edge Function voice-intake.
-VoiceIntakeClient createVoiceIntakeClient() => MockVoiceIntake();
+/// Превращает текст заявки (распознанный или набранный) в черновик:
+/// заголовок, описание, слой, место, срочность. Заявку не создаёт —
+/// её отправляет пользователь с экрана подтверждения.
+abstract class VoiceIntakeClient {
+  /// [locale] — язык интерфейса (ru / en).
+  Future<VoiceDraft> process(String transcript,
+      {required String locale, required IntakeCatalog catalog});
+}
 
-/// Заглушка без сети: делает вид, что распознаёт, и возвращает
-/// заготовленный ответ на нужном языке. Нужна, пока нет серверной
-/// функции и ключей Yandex. Тексты ниже — имитация ответа сервера,
-/// а не строки интерфейса, поэтому они не в файлах перевода.
-class MockVoiceIntake implements VoiceIntakeClient {
-  static const _answers = {
-    'ru': VoiceDraft(
-      transcript: 'Эй, Хелпи, в переговорной на третьем этаже не работает кондиционер, очень жарко',
-      title: 'Не работает кондиционер',
-      description: 'В переговорной на третьем этаже не работает кондиционер, очень жарко.',
-      layer: 'Климат',
-      locationHint: 'переговорная, 3 этаж',
-      priority: 'high',
-    ),
-    'en': VoiceDraft(
-      transcript: "Hey, Helpy, the air conditioning in the third-floor meeting room isn't working, it's really hot",
-      title: 'Air conditioning not working',
-      description: "The air conditioning in the third-floor meeting room isn't working, it's really hot.",
-      layer: 'HVAC',
-      locationHint: 'meeting room, 3rd floor',
-      priority: 'high',
-    ),
-  };
+/// Текущая реализация — локальный разбор, без сети.
+///
+/// Шаг 12 (план): серверный ИИ-разбор — `ServerVoiceIntake implements
+/// VoiceIntakeClient`. Вызывает Supabase Edge Function (например,
+/// `voice-intake`): на вход `{text, locale}`, на выход те же поля, что
+/// читает [VoiceDraft.fromJson] (`title`, `description`, `layer_id`,
+/// `location_id`, `location_hint`, `priority`). Ключи YandexGPT — только в
+/// функции на сервере. При ошибке сети — откат на [LocalVoiceIntake].
+VoiceIntakeClient createVoiceIntakeClient() => const LocalVoiceIntake();
+
+/// Разбор на устройстве по словарю ([TextIntake]).
+class LocalVoiceIntake implements VoiceIntakeClient {
+  const LocalVoiceIntake();
 
   @override
-  Future<VoiceDraft> process(File audio, {required String locale}) async {
-    await Future<void>.delayed(const Duration(milliseconds: 1500));
-    return _answers[locale] ?? _answers['en']!;
+  Future<VoiceDraft> process(String transcript,
+      {required String locale, required IntakeCatalog catalog}) async {
+    return TextIntake(
+            layers: catalog.layers,
+            places: catalog.places,
+            objects: catalog.objects)
+        .parse(transcript);
   }
 }

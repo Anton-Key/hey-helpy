@@ -869,7 +869,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceProcessing.
   ///
   /// In ru, this message translates to:
-  /// **'Распознаю…'**
+  /// **'Разбираю заявку…'**
   String get voiceProcessing;
 
   /// No description provided for @voiceFailedTitle.
@@ -890,12 +890,6 @@ abstract class AppLocalizations {
   /// **'{elapsed} · осталось {left} с'**
   String voiceTimer(String elapsed, int left);
 
-  /// No description provided for @voiceProcessingHint.
-  ///
-  /// In ru, this message translates to:
-  /// **'Это займёт несколько секунд'**
-  String get voiceProcessingHint;
-
   /// No description provided for @voiceDone.
   ///
   /// In ru, this message translates to:
@@ -908,28 +902,16 @@ abstract class AppLocalizations {
   /// **'Ещё раз'**
   String get voiceAgain;
 
-  /// No description provided for @voiceNoMicPermission.
-  ///
-  /// In ru, this message translates to:
-  /// **'Нужен доступ к микрофону. Разрешите его в настройках телефона и попробуйте снова.'**
-  String get voiceNoMicPermission;
-
   /// No description provided for @voiceMicFailed.
   ///
   /// In ru, this message translates to:
   /// **'Не удалось включить микрофон. Попробуйте ещё раз.'**
   String get voiceMicFailed;
 
-  /// No description provided for @voiceTooShort.
-  ///
-  /// In ru, this message translates to:
-  /// **'Слишком коротко. Нажмите «Ещё раз» и опишите проблему.'**
-  String get voiceTooShort;
-
   /// No description provided for @voiceRecognizeFailed.
   ///
   /// In ru, this message translates to:
-  /// **'Не получилось распознать запись. Проверьте интернет и попробуйте ещё раз.'**
+  /// **'Не получилось распознать речь. Попробуйте ещё раз или введите заявку текстом.'**
   String get voiceRecognizeFailed;
 
   /// No description provided for @voiceConfirmTitle.
@@ -985,6 +967,84 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не удалось отправить заявку. Проверьте интернет и попробуйте ещё раз.'**
   String get voiceSendFailed;
+
+  /// No description provided for @voiceAutoStop.
+  ///
+  /// In ru, this message translates to:
+  /// **'После паузы в 3 секунды закончу сам'**
+  String get voiceAutoStop;
+
+  /// No description provided for @voiceNoMicPermissionWeb.
+  ///
+  /// In ru, this message translates to:
+  /// **'Браузер не дал доступ к микрофону. Нажмите на значок замка или микрофона в адресной строке → «Микрофон» → «Разрешить» и нажмите «Ещё раз». На iPhone: Настройки → Safari → Микрофон → «Разрешить»; ещё должна быть включена диктовка (Настройки → Основные → Клавиатура).'**
+  String get voiceNoMicPermissionWeb;
+
+  /// No description provided for @voiceNoMicPermissionApp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужен доступ к микрофону: Настройки телефона → Приложения → {app} → Разрешения → Микрофон → «Разрешить». Затем нажмите «Ещё раз».'**
+  String voiceNoMicPermissionApp(String app);
+
+  /// No description provided for @voiceUnsupportedWeb.
+  ///
+  /// In ru, this message translates to:
+  /// **'В этом браузере нет распознавания речи (например, в Firefox). Откройте приложение в Chrome, Edge или Safari — или введите заявку текстом.'**
+  String get voiceUnsupportedWeb;
+
+  /// No description provided for @voiceUnsupportedApp.
+  ///
+  /// In ru, this message translates to:
+  /// **'На телефоне не найден сервис распознавания речи (обычно это приложение Google). Введите заявку текстом.'**
+  String get voiceUnsupportedApp;
+
+  /// No description provided for @voiceNetwork.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет связи с сервисом распознавания речи. Проверьте интернет или введите заявку текстом.'**
+  String get voiceNetwork;
+
+  /// No description provided for @voiceNothingHeard.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не услышал. Нажмите «Ещё раз» и скажите, что случилось, — или введите текстом.'**
+  String get voiceNothingHeard;
+
+  /// No description provided for @voiceTypeInstead.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ввести текстом'**
+  String get voiceTypeInstead;
+
+  /// No description provided for @voiceTypeTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Опишите заявку'**
+  String get voiceTypeTitle;
+
+  /// No description provided for @voiceTypeHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что случилось и где? Например: «В переговорной на третьем этаже не работает кондиционер»'**
+  String get voiceTypeHint;
+
+  /// No description provided for @voiceNext.
+  ///
+  /// In ru, this message translates to:
+  /// **'Далее'**
+  String get voiceNext;
+
+  /// No description provided for @voiceYouWrote.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы написали'**
+  String get voiceYouWrote;
+
+  /// No description provided for @voiceEditHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заголовок и описание можно поправить перед отправкой.'**
+  String get voiceEditHint;
 
   /// No description provided for @objectTypeOffice.
   ///

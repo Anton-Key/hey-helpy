@@ -422,22 +422,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voiceListening => 'Listening';
 
   @override
-  String get voiceProcessing => 'Recognizing…';
+  String get voiceProcessing => 'Reading your request…';
 
   @override
   String get voiceFailedTitle => 'That didn\'t work';
 
   @override
   String get voicePrompt =>
-      'Say what happened and where.\nFor example: “The air conditioning in the third-floor meeting room isn\'t working.”';
+      'Say what happened and where.\nFor example: “The air conditioner in the meeting room on the third floor isn\'t working.”';
 
   @override
   String voiceTimer(String elapsed, int left) {
     return '$elapsed · $left s left';
   }
-
-  @override
-  String get voiceProcessingHint => 'This takes a few seconds';
 
   @override
   String get voiceDone => 'Done';
@@ -446,20 +443,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voiceAgain => 'Try again';
 
   @override
-  String get voiceNoMicPermission =>
-      'Microphone access is needed. Allow it in your phone settings and try again.';
-
-  @override
   String get voiceMicFailed =>
       'Couldn\'t turn on the microphone. Please try again.';
 
   @override
-  String get voiceTooShort =>
-      'Too short. Tap “Try again” and describe the problem.';
-
-  @override
   String get voiceRecognizeFailed =>
-      'Couldn\'t recognize the recording. Check your connection and try again.';
+      'Couldn\'t recognize speech. Try again or type your request.';
 
   @override
   String get voiceConfirmTitle => 'Check your request';
@@ -493,6 +482,54 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get voiceSendFailed =>
       'Couldn\'t send the request. Check your connection and try again.';
+
+  @override
+  String get voiceAutoStop => 'I\'ll stop by myself after a 3-second pause';
+
+  @override
+  String get voiceNoMicPermissionWeb =>
+      'The browser blocked the microphone. Click the lock or microphone icon in the address bar → “Microphone” → “Allow”, then tap “Try again”. On iPhone: Settings → Safari → Microphone → “Allow”; Dictation must also be on (Settings → General → Keyboard).';
+
+  @override
+  String voiceNoMicPermissionApp(String app) {
+    return 'Microphone access is needed: phone Settings → Apps → $app → Permissions → Microphone → “Allow”. Then tap “Try again”.';
+  }
+
+  @override
+  String get voiceUnsupportedWeb =>
+      'This browser can\'t recognize speech (Firefox, for example). Open the app in Chrome, Edge or Safari — or type your request.';
+
+  @override
+  String get voiceUnsupportedApp =>
+      'No speech recognition service was found on this phone (usually it\'s the Google app). Please type your request.';
+
+  @override
+  String get voiceNetwork =>
+      'Can\'t reach the speech recognition service. Check your connection or type your request.';
+
+  @override
+  String get voiceNothingHeard =>
+      'I didn\'t hear anything. Tap “Try again” and say what happened — or type it.';
+
+  @override
+  String get voiceTypeInstead => 'Type instead';
+
+  @override
+  String get voiceTypeTitle => 'Describe the request';
+
+  @override
+  String get voiceTypeHint =>
+      'What happened and where? For example: “The air conditioner in the meeting room on the third floor isn\'t working”';
+
+  @override
+  String get voiceNext => 'Next';
+
+  @override
+  String get voiceYouWrote => 'You wrote';
+
+  @override
+  String get voiceEditHint =>
+      'You can edit the title and description before sending.';
 
   @override
   String get objectTypeOffice => 'Office';

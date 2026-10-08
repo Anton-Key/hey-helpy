@@ -1,15 +1,17 @@
 // Скриншоты веб-версии Hey Helpy для отчётов (команда /screens).
 //
 // Что делает:
-//   1. Собирает веб-версию (flutter build web) с ключами из env.json
+//   1. Собирает веб-версию (flutter build web) с ключами из env.json и VOICE_MOCK=true —
+//      в Playwright нет микрофона, голос «говорит» заготовленную фразу
 //      (флаг --no-build — взять уже собранную build/web).
 //   2. Поднимает локальный сервер и по очереди входит менеджером, исполнителем
 //      и заявителем (логины — только из .env.demo в корне репозитория).
-//   3. Снимает главные экраны (и окно выбора подрядчика у менеджера) в docs/screens/latest/ (папка очищается),
+//   3. Снимает главные экраны (окно выбора подрядчика и голосовую заявку — у менеджера) в docs/screens/latest/ (папка очищается),
 //      пишет там README.md с таблицей: что снято, что не открылось и почему.
 //
 // Пароли нигде не печатаются. Данные не меняет: только вход и просмотр (экран «Уведомления»
-// сам отмечает их прочитанными у демо-пользователя, окно выбора подрядчика закрывается без назначения).
+// сам отмечает их прочитанными у демо-пользователя, окно выбора подрядчика закрывается без назначения,
+// голосовая заявка не отправляется — снимается только экран подтверждения).
 import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
@@ -73,7 +75,8 @@ if (!process.argv.includes('--no-build')) {
     process.exit(2);
   }
   console.log('Сборка веб-версии…');
-  execFileSync('flutter', ['build', 'web', '--release', '--dart-define-from-file=env.json'],
+  execFileSync('flutter', ['build', 'web', '--release', '--dart-define-from-file=env.json',
+    '--dart-define=VOICE_MOCK=true'],
     { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] });
 }
 if (!existsSync(join(WEB, 'index.html'))) {
@@ -152,6 +155,13 @@ async function home(page) {
 const nav = (page, label) => page.getByRole('tab', { name: label })
   .or(page.getByRole('button', { name: label, exact: true })).first();
 
+async function openVoice(page) {
+  await home(page);
+  await page.getByRole('button', { name: 'Нажми и говори' }).first().click();
+  await see(page, 'очень жарко').waitFor({ timeout: 20000 });
+  await settle(page, 1000);
+}
+
 const SCREENS = [
   { key: 'requests', title: 'Список заявок', run: async (p) => { await home(p); } },
   // Список, прокрученный до конца: последняя карточка не под плавающими кнопками.
@@ -191,6 +201,18 @@ const SCREENS = [
       await settle(p);
       return `заявка «${chosen}»`;
     }, after: async (p) => { await p.keyboard.press('Escape'); } },
+  // Голос в режиме VOICE_MOCK: фраза «произносится» по словам, ждём её конец.
+  { key: 'voice', title: 'Голосовая заявка — распознавание', managerOnly: true, run: async (p) => {
+      await openVoice(p);
+    } },
+  // «Готово» → разбор → экран подтверждения. «Отправить» не нажимаем.
+  { key: 'voice-confirm', title: 'Голосовая заявка — подтверждение', managerOnly: true, run: async (p) => {
+      await openVoice(p);
+      await btn(p, 'Готово').click();
+      await see(p, 'Проверьте заявку').waitFor({ timeout: 20000 });
+      await see(p, 'Вы сказали').waitFor({ timeout: 20000 });
+      await settle(p, 2000);
+    } },
   { key: 'reports', title: 'Отчёты (30 дней)', managerOnly: true, run: async (p) => {
       await home(p);
       await nav(p, 'Отчёты').click();

@@ -5,7 +5,7 @@
 
     <!-- Камера: распознавание объектов, фото к заявкам, AR -->
     <uses-permission android:name="android.permission.CAMERA"/>
-    <!-- Микрофон: голосовые заявки (SpeechKit / региональный STT) -->
+    <!-- Микрофон: голосовые заявки (системное распознавание речи, пакет speech_to_text) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- NFC: запасной способ идентификации оборудования -->
     <uses-permission android:name="android.permission.NFC"/>
@@ -65,6 +65,10 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Системный распознаватель речи (Android 11+ без этого его не видно) -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>

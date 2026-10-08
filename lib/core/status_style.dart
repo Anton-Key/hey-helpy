@@ -47,20 +47,27 @@ class StatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = StatusStyle.of(status);
     final size = large ? 12.0 : 11.0;
+    final height = large ? 30.0 : 24.0;
+    // Единая высота и скругление у всех статусов, текст в одну строку.
     return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: large ? 12 : 10, vertical: large ? 6 : 4),
+      height: height,
+      padding: EdgeInsetsDirectional.symmetric(horizontal: large ? 12 : 10),
       decoration: BoxDecoration(
-          color: c.background, borderRadius: BorderRadius.circular(20)),
+          color: c.background,
+          borderRadius: BorderRadius.circular(height / 2)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         if (status == 'done') ...[
           Icon(Icons.check_rounded, size: size + 2, color: c.foreground),
           const SizedBox(width: 3),
         ],
         Text(context.l10n.status(status),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.visible,
             style: TextStyle(
                 fontSize: size,
                 fontWeight: FontWeight.w800,
+                height: 1.2,
                 color: c.foreground)),
       ]),
     );

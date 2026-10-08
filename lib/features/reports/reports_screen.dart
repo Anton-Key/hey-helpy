@@ -542,7 +542,9 @@ class _ContractorCard extends StatelessWidget {
 }
 
 /// Подрядчики на широком экране (веб): таблица, строка открывает заявки.
-class _ContractorTable extends StatelessWidget {
+/// Колонка «Подрядчик» закреплена, остальные прокручиваются вбок
+/// (полоса прокрутки видна всегда, если столбцы не помещаются).
+class _ContractorTable extends StatefulWidget {
   const _ContractorTable(
       {required this.rows,
       required this.name,
@@ -554,43 +556,101 @@ class _ContractorTable extends StatelessWidget {
   final void Function(ContractorReport) onOpen;
 
   @override
+  State<_ContractorTable> createState() => _ContractorTableState();
+}
+
+class _ContractorTableState extends State<_ContractorTable> {
+  // Высоты строк одинаковые в обеих частях таблицы — строки совпадают.
+  static const _headH = 60.0; // до трёх строк заголовка
+  static const _rowH = 48.0;
+  static const _headStyle =
+      TextStyle(color: _muted, fontSize: 12, fontWeight: FontWeight.w700);
+
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  DataTable _table(List<DataColumn> columns, List<DataRow> rows) => DataTable(
+        showCheckboxColumn: false,
+        headingTextStyle: _headStyle,
+        headingRowHeight: _headH,
+        dataRowMinHeight: _rowH,
+        dataRowMaxHeight: _rowH,
+        columnSpacing: 14,
+        horizontalMargin: 16,
+        columns: columns,
+        rows: rows,
+      );
+
+  @override
   Widget build(BuildContext context) {
-    final header = rows.isEmpty ? const [] : fmt.metrics(rows.first.stats);
+    final rows = widget.rows;
+    final header =
+        rows.isEmpty ? const [] : widget.fmt.metrics(rows.first.stats);
+    final fixed = _table(
+      [DataColumn(label: Text(context.l10n.reportsFilterContractor))],
+      [
+        for (final r in rows)
+          DataRow(onSelectChanged: (_) => widget.onOpen(r), cells: [
+            DataCell(ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 170),
+                child: Text(widget.name(r.contractorId),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w700)))),
+          ]),
+      ],
+    );
+    final scrolling = _table(
+      [
+        for (final (label, _, _) in header)
+          DataColumn(
+              label: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 96),
+                  child: Text(label,
+                      softWrap: true,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis))),
+      ],
+      [
+        for (final r in rows)
+          DataRow(onSelectChanged: (_) => widget.onOpen(r), cells: [
+            for (final (_, value, alert) in widget.fmt.metrics(r.stats))
+              DataCell(Text(value,
+                  maxLines: 1,
+                  style: TextStyle(
+                      color: alert ? _danger : _ink,
+                      fontWeight: FontWeight.w600))),
+          ]),
+      ],
+    );
     return Container(
       decoration: _card(),
       clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          showCheckboxColumn: false,
-          headingTextStyle: const TextStyle(
-              color: _muted, fontSize: 12, fontWeight: FontWeight.w700),
-          columnSpacing: 18,
-          columns: [
-            DataColumn(label: Text(context.l10n.reportsFilterContractor)),
-            for (final (label, _, _) in header)
-              DataColumn(
-                  label: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 110),
-                      child: Text(label, softWrap: true))),
-          ],
-          rows: [
-            for (final r in rows)
-              DataRow(
-                onSelectChanged: (_) => onOpen(r),
-                cells: [
-                  DataCell(Text(name(r.contractorId),
-                      style: const TextStyle(fontWeight: FontWeight.w700))),
-                  for (final (_, value, alert) in fmt.metrics(r.stats))
-                    DataCell(Text(value,
-                        style: TextStyle(
-                            color: alert ? _danger : _ink,
-                            fontWeight: FontWeight.w600))),
-                ],
-              ),
-          ],
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        DecoratedBox(
+            decoration: const BoxDecoration(
+                border: BorderDirectional(
+                    end: BorderSide(color: Color(0xFFE3E7EA)))),
+            child: fixed),
+        Expanded(
+          child: Scrollbar(
+            controller: _scroll,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _scroll,
+              scrollDirection: Axis.horizontal,
+              // Место под полосу прокрутки, чтобы она не закрывала строку.
+              padding: const EdgeInsetsDirectional.only(bottom: 12),
+              child: scrolling,
+            ),
+          ),
         ),
-      ),
+      ]),
     );
   }
 }

@@ -155,7 +155,9 @@ class OrderTile extends StatelessWidget {
           ]),
         ),
         const SizedBox(width: 8),
-        StatusPill(status),
+        Padding(
+            padding: const EdgeInsetsDirectional.only(top: 1),
+            child: StatusPill(status)),
       ]),
     );
   }

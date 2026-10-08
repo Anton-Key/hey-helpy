@@ -1,0 +1,48 @@
+# Проверка каждого Pull Request в main: анализ кода, тесты, веб-сборка, имена миграций.
+# Без секретов и без доступа к базе. Задача называется `check` — её можно сделать
+# обязательной в правилах защиты main (ruleset protect-main → Require status checks).
+name: PR check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Новый пуш в ту же ветку отменяет предыдущую проверку.
+concurrency:
+  group: pr-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Для pull_request проверяется merge-коммит (ветка + свежий main);
+      # глубина 2 — чтобы сравнить его с main (первый родитель).
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Миграции в PR
+        run: bash .github/scripts/check-pr-migrations.sh
+
+      # Та же установка Flutter, что в build-apk.yml.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Анализ кода
+        run: flutter analyze
+
+      - name: Тесты
+        run: flutter test
+
+      # Без ключей Supabase: приложение собирается, просто не подключится к базе.
+      - name: Веб-сборка
+        run: flutter build web --release --base-href /hey-helpy/

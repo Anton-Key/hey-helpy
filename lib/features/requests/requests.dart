@@ -378,8 +378,11 @@ class _RequestsTabState extends State<RequestsTab> {
         ),
       );
     }
+    // Снизу — место под плавающие кнопки (обновить 40 + микрофон 96 +
+    // «Создать заявку» 48 + промежутки ≈ 212): последняя карточка
+    // прокручивается выше них.
     return ListView.builder(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 140),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 240),
       itemCount: _items.length,
       itemBuilder: (_, i) {
         final w = _items[i];
@@ -417,7 +420,7 @@ class _RequestsTabState extends State<RequestsTab> {
                         style: const TextStyle(color: _muted, fontSize: 13)),
                   ])),
               const SizedBox(width: 8),
-              StatusPill(w.status),
+              Center(child: StatusPill(w.status)),
               const SizedBox(width: 4),
               const ChevronEnd(color: _muted, size: 20),
             ]),

@@ -24,6 +24,14 @@ const MAX_PNG = 300 * 1024;
 // Демо-заявка из supabase/seed/demo_history.sql (её видят все три роли).
 const DEMO_ORDER = 'Шумит вентилятор в переговорной';
 
+// Окно выбора подрядчика — на заявке из демо-истории (не на тестовых заявках в базе).
+// Сначала эта («Назначена», Электрика — видно закреплённого подрядчика), иначе первая
+// из демо-истории в статусе, где менеджер может назначить подрядчика.
+const PICKER_ORDER = 'Нет питания на розетках в переговорной';
+const DEMO_TITLES = [...readFileSync(join(ROOT, 'supabase/seed/demo_history.sql'), 'utf8')
+  .matchAll(/^\s*\(\d{3},'\w+','\w+','([^']+)'/gm)].map((m) => m[1]);
+const ASSIGNABLE = /(Новая|Назначена|Возвращена)\s*$/;
+
 // ---------------------------------------------------------------------------
 // Логины: .env.demo (KEY=VALUE, строки с # — комментарии)
 // ---------------------------------------------------------------------------
@@ -146,6 +154,14 @@ const nav = (page, label) => page.getByRole('tab', { name: label })
 
 const SCREENS = [
   { key: 'requests', title: 'Список заявок', run: async (p) => { await home(p); } },
+  // Список, прокрученный до конца: последняя карточка не под плавающими кнопками.
+  { key: 'requests-end', title: 'Список заявок — конец списка', run: async (p) => {
+      await home(p);
+      const vp = p.viewportSize();
+      await p.mouse.move(vp.width / 3, vp.height / 2);
+      for (let i = 0; i < 15; i++) { await p.mouse.wheel(0, 2000); await p.waitForTimeout(150); }
+      await settle(p);
+    } },
   { key: 'order', title: `Карточка заявки «${DEMO_ORDER}»`, run: async (p) => {
       await home(p);
       await p.getByRole('button', { name: DEMO_ORDER }).first().click();
@@ -153,15 +169,27 @@ const SCREENS = [
       await settle(p);
     } },
   // Окно только открывается и закрывается (Escape): подрядчик не назначается.
-  { key: 'picker', title: 'Выбор подрядчика (заявка «Новая»)', managerOnly: true, run: async (p) => {
+  { key: 'picker', title: 'Выбор подрядчика', managerOnly: true, run: async (p) => {
       await home(p);
-      await p.getByRole('button', { name: /Новая\s*$/ }).first().click();
+      const titles = [PICKER_ORDER, ...DEMO_TITLES.filter((t) => t !== PICKER_ORDER)];
+      let chosen = null;
+      for (const t of titles) {
+        const card = p.getByRole('button', { name: t }).first();
+        if (!(await card.count())) continue;
+        // Текст карточки: название, место, статус — статус последней строкой.
+        if (!ASSIGNABLE.test((await card.innerText()).trim())) continue;
+        await card.click();
+        chosen = t;
+        break;
+      }
+      if (!chosen) throw new Error('В списке нет заявки из демо-истории со статусом «Новая», «Назначена» или «Возвращена»');
       await see(p, 'Подрядчик').waitFor({ timeout: 20000 });
       await settle(p);
       await p.getByRole('button', { name: /Назначить|Изменить/ }).first().click();
       await see(p, /^Подрядчики$|Закреплены за этим видом работ|никто не закреплён/)
         .waitFor({ timeout: 20000 });
       await settle(p);
+      return `заявка «${chosen}»`;
     }, after: async (p) => { await p.keyboard.press('Escape'); } },
   { key: 'reports', title: 'Отчёты (30 дней)', managerOnly: true, run: async (p) => {
       await home(p);
@@ -239,9 +267,10 @@ try {
       }
       const name = `${r.role}-${r.width}-${s.key}.png`;
       try {
-        await s.run(page);
+        const note = await s.run(page);
         await page.screenshot({ path: join(OUT, name) });
-        results.push({ ...r, key: s.key, title: s.title, ok: true, file: name });
+        results.push({ ...r, key: s.key, title: s.title, ok: true, file: name,
+          note: typeof note === 'string' ? note : undefined });
         if (s.after) await s.after(page).catch(() => {});
       } catch (e) {
         await page.screenshot({ path: join(OUT, name.replace('.png', '-error.png')) }).catch(() => {});

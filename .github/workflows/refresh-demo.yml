@@ -1,0 +1,170 @@
+# Перезаливка демо-истории перед показом: supabase/seed/demo_history.sql в рабочей базе.
+# Только вручную и только с ветки main: Actions → "Refresh demo" → Run workflow →
+# Review deployments → production-db → Approve. Подробно — CLAUDE.md, «Перезаливка демо-данных».
+#
+# Email демо-пользователей — из секретов окружения production-db (в репозитории только
+# заглушки example.com): DEMO_MANAGER_EMAIL, DEMO_EXECUTOR_EMAIL, DEMO_REQUESTER_EMAIL,
+# DEMO_ELEC_EXECUTOR_EMAIL. В лог они не печатаются.
+#
+# Claude Code этот workflow НЕ запускает.
+name: Refresh demo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-demo
+  cancel-in-progress: false
+
+jobs:
+  # Без доступа к базе: не с main — остановка ещё до запроса одобрения.
+  guard:
+    name: Проверка ветки
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Только main
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Refresh demo запускается только с ветки main (сейчас: $GITHUB_REF)."
+            exit 1
+          fi
+          echo "Ветка main — можно одобрять."
+
+  refresh:
+    name: Перезаливка демо-истории (после одобрения)
+    needs: guard
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production-db
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Проверить секреты
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          DEMO_MANAGER_EMAIL: ${{ secrets.DEMO_MANAGER_EMAIL }}
+          DEMO_EXECUTOR_EMAIL: ${{ secrets.DEMO_EXECUTOR_EMAIL }}
+          DEMO_REQUESTER_EMAIL: ${{ secrets.DEMO_REQUESTER_EMAIL }}
+          DEMO_ELEC_EXECUTOR_EMAIL: ${{ secrets.DEMO_ELEC_EXECUTOR_EMAIL }}
+        run: |
+          missing=""
+          for name in SUPABASE_DB_URL DEMO_MANAGER_EMAIL DEMO_EXECUTOR_EMAIL \
+                      DEMO_REQUESTER_EMAIL DEMO_ELEC_EXECUTOR_EMAIL; do
+            value="${!name:-}"
+            if [ -z "${value//[[:space:]]/}" ]; then
+              missing="$missing $name"
+            else
+              echo "::add-mask::$value"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::В окружении production-db не заполнены секреты:$missing. К базе не подключаюсь."
+            exit 1
+          fi
+          echo "Все секреты на месте."
+
+      - name: Установить psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          psql --version
+
+      # Временные файлы — только в $RUNNER_TEMP (удаляются вместе с машиной).
+      # В копии demo_history.sql убираются строки begin; и commit; — транзакцию
+      # открывает сам psql (--single-transaction), вместе с настройками email.
+      - name: Подготовить скрипт
+        run: |
+          set -euo pipefail
+          src=supabase/seed/demo_history.sql
+          dst="$RUNNER_TEMP/demo_history.sql"
+          sed -E '/^(begin|commit);[[:space:]]*$/d' "$src" > "$dst"
+          removed=$(( $(wc -l < "$src") - $(wc -l < "$dst") ))
+          if [ "$removed" -ne 2 ]; then
+            echo "::error::В $src ожидались ровно две строки begin; / commit; (убрано: $removed). Проверьте файл."
+            exit 1
+          fi
+          # Email передаются psql-переменными (-v) и попадают в настройки сессии demo.*_email,
+          # которые читает demo_history.sql. Вывод set_config скрыт (\o /dev/null).
+          cat > "$RUNNER_TEMP/demo_settings.sql" <<'SQL'
+          \o /dev/null
+          select set_config('demo.manager_email', :'manager_email', false),
+                 set_config('demo.executor_email', :'executor_email', false),
+                 set_config('demo.requester_email', :'requester_email', false),
+                 set_config('demo.elec_executor_email', :'elec_executor_email', false);
+          \o
+          SQL
+
+      - name: Перезалить демо-историю
+        id: refresh
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          DEMO_MANAGER_EMAIL: ${{ secrets.DEMO_MANAGER_EMAIL }}
+          DEMO_EXECUTOR_EMAIL: ${{ secrets.DEMO_EXECUTOR_EMAIL }}
+          DEMO_REQUESTER_EMAIL: ${{ secrets.DEMO_REQUESTER_EMAIL }}
+          DEMO_ELEC_EXECUTOR_EMAIL: ${{ secrets.DEMO_ELEC_EXECUTOR_EMAIL }}
+          PGSSLMODE: require
+        run: |
+          set -euo pipefail
+          # Части строки подключения (хост, пользователь, пароль) скрываем:
+          # psql может упомянуть их в тексте ошибки.
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit, unquote
+          u = urlsplit(os.environ["SUPABASE_DB_URL"])
+          for part in (u.hostname, u.username, u.password):
+              if part:
+                  print(f"::add-mask::{unquote(part)}")
+          PY
+          trim() { local v="$1"; v="${v#"${v%%[![:space:]]*}"}"; printf '%s' "${v%"${v##*[![:space:]]}"}"; }
+          echo "Перезаливаю демо-историю одной транзакцией…"
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --single-transaction \
+            -v manager_email="$(trim "$DEMO_MANAGER_EMAIL")" \
+            -v executor_email="$(trim "$DEMO_EXECUTOR_EMAIL")" \
+            -v requester_email="$(trim "$DEMO_REQUESTER_EMAIL")" \
+            -v elec_executor_email="$(trim "$DEMO_ELEC_EXECUTOR_EMAIL")" \
+            -f "$RUNNER_TEMP/demo_settings.sql" \
+            -f "$RUNNER_TEMP/demo_history.sql"
+
+      - name: Проверка (только select)
+        id: verify
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGSSLMODE: require
+        run: |
+          set -euo pipefail
+          out=$(psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -At -F ' ' -c "
+            select (select count(*) from public.work_orders w
+                      join public.companies c on c.id = w.company_id
+                     where c.name = 'Демо БЦ'),
+                   (select count(*) from public.visits v
+                      join public.companies c on c.id = v.company_id
+                     where c.name = 'Демо БЦ');")
+          read -r orders visits <<<"$out"
+          echo "Компания «Демо БЦ»: заявок $orders, визитов $visits."
+          echo "orders=$orders" >> "$GITHUB_OUTPUT"
+          echo "visits=$visits" >> "$GITHUB_OUTPUT"
+
+      - name: Сводка
+        if: always()
+        run: |
+          {
+            echo "## Refresh demo"
+            echo
+            case "${{ steps.refresh.outcome }}" in
+              success)
+                echo "✅ Демо-история перезалита (даты — от сегодняшнего дня)."
+                echo
+                echo "| Компания | Заявок | Визитов |"
+                echo "|---|---|---|"
+                echo "| Демо БЦ | ${{ steps.verify.outputs.orders }} | ${{ steps.verify.outputs.visits }} |" ;;
+              failure)
+                echo "❌ Ошибка — база не изменилась (всё откатилось). Текст ошибки — в логе шага «Перезалить демо-историю»." ;;
+              *)
+                echo "⚠️ Перезаливка не выполнялась: остановлено раньше (см. шаг «Проверить секреты»)." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"

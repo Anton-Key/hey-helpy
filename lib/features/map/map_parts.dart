@@ -105,8 +105,7 @@ class ClusterMarker extends StatelessWidget {
       Container(
         height: labelHeight - 4,
         margin: const EdgeInsetsDirectional.only(top: 4),
-        padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
-        alignment: Alignment.center,
+        padding: const EdgeInsetsDirectional.fromSTEB(8, 2, 8, 0),
         decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.pill),

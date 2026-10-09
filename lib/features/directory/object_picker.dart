@@ -112,6 +112,7 @@ class _ObjectPickerPanelState extends State<ObjectPickerPanel> {
         if (shown.city.isNotEmpty && city.items.length > 1)
           AppCheckRow(
             title: l.filterCityAll,
+            semanticLabel: '${l.filterCityAll}: ${shown.city}',
             leading: const Icon(AppIcons.building,
                 size: AppSizes.iconS, color: AppColors.accentText),
             selected: chosen == ids.length,

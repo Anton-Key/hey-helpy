@@ -113,7 +113,11 @@ class AppCheckRow extends StatelessWidget {
     this.child,
     this.subtitle,
     this.partial = false,
+    this.semanticLabel,
   });
+
+  /// Подпись для диктора, если заголовка мало («Весь город: Москва»).
+  final String? semanticLabel;
 
   final String title;
   final bool selected;
@@ -133,7 +137,8 @@ class AppCheckRow extends StatelessWidget {
         child: Pressable(
           onTap: onTap,
           effect: PressEffect.highlight,
-          semanticLabel: subtitle == null ? title : '$title, $subtitle',
+          semanticLabel: semanticLabel ??
+              (subtitle == null ? title : '$title, $subtitle'),
           child: ExcludeSemantics(
               child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppSpace.rowMinHeight),

@@ -347,18 +347,58 @@ List<MapCluster<T>> clusterMap<T>(List<MapItem<T>> items, double zoom,
       byCity.putIfAbsent(c, () => []).add(i);
     }
   }
-  return [
+  final cities = [
     for (final e in byCity.entries)
       MapCluster(
         items: e.value,
         key: 'city:${e.key}',
         label: e.key,
-        center: GeoPoint(
-            e.value.map((i) => i.point.lat).reduce((a, b) => a + b) /
-                e.value.length,
-            e.value.map((i) => i.point.lng).reduce((a, b) => a + b) /
-                e.value.length),
+        center: _mean([for (final i in e.value) i.point]),
       ),
-    ...clusterByGrid(noCity, zoom),
   ];
+  return [..._mergeClose(cities, zoom), ...clusterByGrid(noCity, zoom)];
+}
+
+GeoPoint _mean(List<GeoPoint> p) => GeoPoint(
+    p.map((x) => x.lat).reduce((a, b) => a + b) / p.length,
+    p.map((x) => x.lng).reduce((a, b) => a + b) / p.length);
+
+/// Кластеры городов ближе [cityMergePx] (ширина кружка) на экране (весь мир на телефоне:
+/// Белград, Стамбул, Москва) — в один: подпись «Белград, Москва, Стамбул».
+const cityMergePx = 56.0;
+
+List<MapCluster<T>> _mergeClose<T>(List<MapCluster<T>> list, double zoom) {
+  final z = zoom.floorToDouble();
+  final out = <MapCluster<T>>[];
+  final used = List.filled(list.length, false);
+  for (var i = 0; i < list.length; i++) {
+    if (used[i]) continue;
+    used[i] = true;
+    final group = [list[i]];
+    // Цепочкой: город рядом с любым уже собранным — в ту же группу.
+    for (var k = 0; k < group.length; k++) {
+      final (ax, ay) = mercatorPixels(group[k].center, z);
+      for (var j = 0; j < list.length; j++) {
+        if (used[j]) continue;
+        final (bx, by) = mercatorPixels(list[j].center, z);
+        if ((ax - bx).abs() < cityMergePx && (ay - by).abs() < cityMergePx) {
+          used[j] = true;
+          group.add(list[j]);
+        }
+      }
+    }
+    if (group.length == 1) {
+      out.add(group.single);
+      continue;
+    }
+    final labels = [for (final c in group) c.label!]..sort();
+    final items = [for (final c in group) ...c.items];
+    out.add(MapCluster(
+      items: items,
+      key: 'cities:${labels.join('|')}',
+      label: labels.join(', '),
+      center: _mean([for (final i in items) i.point]),
+    ));
+  }
+  return out;
 }

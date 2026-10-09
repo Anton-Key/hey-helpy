@@ -35,58 +35,151 @@ const DEMO_TITLES = [...readFileSync(join(ROOT, 'supabase/seed/demo_history.sql'
 const ASSIGNABLE = /(Новая|Назначена|Возвращена)\s*$/;
 
 // ---------------------------------------------------------------------------
-// Карта «Локации»: объекты шага 13 из demo_history.sql (id …011–014, заявки 211–220).
-// Пока Refresh demo после merge не запущен, их нет в базе — тогда снимки карты
-// менеджера показывают их как ПРЕДПРОСМОТР: Playwright добавляет эти записи
-// в ответ сервера (только в браузере, база не меняется), в README — пометка.
+// ПРЕДПРОСМОТР объектов по миру (шаг 13d): объекты 401–415, помещения 421–465,
+// подрядчики 501–510 с закреплениями и заявки 223–253 из demo_history.sql.
+// Пока Refresh demo после merge не запущен, их нет в базе — тогда у менеджера
+// Playwright добавляет эти записи в ответы сервера (только в браузере, база
+// не меняется), в README — пометка «ПРЕДПРОСМОТР». Поддерживаются простые
+// фильтры запроса (eq, in, is, gte, lt, gt); запрос с or/and — без подстановки.
 // ---------------------------------------------------------------------------
 const SEED = readFileSync(join(ROOT, 'supabase/seed/demo_history.sql'), 'utf8');
-const SEED_IDS = Object.fromEntries([...SEED.matchAll(/(c_obj_\w+)\s+constant uuid := '([0-9a-f-]+)'/g)]
-  .map((m) => [m[1], m[2]]));
-const SEED_OBJECTS = [...SEED.matchAll(
-  /\((c_obj_\w+),\s*c_company,\s*'([^']+)',\s*'(\w+)',\s*'([^']+)',\s*([\d.]+),\s*([\d.]+),\s*(\d+)\)/g)]
-  .map((m) => ({ id: SEED_IDS[m[1]], company_id: 'de300000-0000-4000-8000-000000000001', name: m[2],
-    type: m[3], address: m[4], lat: +m[5], lng: +m[6], geofence_radius_m: +m[7],
-    created_at: '2026-10-01T00:00:00Z' }));
+const COMPANY = 'de300000-0000-4000-8000-000000000001';
 const uuid = (n) => 'de300000-0000-4000-8000-' + String(n).padStart(12, '0');
-const SEED_PLACE_OBJ = Object.fromEntries([...SEED.matchAll(/^\s*\((\d{2}), (\d{2}), '[^']+'\)/gm)]
-  .map((m) => [m[1], uuid(m[2])]));
-const SEED_ORDERS = [...SEED.matchAll(
-  /^\s*\((2[1-4]\d),'\w+','(\d+)','(?:[^']|'')*','(?:[^']|'')*','(\w+)','(\w+)','\w+','\w+',(\d+),(\d+),(?:null|\d+),(?:null|\d+),(?:null|\d+),(\d+),/gm)]
+const unq = (s) => s.replace(/''/g, "'");
+const W_OBJECTS = [...SEED.matchAll(
+  /^\s*\((4\d\d), '((?:[^']|'')+)',\s*'(\w+)',\s*'((?:[^']|'')+)',\s*(-?[\d.]+),\s*(-?[\d.]+),\s*(\d+)\)/gm)]
+  .map((m) => ({ id: uuid(m[1]), company_id: COMPANY, name: unq(m[2]), type: m[3],
+    address: unq(m[4]), lat: +m[5], lng: +m[6], geofence_radius_m: +m[7],
+    created_at: '2026-10-01T00:00:00Z' }));
+const W_OBJ = Object.fromEntries(W_OBJECTS.map((o) => [o.id, o]));
+const W_LOCATIONS = [...SEED.matchAll(/^\s*\((4[2-9]\d), (4[01]\d), '((?:[^']|'')+)'\)/gm)]
+  .map((m) => ({ id: uuid(m[1]), object_id: uuid(m[2]), name: unq(m[3]),
+    created_at: '2026-10-01T00:00:00Z' }));
+const W_CONTRACTORS = [...SEED.matchAll(/^\s*\((5\d\d), '((?:[^']|'')+)'\)/gm)]
+  .map((m) => ({ id: uuid(m[1]), company_id: COMPANY, org_name: unq(m[2]),
+    created_at: '2026-10-01T00:00:00Z' }));
+const W_BINDINGS = [...SEED.matchAll(/\((\d+), '(hvac|elec|plumb|clean|other)', (4\d\d), (null(?:::int)?|\d+)\)/g)]
+  .map((m, i) => ({ id: uuid(900 + i), contractor_id: uuid(m[1]), layer: m[2], object_id: uuid(m[3]),
+    visits_per_month: m[4].startsWith('null') ? null : +m[4], created_at: '2026-10-01T00:00:00Z' }));
+const W_ORDERS = [...SEED.matchAll(
+  /^\s*\((2[2-9]\d),'(\w+)',(\d+),(\d+|null),'((?:[^']|'')*)','((?:[^']|'')*)','(\w+)','(\w+)','\w+','(\w+)',(\d+),(\d+),(?:null(?:::int)?|\d+),(?:null(?:::int)?|\d+),(?:null(?:::int)?|\d+),(\d+),(\d+),(?:null(?:::text)?|'(?:[^']|'')*'),(?:null(?:::int)?|\d+),(null(?:::text)?|'\w+')\)/gm)]
   .map((m) => {
     const today = new Date(); today.setUTCHours(0, 0, 0, 0);
-    const created = today.getTime() - +m[5] * 864e5 + +m[6] * 36e5;
-    return { id: uuid(m[1]), object_id: SEED_PLACE_OBJ[m[2]], priority: m[3], status: m[4],
-      due_at: new Date(created + +m[7] * 36e5).toISOString() };
+    // Группы: 10 — дней назад, 11 — час, 12 — срок (ч), 14 — повторяющаяся.
+    const created = today.getTime() - +m[10] * 864e5 + +m[11] * 36e5;
+    const loc = W_LOCATIONS.find((l) => l.id === uuid(m[3]));
+    return { id: uuid(m[1]), company_id: COMPANY, title: unq(m[5]), description: unq(m[6]),
+      layer: m[2], priority: m[7], status: m[8], input_channel: m[9],
+      object_id: loc?.object_id, location_id: loc?.id, locations: { name: loc?.name },
+      assigned_contractor_id: m[4] === 'null' ? null : uuid(m[4]), assigned_executor_id: null,
+      created_by: null, requires_photo: true, return_count: m[8] === 'returned' ? 1 : 0,
+      recurrence: m[14].startsWith('null') ? null : { kind: 'regular', freq: m[14].replace(/'/g, ''), interval: 1 },
+      created_at: new Date(created).toISOString(), due_at: new Date(created + +m[12] * 36e5).toISOString() };
   });
-let mapPreview = false;
+if (W_OBJECTS.length !== 15 || W_ORDERS.length !== 31 || W_CONTRACTORS.length !== 10) {
+  console.error(`Предпросмотр: из demo_history.sql разобрано объектов ${W_OBJECTS.length}, заявок ${W_ORDERS.length}, подрядчиков ${W_CONTRACTORS.length}`);
+}
+const LAYER_NAMES = { hvac: 'Климат', elec: 'Электрика', plumb: 'Сантехника', clean: 'Клининг', other: 'Другое' };
 
-// Подмешать объекты и заявки шага 13 в ответы сервера (если их ещё нет в базе).
-async function routeMapPreview(page) {
-  mapPreview = false;
-  const merge = (extra) => async (route) => {
-    const url = decodeURIComponent(route.request().url());
-    const res = await route.fetch();
-    let body = await res.text();
-    try {
-      const rows = JSON.parse(body);
-      const listQuery = Array.isArray(rows) && !/[?&]id=eq\./.test(url) &&
-        (!url.includes('work_orders') || url.includes('select=id,object_id,status,priority,due_at'));
-      if (listQuery && !rows.some((r) => r.id === extra[0].id)) {
-        body = JSON.stringify([...rows, ...extra]);
-        mapPreview = true;
+// Подходит ли строка под фильтры PostgREST из адреса; null — фильтр не разобрать.
+function applyFilters(rows, params) {
+  for (const [k, v] of params) {
+    if (['select', 'order', 'limit', 'offset', 'columns'].includes(k)) continue;
+    if (k === 'or' || k === 'and' || k.includes('.')) return null;
+    const m = v.match(/^(not\.)?(eq|in|is|gte|gt|lte|lt)\.(.*)$/);
+    if (!m) return null;
+    const [, not, op, val] = m;
+    const cmp = (x) => {
+      const a = Date.parse(x), b = Date.parse(val);
+      return Number.isNaN(a) || Number.isNaN(b) ? (+x) - (+val) : a - b;
+    };
+    rows = rows.filter((r) => {
+      const x = r[k];
+      let ok;
+      switch (op) {
+        case 'eq': ok = String(x) === val; break;
+        case 'in': ok = val.replace(/^\(|\)$/g, '').split(',').includes(String(x)); break;
+        case 'is': ok = val === 'null' ? x == null : String(x) === val; break;
+        case 'gte': ok = x != null && cmp(x) >= 0; break;
+        case 'gt': ok = x != null && cmp(x) > 0; break;
+        case 'lte': ok = x != null && cmp(x) <= 0; break;
+        case 'lt': ok = x != null && cmp(x) < 0; break;
       }
-    } catch {}
-    await route.fulfill({ response: res, body });
-  };
-  await page.route('**/rest/v1/objects?*', merge(SEED_OBJECTS));
-  await page.route('**/rest/v1/work_orders?*', merge(SEED_ORDERS));
+      return not ? !ok : ok;
+    });
+  }
+  return rows;
 }
 
-async function unrouteMapPreview(page) {
-  await page.unroute('**/rest/v1/objects?*');
-  await page.unroute('**/rest/v1/work_orders?*');
+// Включить предпросмотр для страницы менеджера (один раз на вход).
+async function routeWorldPreview(page) {
+  page.worldPreview = false;
+  page.previewUsed = false;
+  let layers = null; // слои компании из базы: id нужны заявкам и закреплениям
+  const rowsFor = async (table, route) => {
+    if (!layers) {
+      const url = new URL(route.request().url());
+      const res = await route.fetch({ url: `${url.origin}/rest/v1/layers?select=id,name,name_i18n,sort` });
+      layers = Object.fromEntries((await res.json()).map((l) => [l.name, l]));
+    }
+    const layer = (key) => layers[LAYER_NAMES[key]] ?? null;
+    switch (table) {
+      case 'objects': return W_OBJECTS;
+      case 'locations': return W_LOCATIONS.map((l) => ({ ...l, objects: { name: W_OBJ[l.object_id].name, address: W_OBJ[l.object_id].address } }));
+      case 'contractors': return W_CONTRACTORS;
+      case 'contractor_layers': return W_BINDINGS.map(({ layer: k, ...b }) => ({ ...b, layer_id: layer(k)?.id,
+        contractors: { org_name: W_CONTRACTORS.find((c) => c.id === b.contractor_id)?.org_name
+          ?? (b.contractor_id.endsWith('31') ? 'КлиматСервис' : 'ЭлектроПро') },
+        objects: { name: W_OBJ[b.object_id].name, address: W_OBJ[b.object_id].address }, layers: layer(k) }));
+      case 'work_orders': return W_ORDERS.map(({ layer: k, ...o }) => ({ ...o, layer_id: layer(k)?.id, work_type: LAYER_NAMES[k] }));
+    }
+    return null;
+  };
+  await page.route('**/rest/v1/**', async (route) => {
+    const req = route.request();
+    const url = new URL(req.url());
+    const table = url.pathname.split('/rest/v1/')[1];
+    const method = req.method();
+    if (!['objects', 'locations', 'contractors', 'contractor_layers', 'work_orders'].includes(table) ||
+        !['GET', 'HEAD'].includes(method)) {
+      return route.fallback();
+    }
+    const res = await route.fetch();
+    try {
+      // В базе уже есть объекты шага 13d — ничего не подставляем.
+      if (page.worldPreview === 'off') return route.fulfill({ response: res });
+      if (table === 'objects' && method === 'GET') {
+        const real = await res.json();
+        if (real.some((r) => r.id === uuid(401))) {
+          page.worldPreview = 'off';
+          return route.fulfill({ response: res, body: JSON.stringify(real) });
+        }
+      }
+      const extra = applyFilters(await rowsFor(table, route), url.searchParams);
+      if (!extra || !extra.length) return route.fulfill({ response: res });
+      page.worldPreview = true;
+      page.previewUsed = true;
+      if (method === 'HEAD') {
+        // count(): «0-36/37» → итог с подставленными
+        const range = res.headers()['content-range'] ?? '';
+        const total = +(range.split('/')[1] ?? 0) + extra.length;
+        return route.fulfill({ response: res, headers: { ...res.headers(), 'content-range': `0-${total - 1}/${total}` } });
+      }
+      const body = JSON.parse(await res.text());
+      if (!Array.isArray(body)) return route.fulfill({ response: res });
+      // Одна запись (maybeSingle/single) — не трогаем.
+      if ((req.headers()['accept'] ?? '').includes('vnd.pgrst.object')) return route.fulfill({ response: res });
+      const have = new Set(body.map((r) => r.id));
+      return route.fulfill({ response: res, body: JSON.stringify([...body, ...extra.filter((r) => !have.has(r.id))]) });
+    } catch {
+      return route.fulfill({ response: res });
+    }
+  });
 }
+
+// Старые вызовы (шаг 13) — предпросмотр теперь общий для всех снимков менеджера.
+async function routeMapPreview() {}
+async function unrouteMapPreview() {}
 
 // Ждать, пока загрузятся плитки подложки (CARTO или OSM): нет запросов в полёте 1,5 с.
 async function waitTiles(page, timeout = 25000) {
@@ -126,9 +219,15 @@ async function openMap(page, preview) {
   await waitTiles(page);
 }
 
-const previewNote = (text) => (mapPreview
-  ? `${text}. ПРЕДПРОСМОТР: 4 объекта и 10 заявок шага 13 подставлены в ответ сервера из demo_history.sql — в базе появятся после Refresh demo`
-  : text);
+const previewNote = (text) => text;
+
+// Чип города над картой («Белград · 3» или «Белград») — приблизить к городу.
+async function openCity(page, city) {
+  await page.getByRole('button', { name: new RegExp(`^${city}( · \\d+)?$`) }).first().click();
+  await settle(page, 1500);
+  await waitTiles(page);
+}
+const PREVIEW_TEXT = 'ПРЕДПРОСМОТР: объекты, подрядчики и заявки шага 13d подставлены в ответы сервера из demo_history.sql — в базе появятся после Refresh demo';
 
 // ---------------------------------------------------------------------------
 // Логины: .env.demo (KEY=VALUE, строки с # — комментарии)
@@ -276,6 +375,20 @@ async function homeWith(page, query) {
   await settle(page, 2500);
 }
 
+// Открыть заявку из списка. Если её строки нет на экране (список длинный,
+// Flutter не показывает дальние строки в дереве доступности) — найти поиском.
+async function openOrder(page, title) {
+  const row = page.getByRole('button', { name: title }).first();
+  if (!(await row.isVisible().catch(() => false))) {
+    const box = page.getByRole('textbox', { name: 'Поиск по заявкам' });
+    await box.click();
+    await page.waitForTimeout(400);
+    await page.keyboard.type(title.split(' ').slice(0, 2).join(' '), { delay: 30 });
+    await settle(page, 800);
+  }
+  await row.click();
+}
+
 // «Таблетка» фильтра по подписи (у активной — «Статус: Новая +1»).
 // Имя узла — подпись таблетки и её текст через перевод строки.
 const chip = (page, label) => page.getByRole('button', { name: new RegExp(`^${label}(?=:|\\s|$)`) }).first();
@@ -371,9 +484,37 @@ const SCREENS = [
       await settle(p, 800);
       return 'ссылка #/?rec=recurring&pri=critical';
     }, after: async (p) => { await resetOrderFilter(p); } },
+  // Фильтр «Объект»: секции по городам, поиск «Москва», «Весь город».
+  // Окно закрывается без «Применить»; затем тот же выбор — по ссылке.
+  { key: 'filter-object', title: 'Фильтр «Объект»: секции по городам, «Весь город» (Москва)', managerOnly: true, run: async (p) => {
+      await home(p);
+      await chip(p, 'Объект').click();
+      await see(p, 'Применить').waitFor({ timeout: 10000 });
+      await settle(p, 600);
+      await p.getByRole('button', { name: 'Весь город: Москва' }).first().click();
+      await see(p, 'Применить (5)').waitFor({ timeout: 5000 });
+      await settle(p, 800);
+      return 'отмечен «Весь город» у Москвы — «Применить (5)»; закрыто без применения';
+    }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
+  // Таблетка «Москва (5)» и строки заявок «Москва · Офис 3 · …» — по ссылке.
+  { key: 'filter-object-city', title: 'Заявки с фильтром «Москва (5)», строки «Москва · Офис N»', managerOnly: true, run: async (p) => {
+      await homeWith(p, `obj=${[403, 404, 405, 406, 407].map(uuid).join(',')}`);
+      await p.getByRole('button', { name: /^Объект: Москва \(5\)/ }).first().waitFor({ timeout: 15000 });
+      await settle(p, 800);
+      return 'ссылка #/?obj=<5 объектов Москвы>';
+    }, after: async (p) => { await resetOrderFilter(p); } },
+  // Подрядчики: под названием — города и число объектов; карточка «ЭлектроСити».
+  { key: 'contractor-card', title: 'Карточка подрядчика «ЭлектроСити» (2 объекта из 5 в Москве)', managerOnly: true, run: async (p) => {
+      await home(p);
+      await nav(p, 'Подрядчики').click();
+      await p.getByRole('button', { name: /ЭлектроСити/ }).first().click();
+      await see(p, /Виды работ/).waitFor({ timeout: 15000 });
+      await settle(p, 1200);
+      return 'виды работ; объекты по городам: МОСКВА · 2';
+    } },
   { key: 'order', title: `Карточка заявки «${DEMO_ORDER}»`, run: async (p) => {
       await home(p);
-      await p.getByRole('button', { name: DEMO_ORDER }).first().click();
+      await openOrder(p, DEMO_ORDER);
       await see(p, 'Подрядчик').waitFor({ timeout: 20000 });
       await settle(p);
     } },
@@ -381,7 +522,7 @@ const SCREENS = [
   // заявка НЕ удаляется (и в after — тоже «Отмена», если что-то пошло не так).
   { key: 'order-delete', title: 'Карточка заявки — меню «⋯» и диалог удаления', managerOnly: true, run: async (p) => {
       await home(p);
-      await p.getByRole('button', { name: DEMO_ORDER }).first().click();
+      await openOrder(p, DEMO_ORDER);
       await see(p, 'Подрядчик').waitFor({ timeout: 20000 });
       await settle(p);
       const menu = btn(p, 'Ещё');
@@ -557,11 +698,16 @@ const SCREENS = [
       await openMap(p, p.role === 'manager');
       return previewNote('все объекты, маркер — число открытых заявок');
     }, after: async (p) => { await unrouteMapPreview(p); } },
+  // Чип «Москва» над картой: карта плавно приближается к объектам города.
+  { key: 'map-city', jpeg: true, title: 'Локации — карта, выбран город «Москва»', managerOnly: true, run: async (p) => {
+      await openMap(p, true);
+      await openCity(p, 'Москва');
+      return 'чип «Москва» — объекты города; список — секции по городам';
+    } },
   { key: 'map-selected', jpeg: true, title: 'Локации — карта, выбранный объект', managerOnly: true, run: async (p) => {
       await openMap(p, true);
-      const name = SEED_OBJECTS[0]?.name ?? 'БЦ «Демо»';
-      const row = p.getByRole('button', { name }).first();
-      await (await row.count() ? row : p.getByRole('button', { name: 'БЦ «Демо»' }).first()).click();
+      await openCity(p, 'Белград');
+      await p.getByRole('button', { name: 'БЦ «Демо»' }).first().click();
       await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
       await settle(p, 1500);
       await waitTiles(p);
@@ -569,6 +715,7 @@ const SCREENS = [
     }, after: async (p) => { await unrouteMapPreview(p); } },
   { key: 'map-area', jpeg: true, title: 'Локации — карта, выделенная область', managerOnly: true, run: async (p) => {
       await openMap(p, true);
+      await openCity(p, 'Белград');
       await btn(p, 'Выделить область').click();
       await see(p, 'Протяните рамку по карте').waitFor({ timeout: 5000 });
       const vp = p.viewportSize();
@@ -602,6 +749,7 @@ const SCREENS = [
   // Правый клик по карте → «Объекты рядом»: круг и ползунок радиуса.
   { key: 'map-nearby', jpeg: true, title: 'Локации — карта, «Объекты рядом» (правый клик)', managerOnly: true, run: async (p) => {
       await openMap(p, true);
+      await openCity(p, 'Белград');
       const vp = p.viewportSize();
       const [x, y] = vp.width >= 900 ? [820, 470] : [200, 420];
       await p.mouse.click(x, y, { button: 'right' });
@@ -633,7 +781,7 @@ const SCREENS = [
       await settle(p, 800);
       await p.getByRole('button', { name: 'Заявки', exact: true }).last().click();
       await chip(p, 'Объект').waitFor({ timeout: 15000 });
-      await btn(p, 'Объект: БЦ «Демо»').waitFor({ timeout: 15000 });
+      await btn(p, 'Объект: Белград · БЦ «Демо»').waitFor({ timeout: 15000 });
       await settle(p, 2000);
       return 'фильтр «Объект» = БЦ «Демо» (та же таблетка, что в строке фильтров), снимается крестиком';
     }, after: async (p) => {
@@ -696,8 +844,10 @@ try {
       results.push({ ...r, key: 'login', title: 'Вход', ok: false, file: name,
         note: 'Не удалось войти: ' + String(e.message).split('\n')[0] });
     }
+    if (loggedIn && r.role === 'manager') await routeWorldPreview(page);
     for (const s of SCREENS) {
       if (!loggedIn) break;
+      page.previewUsed = false;
       if (ONLY && !s.key.startsWith(ONLY)) continue;
       if (s.managerOnly && r.role !== 'manager') {
         results.push({ ...r, key: s.key, title: s.title, ok: null, note: 'Нет у этой роли (так задумано)' });
@@ -710,8 +860,10 @@ try {
       try {
         const note = await s.run(page);
         await page.screenshot({ path: join(OUT, name), ...shot });
+        const text = [typeof note === 'string' ? note : null,
+          page.previewUsed ? PREVIEW_TEXT : null].filter(Boolean).join('. ');
         results.push({ ...r, key: s.key, title: s.title, ok: true, file: name,
-          note: typeof note === 'string' ? note : undefined });
+          note: text || undefined });
         if (s.after) await s.after(page).catch(() => {});
       } catch (e) {
         await page.screenshot({ path: join(OUT, name.replace(ext, '-error' + ext)), ...shot }).catch(() => {});

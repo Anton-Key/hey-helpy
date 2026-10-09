@@ -234,4 +234,20 @@ void main() {
           reason: 'без cityOf — как раньше');
     });
   });
+
+  test('clusterMap: близкие города на мелком масштабе — один кластер', () {
+    const bg =
+        MapItem(id: 'b', point: GeoPoint(44.80, 20.45), value: 'Белград');
+    const ist =
+        MapItem(id: 'i', point: GeoPoint(41.08, 29.01), value: 'Стамбул');
+    const bj = MapItem(id: 'p', point: GeoPoint(39.90, 116.46), value: 'Пекин');
+    String city(String v) => v;
+    final far = clusterMap([bg, ist, bj], 1, cityOf: city);
+    final merged = far.firstWhere((c) => c.items.length == 2);
+    expect(merged.label, 'Белград, Стамбул');
+    expect(far.firstWhere((c) => c.label == 'Пекин').items.single.id, 'p');
+    // Ближе — города отдельно.
+    final near = clusterMap([bg, ist, bj], 5, cityOf: city);
+    expect(near.map((c) => c.label).toSet(), {'Белград', 'Стамбул', 'Пекин'});
+  });
 }

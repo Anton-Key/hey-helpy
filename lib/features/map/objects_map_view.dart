@@ -293,17 +293,21 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
           ),
         );
     final all = open([for (final g in groups) ...g.items]);
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      // Тень чипов не обрезается.
-      padding: const EdgeInsetsDirectional.only(bottom: 6, end: 6),
-      clipBehavior: Clip.none,
-      child: Row(children: [
-        chip(null, all > 0 ? l.cityCount(l.cityAll, all) : l.cityAll),
-        for (final g in groups)
-          chip(g.city,
-              open(g.items) > 0 ? l.cityCount(g.city, open(g.items)) : g.city),
-      ]),
+    // Чипы не уходят под кнопки карты: строка обрезается и гаснет у края.
+    return AppFadingScroll(
+      child: Padding(
+        // Место для тени чипов.
+        padding: const EdgeInsetsDirectional.fromSTEB(2, 2, 6, 8),
+        child: Row(children: [
+          chip(null, all > 0 ? l.cityCount(l.cityAll, all) : l.cityAll),
+          for (final g in groups)
+            chip(
+                g.city,
+                open(g.items) > 0
+                    ? l.cityCount(g.city, open(g.items))
+                    : g.city),
+        ]),
+      ),
     );
   }
 

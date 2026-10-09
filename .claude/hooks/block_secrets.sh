@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # PreToolUse (Bash): перед git commit — проверка, что в коммит не попадают секреты:
 # env.json, *.env, .env.demo (логины демо-пользователей для /screens), токены Supabase
-# (sbp_…), ключ service_role, пароли вида DEMO_…_PASSWORD=….
+# (sbp_…), ключ service_role, пароли вида DEMO_…_PASSWORD=…, а также картинки и PDF
+# (*.png, *.jpg, *.jpeg, *.webp, *.pdf) вне папок с демо- и служебными изображениями —
+# чтобы реальный план здания не попал в публичный репозиторий.
 # Найдено — коммит останавливается (код 2), Claude должен сказать пользователю.
 set -uo pipefail
 
@@ -29,6 +31,17 @@ is_service_role_jwt() {
   base64 -d <<<"$payload" 2>/dev/null | grep -q '"role"[[:space:]]*:[[:space:]]*"service_role"'
 }
 
+# Картинки и PDF разрешены только здесь: снимки экранов, дизайн, шрифты/ресурсы приложения,
+# служебные файлы /screens, а также значки приложения (Android и веб), которые уже в git.
+image_allowed='^(docs/screens/|docs/design/|assets/|tools/screens/|android/app/src/main/res/|web/)'
+check_image() { # $1 — путь файла
+  if grep -qiE '\.(png|jpe?g|webp|pdf)$' <<<"$1" && ! grep -qE "$image_allowed" <<<"$1"; then
+    problems+=("$1: картинка или PDF вне docs/screens/, docs/design/, assets/, tools/screens/ (реальные планы зданий не коммитить)")
+    return 0
+  fi
+  return 1
+}
+
 check_text() { # $1 — файл, stdin — проверяемый текст
   local f=$1 text jwt
   text=$(cat)
@@ -49,6 +62,7 @@ while IFS= read -r f; do
     problems+=("$f: файл с ключами не должен попадать в git")
     continue
   fi
+  check_image "$f" && continue
   # Проверяем только добавленные строки: старые упоминания (например, в schema.sql) не мешают.
   check_text "$f" < <(git diff --cached -U0 -- "$f" | grep -aE '^\+')
 done <<<"$staged"
@@ -61,6 +75,7 @@ while IFS= read -r f; do
     problems+=("$f: файл с ключами не должен попадать в git")
     continue
   fi
+  check_image "$f" && continue
   if git ls-files --error-unmatch -- "$f" >/dev/null 2>&1; then
     check_text "$f" < <(git diff -U0 -- "$f" | grep -aE '^\+')
   else
@@ -70,7 +85,7 @@ done <<<"$extra"
 
 if (( ${#problems[@]} )); then
   {
-    echo "Коммит остановлен: похоже, в него попадают секреты."
+    echo "Коммит остановлен: похоже, в него попадают секреты или картинки не на своём месте."
     printf ' - %s\n' "${problems[@]}"
     echo "Не обходи проверку. Остановись и скажи пользователю, что найдено и где;"
     echo "убрать файл из коммита (git restore --staged <файл>), ключ — в GitHub Secrets / env.json вне git."

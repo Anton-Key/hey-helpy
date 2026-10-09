@@ -3188,6 +3188,66 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Выберите даты'**
   String get filterPickDates;
+
+  /// No description provided for @cityNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без города'**
+  String get cityNone;
+
+  /// No description provided for @cityCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{city} · {count}'**
+  String cityCount(String city, int count);
+
+  /// No description provided for @cityAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все'**
+  String get cityAll;
+
+  /// No description provided for @filterCityAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Весь город'**
+  String get filterCityAll;
+
+  /// No description provided for @filterCityWhole.
+  ///
+  /// In ru, this message translates to:
+  /// **'{city} ({count})'**
+  String filterCityWhole(String city, int count);
+
+  /// No description provided for @objectsCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} объект} few{{count} объекта} many{{count} объектов} other{{count} объекта}}'**
+  String objectsCount(int count);
+
+  /// No description provided for @contractorCoverage.
+  ///
+  /// In ru, this message translates to:
+  /// **'{cities} · {objects}'**
+  String contractorCoverage(String cities, String objects);
+
+  /// No description provided for @cardWorkTypes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Виды работ'**
+  String get cardWorkTypes;
+
+  /// No description provided for @cardObjectsByCity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объекты'**
+  String get cardObjectsByCity;
+
+  /// No description provided for @mapCityZoom.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать город {city}'**
+  String mapCityZoom(String city);
 }
 
 class _AppLocalizationsDelegate

@@ -5,6 +5,7 @@ import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import 'requests.dart';
+import '../directory/city.dart';
 
 /// Справочники и роль, нужные карточке заявки. Загружаются один раз на экран.
 class OrderContext {
@@ -49,7 +50,7 @@ class OrderContext {
   String objectName(AppLocalizations l, String? id) {
     if (id == null) return l.objectNone;
     for (final o in objects) {
-      if (o.id == id) return o.name;
+      if (o.id == id) return objectDisplayName(o);
     }
     return l.objectUnknown;
   }

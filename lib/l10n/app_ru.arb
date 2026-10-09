@@ -772,5 +772,20 @@
   "@filterClearOne": {"placeholders": {"name": {"type": "String"}}},
   "filterRange": "{from} – {to}",
   "@filterRange": {"placeholders": {"from": {"type": "String"}, "to": {"type": "String"}}},
-  "filterPickDates": "Выберите даты"
+  "filterPickDates": "Выберите даты",
+  "cityNone": "Без города",
+  "cityCount": "{city} · {count}",
+  "@cityCount": {"placeholders": {"city": {"type": "String"}, "count": {"type": "int"}}},
+  "cityAll": "Все",
+  "filterCityAll": "Весь город",
+  "filterCityWhole": "{city} ({count})",
+  "@filterCityWhole": {"placeholders": {"city": {"type": "String"}, "count": {"type": "int"}}},
+  "objectsCount": "{count, plural, one{{count} объект} few{{count} объекта} many{{count} объектов} other{{count} объекта}}",
+  "@objectsCount": {"placeholders": {"count": {"type": "int"}}},
+  "contractorCoverage": "{cities} · {objects}",
+  "@contractorCoverage": {"placeholders": {"cities": {"type": "String"}, "objects": {"type": "String"}}},
+  "cardWorkTypes": "Виды работ",
+  "cardObjectsByCity": "Объекты",
+  "mapCityZoom": "Показать город {city}",
+  "@mapCityZoom": {"placeholders": {"city": {"type": "String"}}}
 }

@@ -12,6 +12,8 @@ import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
 import '../../core/scrolling.dart';
+import '../../l10n/app_localizations.dart';
+import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../directory/object_card.dart';
 import '../requests/requests.dart';
@@ -111,6 +113,9 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
 
   GeoPoint? _me;
   bool _locating = false;
+
+  /// Чип города над картой: null — «Все».
+  String? _city;
 
   @override
   void initState() {
@@ -253,6 +258,58 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
   }
 
   void _fitAll() => _fitPoints([for (final i in _items) i.point]);
+
+  /// Чип города: плавно приблизить к объектам города; «Все» — весь мир.
+  void _showCity(String? city) {
+    setState(() => _city = city);
+    if (city == null) {
+      _fitAll();
+      return;
+    }
+    _fitPoints([
+      for (final i in _items)
+        if (cityOf(i.value.address) == city) i.point
+    ], maxZoom: 15);
+  }
+
+  /// Чипы «Все · Абиджан · Белград · …» с числом открытых заявок.
+  Widget _cityChips(AppLocalizations l) {
+    final groups = groupObjectsByCity([for (final i in _items) i.value])
+        .where((g) => g.city.isNotEmpty)
+        .toList();
+    if (groups.length < 2) return const SizedBox.shrink();
+    int open(Iterable<Obj> list) =>
+        list.fold(0, (sum, o) => sum + _statsOf(o.id).open);
+    Widget chip(String? city, String label) => Padding(
+          padding: const EdgeInsetsDirectional.only(end: AppSpace.s),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                boxShadow: AppShadows.floating),
+            child: AppChip(
+                label: label,
+                selected: _city == city,
+                onTap: () => _showCity(city)),
+          ),
+        );
+    final all = open([for (final g in groups) ...g.items]);
+    // Чипы не уходят под кнопки карты: строка обрезается и гаснет у края.
+    return AppFadingScroll(
+      child: Padding(
+        // Место для тени чипов.
+        padding: const EdgeInsetsDirectional.fromSTEB(2, 2, 6, 8),
+        child: Row(children: [
+          chip(null, all > 0 ? l.cityCount(l.cityAll, all) : l.cityAll),
+          for (final g in groups)
+            chip(
+                g.city,
+                open(g.items) > 0
+                    ? l.cityCount(g.city, open(g.items))
+                    : g.city),
+        ]),
+      ),
+    );
+  }
 
   void _zoomBy(double d) {
     if (!_mapReady) return;
@@ -542,8 +599,9 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
             child: Text(l.mapNothingFound,
                 textAlign: TextAlign.center,
                 style: AppText.callout.copyWith(color: AppColors.secondary)),
-          )
-        else
+          ),
+        if (listed.isNotEmpty && area is _CircleArea)
+          // «Объекты рядом» — по удалённости, город в названии.
           AppGroup(
             separatorInset: AppSpace.separatorInsetIcon,
             children: [
@@ -553,10 +611,29 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
                   stats: _statsOf(o.id),
                   selected: o.id == _selectedId,
                   distanceText: d == null ? null : _distance(d),
+                  withCity: true,
                   onTap: () => _select(o),
                 ),
             ],
           ),
+        if (listed.isNotEmpty && area is! _CircleArea)
+          // Секции по городам: «МОСКВА · 5».
+          for (final g in groupByCity(listed,
+              address: (e) => e.$1.address, name: (e) => e.$1.name))
+            AppGroup(
+              header: l.cityCount(
+                  g.city.isEmpty ? l.cityNone : g.city, g.items.length),
+              separatorInset: AppSpace.separatorInsetIcon,
+              children: [
+                for (final (o, _) in g.items)
+                  ObjectMapRow(
+                    object: o,
+                    stats: _statsOf(o.id),
+                    selected: o.id == _selectedId,
+                    onTap: () => _select(o),
+                  ),
+              ],
+            ),
         if (unplaced.isNotEmpty)
           AppGroup(
             header: l.mapNoCoordinates(unplaced.length),
@@ -737,6 +814,10 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (placing == null) ...[
+                _cityChips(l),
+                const SizedBox(height: AppSpace.xs),
+              ],
               if (placing != null)
                 _Banner(text: l.mapPlaceHint(placing.name))
               else if (_rectMode)
@@ -917,23 +998,27 @@ class _ClusteredMarkers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zoom = MapCamera.of(context).zoom;
-    final clusters = clusterByGrid(items, zoom);
+    // Мелкий масштаб — один кружок на город с подписью; крупнее — по сетке.
+    final clusters =
+        clusterMap(items, zoom, cityOf: (Obj o) => cityOf(o.address));
     // Выбранный — последним, чтобы был поверх соседей.
     clusters.sort((a, b) {
       int rank(MapCluster<Obj> c) =>
-          c.isSingle && c.items.first.id == selectedId ? 1 : 0;
+          c.isSingle && c.label == null && c.items.first.id == selectedId
+              ? 1
+              : 0;
       return rank(a) - rank(b);
     });
     return MarkerLayer(markers: [
       for (final c in clusters)
-        if (c.isSingle)
+        if (c.isSingle && c.label == null)
           Marker(
             key: ValueKey(c.key),
             point: _ll(c.center),
             width: ObjectMarker.selectedSize + 4,
             height: ObjectMarker.selectedSize + 4,
             child: ObjectMarker(
-              name: c.items.first.value.name,
+              name: objectDisplayName(c.items.first.value),
               stats: stats[c.items.first.id] ?? ObjectStats.empty,
               selected: c.items.first.id == selectedId,
               onTap: () => onObject(c.items.first.value),
@@ -943,9 +1028,14 @@ class _ClusteredMarkers extends StatelessWidget {
           Marker(
             key: ValueKey(c.key),
             point: _ll(c.center),
-            width: ClusterMarker.size + 4,
-            height: ClusterMarker.size + 4,
+            width: c.label == null
+                ? ClusterMarker.size + 4
+                : ClusterMarker.labelWidth,
+            height: ClusterMarker.size +
+                4 +
+                (c.label == null ? 0 : 2 * ClusterMarker.labelHeight),
             child: ClusterMarker(
+              city: c.label,
               objects: c.items.length,
               open: c.items.fold(
                   0, (sum, i) => sum + (stats[i.id] ?? ObjectStats.empty).open),

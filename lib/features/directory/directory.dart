@@ -10,6 +10,7 @@ import 'contractor_card.dart';
 import 'object_card.dart';
 import '../../core/app_message.dart';
 import '../../l10n/app_localizations.dart';
+import 'city.dart' as city;
 
 class Obj {
   final String id;
@@ -52,7 +53,12 @@ class Binding {
   final Layer? layer;
   final String? objectId;
   final String? objectName;
+  final String? objectAddress;
   final int? visitsPerMonth;
+
+  /// «Москва · Офис 3»; null — закрепление на всех объектах.
+  String? get objectLabel =>
+      objectName == null ? null : city.objectLabel(objectName!, objectAddress);
   const Binding(
       {required this.id,
       required this.contractorId,
@@ -60,6 +66,7 @@ class Binding {
       this.layer,
       this.objectId,
       this.objectName,
+      this.objectAddress,
       this.visitsPerMonth});
   factory Binding.fromMap(Map<String, dynamic> m) {
     final layer = m['layers'] as Map<String, dynamic>?;
@@ -71,6 +78,8 @@ class Binding {
       layer: layer == null ? null : Layer.fromMap(layer),
       objectId: m['object_id'] as String?,
       objectName: (m['objects'] as Map<String, dynamic>?)?['name'] as String?,
+      objectAddress:
+          (m['objects'] as Map<String, dynamic>?)?['address'] as String?,
       visitsPerMonth: (m['visits_per_month'] as num?)?.toInt(),
     );
   }
@@ -106,18 +115,26 @@ class Place {
   final String objectId;
   final String name;
   final String? objectName;
+  final String? objectAddress;
   Place(
       {required this.id,
       required this.objectId,
       required this.name,
-      this.objectName});
+      this.objectName,
+      this.objectAddress});
   factory Place.fromMap(Map<String, dynamic> m) => Place(
         id: m['id'] as String,
         objectId: m['object_id'] as String,
         name: (m['name'] ?? '') as String,
         objectName: (m['objects'] as Map<String, dynamic>?)?['name'] as String?,
+        objectAddress:
+            (m['objects'] as Map<String, dynamic>?)?['address'] as String?,
       );
-  String get fullName => objectName == null ? name : '$objectName · $name';
+
+  /// «Москва · Офис 3 · Лобби».
+  String get fullName => objectName == null
+      ? name
+      : '${city.objectLabel(objectName!, objectAddress)} · $name';
 }
 
 /// Слой (вид работ). [name] — основное название, по нему база назначает
@@ -222,7 +239,7 @@ class DirectoryRepo {
   Future<List<Place>> places() async {
     final rows = await _c
         .from('locations')
-        .select('id,object_id,name,objects(name)')
+        .select('id,object_id,name,objects(name,address)')
         .order('name');
     return (rows as List)
         .map((e) => Place.fromMap(e as Map<String, dynamic>))
@@ -266,7 +283,7 @@ class DirectoryRepo {
   }
 
   static const _bindingFields =
-      'id,contractor_id,object_id,visits_per_month,contractors(org_name),objects(name),layers(id,name,name_i18n,sort)';
+      'id,contractor_id,object_id,visits_per_month,contractors(org_name),objects(name,address),layers(id,name,name_i18n,sort)';
 
   /// Закрепления подрядчика: виды работ, объекты, нормы визитов.
   Future<List<Binding>> bindingsOfContractor(String contractorId) async {
@@ -485,28 +502,34 @@ class _ObjectsTabState extends State<ObjectsTab> {
               child:
                   AppEmptyState(icon: AppIcons.building, text: l.objectsEmpty));
         } else {
-          final list = snap.data!;
+          // Секции по городам («МОСКВА · 5»): город — часть адреса до запятой.
+          final groups = city.groupObjectsByCity(snap.data!);
           content = SliverContent(
             top: 0,
-            sliver: SliverToBoxAdapter(
-              child: AppGroup(children: [
-                for (final o in list)
-                  AppRow(
-                    leading: const LeadingIcon(AppIcons.building),
-                    title: o.name,
-                    subtitle: o.address?.isNotEmpty == true
-                        ? '${o.address} · ${l.objectType(o.type)}'
-                        : l.objectType(o.type),
-                    onTap: () async {
-                      await Navigator.push(
-                          context,
-                          appRoute((_) => ObjectCardScreen(object: o),
-                              title: l.tabLocations));
-                      _reload();
-                    },
-                  ),
-              ]),
-            ),
+            sliver: SliverList.list(children: [
+              for (final g in groups)
+                AppGroup(
+                  header: l.cityCount(
+                      g.city.isEmpty ? l.cityNone : g.city, g.items.length),
+                  children: [
+                    for (final o in g.items)
+                      AppRow(
+                        leading: const LeadingIcon(AppIcons.building),
+                        title: o.name,
+                        subtitle: o.address?.isNotEmpty == true
+                            ? '${o.address} · ${l.objectType(o.type)}'
+                            : l.objectType(o.type),
+                        onTap: () async {
+                          await Navigator.push(
+                              context,
+                              appRoute((_) => ObjectCardScreen(object: o),
+                                  title: l.tabLocations));
+                          _reload();
+                        },
+                      ),
+                  ],
+                ),
+            ]),
           );
         }
         return CustomScrollView(slivers: [
@@ -607,6 +630,11 @@ class _ContractorsTabState extends State<ContractorsTab> {
   String? _companyId;
   bool _isManager = false;
   String _query = '';
+
+  /// Объекты и закрепления — для строки «Москва · 5 объектов».
+  List<Obj> _objects = const [];
+  List<Binding> _bindings = const [];
+
   @override
   void initState() {
     super.initState();
@@ -615,9 +643,58 @@ class _ContractorsTabState extends State<ContractorsTab> {
     }, onError: (_) {});
     _future = _repo.contractors();
     _repo.myCompanyId().then((v) => setState(() => _companyId = v));
+    _loadCoverage();
   }
 
-  void _reload() => setState(() => _future = _repo.contractors());
+  Future<void> _loadCoverage() async {
+    try {
+      final r =
+          await Future.wait<Object>([_repo.objects(), _repo.allBindings()]);
+      if (!mounted) return;
+      setState(() {
+        _objects = r[0] as List<Obj>;
+        _bindings = r[1] as List<Binding>;
+      });
+    } catch (e) {
+      debugPrint('Contractors coverage: $e');
+    }
+  }
+
+  void _reload() {
+    setState(() => _future = _repo.contractors());
+    _loadCoverage();
+  }
+
+  /// «Москва · 5 объектов», «Москва, Белград · 7 объектов» (города — по числу
+  /// объектов). null — подрядчик ни за чем не закреплён.
+  String? _coverage(AppLocalizations l, String contractorId) {
+    final mine = [
+      for (final b in _bindings)
+        if (b.contractorId == contractorId) b
+    ];
+    if (mine.isEmpty) return null;
+    if (mine.any((b) => b.objectId == null)) return l.cardAllObjects;
+    final ids = {for (final b in mine) b.objectId!};
+    final objs = [
+      for (final o in _objects)
+        if (ids.contains(o.id)) o
+    ];
+    final byCity = <String, int>{};
+    for (final o in objs) {
+      final c = city.cityOf(o.address);
+      if (c.isNotEmpty) byCity[c] = (byCity[c] ?? 0) + 1;
+    }
+    final cities = byCity.keys.toList()
+      ..sort((a, b) {
+        final n = byCity[b]!.compareTo(byCity[a]!);
+        return n != 0 ? n : city.compareCities(a, b);
+      });
+    final count = l.objectsCount(ids.length);
+    return cities.isEmpty
+        ? count
+        : l.contractorCoverage(cities.join(', '), count);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -654,6 +731,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
                         AppRow(
                           leading: InitialsTile(c.orgName),
                           title: c.orgName,
+                          subtitle: _coverage(l, c.id),
                           onTap: () => Navigator.push(
                               context,
                               appRoute(

@@ -78,8 +78,8 @@ const nearbyMinKm = 0.5;
 const nearbyMaxKm = 20.0;
 const nearbyDefaultKm = 3.0;
 
-/// Зум карты: 3 (страна) … 19 (здание).
-const mapMinZoom = 3.0;
+/// Зум карты: 1 (весь мир — объекты в разных странах) … 19 (здание).
+const mapMinZoom = 1.0;
 const mapMaxZoom = 19.0;
 
 /// Заявка в том объёме, который нужен карте.
@@ -256,8 +256,14 @@ bool matchesQuery(String query, String name, String? address) {
 /// Группа маркеров на карте: один объект или кластер из нескольких.
 class MapCluster<T> {
   const MapCluster(
-      {required this.items, required this.center, required this.key});
+      {required this.items,
+      required this.center,
+      required this.key,
+      this.label});
   final List<MapItem<T>> items;
+
+  /// Город — у кластера «весь город» на мелком масштабе ([clusterMap]).
+  final String? label;
 
   /// Средняя точка группы.
   final GeoPoint center;
@@ -317,4 +323,82 @@ List<MapCluster<T>> clusterByGrid<T>(List<MapItem<T>> items, double zoom,
                   e.value.map((i) => i.point.lng).reduce((a, b) => a + b) /
                       e.value.length)),
   ];
+}
+
+/// Мельче этого зума объекты одного города собираются в один кластер
+/// с подписью города (страна, континент, весь мир).
+const cityClusterMaxZoom = 9.0;
+
+/// Кластеры для карты: на мелком масштабе (зум < [cityClusterMaxZoom]) —
+/// по городам ([cityOf] возвращает город объекта, `''` — без города: такие
+/// группируются по сетке); крупнее — по сетке ([clusterByGrid]).
+List<MapCluster<T>> clusterMap<T>(List<MapItem<T>> items, double zoom,
+    {String Function(T value)? cityOf}) {
+  if (cityOf == null || zoom >= cityClusterMaxZoom) {
+    return clusterByGrid(items, zoom);
+  }
+  final byCity = <String, List<MapItem<T>>>{};
+  final noCity = <MapItem<T>>[];
+  for (final i in items) {
+    final c = cityOf(i.value);
+    if (c.isEmpty) {
+      noCity.add(i);
+    } else {
+      byCity.putIfAbsent(c, () => []).add(i);
+    }
+  }
+  final cities = [
+    for (final e in byCity.entries)
+      MapCluster(
+        items: e.value,
+        key: 'city:${e.key}',
+        label: e.key,
+        center: _mean([for (final i in e.value) i.point]),
+      ),
+  ];
+  return [..._mergeClose(cities, zoom), ...clusterByGrid(noCity, zoom)];
+}
+
+GeoPoint _mean(List<GeoPoint> p) => GeoPoint(
+    p.map((x) => x.lat).reduce((a, b) => a + b) / p.length,
+    p.map((x) => x.lng).reduce((a, b) => a + b) / p.length);
+
+/// Кластеры городов ближе [cityMergePx] (ширина кружка) на экране (весь мир на телефоне:
+/// Белград, Стамбул, Москва) — в один: подпись «Белград, Москва, Стамбул».
+const cityMergePx = 56.0;
+
+List<MapCluster<T>> _mergeClose<T>(List<MapCluster<T>> list, double zoom) {
+  final z = zoom.floorToDouble();
+  final out = <MapCluster<T>>[];
+  final used = List.filled(list.length, false);
+  for (var i = 0; i < list.length; i++) {
+    if (used[i]) continue;
+    used[i] = true;
+    final group = [list[i]];
+    // Цепочкой: город рядом с любым уже собранным — в ту же группу.
+    for (var k = 0; k < group.length; k++) {
+      final (ax, ay) = mercatorPixels(group[k].center, z);
+      for (var j = 0; j < list.length; j++) {
+        if (used[j]) continue;
+        final (bx, by) = mercatorPixels(list[j].center, z);
+        if ((ax - bx).abs() < cityMergePx && (ay - by).abs() < cityMergePx) {
+          used[j] = true;
+          group.add(list[j]);
+        }
+      }
+    }
+    if (group.length == 1) {
+      out.add(group.single);
+      continue;
+    }
+    final labels = [for (final c in group) c.label!]..sort();
+    final items = [for (final c in group) ...c.items];
+    out.add(MapCluster(
+      items: items,
+      key: 'cities:${labels.join('|')}',
+      label: labels.join(', '),
+      center: _mean([for (final i in items) i.point]),
+    ));
+  }
+  return out;
 }

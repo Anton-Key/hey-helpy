@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../reports/reports_screen.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
+import 'city.dart';
 import 'directory.dart';
 import '../../core/app_message.dart';
 
@@ -162,42 +163,77 @@ class _ContractorCardScreenState extends State<ContractorCardScreen> {
     );
   }
 
+  /// Закрепления по городам: заголовок «МОСКВА · 2» (сколько объектов
+  /// подрядчика в городе) и строки; «на всех объектах» — отдельной группой.
+  List<(String, List<Binding>)> _bindingGroups(AppLocalizations l) {
+    final all = [
+      for (final b in _bindings)
+        if (b.objectId == null) b
+    ];
+    final byCity = groupByCity([
+      for (final b in _bindings)
+        if (b.objectId != null) b
+    ], address: (b) => b.objectAddress, name: (b) => b.objectName ?? '');
+    return [
+      if (all.isNotEmpty) (l.cardAllObjects, all),
+      for (final g in byCity)
+        (
+          l.cityCount(g.city.isEmpty ? l.cityNone : g.city,
+              {for (final b in g.items) b.objectId}.length),
+          g.items
+        ),
+    ];
+  }
+
+  Widget _bindingRow(AppLocalizations l, Binding b, String locale) => AppRow(
+        leading: const LeadingIcon(AppIcons.building),
+        // Внутри секции города — без города: «Офис 3».
+        title: b.objectName ?? l.cardAllObjects,
+        subtitle: b.layer?.label(locale) ?? l.commonNotSpecified,
+        extra: Text(
+            b.visitsPerMonth == null
+                ? l.cardNormNotSet
+                : l.cardNormPerMonth(b.visitsPerMonth!),
+            style: AppText.footnote.copyWith(
+                color: b.visitsPerMonth == null
+                    ? AppColors.secondary
+                    : AppColors.accentText,
+                fontWeight: FontWeight.w600)),
+        trailing: _isManager
+            ? const Icon(AppIcons.edit,
+                size: AppSizes.iconS, color: AppColors.accentText)
+            : null,
+        chevron: false,
+        onTap: _isManager ? () => _editNorm(b) : null,
+      );
+
   List<Widget> _content(AppLocalizations l) {
     final locale = context.localeCode;
     return [
-      // Виды работ и объекты
+      // Виды работ и объекты (объекты — по городам)
       if (_bindings.isEmpty)
         AppGroup(header: l.cardBindingsTitle, children: [
           AppRow(title: l.cardBindingsEmpty, titleStyle: AppText.callout),
         ])
-      else
-        AppGroup(
-          header: l.cardBindingsTitle,
-          footer: _isManager ? l.cardNormHint : null,
-          children: [
-            for (final b in _bindings)
-              AppRow(
-                leading: const LeadingIcon(AppIcons.workType),
-                title: b.layer?.label(locale) ?? l.commonNotSpecified,
-                subtitle: b.objectName ?? l.cardAllObjects,
-                extra: Text(
-                    b.visitsPerMonth == null
-                        ? l.cardNormNotSet
-                        : l.cardNormPerMonth(b.visitsPerMonth!),
-                    style: AppText.footnote.copyWith(
-                        color: b.visitsPerMonth == null
-                            ? AppColors.secondary
-                            : AppColors.accentText,
-                        fontWeight: FontWeight.w600)),
-                trailing: _isManager
-                    ? const Icon(AppIcons.edit,
-                        size: AppSizes.iconS, color: AppColors.accentText)
-                    : null,
-                chevron: false,
-                onTap: _isManager ? () => _editNorm(b) : null,
-              ),
-          ],
-        ),
+      else ...[
+        AppGroup(header: l.cardWorkTypes, children: [
+          AppRow(
+            leading: const LeadingIcon(AppIcons.workType),
+            title: {
+              for (final b in _bindings)
+                b.layer?.label(locale) ?? l.commonNotSpecified
+            }.join(', '),
+          ),
+        ]),
+        for (final (i, g) in _bindingGroups(l).indexed)
+          AppGroup(
+            header: g.$1,
+            footer: _isManager && i == _bindingGroups(l).length - 1
+                ? l.cardNormHint
+                : null,
+            children: [for (final b in g.$2) _bindingRow(l, b, locale)],
+          ),
+      ],
 
       // Исполнители и контакты
       AppGroup(header: l.cardExecutorsTitle, children: [

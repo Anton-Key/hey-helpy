@@ -203,4 +203,51 @@ void main() {
       expect(clusterByGrid(<MapItem<String>>[], 10), isEmpty);
     });
   });
+
+  group('clusterMap — города на мелком масштабе', () {
+    const moscowA =
+        MapItem(id: 'm1', point: GeoPoint(55.749, 37.537), value: 'Москва');
+    const moscowB =
+        MapItem(id: 'm2', point: GeoPoint(55.697, 37.359), value: 'Москва');
+    const dubai =
+        MapItem(id: 'd1', point: GeoPoint(25.186, 55.265), value: 'Дубай');
+    const none = MapItem(id: 'x', point: GeoPoint(10, 10), value: '');
+    final items = [moscowA, moscowB, dubai, none];
+    String city(String v) => v;
+
+    test('мир: один кластер на город с подписью, даже из одного объекта', () {
+      final c = clusterMap(items, 3, cityOf: city);
+      final byKey = {for (final x in c) x.key: x};
+      expect(byKey['city:Москва']!.items.length, 2);
+      expect(byKey['city:Москва']!.label, 'Москва');
+      expect(byKey['city:Дубай']!.items.single.id, 'd1');
+      // Без города — по сетке, без подписи.
+      expect(c.where((x) => x.label == null).single.items.single.id, 'x');
+      final center = byKey['city:Москва']!.center;
+      expect(center.lat, closeTo((55.749 + 55.697) / 2, 1e-9));
+    });
+
+    test('город и крупнее — обычная сетка', () {
+      final c = clusterMap(items, cityClusterMaxZoom, cityOf: city);
+      expect(c.every((x) => x.label == null), isTrue);
+      expect(clusterMap(items, 3).every((x) => x.label == null), isTrue,
+          reason: 'без cityOf — как раньше');
+    });
+  });
+
+  test('clusterMap: близкие города на мелком масштабе — один кластер', () {
+    const bg =
+        MapItem(id: 'b', point: GeoPoint(44.80, 20.45), value: 'Белград');
+    const ist =
+        MapItem(id: 'i', point: GeoPoint(41.08, 29.01), value: 'Стамбул');
+    const bj = MapItem(id: 'p', point: GeoPoint(39.90, 116.46), value: 'Пекин');
+    String city(String v) => v;
+    final far = clusterMap([bg, ist, bj], 1, cityOf: city);
+    final merged = far.firstWhere((c) => c.items.length == 2);
+    expect(merged.label, 'Белград, Стамбул');
+    expect(far.firstWhere((c) => c.label == 'Пекин').items.single.id, 'p');
+    // Ближе — города отдельно.
+    final near = clusterMap([bg, ist, bj], 5, cityOf: city);
+    expect(near.map((c) => c.label).toSet(), {'Белград', 'Стамбул', 'Пекин'});
+  });
 }

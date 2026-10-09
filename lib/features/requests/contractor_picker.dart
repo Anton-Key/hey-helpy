@@ -218,7 +218,7 @@ class _ContractorPickerState extends State<_ContractorPicker> {
   /// «Климат · БЦ «Демо» · норма 4 визита в месяц».
   String _bindingLine(AppLocalizations l, Binding b) => [
         b.layer?.label(context.localeCode) ?? '—',
-        b.objectName ?? l.assignAllObjects,
+        b.objectLabel ?? l.assignAllObjects,
         if (b.visitsPerMonth != null) l.assignNorm(b.visitsPerMonth!),
       ].join(' · ');
 }

@@ -61,7 +61,8 @@ void main() {
   ];
 
   Report build({String? objectId}) => Report.build(
-        query: ReportQuery(from: from, to: to, objectId: objectId),
+        query: ReportQuery(
+            from: from, to: to, objectIds: {if (objectId != null) objectId}),
         orders: orders,
         visits: visits,
         norms: const [

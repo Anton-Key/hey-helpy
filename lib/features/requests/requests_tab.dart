@@ -6,6 +6,7 @@ import '../../core/app_message.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
+import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../home/home_chrome.dart';
 import '../voice/voice_record_screen.dart';
@@ -193,10 +194,11 @@ class _RequestsTabState extends State<RequestsTab> {
     }
   }
 
+  /// «Москва · Офис 3» — в разных городах бывают одинаковые названия.
   String _objName(AppLocalizations l, String? id) {
     if (id == null) return l.objectNone;
     for (final o in _objects) {
-      if (o.id == id) return o.name;
+      if (o.id == id) return objectDisplayName(o);
     }
     return l.objectUnknown;
   }
@@ -225,7 +227,7 @@ class _RequestsTabState extends State<RequestsTab> {
     final placeKey =
         _filter.objectIds.length == 1 ? _filter.objectIds.single : null;
     return FilterChoices(
-      objects: [for (final o in _objects) FilterOption(o.id, o.name)],
+      objects: _objects,
       contractors: [
         for (final c in _contractors) FilterOption(c.id, c.orgName)
       ],
@@ -380,9 +382,11 @@ class _RequestsTabState extends State<RequestsTab> {
 
     Widget row(WorkOrder w) {
       final workType = _workType(w);
-      final place = (w.placeName != null && w.placeName!.isNotEmpty)
-          ? w.placeName!
-          : _objName(l, w.objectId);
+      // «Москва · Офис 3 · Лобби · Климат» — объект всегда с городом.
+      final place = [
+        _objName(l, w.objectId),
+        if (w.placeName != null && w.placeName!.isNotEmpty) w.placeName!,
+      ].join(' · ');
       final overdue = w.isOverdue(now);
       final due = _filter.sort == OrderSort.due && w.dueAt != null
           ? '${l.reqFieldDue}: ${l.dateTime(w.dueAt!)}'
@@ -394,7 +398,7 @@ class _RequestsTabState extends State<RequestsTab> {
           [place, if (workType != null) workType].join(' · '),
           if (due != null) due,
         ].join('\n'),
-        subtitleMaxLines: due == null ? 1 : 2,
+        subtitleMaxLines: due == null ? 2 : 3,
         // Капсула — всегда настоящий статус; просрочка — красной подписью
         // под строкой (иначе не видно, новая заявка или уже в работе).
         extra: overdue

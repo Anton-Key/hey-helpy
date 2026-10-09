@@ -451,4 +451,45 @@ void main() {
     await t.pumpAndSettle();
     expect(find.text('содержимое'), findsNothing);
   });
+
+  testWidgets('AppFilterPanel: «Применить (N)» не обрезается в окне 360',
+      (t) async {
+    await t.pumpWidget(_app(Center(
+      child: SizedBox(
+        width: 360,
+        height: 400,
+        child: AppFilterPanel(
+          title: 'Объект',
+          resetLabel: 'Сбросить',
+          onReset: () {},
+          applyLabel: 'Применить (12)',
+          onApply: () {},
+          children: const [],
+        ),
+      ),
+    )));
+    // «Сбросить» — по ширине текста, «Применить (N)» — всё остальное место
+    // (в тестах шрифт шире настоящего, поэтому проверяем раскладку).
+    final apply = t.getSize(find.widgetWithText(AppButton, 'Применить (12)'));
+    final reset = t.getSize(find.widgetWithText(AppButton, 'Сбросить'));
+    expect(apply.width + reset.width + AppSpace.m + 2 * AppSpace.screen,
+        moreOrLessEquals(360, epsilon: 1));
+    expect(find.text('Сбросить'), findsOneWidget);
+  });
+
+  testWidgets('AppFadingScroll: затухание, только если есть что листать',
+      (t) async {
+    Future<void> pump(int n) => t.pumpWidget(_app(SizedBox(
+        width: 300,
+        child: AppFadingScroll(
+            child: Row(children: [
+          for (var i = 0; i < n; i++) const SizedBox(width: 100, height: 30)
+        ])))));
+    await pump(2);
+    await t.pump();
+    expect(find.byType(ShaderMask), findsNothing);
+    await pump(6);
+    await t.pump();
+    expect(find.byType(ShaderMask), findsOneWidget);
+  });
 }

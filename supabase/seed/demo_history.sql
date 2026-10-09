@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Hey Helpy · демо-история за последние 30 дней (НЕ миграция)
 --
--- Что делает: добавляет в компанию «Демо БЦ» 37 заявок и 16 визитов,
+-- Что делает: добавляет в компанию «Демо БЦ» 68 заявок и 16 визитов,
 -- чтобы на демо «История» и «Отчёты» были наполнены, и 4 объекта на карте:
 --   • «КлиматСервис» (Климат) — 15 заявок, всё в срок, приёмка почти всегда
 --     с первого раза, 15 визитов при норме 4 в месяц;
@@ -15,6 +15,11 @@
 --     заявок нет (серо-зелёный). Из них 5 — «ЭлектроПро» (+1 просрочка в отчёте).
 --   • ещё 2 повторяющиеся заявки (221–222) на «БЦ «Демо»» — для фильтра
 --     «Ещё → Тип → Повторяющаяся» (шаг 13c).
+--   • объекты по миру (шаг 13d): 15 офисов (401–415) в Белграде, Москве, Дубае,
+--     Стамбуле, Абиджане, Шэньчжэне и Пекине, 45 помещений (421–465),
+--     10 региональных подрядчиков (501–510) с закреплениями по объектам и видам
+--     работ, 31 заявка (223–253): 4 просрочены, 3 без подрядчика, 2 повторяющиеся.
+--     «ЭлектроПро» переводится с «всех объектов» на белградские.
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
 -- и миграций 0001–0010. Подробно: docs/DEMO_SETUP.md, шаг 4.
@@ -145,6 +150,10 @@ declare
   v_elec_exec uuid;
   v_layer_hvac uuid;
   v_layer_elec uuid;
+  v_layer_plumb uuid;
+  v_layer_clean uuid;
+  v_layer_other uuid;
+  v_world_orders int;
   v_photo_hvac boolean;
   v_photo_elec boolean;
   v_obj record;
@@ -210,12 +219,34 @@ begin
   if v_layer_hvac is null or v_layer_elec is null then
     raise exception 'Не найдены слои «Климат» и «Электрика». Сначала запустите supabase/seed/demo.sql';
   end if;
+  -- Слои для объектов по миру (шаг 13d): создаются у компании сами (0004/0005).
+  select id into v_layer_plumb from public.layers where company_id = c_company and name = 'Сантехника';
+  select id into v_layer_clean from public.layers where company_id = c_company and name = 'Клининг';
+  select id into v_layer_other from public.layers where company_id = c_company and name = 'Другое';
+  if v_layer_plumb is null or v_layer_clean is null or v_layer_other is null then
+    raise exception 'Не найдены слои «Сантехника», «Клининг» или «Другое» у компании «Демо БЦ»';
+  end if;
 
-  -- 3. Нормы визитов по договору: «КлиматСервис» — 4 в месяц, «ЭлектроПро» — 2
+  -- 3. Нормы визитов по договору: «КлиматСервис» — 4 в месяц, «ЭлектроПро» — 2.
+  --    Шаг 13d: подрядчики работают по регионам. «ЭлектроПро» в demo.sql закреплён
+  --    за «Электрикой» на ВСЕХ объектах (object_id = null) — тогда заявки по
+  --    электрике в Москве или Дубае тоже уходили бы ему. Переводим его на
+  --    белградские объекты: здесь — «БЦ «Демо»» (с нормой 2), остальные — в 3c.
+  if not exists (select 1 from public.contractor_layers
+                  where contractor_id = c_contr_elec and layer_id = v_layer_elec) then
+    raise exception 'Нет закреплений подрядчиков за слоями. Сначала запустите supabase/seed/demo.sql';
+  end if;
+  insert into public.contractor_layers (contractor_id, layer_id, object_id)
+  select c_contr_elec, v_layer_elec, c_object
+  where not exists (select 1 from public.contractor_layers
+                     where contractor_id = c_contr_elec and layer_id = v_layer_elec
+                       and object_id = c_object);
+  delete from public.contractor_layers
+   where contractor_id = c_contr_elec and layer_id = v_layer_elec and object_id is null;
   update public.contractor_layers set visits_per_month = 4
    where contractor_id = c_contr_hvac and layer_id = v_layer_hvac and object_id = c_object;
   update public.contractor_layers set visits_per_month = 2
-   where contractor_id = c_contr_elec and layer_id = v_layer_elec and object_id is null;
+   where contractor_id = c_contr_elec and layer_id = v_layer_elec and object_id = c_object;
   if (select count(*) from public.contractor_layers
        where (contractor_id, layer_id) in ((c_contr_hvac, v_layer_hvac), (c_contr_elec, v_layer_elec))
          and visits_per_month is not null) < 2 then
@@ -258,14 +289,162 @@ begin
   on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
 
   -- «КлиматСервис» — «Климат» и на новых объектах (как на «БЦ «Демо»»);
-  -- «ЭлектроПро» уже закреплён за «Электрикой» на всех объектах.
+  -- «ЭлектроПро» — за «Электрикой» на этих же 4 объектах (а на «БЦ «Демо»» — в шаге 3).
   -- У contractor_layers нет уникального ключа — поэтому «если ещё нет».
   insert into public.contractor_layers (contractor_id, layer_id, object_id)
-  select c_contr_hvac, v_layer_hvac, o.id
-  from unnest(array[c_obj_plaza, c_obj_log, c_obj_city, c_obj_park]) as o(id)
+  select c.id, c.layer, o.id
+  from (values (c_contr_hvac, v_layer_hvac), (c_contr_elec, v_layer_elec)) as c(id, layer)
+  cross join unnest(array[c_obj_plaza, c_obj_log, c_obj_city, c_obj_park]) as o(id)
   where not exists (select 1 from public.contractor_layers cl
-                     where cl.contractor_id = c_contr_hvac
-                       and cl.layer_id = v_layer_hvac and cl.object_id = o.id);
+                     where cl.contractor_id = c.id
+                       and cl.layer_id = c.layer and cl.object_id = o.id);
+
+  -- 3c. Объекты по миру (шаг 13d): id 401–415, помещения 421–465, подрядчики 501–510.
+  --     Город — часть адреса до первой запятой (по нему приложение группирует
+  --     объекты), «(демо)» — в конце адреса. Адреса и координаты примерные.
+  --     Колонки: n — номер (часть id), название, тип, адрес, широта, долгота, радиус геозоны.
+  insert into public.objects (id, company_id, name, type, address, lat, lng, geofence_radius_m)
+  select ('de300000-0000-4000-8000-' || lpad(w.n::text, 12, '0'))::uuid, c_company,
+         w.name, w.type, w.address, w.lat, w.lng, w.radius
+  from (values
+    (401, 'Хаб 1',               'office', 'Белград, бул. Войводы Бойовича, 12 (демо)',             44.826200,  20.456600, 200),
+    (402, 'Skyline',             'office', 'Белград, Kneza Miloša 90a (демо)',                      44.799990,  20.452140, 150),
+    (403, 'Офис 1',              'office', 'Москва, Пресненская наб., Москва-Сити (демо)',          55.749000,  37.537000, 250),
+    (404, 'Офис 2',              'office', 'Москва, ул. Лесная (демо)',                             55.777000,  37.582000, 150),
+    (405, 'Офис 3',              'office', 'Москва, Павелецкая пл. (демо)',                         55.730000,  37.639000, 200),
+    (406, 'Офис 4',              'office', 'Москва, Земляной Вал (демо)',                           55.758000,  37.660000, 150),
+    (407, 'Офис 5',              'office', 'Москва, Сколково (демо)',                               55.697000,  37.359000, 300),
+    (408, 'Офис 1',              'office', 'Дубай, Business Bay (демо)',                            25.186000,  55.265000, 200),
+    (409, 'Офис 2',              'office', 'Дубай, Dubai Marina (демо)',                            25.080500,  55.140300, 200),
+    (410, 'Офис 1',              'office', 'Стамбул, Левент (демо)',                                41.082000,  29.011000, 200),
+    (411, 'Офис 2',              'office', 'Стамбул, Аташехир (демо)',                              40.992000,  29.124000, 200),
+    (412, 'Ivoire Trade Center', 'office', 'Абиджан, Кокоди, рядом с Sofitel Hôtel Ivoire (демо)',   5.325000,  -4.006000, 300),
+    (413, 'Офис 1',              'office', 'Шэньчжэнь, Футянь (демо)',                              22.540000, 114.055000, 200),
+    (414, 'Офис 2',              'office', 'Шэньчжэнь, Наньшань (демо)',                            22.533000, 113.944000, 200),
+    (415, 'Офис 1',              'office', 'Пекин, Гоумао (демо)',                                  39.908000, 116.460000, 250)
+  ) as w(n, name, type, address, lat, lng, radius)
+  on conflict (id) do update set
+    company_id = excluded.company_id, name = excluded.name, type = excluded.type,
+    address = excluded.address, lat = excluded.lat, lng = excluded.lng,
+    geofence_radius_m = excluded.geofence_radius_m;
+
+  -- Помещения: n — номер (часть id), o — номер объекта.
+  insert into public.locations (id, object_id, name)
+  select ('de300000-0000-4000-8000-' || lpad(p.n::text, 12, '0'))::uuid,
+         ('de300000-0000-4000-8000-' || lpad(p.o::text, 12, '0'))::uuid, p.name
+  from (values
+    (421, 401, 'Лобби'),
+    (422, 401, 'Переговорная «Сава»'),
+    (423, 401, 'Серверная'),
+    (424, 402, 'Open space, 15 этаж'),
+    (425, 402, 'Кухня, 15 этаж'),
+    (426, 402, 'Парковка, −2 этаж'),
+    (427, 403, 'Лобби, 1 этаж'),
+    (428, 403, 'Open space, 32 этаж'),
+    (429, 403, 'Серверная, 31 этаж'),
+    (430, 403, 'Переговорная «Неглинка»'),
+    (431, 404, 'Ресепшен'),
+    (432, 404, 'Кухня, 3 этаж'),
+    (433, 404, 'Санузлы, 2 этаж'),
+    (434, 405, 'Лобби'),
+    (435, 405, 'Open space, 5 этаж'),
+    (436, 405, 'Тепловой пункт, подвал'),
+    (437, 406, 'Переговорная «Яуза»'),
+    (438, 406, 'Кухня'),
+    (439, 406, 'Санузлы, 4 этаж'),
+    (440, 407, 'Атриум'),
+    (441, 407, 'Лаборатория'),
+    (442, 407, 'Парковка'),
+    (443, 408, 'Лобби'),
+    (444, 408, 'Open space, 21 этаж'),
+    (445, 408, 'Серверная'),
+    (446, 409, 'Ресепшен'),
+    (447, 409, 'Переговорная'),
+    (448, 409, 'Парковка'),
+    (449, 410, 'Лобби'),
+    (450, 410, 'Open space, 12 этаж'),
+    (451, 410, 'Кухня'),
+    (452, 411, 'Ресепшен'),
+    (453, 411, 'Санузлы, 3 этаж'),
+    (454, 412, 'Холл'),
+    (455, 412, 'Переговорная'),
+    (456, 412, 'Серверная'),
+    (457, 412, 'Генераторная'),
+    (458, 413, 'Лобби'),
+    (459, 413, 'Open space, 28 этаж'),
+    (460, 413, 'Кухня'),
+    (461, 414, 'Ресепшен'),
+    (462, 414, 'Серверная'),
+    (463, 415, 'Лобби'),
+    (464, 415, 'Переговорная'),
+    (465, 415, 'Open space, 18 этаж')
+  ) as p(n, o, name)
+  on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
+
+  -- Подрядчики по регионам — только организации, без учётных записей.
+  insert into public.contractors (id, company_id, org_name)
+  select ('de300000-0000-4000-8000-' || lpad(c.n::text, 12, '0'))::uuid, c_company, c.name
+  from (values
+    (501, 'МосКлимат'),
+    (502, 'ЭлектроСити'),
+    (503, 'ЧистоГрад'),
+    (504, 'ЛифтСервис'),
+    (505, 'Gulf FM Services'),
+    (506, 'Boğaziçi Teknik'),
+    (507, 'Temiz Hizmet'),
+    (508, 'Ivoire Maintenance'),
+    (509, 'Huaxin FM'),
+    (510, 'Shenzhen Clean')
+  ) as c(n, name)
+  on conflict (id) do update set company_id = excluded.company_id, org_name = excluded.org_name;
+
+  -- Закрепления: подрядчик (31, 32 — белградские из demo.sql, 501–510 — новые),
+  -- вид работ, объект, норма визитов в месяц. По ним база сама назначает
+  -- подрядчика новой заявке (слой + объект). «ЛифтСервис» — слой «Другое»
+  -- (слоя «Лифты» у компании нет).
+  insert into public.contractor_layers (contractor_id, layer_id, object_id, visits_per_month)
+  select ('de300000-0000-4000-8000-' || lpad(b.c::text, 12, '0'))::uuid,
+         case b.layer when 'hvac' then v_layer_hvac when 'elec' then v_layer_elec
+                      when 'plumb' then v_layer_plumb when 'clean' then v_layer_clean
+                      else v_layer_other end,
+         ('de300000-0000-4000-8000-' || lpad(b.o::text, 12, '0'))::uuid, b.norm
+  from (values
+    -- Белград: «КлиматСервис» и «ЭлектроПро» — ещё «Хаб 1» и «Skyline»
+    (31, 'hvac', 401, null::int), (31, 'hvac', 402, null),
+    (32, 'elec', 401, null), (32, 'elec', 402, null),
+    -- Москва: частичное покрытие
+    (501, 'hvac', 403, 2), (501, 'hvac', 404, 2), (501, 'hvac', 405, 2), (501, 'hvac', 406, 2), (501, 'hvac', 407, 2),
+    (502, 'elec', 403, 2), (502, 'elec', 405, 2),
+    (503, 'clean', 403, 8), (503, 'clean', 404, 8), (503, 'clean', 406, 8),
+    (504, 'other', 403, 1), (504, 'other', 407, 1),
+    -- Дубай
+    (505, 'hvac', 408, 4), (505, 'hvac', 409, 4), (505, 'elec', 408, 1), (505, 'elec', 409, 1),
+    -- Стамбул
+    (506, 'hvac', 410, 2), (506, 'hvac', 411, 2), (506, 'elec', 410, 1), (506, 'elec', 411, 1),
+    (506, 'plumb', 410, 1), (506, 'plumb', 411, 1),
+    (507, 'clean', 410, 8),
+    -- Абиджан
+    (508, 'hvac', 412, 2), (508, 'elec', 412, 2), (508, 'plumb', 412, 1),
+    -- Китай: «Huaxin FM» — весь Китай, «Shenzhen Clean» — только Шэньчжэнь
+    (509, 'hvac', 413, 2), (509, 'hvac', 414, 2), (509, 'hvac', 415, 2),
+    (509, 'elec', 413, 1), (509, 'elec', 414, 1), (509, 'elec', 415, 1),
+    (510, 'clean', 413, 8), (510, 'clean', 414, 8)
+  ) as b(c, layer, o, norm)
+  where not exists (
+    select 1 from public.contractor_layers cl
+     where cl.contractor_id = ('de300000-0000-4000-8000-' || lpad(b.c::text, 12, '0'))::uuid
+       and cl.object_id = ('de300000-0000-4000-8000-' || lpad(b.o::text, 12, '0'))::uuid
+       and cl.layer_id = case b.layer when 'hvac' then v_layer_hvac when 'elec' then v_layer_elec
+                                      when 'plumb' then v_layer_plumb when 'clean' then v_layer_clean
+                                      else v_layer_other end);
+
+  -- Подрядчик ↔ объект (для полноты справочника; назначение идёт по contractor_layers).
+  insert into public.contractor_objects (contractor_id, object_id)
+  select distinct cl.contractor_id, cl.object_id
+  from public.contractor_layers cl
+  join public.contractors c on c.id = cl.contractor_id and c.company_id = c_company
+  where cl.object_id is not null
+  on conflict do nothing;
 
   -- 4. Четвёртый пользователь (если указан) — исполнитель «ЭлектроПро»
   if v_elec_exec is not null then
@@ -404,6 +583,112 @@ begin
    where id = 'de300000-0000-4000-8000-000000000221';
   update public.work_orders set recurrence = '{"kind":"regular","freq":"weekly","interval":1}'::jsonb
    where id = 'de300000-0000-4000-8000-000000000222';
+
+  -- 5c. Заявки на объектах по миру (шаг 13d): 223–253.
+  --     Колонки как в шаге 5, плюс layer — hvac/elec/plumb/clean/other,
+  --     loc — номер помещения (421–465, объект — по помещению), c — номер
+  --     подрядчика (null — без подрядчика; назначен только тот, кто закреплён
+  --     за этим объектом и видом работ), rec — повторяющаяся (monthly/weekly).
+  --     Просрочены (красные маркеры на карте мира): 227 Москва, 238 Дубай,
+  --     244 Стамбул, 246 Абиджан. Без подрядчика: 232, 233, 245.
+  insert into public.work_orders (
+    id, company_id, object_id, location_id, title, description, work_type, layer_id,
+    priority, status, requires_photo, input_channel, created_by,
+    assigned_contractor_id, assigned_by, due_at, time_spent_minutes,
+    created_at, updated_at, started_at, submitted_at, accepted_at, accepted_by,
+    return_reason, return_count, recurrence)
+  select
+    ('de300000-0000-4000-8000-' || lpad(t.n::text, 12, '0'))::uuid,
+    c_company, lo.object_id, lo.id,
+    t.title, t.descr, ly.name, ly.id,
+    t.priority, t.status, ly.requires_photo, t.channel,
+    case t.author when 'mgr' then v_manager else v_requester end,
+    case when t.c is not null then ('de300000-0000-4000-8000-' || lpad(t.c::text, 12, '0'))::uuid end,
+    case when t.c is not null then 'rule' end,
+    x.created + make_interval(hours => t.due_h),
+    t.sub,
+    x.created,
+    case
+      when t.status = 'done'        then x.created + make_interval(mins => t.r + t.sub + t.acc)
+      when t.status = 'on_review'   then x.created + make_interval(mins => t.r + t.sub)
+      when t.status = 'in_progress' then x.created + make_interval(mins => t.r)
+      when t.upd is not null        then x.created + make_interval(mins => t.upd)
+      else x.created
+    end,
+    case when t.r is not null then x.created + make_interval(mins => t.r) end,
+    case when t.sub is not null then x.created + make_interval(mins => t.r + t.sub) end,
+    case when t.status = 'done' then x.created + make_interval(mins => t.r + t.sub + t.acc) end,
+    case when t.status = 'done' then v_manager end,
+    t.reason, t.rc,
+    case when t.rec is not null then
+      jsonb_build_object('kind', 'regular', 'freq', t.rec, 'interval', 1) end
+  from (values
+    -- Белград: «Хаб 1», «Skyline»
+    (223,'hvac',421,31,'Шумит кондиционер в лобби','Внутренний блок над входом гудит и потрескивает.','normal','assigned','req','voice',1,9,null::int,null::int,null::int,72,0,null::text,null::int,null::text),
+    (224,'elec',424,32,'Мигает свет в open space','Три светильника у окон мигают с утра.','normal','in_progress','mgr','text',2,8,90,null,null,72,0,null,null,null),
+    (225,'hvac',422,31,'Жарко в переговорной «Сава»','Кондиционер не держит 22°, к обеду 27°.','low','done','req','text',6,10,30,60,90,120,0,null,null,null),
+    (226,'elec',426,32,'Не горят светильники на парковке','Темно у выезда, 4 светильника не горят.','normal','on_review','req','button',3,9,200,120,null,120,0,null,null,null),
+    -- Москва
+    (227,'hvac',435,501,'Холодно в open space: не греют батареи','Батареи у окон холодные, в офисе +17.','critical','in_progress','req','voice',1,8,30,null,null,6,0,null,null,null),
+    (228,'other',427,504,'Застрял лифт в лобби','Лифт №2 остановился между 1 и 2 этажом, людей вывели.','critical','done','mgr','voice',4,9,15,60,30,4,0,null,null,null),
+    (229,'elec',429,502,'Скачки напряжения в серверной','ИБП дважды переходил на батареи за ночь.','high','assigned','mgr','text',1,11,null,null,null,48,0,null,null,null),
+    (230,'clean',432,503,'Генеральная уборка кухни','После корпоратива нужна генеральная уборка.','low','assigned','mgr','button',2,7,null,null,null,96,0,null,null,null),
+    (231,'hvac',438,501,'Не работает вентиляция на кухне','Вытяжка не тянет, запах по всему этажу.','normal','returned','req','text',5,9,60,240,null,168,1,'После ремонта вытяжка снова не тянет.',3000,null),
+    (232,'elec',431,null,'Не работает розетка на ресепшене','Не включается кофемашина у стойки.','normal','new','req','voice',1,10,null,null,null,72,0,null,null,null),
+    (233,'plumb',433,null,'Протекает кран в санузле','Кран у раковины не закрывается до конца.','high','new','req','text',1,14,null,null,null,48,0,null,null,null),
+    (234,'other',440,504,'Ежемесячное ТО лифтов','Регламент: осмотр лифтов атриума раз в месяц.','low','assigned','mgr','button',3,7,null,null,null,240,0,null,null,'monthly'),
+    (235,'hvac',437,501,'Душно в переговорной «Яуза»','Приток не включается, после встречи нечем дышать.','normal','done','req','voice',8,10,40,50,120,72,0,null,null,null),
+    (236,'clean',439,503,'Нет мыла и бумаги в санузлах','Закончились расходники на 4 этаже.','low','done','req','button',2,9,60,30,60,24,0,null,null,null),
+    (237,'hvac',442,501,'Не греет тепловая завеса на въезде','На въезде на парковку сквозняк, завеса не включается.','high','on_review','mgr','text',2,8,100,120,null,72,0,null,null,null),
+    -- Дубай
+    (238,'hvac',444,505,'Кондиционер не охлаждает: +29 в open space','Сотрудники уходят работать в переговорные.','critical','assigned','req','voice',1,7,null,null,null,4,0,null,null,null),
+    (239,'hvac',443,505,'Капает конденсат в лобби','Лужа у стойки ресепшена, поставили знак.','normal','in_progress','req','text',1,12,60,null,null,72,0,null,null,null),
+    (240,'elec',448,505,'Не работает зарядка электромобилей','Станция на парковке не включается.','low','assigned','req','button',3,9,null,null,null,120,0,null,null,null),
+    (241,'hvac',446,505,'Ежемесячная чистка фильтров кондиционеров','Регламент: чистка фильтров всех блоков раз в месяц.','low','assigned','mgr','button',2,6,null,null,null,240,0,null,null,'monthly'),
+    -- Стамбул
+    (242,'plumb',451,506,'Засор в раковине на кухне','Вода не уходит, раковина полная.','normal','in_progress','req','voice',1,10,45,null,null,48,0,null,null,null),
+    (243,'clean',450,507,'Уборка после мероприятия','Вечером было мероприятие на 80 человек.','low','done','mgr','button',4,18,60,180,60,24,0,null,null,null),
+    (244,'elec',452,506,'Не работает свет на ресепшене','Половина светильников над стойкой не горит.','high','assigned','req','text',2,8,null,null,null,12,0,null,null,null),
+    (245,'clean',453,null,'Уборка санузлов после ремонта','После замены плитки остались строительная пыль и мусор.','normal','new','req','voice',1,15,null,null,null,48,0,null,null,null),
+    -- Абиджан
+    (246,'elec',457,508,'Генератор не запускается при отключении света','Утром отключали сеть — генератор не стартовал.','critical','in_progress','mgr','voice',2,9,60,null,null,6,0,null,null,null),
+    (247,'hvac',455,508,'Шумит кондиционер в переговорной','Сильный гул, мешает звонкам.','normal','assigned','req','text',1,10,null,null,null,72,0,null,null,null),
+    (248,'plumb',454,508,'Протечка в холле после дождя','С потолка капает у входа.','high','done','req','voice',6,8,90,120,60,24,0,null,null,null),
+    -- Шэньчжэнь
+    (249,'hvac',459,509,'Не работает кондиционер в open space','Блоки у окон не включаются с пульта.','high','in_progress','req','voice',1,9,30,null,null,48,0,null,null,null),
+    (250,'clean',460,510,'Уборка кухни: жалоба на запах','Сотрудники жалуются на запах из мусорных баков.','normal','done','req','text',3,11,60,60,120,24,0,null,null,null),
+    (251,'elec',462,509,'Перегрев ИБП в серверной','ИБП сигналит о высокой температуре.','high','on_review','mgr','text',2,8,60,90,null,72,0,null,null,null),
+    -- Пекин
+    (252,'hvac',465,509,'Сухой воздух в open space','Проверить увлажнители приточной установки.','low','assigned','req','text',2,10,null,null,null,120,0,null,null,null),
+    (253,'elec',464,509,'Не работает проектор в переговорной','Нет питания на розетке под потолком.','normal','assigned','req','text',1,9,null,null,null,72,0,null,null,null)
+  ) as t(n, layer, loc, c, title, descr, priority, status, author, channel,
+         d, h, r, sub, acc, due_h, rc, reason, upd, rec)
+  cross join lateral (
+    select v_today - make_interval(days => t.d) + make_interval(hours => t.h) as created
+  ) x
+  join public.locations lo
+    on lo.id = ('de300000-0000-4000-8000-' || lpad(t.loc::text, 12, '0'))::uuid
+  join public.layers ly
+    on ly.id = case t.layer when 'hvac' then v_layer_hvac when 'elec' then v_layer_elec
+                            when 'plumb' then v_layer_plumb when 'clean' then v_layer_clean
+                            else v_layer_other end
+  on conflict (id) do update set
+    company_id = excluded.company_id, object_id = excluded.object_id,
+    location_id = excluded.location_id, asset_id = null,
+    title = excluded.title, description = excluded.description,
+    work_type = excluded.work_type, layer_id = excluded.layer_id,
+    priority = excluded.priority, status = excluded.status, recurrence = excluded.recurrence,
+    requires_photo = excluded.requires_photo, requires_scan = false,
+    input_channel = excluded.input_channel, created_by = excluded.created_by,
+    assigned_contractor_id = excluded.assigned_contractor_id,
+    assigned_executor_id = null, assigned_by = excluded.assigned_by,
+    due_at = excluded.due_at, time_spent_minutes = excluded.time_spent_minutes,
+    created_at = excluded.created_at, updated_at = excluded.updated_at,
+    started_at = excluded.started_at, submitted_at = excluded.submitted_at,
+    accepted_at = excluded.accepted_at, accepted_by = excluded.accepted_by,
+    return_reason = excluded.return_reason, return_count = excluded.return_count;
+  get diagnostics v_world_orders = row_count;
+  v_orders := v_orders + v_world_orders;
 
   -- 6. Визиты
   -- Колонки: vn — номер (часть id); n — заявка; off — минут от начала работы

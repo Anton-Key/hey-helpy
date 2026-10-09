@@ -173,21 +173,23 @@ class OrderFilterBar extends StatelessWidget {
         required String? active,
         required Future<OrderFilter?> Function(BuildContext anchor) open,
         required OrderFilter Function() clear}) {
-      return Padding(
-        padding: const EdgeInsetsDirectional.only(end: AppSpace.s),
-        child: Builder(
-          builder: (anchor) => AppFilterChip(
-            label: label,
-            activeLabel: active,
-            clearLabel: l.filterClearOne(label),
-            onTap: () async {
-              final r = await open(anchor);
-              if (r != null) onChanged(r);
-            },
-            onClear: () => onChanged(clear()),
-          ),
-        ),
-      );
+      return _ChipSlot(
+          active: active != null,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.only(end: AppSpace.s),
+            child: Builder(
+              builder: (anchor) => AppFilterChip(
+                label: label,
+                activeLabel: active,
+                clearLabel: l.filterClearOne(label),
+                onTap: () async {
+                  final r = await open(anchor);
+                  if (r != null) onChanged(r);
+                },
+                onClear: () => onChanged(clear()),
+              ),
+            ),
+          ));
     }
 
     Future<Set<String>?> pickMulti(BuildContext anchor, String title,
@@ -318,7 +320,13 @@ class OrderFilterBar extends StatelessWidget {
       Expanded(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: Row(children: chips),
+          // Выбранные фильтры — первыми: на телефоне их видно без прокрутки.
+          child: Row(children: [
+            for (final c in chips)
+              if (c is _ChipSlot && c.active) c,
+            for (final c in chips)
+              if (c is! _ChipSlot || !c.active) c,
+          ]),
         ),
       ),
       const SizedBox(width: AppSpace.s),
@@ -337,6 +345,16 @@ class OrderFilterBar extends StatelessWidget {
       ),
     ]);
   }
+}
+
+/// Таблетка в строке и признак «выбрана» (для порядка).
+class _ChipSlot extends StatelessWidget {
+  const _ChipSlot({required this.active, required this.child});
+  final bool active;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => child;
 }
 
 // ---------------------------------------------------------------------
@@ -433,6 +451,18 @@ class _PeriodPanelState extends State<PeriodPanel> {
       initialDateRange: DateTimeRange(
           start: r.from, end: r.to.subtract(const Duration(days: 1))),
       helpText: context.l10n.filterPickDates,
+      // На широком экране — карточкой по центру, а не на весь экран.
+      builder: (ctx, child) => MediaQuery.sizeOf(ctx).width < AppSpace.wideFrom
+          ? child!
+          : Center(
+              child: ConstrainedBox(
+                constraints:
+                    const BoxConstraints(maxWidth: 420, maxHeight: 640),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.group),
+                    child: child),
+              ),
+            ),
     );
     if (picked == null || !mounted) return;
     setState(() => _f = _f.copyWith(

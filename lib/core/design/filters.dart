@@ -249,7 +249,6 @@ class AppFilterPanel extends StatelessWidget {
                 const SizedBox(width: AppSpace.m),
               ],
               Expanded(
-                flex: 2,
                 child: AppButton.primary(label: applyLabel, onPressed: onApply),
               ),
             ]),

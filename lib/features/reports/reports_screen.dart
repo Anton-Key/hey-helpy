@@ -474,9 +474,11 @@ class _Progress extends StatelessWidget {
           width: double.infinity,
           child: Stack(children: [
             const Positioned.fill(child: ColoredBox(color: AppColors.fill)),
+            // heightFactor: 1 — иначе заливка получает высоту 0 и не видна.
             FractionallySizedBox(
               alignment: AlignmentDirectional.centerStart,
               widthFactor: value.clamp(0.0, 1.0),
+              heightFactor: 1,
               child: const ColoredBox(color: AppColors.accent),
             ),
           ]),
@@ -601,10 +603,12 @@ class _ContractorTableState extends State<_ContractorTable> {
         ),
       );
 
-  Widget _line() => const SizedBox(
+  // Ширина — явно: части таблицы стоят в Row, где «во всю ширину»
+  // означает бесконечность (ошибка вёрстки и пустая таблица).
+  Widget _line(double width) => SizedBox(
       height: 0.5,
-      width: double.infinity,
-      child: ColoredBox(color: AppColors.separator));
+      width: width,
+      child: const ColoredBox(color: AppColors.separator));
 
   @override
   Widget build(BuildContext context) {
@@ -626,7 +630,7 @@ class _ContractorTableState extends State<_ContractorTable> {
         ),
       ),
       for (final r in rows) ...[
-        _line(),
+        _line(_nameW),
         Pressable(
           onTap: () => widget.onOpen(r),
           effect: PressEffect.highlight,
@@ -670,7 +674,7 @@ class _ContractorTableState extends State<_ContractorTable> {
           ]),
         ),
         for (final r in rows) ...[
-          _line(),
+          _line(metricsW),
           Pressable(
             onTap: () => widget.onOpen(r),
             effect: PressEffect.highlight,

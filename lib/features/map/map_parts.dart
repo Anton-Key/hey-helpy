@@ -195,8 +195,11 @@ class ObjectInfoCard extends StatelessWidget {
                   style: AppText.headline.copyWith(
                       color: value > 0 ? c.foreground : AppColors.secondary,
                       fontWeight: FontWeight.w700)),
+              // До двух строк: «На проверке» и «Просрочено» не помещаются
+              // в узкую плитку одной строкой.
               Text(label,
-                  maxLines: 1,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
                   style: AppText.caption.copyWith(
                       color: value > 0 ? c.foreground : AppColors.secondary)),
@@ -243,7 +246,10 @@ class ObjectInfoCard extends StatelessWidget {
               onPressed: onClose),
         ]),
         const SizedBox(height: AppSpace.m),
-        Row(children: [
+        // Плитки одной высоты, даже если подпись в две строки.
+        IntrinsicHeight(
+            child:
+                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           counter('new', l.mapCountNew, stats.fresh),
           gap,
           counter('in_progress', l.mapCountInWork, stats.inWork),
@@ -251,7 +257,7 @@ class ObjectInfoCard extends StatelessWidget {
           counter('on_review', l.mapCountOnReview, stats.onReview),
           gap,
           counter('overdue', l.mapCountOverdue, stats.overdue),
-        ]),
+        ])),
         const SizedBox(height: AppSpace.m),
         AppButton.primary(
             label: l.mapOpenObject, icon: AppIcons.building, onPressed: onOpen),

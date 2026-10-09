@@ -34,6 +34,8 @@ class AppIcons {
   static const play = LucideIcons.play300;
   static const swap = LucideIcons.arrowLeftRight300;
   static const filter = LucideIcons.funnel300;
+  static const sort = LucideIcons.arrowUpDown300;
+  static const repeat = LucideIcons.repeat300;
   static const keyboard = LucideIcons.keyboard300;
   static const camera = LucideIcons.camera300;
   static const signOut = LucideIcons.logOut300;

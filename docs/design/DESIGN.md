@@ -80,7 +80,7 @@ Onest (SIL OFL 1.1), файлы `assets/fonts/Onest-{Regular,Medium,SemiBold,Bol
   (`0 1 3 rgba(15,26,23,.12)`), голосовая кнопка (`rgba(45,184,154,.40)`),
   кнопки и карточки поверх карты, всплывающие сообщения. У групп и карточек —
   без теней и без рамок.
-- `AppSizes`: кнопка 52, маленькая кнопка 32, поиск 38, сегмент 34, капсула статуса 24,
+- `AppSizes`: кнопка 52, маленькая кнопка 32, поиск 38, сегмент 34, таблетка фильтра 34, капсула статуса 24,
   голосовая кнопка 56, шапка 44 + крупный заголовок 52, нижнее меню 56.
 
 ### Значки — `AppIcons`
@@ -108,6 +108,10 @@ Onest (SIL OFL 1.1), файлы `assets/fonts/Onest-{Regular,Medium,SemiBold,Bol
 | `SegmentedControl` | controls.dart | сегмент-контрол iOS |
 | `AppSearchField` | controls.dart | поле поиска 38 с лупой и крестиком |
 | `AppChip`, `FilterTag` | controls.dart | чип-выбор (выбранный — акцент с галочкой), плашка фильтра с крестиком |
+| `AppFilterChip` | filters.dart | «таблетка» фильтра над списком (высота 34): обычная — белая с подписью и стрелкой вниз; активная — `accentTint`, краткая подпись выбора (`accentText` w600) и ✕. Не `FilterChip` — чтобы не путать с Material |
+| `AppCheckRow` | filters.dart | строка выбора с галочкой справа (множественный и одиночный выбор); вместо текста можно передать `child` (например `StatusPill`) |
+| `AppFilterPanel`, `AppPanelGroup` | filters.dart | содержимое окна фильтра: заголовок, шапка (сегмент-контрол), поиск по списку, прокручиваемые строки, «Сбросить» / «Применить (N)» |
+| `showFilterPicker`, `showAppPopover` | filters.dart | окно выбора: на узком экране — `showAppSheet`, на широком (≥ 900) — выпадающее окно под таблеткой (фон `bg`, r16, тень `floating`, закрывается нажатием мимо) |
 | `AppButton` (`.primary/.tinted/.secondary/.destructive/.plain`), `AppIconButton`, `CountBadge` | buttons.dart | кнопки-капсулы, круглая кнопка-значок, красный кружок с числом |
 | `AppSliverHeader`, `AppNavBar`, `AppBackButton`, `AppBarTextButton` | nav_bar.dart | шапка с крупным заголовком (сжимается при прокрутке, размытие 20, линия при прокрутке), компактная шапка, «‹ Предыдущий экран» |
 | `AppScaffold`, `SliverContent`, `ContentWidth`, `SliverBottomInset`, `appRoute` | nav_bar.dart | каркас экрана, колонка до 720, отступ под меню, маршрут iOS с подписью «назад» |

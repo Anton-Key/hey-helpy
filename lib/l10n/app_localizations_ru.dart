@@ -1678,4 +1678,168 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get reqViaText => 'текстом';
+
+  @override
+  String get filterPeriod => 'Период';
+
+  @override
+  String get filterObject => 'Объект';
+
+  @override
+  String get filterRoom => 'Помещение';
+
+  @override
+  String get filterContractor => 'Подрядчик';
+
+  @override
+  String get filterPriority => 'Срочность';
+
+  @override
+  String get filterStatus => 'Статус';
+
+  @override
+  String get filterWorkType => 'Вид работ';
+
+  @override
+  String get filterMore => 'Ещё';
+
+  @override
+  String get filterSort => 'Сортировка';
+
+  @override
+  String get filterPeriodToday => 'Сегодня';
+
+  @override
+  String get filterPeriod7 => '7 дней';
+
+  @override
+  String get filterPeriod30 => '30 дней';
+
+  @override
+  String get filterPeriodThisMonth => 'Этот месяц';
+
+  @override
+  String get filterPeriodLastMonth => 'Прошлый месяц';
+
+  @override
+  String get filterPeriodCustom => 'Свой период…';
+
+  @override
+  String get filterByCreated => 'По дате создания';
+
+  @override
+  String get filterByDue => 'По сроку';
+
+  @override
+  String filterDueLabel(String period) {
+    return 'Срок: $period';
+  }
+
+  @override
+  String get filterNoContractor => 'Без подрядчика';
+
+  @override
+  String get filterOverdue => 'Просрочено';
+
+  @override
+  String get filterType => 'Тип';
+
+  @override
+  String get filterOnce => 'Разовая';
+
+  @override
+  String get filterRecurring => 'Повторяющаяся';
+
+  @override
+  String get filterSource => 'Источник';
+
+  @override
+  String get filterChannelVoice => 'Голос';
+
+  @override
+  String get filterChannelText => 'Текст';
+
+  @override
+  String get filterChannelButton => 'Вручную';
+
+  @override
+  String get filterOptions => 'Условия';
+
+  @override
+  String get filterNeedsPhoto => 'Нужно фото';
+
+  @override
+  String get filterReturned => 'Возвращались на доработку';
+
+  @override
+  String get filterCreatedByMe => 'Создал я';
+
+  @override
+  String get filterAssignedToMe => 'Назначено мне';
+
+  @override
+  String filterMoreCount(int count) {
+    return 'Ещё · $count';
+  }
+
+  @override
+  String filterPlus(String label, int count) {
+    return '$label +$count';
+  }
+
+  @override
+  String get sortNewest => 'Сначала новые';
+
+  @override
+  String get sortOldest => 'Сначала старые';
+
+  @override
+  String get sortDue => 'По сроку';
+
+  @override
+  String get sortPriority => 'По срочности';
+
+  @override
+  String get sortStatus => 'По статусу';
+
+  @override
+  String get sortObject => 'По объекту';
+
+  @override
+  String get filterReset => 'Сбросить';
+
+  @override
+  String get filterApply => 'Применить';
+
+  @override
+  String filterApplyCount(int count) {
+    return 'Применить ($count)';
+  }
+
+  @override
+  String get filterResetAll => 'Сбросить всё';
+
+  @override
+  String filterFound(int shown, int total) {
+    return 'Найдено $shown из $total';
+  }
+
+  @override
+  String get filterResetFilters => 'Сбросить фильтры';
+
+  @override
+  String get filterSearchHint => 'Поиск по списку';
+
+  @override
+  String filterClearOne(String name) {
+    return 'Убрать фильтр «$name»';
+  }
+
+  @override
+  String filterRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String get filterPickDates => 'Выберите даты';
 }

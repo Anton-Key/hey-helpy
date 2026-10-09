@@ -6,6 +6,7 @@ library;
 export 'app_theme.dart';
 export 'buttons.dart';
 export 'controls.dart';
+export 'filters.dart';
 export 'group.dart';
 export 'icons.dart';
 export 'nav_bar.dart';

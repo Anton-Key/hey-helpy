@@ -9,67 +9,27 @@ import '../../core/location.dart';
 import '../../core/paging.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
-import '../home/home_chrome.dart';
 import '../photos/photo_capture.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
 import '../visits/visit_repository.dart';
 import '../visits/visit_section.dart';
-import '../voice/voice_record_screen.dart';
 import 'contractor_picker.dart';
+import 'order_filter.dart';
 import 'order_menu.dart';
-import '../voice/wake_word_service.dart';
+import 'work_order.dart';
 import '../../core/app_message.dart';
 
-class WorkOrder {
-  final String id;
-  final String title;
-  final String? workType;
-  final String? layerId;
-  final String priority;
-  final String status;
-  final String? objectId;
-  final bool recurring;
+export 'requests_tab.dart';
+export 'work_order.dart';
 
-  /// Срок (due_at) и дата создания — для фильтра «Просрочено» и групп
-  /// «Сегодня / Ранее»; помещение — для подписи строки.
-  final DateTime? dueAt;
-  final DateTime? createdAt;
-  final String? placeName;
-  WorkOrder(
-      {required this.id,
-      required this.title,
-      this.workType,
-      this.layerId,
-      required this.priority,
-      required this.status,
-      this.objectId,
-      required this.recurring,
-      this.dueAt,
-      this.createdAt,
-      this.placeName});
-  factory WorkOrder.fromMap(Map<String, dynamic> m) {
-    return WorkOrder(
-      id: m['id'] as String,
-      title: (m['title'] ?? '') as String,
-      workType: m['work_type'] as String?,
-      layerId: m['layer_id'] as String?,
-      priority: (m['priority'] ?? 'normal') as String,
-      status: (m['status'] ?? 'new') as String,
-      objectId: m['object_id'] as String?,
-      recurring: m['recurrence'] != null,
-      dueAt: DateTime.tryParse('${m['due_at'] ?? ''}')?.toLocal(),
-      createdAt: DateTime.tryParse('${m['created_at'] ?? ''}')?.toLocal(),
-      placeName: (m['locations'] as Map<String, dynamic>?)?['name'] as String?,
-    );
+/// Добавляет к запросу условия фильтра ([OrderFilter.serverConditions]).
+PostgrestFilterBuilder<T> applyServerConds<T>(
+    PostgrestFilterBuilder<T> q, List<ServerCond> conds) {
+  for (final c in conds) {
+    q = c.column == 'or' ? q.or(c.value) : q.filter(c.column, c.op, c.value);
   }
-
-  /// Открыта: не принята и не отменена.
-  bool get isOpen => status != 'done' && status != 'cancelled';
-
-  /// Просрочена: открыта, а срок прошёл.
-  bool isOverdue([DateTime? now]) =>
-      isOpen && dueAt != null && dueAt!.isBefore(now ?? DateTime.now());
+  return q;
 }
 
 /// База не дала удалить заявку (не менеджер или заявка чужой компании).
@@ -113,16 +73,25 @@ class RequestsRepo {
       .select('id,object_id,status,priority,due_at')
       .order('id'));
 
-  Future<List<WorkOrder>> list() async {
-    final rows = await _c
-        .from('work_orders')
-        .select(
-            'id,title,work_type,layer_id,priority,status,recurrence,object_id,'
-            'due_at,created_at,locations(name)')
-        .order('created_at', ascending: false);
-    return (rows as List)
-        .map((e) => WorkOrder.fromMap(e as Map<String, dynamic>))
-        .toList();
+  /// Заявки списка «Заявки» с условиями фильтра (на сервере, поверх RLS).
+  /// Читает страницами: заявок может быть больше 1000.
+  Future<List<WorkOrder>> listFiltered(List<ServerCond> conds) async {
+    final rows = await fetchAll(() => applyServerConds(
+            _c.from('work_orders').select(WorkOrder.listColumns), conds)
+        .order('created_at', ascending: false)
+        .order('id'));
+    return rows.map(WorkOrder.fromMap).toList();
+  }
+
+  /// Сколько всего заявок видно пользователю (без фильтров) — «из M».
+  Future<int> countAll() => _c.from('work_orders').count(CountOption.exact);
+
+  /// Мои записи исполнителя (executors.id) — для «Назначено мне».
+  Future<List<String>> myExecutorIds() async {
+    final id = uid;
+    if (id == null) return const [];
+    final rows = await _c.from('executors').select('id').eq('profile_id', id);
+    return [for (final r in rows) r['id'] as String];
   }
 
   Future<Map<String, dynamic>?> detail(String id) async {
@@ -236,9 +205,6 @@ class RequestsRepo {
   }
 }
 
-/// Фильтр списка заявок (сегмент-контрол).
-enum _OrdersFilter { all, open, overdue }
-
 String _objNameIn(AppLocalizations l, List<Obj> objects, String? id) {
   if (id == null) return l.objectNone;
   for (final o in objects) {
@@ -262,328 +228,6 @@ String? _workTypeLabel(List<Layer> layers, String locale,
   final layer = Layer.find(layers, id: layerId, name: workType);
   if (layer != null) return layer.label(locale);
   return (workType == null || workType.isEmpty) ? null : workType;
-}
-
-class RequestsTab extends StatefulWidget {
-  const RequestsTab({super.key, this.objectFilter, this.onClearObjectFilter});
-
-  /// Показывать только заявки этого объекта (кнопка «Заявки» на карте).
-  final Obj? objectFilter;
-  final VoidCallback? onClearObjectFilter;
-
-  @override
-  State<RequestsTab> createState() => _RequestsTabState();
-}
-
-class _RequestsTabState extends State<RequestsTab> {
-  final _repo = RequestsRepo();
-  final _dir = DirectoryRepo();
-
-  /// Сейчас — кнопка «Нажми и говори»; позже сюда же подключится «Эй, Хелпи».
-  final _wake = PushToTalkWakeWord();
-  StreamSubscription<void>? _wakeSub;
-  bool _voiceOpen = false;
-  List<WorkOrder> _items = [];
-  List<Obj> _objects = const [];
-  List<Contractor> _contractors = const [];
-  List<Layer> _layers = const [];
-  String? _companyId;
-  String? _role;
-  bool _loading = true;
-  String? _error;
-  String _query = '';
-  _OrdersFilter _filter = _OrdersFilter.all;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
-    _wakeSub = _wake.detections.listen((_) => _openVoice());
-    _wake.start();
-  }
-
-  @override
-  void dispose() {
-    _wakeSub?.cancel();
-    _wake.dispose();
-    super.dispose();
-  }
-
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      _companyId ??= await _dir.myCompanyId();
-      _role ??= await _repo.myRole();
-      final objs = await _dir.objects();
-      final cons = await _dir.contractors();
-      final data = await _repo.list();
-      List<Layer> layers = _layers;
-      try {
-        layers = await _dir.layers();
-      } catch (_) {}
-      if (!mounted) return;
-      setState(() {
-        _objects = objs;
-        _contractors = cons;
-        _layers = layers;
-        _items = data;
-        _loading = false;
-      });
-    } catch (e) {
-      debugPrint('RequestsTab: $e');
-      if (!mounted) return;
-      setState(() {
-        _error = '$e';
-        _loading = false;
-      });
-    }
-  }
-
-  /// Заявки с учётом фильтра по объекту.
-  List<WorkOrder> get _shown {
-    final f = widget.objectFilter;
-    return f == null
-        ? _items
-        : [
-            for (final w in _items)
-              if (w.objectId == f.id) w
-          ];
-  }
-
-  /// Поиск по названию, объекту, помещению и виду работ.
-  bool _matches(WorkOrder w) {
-    final q = _query.trim().toLowerCase();
-    if (q.isEmpty) return true;
-    final l = context.l10n;
-    final work = _workTypeLabel(_layers, context.localeCode,
-        layerId: w.layerId, workType: w.workType);
-    return [
-      w.title,
-      _objNameIn(l, _objects, w.objectId),
-      w.placeName ?? '',
-      work ?? '',
-    ].any((t) => t.toLowerCase().contains(q));
-  }
-
-  Future<void> _openDetail(WorkOrder w) async {
-    await Navigator.push(
-        context,
-        appRoute(
-          (_) => WorkOrderDetailScreen(
-            order: w,
-            objects: _objects,
-            contractors: _contractors,
-            layers: _layers,
-            uid: _repo.uid,
-            role: _role,
-            repo: _repo,
-            companyId: _companyId,
-          ),
-          title: context.l10n.tabRequests,
-        ));
-    _load();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final now = DateTime.now();
-    final base = _shown;
-    final open = base.where((w) => w.isOpen).length;
-    final overdue = base.where((w) => w.isOverdue(now)).length;
-    return Stack(children: [
-      Positioned.fill(
-        child: CustomScrollView(slivers: [
-          HomeHeader(
-            title: l.tabRequests,
-            eyebrow: widget.objectFilter?.name ?? l.appName,
-            actions: [
-              AppIconButton(
-                  icon: AppIcons.refresh,
-                  label: l.commonRefresh,
-                  onPressed: _loading ? null : _load),
-            ],
-          ),
-          SliverContent(
-            sliver: SliverList.list(children: [
-              AppSearchField(
-                  hint: l.reqSearchHint,
-                  onChanged: (v) => setState(() => _query = v)),
-              const SizedBox(height: AppSpace.m),
-              SegmentedControl<_OrdersFilter>(
-                segments: [
-                  Segment(_OrdersFilter.all, l.reqSegAll(base.length)),
-                  Segment(_OrdersFilter.open, l.reqSegOpen(open)),
-                  Segment(_OrdersFilter.overdue, l.reqSegOverdue(overdue)),
-                ],
-                selected: _filter,
-                onChanged: (f) => setState(() => _filter = f),
-              ),
-              if (widget.objectFilter != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(top: AppSpace.m),
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: FilterTag(
-                      icon: AppIcons.building,
-                      label: l.requestsFilterObject(widget.objectFilter!.name),
-                      clearLabel: l.requestsFilterClear,
-                      onClear: widget.onClearObjectFilter ?? () {},
-                    ),
-                  ),
-                ),
-            ]),
-          ),
-          ..._body(now),
-          const SliverBottomInset(extra: AppSizes.fabClearance),
-        ]),
-      ),
-      // Голосовая кнопка и «+» — над нижним меню (оно поверх содержимого).
-      PositionedDirectional(
-        end: AppSpace.screen,
-        bottom: MediaQuery.paddingOf(context).bottom + AppSpace.l,
-        child: VoiceButton(
-          label: l.appName,
-          semanticLabel: l.requestsVoice,
-          onVoice: _wake.trigger,
-          addLabel: l.requestsCreate,
-          onAdd: _openCreate,
-        ),
-      ),
-    ]);
-  }
-
-  List<Widget> _body(DateTime now) {
-    final l = context.l10n;
-    final locale = context.localeCode;
-    if (_loading) {
-      return const [
-        SliverFillRemaining(hasScrollBody: false, child: AppLoader())
-      ];
-    }
-    if (_error != null) {
-      return [
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: AppEmptyState(
-              text: l.requestsLoadFailed,
-              error: true,
-              actionLabel: l.commonRetry,
-              onAction: _load),
-        )
-      ];
-    }
-    final items = _shown
-        .where((w) => switch (_filter) {
-              _OrdersFilter.all => true,
-              _OrdersFilter.open => w.isOpen,
-              _OrdersFilter.overdue => w.isOverdue(now),
-            })
-        .where(_matches)
-        .toList();
-    if (items.isEmpty) {
-      return [
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: AppEmptyState(
-              text: _shown.isEmpty ? l.requestsEmpty : l.reqNothingFound),
-        )
-      ];
-    }
-    final today = DateTime(now.year, now.month, now.day);
-    bool isToday(WorkOrder w) =>
-        w.createdAt != null && !w.createdAt!.isBefore(today);
-    final todays = items.where(isToday).toList();
-    final earlier = items.where((w) => !isToday(w)).toList();
-
-    Widget row(WorkOrder w) {
-      final workType = _workTypeLabel(_layers, locale,
-          layerId: w.layerId, workType: w.workType);
-      final place = (w.placeName != null && w.placeName!.isNotEmpty)
-          ? w.placeName!
-          : _objNameIn(l, _objects, w.objectId);
-      final overdue = w.isOverdue(now);
-      return AppRow(
-        leading: PriorityDot(w.priority),
-        title: w.title + (w.recurring ? '  · ${l.requestRecurringTag}' : ''),
-        subtitle: [place, if (workType != null) workType].join(' · '),
-        subtitleMaxLines: 1,
-        // Капсула — всегда настоящий статус; просрочка — красной подписью
-        // под строкой (иначе не видно, новая заявка или уже в работе).
-        extra: overdue
-            ? Text(l.statusOverdue,
-                style: AppText.footnote.copyWith(
-                    color: AppColors.danger, fontWeight: FontWeight.w600))
-            : null,
-        trailing: StatusPill(w.status),
-        onTap: () => _openDetail(w),
-      );
-    }
-
-    return [
-      SliverContent(
-        top: AppSpace.xs,
-        sliver: SliverList.list(children: [
-          if (todays.isNotEmpty)
-            AppGroup(
-                header: l.reqGroupToday,
-                children: [for (final w in todays) row(w)]),
-          if (earlier.isNotEmpty)
-            AppGroup(
-                header: l.reqGroupEarlier,
-                children: [for (final w in earlier) row(w)]),
-        ]),
-      ),
-    ];
-  }
-
-  Future<void> _openCreate() async {
-    if (_companyId == null) {
-      _snack(context.l10n.requestsNoCompany, type: AppMessageType.error);
-      return;
-    }
-    final ok = await showOrderForm(
-        context: context,
-        repo: _repo,
-        objects: _objects,
-        companyId: _companyId!,
-        existing: null,
-        initialObjectId: widget.objectFilter?.id);
-    if (ok == true) {
-      await _load();
-      if (mounted) _snackOk(context.l10n.requestsCreated);
-    }
-  }
-
-  Future<void> _openVoice() async {
-    if (_voiceOpen || !mounted) return;
-    if (_companyId == null) {
-      _snack(context.l10n.requestsNoCompany, type: AppMessageType.error);
-      return;
-    }
-    _voiceOpen = true;
-    final ok = await Navigator.push<bool>(
-        context,
-        appRoute(
-            (_) => VoiceRecordScreen(companyId: _companyId!, objects: _objects),
-            title: context.l10n.tabRequests));
-    _voiceOpen = false;
-    if (ok == true) {
-      await _load();
-      if (mounted) _snackOk(context.l10n.requestsCreated);
-    }
-  }
-
-  void _snack(String m, {AppMessageType type = AppMessageType.info}) {
-    if (mounted) showAppMessage(context, m, type: type);
-  }
-
-  void _snackOk(String m) {
-    if (mounted) showAppMessage(context, m, type: AppMessageType.success);
-  }
 }
 
 class WorkOrderDetailScreen extends StatefulWidget {

@@ -207,8 +207,7 @@ void main() {
         label: 'Открыть',
         onPressed: () => Navigator.push(
             context,
-            appRoute(
-                (_) => const AppScaffold(title: 'Заявка', slivers: []),
+            appRoute((_) => const AppScaffold(title: 'Заявка', slivers: []),
                 title: 'Заявки')),
       ),
     )));
@@ -342,5 +341,114 @@ void main() {
     expect(theme.pageTransitionsTheme.builders[TargetPlatform.android],
         isA<CupertinoPageTransitionsBuilder>());
     expect(theme.scaffoldBackgroundColor, AppColors.bg);
+  });
+
+  testWidgets('AppFilterChip: обычная и активная с крестиком', (t) async {
+    var taps = 0, clears = 0;
+    await t.pumpWidget(_app(Column(children: [
+      AppFilterChip(label: 'Срочность', onTap: () => taps++),
+      AppFilterChip(
+          label: 'Статус',
+          activeLabel: 'Новая +1',
+          clearLabel: 'Убрать',
+          onTap: () => taps++,
+          onClear: () => clears++),
+    ])));
+    expect(find.text('Срочность'), findsOneWidget);
+    expect(find.text('Новая +1'), findsOneWidget);
+    // У обычной — стрелка вниз, у активной — крестик.
+    expect(find.byIcon(AppIcons.chevronDown), findsOneWidget);
+    expect(find.byIcon(AppIcons.close), findsOneWidget);
+    await t.tap(find.text('Срочность'));
+    await t.tap(find.byIcon(AppIcons.close));
+    await t.pumpAndSettle();
+    expect((taps, clears), (1, 1));
+    final active = t.widget<Container>(find
+        .ancestor(of: find.text('Новая +1'), matching: find.byType(Container))
+        .last);
+    expect((active.decoration as BoxDecoration).color, AppColors.accentTint);
+  });
+
+  testWidgets('AppFilterChip compact: только значок, подпись — для диктора',
+      (t) async {
+    await t.pumpWidget(_app(AppFilterChip(
+        label: 'Сначала новые',
+        icon: AppIcons.sort,
+        compact: true,
+        onTap: () {})));
+    expect(find.text('Сначала новые'), findsNothing);
+    expect(find.byIcon(AppIcons.sort), findsOneWidget);
+    expect(find.bySemanticsLabel('Сначала новые'), findsOneWidget);
+  });
+
+  testWidgets('AppCheckRow: галочка у выбранной строки', (t) async {
+    var tapped = false;
+    await t.pumpWidget(_app(AppGroup(children: [
+      AppCheckRow(title: 'Высокий', selected: true, onTap: () {}),
+      AppCheckRow(title: 'Низкий', selected: false, onTap: () => tapped = true),
+    ])));
+    expect(find.byIcon(AppIcons.check), findsOneWidget);
+    await t.tap(find.text('Низкий'));
+    await t.pumpAndSettle();
+    expect(tapped, isTrue);
+  });
+
+  testWidgets('AppFilterPanel: поиск, «Сбросить» и «Применить»', (t) async {
+    var applied = false, reset = false;
+    String q = '';
+    await t.pumpWidget(_app(AppFilterPanel(
+      title: 'Объект',
+      searchHint: 'Поиск по списку',
+      onSearch: (v) => q = v,
+      resetLabel: 'Сбросить',
+      onReset: () => reset = true,
+      applyLabel: 'Применить (2)',
+      onApply: () => applied = true,
+      children: const [Text('строки')],
+    )));
+    expect(find.text('Объект'), findsOneWidget);
+    await t.enterText(find.byType(TextField), 'плаза');
+    await t.tap(find.text('Сбросить'));
+    await t.tap(find.text('Применить (2)'));
+    await t.pumpAndSettle();
+    expect((q, reset, applied), ('плаза', true, true));
+  });
+
+  Future<void> openPicker(WidgetTester t, Size size) async {
+    t.view.physicalSize = size;
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(_app(
+        Align(
+          alignment: Alignment.topLeft,
+          child: Builder(
+            builder: (ctx) => AppFilterChip(
+              label: 'Период',
+              onTap: () => showFilterPicker<void>(
+                  context: ctx, builder: (_) => const Text('содержимое')),
+            ),
+          ),
+        ),
+        size: size));
+    await t.tap(find.text('Период'));
+    await t.pumpAndSettle();
+  }
+
+  testWidgets('showFilterPicker: на узком экране — шторка', (t) async {
+    await openPicker(t, const Size(412, 900));
+    expect(find.byType(SheetGrabber), findsOneWidget);
+    expect(find.text('содержимое'), findsOneWidget);
+  });
+
+  testWidgets('showFilterPicker: на широком — окно под таблеткой', (t) async {
+    await openPicker(t, const Size(1280, 900));
+    expect(find.byType(SheetGrabber), findsNothing);
+    final chip = t.getRect(find.byType(AppFilterChip));
+    final body = t.getRect(find.text('содержимое'));
+    expect(body.top, greaterThan(chip.bottom), reason: 'окно — под таблеткой');
+    // Нажатие мимо закрывает окно.
+    await t.tapAt(const Offset(1200, 800));
+    await t.pumpAndSettle();
+    expect(find.text('содержимое'), findsNothing);
   });
 }

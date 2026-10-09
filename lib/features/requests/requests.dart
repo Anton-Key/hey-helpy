@@ -3,15 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/directional.dart';
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
 import '../../core/paging.dart';
-import '../../core/status_style.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import '../home/home_chrome.dart';
 import '../photos/photo_capture.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
@@ -32,6 +30,12 @@ class WorkOrder {
   final String status;
   final String? objectId;
   final bool recurring;
+
+  /// Срок (due_at) и дата создания — для фильтра «Просрочено» и групп
+  /// «Сегодня / Ранее»; помещение — для подписи строки.
+  final DateTime? dueAt;
+  final DateTime? createdAt;
+  final String? placeName;
   WorkOrder(
       {required this.id,
       required this.title,
@@ -40,7 +44,10 @@ class WorkOrder {
       required this.priority,
       required this.status,
       this.objectId,
-      required this.recurring});
+      required this.recurring,
+      this.dueAt,
+      this.createdAt,
+      this.placeName});
   factory WorkOrder.fromMap(Map<String, dynamic> m) {
     return WorkOrder(
       id: m['id'] as String,
@@ -51,8 +58,18 @@ class WorkOrder {
       status: (m['status'] ?? 'new') as String,
       objectId: m['object_id'] as String?,
       recurring: m['recurrence'] != null,
+      dueAt: DateTime.tryParse('${m['due_at'] ?? ''}')?.toLocal(),
+      createdAt: DateTime.tryParse('${m['created_at'] ?? ''}')?.toLocal(),
+      placeName: (m['locations'] as Map<String, dynamic>?)?['name'] as String?,
     );
   }
+
+  /// Открыта: не принята и не отменена.
+  bool get isOpen => status != 'done' && status != 'cancelled';
+
+  /// Просрочена: открыта, а срок прошёл.
+  bool isOverdue([DateTime? now]) =>
+      isOpen && dueAt != null && dueAt!.isBefore(now ?? DateTime.now());
 }
 
 /// База не дала удалить заявку (не менеджер или заявка чужой компании).
@@ -100,7 +117,8 @@ class RequestsRepo {
     final rows = await _c
         .from('work_orders')
         .select(
-            'id,title,work_type,layer_id,priority,status,recurrence,object_id')
+            'id,title,work_type,layer_id,priority,status,recurrence,object_id,'
+            'due_at,created_at,locations(name)')
         .order('created_at', ascending: false);
     return (rows as List)
         .map((e) => WorkOrder.fromMap(e as Map<String, dynamic>))
@@ -108,7 +126,11 @@ class RequestsRepo {
   }
 
   Future<Map<String, dynamic>?> detail(String id) async {
-    return await _c.from('work_orders').select().eq('id', id).maybeSingle();
+    return await _c
+        .from('work_orders')
+        .select('*,locations(name)')
+        .eq('id', id)
+        .maybeSingle();
   }
 
   Future<void> create(
@@ -214,15 +236,8 @@ class RequestsRepo {
   }
 }
 
-const _ink = Color(0xFF1C1E22);
-const _muted = Color(0xFF8A9098);
-const _line = Color(0xFFE8EAED);
-const _onBrand = Color(0xFF06342A);
-
-BoxDecoration _card() => BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(18),
-    border: Border.all(color: _line));
+/// Фильтр списка заявок (сегмент-контрол).
+enum _OrdersFilter { all, open, overdue }
 
 String _objNameIn(AppLocalizations l, List<Obj> objects, String? id) {
   if (id == null) return l.objectNone;
@@ -276,6 +291,8 @@ class _RequestsTabState extends State<RequestsTab> {
   String? _role;
   bool _loading = true;
   String? _error;
+  String _query = '';
+  _OrdersFilter _filter = _OrdersFilter.all;
 
   @override
   void initState() {
@@ -336,18 +353,26 @@ class _RequestsTabState extends State<RequestsTab> {
           ];
   }
 
-  String _statusText() {
+  /// Поиск по названию, объекту, помещению и виду работ.
+  bool _matches(WorkOrder w) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return true;
     final l = context.l10n;
-    if (_loading) return l.requestsLoading;
-    if (_error != null) return l.requestsLoadErrorShort;
-    return l.requestsCount(_shown.length);
+    final work = _workTypeLabel(_layers, context.localeCode,
+        layerId: w.layerId, workType: w.workType);
+    return [
+      w.title,
+      _objNameIn(l, _objects, w.objectId),
+      w.placeName ?? '',
+      work ?? '',
+    ].any((t) => t.toLowerCase().contains(q));
   }
 
   Future<void> _openDetail(WorkOrder w) async {
     await Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => WorkOrderDetailScreen(
+        appRoute(
+          (_) => WorkOrderDetailScreen(
             order: w,
             objects: _objects,
             contractors: _contractors,
@@ -357,160 +382,157 @@ class _RequestsTabState extends State<RequestsTab> {
             repo: _repo,
             companyId: _companyId,
           ),
+          title: context.l10n.tabRequests,
         ));
     _load();
   }
 
   @override
   Widget build(BuildContext context) {
-    const brand = HeyHelpyTheme.brand;
+    final l = context.l10n;
+    final now = DateTime.now();
+    final base = _shown;
+    final open = base.where((w) => w.isOpen).length;
+    final overdue = base.where((w) => w.isOverdue(now)).length;
     return Stack(children: [
       Positioned.fill(
-        child:
-            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(18, 14, 18, 6),
-            child: Wrap(
-                spacing: 10,
-                runSpacing: 6,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(_statusText(),
-                      style: const TextStyle(
-                          color: _muted,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13)),
-                  if (widget.objectFilter != null)
-                    Chip(
-                      avatar: const Icon(Icons.apartment,
-                          size: 18, color: HeyHelpyTheme.link),
-                      label: Text(context.l10n
-                          .requestsFilterObject(widget.objectFilter!.name)),
-                      backgroundColor: HeyHelpyTheme.mint,
-                      side: BorderSide.none,
-                      deleteIcon: const Icon(Icons.close, size: 18),
-                      deleteButtonTooltipMessage:
-                          context.l10n.requestsFilterClear,
-                      onDeleted: widget.onClearObjectFilter,
-                    ),
-                ]),
+        child: CustomScrollView(slivers: [
+          HomeHeader(
+            title: l.tabRequests,
+            eyebrow: widget.objectFilter?.name ?? l.appName,
+            actions: [
+              AppIconButton(
+                  icon: AppIcons.refresh,
+                  label: l.commonRefresh,
+                  onPressed: _loading ? null : _load),
+            ],
           ),
-          Expanded(child: _body()),
+          SliverContent(
+            sliver: SliverList.list(children: [
+              AppSearchField(
+                  hint: l.reqSearchHint,
+                  onChanged: (v) => setState(() => _query = v)),
+              const SizedBox(height: AppSpace.m),
+              SegmentedControl<_OrdersFilter>(
+                segments: [
+                  Segment(_OrdersFilter.all, l.reqSegAll(base.length)),
+                  Segment(_OrdersFilter.open, l.reqSegOpen(open)),
+                  Segment(_OrdersFilter.overdue, l.reqSegOverdue(overdue)),
+                ],
+                selected: _filter,
+                onChanged: (f) => setState(() => _filter = f),
+              ),
+              if (widget.objectFilter != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(top: AppSpace.m),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: FilterTag(
+                      icon: AppIcons.building,
+                      label: l.requestsFilterObject(widget.objectFilter!.name),
+                      clearLabel: l.requestsFilterClear,
+                      onClear: widget.onClearObjectFilter ?? () {},
+                    ),
+                  ),
+                ),
+            ]),
+          ),
+          ..._body(now),
+          const SliverBottomInset(extra: AppSizes.fabClearance),
         ]),
       ),
+      // Голосовая кнопка и «+» — над нижним меню (оно поверх содержимого).
       PositionedDirectional(
-        end: 4,
-        bottom: 8,
-        child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              FloatingActionButton.small(
-                  heroTag: 'refreshReq',
-                  backgroundColor: Colors.white,
-                  foregroundColor: HeyHelpyTheme.link,
-                  tooltip: context.l10n.commonRefresh,
-                  onPressed: _load,
-                  child: const Icon(Icons.refresh)),
-              const SizedBox(height: 10),
-              Tooltip(
-                  message: context.l10n.requestsVoice,
-                  child: FloatingActionButton.large(
-                      heroTag: 'voiceReq',
-                      backgroundColor: brand,
-                      foregroundColor: _onBrand,
-                      onPressed: _wake.trigger,
-                      // Подпись — имя кнопки для экранного чтеца
-                      // (и для /screens: Tooltip его не задаёт).
-                      child: Icon(Icons.mic,
-                          size: 44,
-                          semanticLabel: context.l10n.requestsVoice))),
-              const SizedBox(height: 10),
-              FloatingActionButton.extended(
-                  heroTag: 'addReq',
-                  backgroundColor: brand,
-                  foregroundColor: _onBrand,
-                  onPressed: _openCreate,
-                  icon: const Icon(Icons.add),
-                  label: Text(context.l10n.requestsCreate,
-                      style: const TextStyle(fontWeight: FontWeight.w800))),
-            ]),
+        end: AppSpace.screen,
+        bottom: MediaQuery.paddingOf(context).bottom + AppSpace.l,
+        child: VoiceButton(
+          label: l.appName,
+          semanticLabel: l.requestsVoice,
+          onVoice: _wake.trigger,
+          addLabel: l.requestsCreate,
+          onAdd: _openCreate,
+        ),
       ),
     ]);
   }
 
-  Widget _body() {
+  List<Widget> _body(DateTime now) {
     final l = context.l10n;
     final locale = context.localeCode;
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) {
+      return const [
+        SliverFillRemaining(hasScrollBody: false, child: AppLoader())
+      ];
+    }
     if (_error != null) {
-      return Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(l.requestsLoadFailed,
-            style: const TextStyle(color: Color(0xFFC24444))),
-      );
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: AppEmptyState(
+              text: l.requestsLoadFailed,
+              error: true,
+              actionLabel: l.commonRetry,
+              onAction: _load),
+        )
+      ];
     }
-    final items = _shown;
+    final items = _shown
+        .where((w) => switch (_filter) {
+              _OrdersFilter.all => true,
+              _OrdersFilter.open => w.isOpen,
+              _OrdersFilter.overdue => w.isOverdue(now),
+            })
+        .where(_matches)
+        .toList();
     if (items.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Text(l.requestsEmpty,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: _muted)),
-        ),
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: AppEmptyState(
+              text: _shown.isEmpty ? l.requestsEmpty : l.reqNothingFound),
+        )
+      ];
+    }
+    final today = DateTime(now.year, now.month, now.day);
+    bool isToday(WorkOrder w) =>
+        w.createdAt != null && !w.createdAt!.isBefore(today);
+    final todays = items.where(isToday).toList();
+    final earlier = items.where((w) => !isToday(w)).toList();
+
+    Widget row(WorkOrder w) {
+      final workType = _workTypeLabel(_layers, locale,
+          layerId: w.layerId, workType: w.workType);
+      final place = (w.placeName != null && w.placeName!.isNotEmpty)
+          ? w.placeName!
+          : _objNameIn(l, _objects, w.objectId);
+      final overdue = w.isOverdue(now);
+      return AppRow(
+        leading: PriorityDot(w.priority),
+        title: w.title + (w.recurring ? '  · ${l.requestRecurringTag}' : ''),
+        subtitle: [place, if (workType != null) workType].join(' · '),
+        subtitleMaxLines: 1,
+        trailing: overdue
+            ? StatusPill('overdue', label: l.statusOverdue)
+            : StatusPill(w.status),
+        onTap: () => _openDetail(w),
       );
     }
-    // Снизу — место под плавающие кнопки (обновить 40 + микрофон 96 +
-    // «Создать заявку» 48 + промежутки ≈ 212): последняя карточка
-    // прокручивается выше них.
-    return ListView.builder(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 240),
-      itemCount: items.length,
-      itemBuilder: (_, i) {
-        final w = items[i];
-        final high = w.priority == 'high' || w.priority == 'critical';
-        final workType = _workTypeLabel(_layers, locale,
-            layerId: w.layerId, workType: w.workType);
-        return TapCard(
-          onTap: () => _openDetail(w),
-          chevron: false,
-          radius: 18,
-          child: IntrinsicHeight(
-            child:
-                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Container(
-                  width: 6,
-                  decoration: BoxDecoration(
-                      color: high
-                          ? StatusStyle.urgentAccent
-                          : const Color(0xFFD7DBE0),
-                      borderRadius: BorderRadius.circular(4))),
-              const SizedBox(width: 11),
-              Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    Text(
-                        w.title +
-                            (w.recurring ? '  · ${l.requestRecurringTag}' : ''),
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 3),
-                    Text(
-                        '${_objNameIn(l, _objects, w.objectId)}'
-                        '${workType != null ? ' · $workType' : ''}',
-                        style: const TextStyle(color: _muted, fontSize: 13)),
-                  ])),
-              const SizedBox(width: 8),
-              Center(child: StatusPill(w.status)),
-              const SizedBox(width: 4),
-              const ChevronEnd(color: _muted, size: 20),
-            ]),
-          ),
-        );
-      },
-    );
+
+    return [
+      SliverContent(
+        top: AppSpace.xs,
+        sliver: SliverList.list(children: [
+          if (todays.isNotEmpty)
+            AppGroup(
+                header: l.reqGroupToday,
+                children: [for (final w in todays) row(w)]),
+          if (earlier.isNotEmpty)
+            AppGroup(
+                header: l.reqGroupEarlier,
+                children: [for (final w in earlier) row(w)]),
+        ]),
+      ),
+    ];
   }
 
   Future<void> _openCreate() async {
@@ -540,9 +562,9 @@ class _RequestsTabState extends State<RequestsTab> {
     _voiceOpen = true;
     final ok = await Navigator.push<bool>(
         context,
-        MaterialPageRoute(
-            builder: (_) =>
-                VoiceRecordScreen(companyId: _companyId!, objects: _objects)));
+        appRoute(
+            (_) => VoiceRecordScreen(companyId: _companyId!, objects: _objects),
+            title: context.l10n.tabRequests));
     _voiceOpen = false;
     if (ok == true) {
       await _load();
@@ -816,25 +838,24 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   Future<void> _returnForRework() async {
     final l = context.l10n;
     final c = TextEditingController();
-    final reason = await showDialog<String>(
+    final ok = await showAppDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l.actionReturn),
-        content: TextField(
-            controller: c,
-            autofocus: true,
-            maxLines: 3,
-            decoration: InputDecoration(hintText: l.returnHint)),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: Text(l.commonCancel)),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, c.text.trim()),
-              child: Text(l.returnConfirm)),
-        ],
-      ),
+      title: l.actionReturn,
+      // В белом диалоге поле — серое, иначе его не видно.
+      content: TextField(
+          controller: c,
+          autofocus: true,
+          maxLines: 3,
+          decoration: InputDecoration(
+              hintText: l.returnHint, fillColor: AppColors.fill)),
+      actions: [
+        AppDialogAction(l.returnConfirm, true, primary: true),
+        AppDialogAction(l.commonCancel, false),
+      ],
     );
-    if (reason == null) return;
+    final reason = c.text.trim();
+    c.dispose();
+    if (ok != true) return;
     if (reason.isEmpty) {
       _ok(l.returnReasonRequired, type: AppMessageType.info);
       return;
@@ -855,59 +876,73 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final bar = _loading || _error != null ? null : _bottomBar();
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.detailTitle),
-        actions: [
-          if (_canEdit)
-            IconButton(
-                tooltip: l.detailEdit,
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: _edit),
-          if (_d != null)
-            OrderMenu(
-                canCancel: _canCancel,
-                canDelete: _isManager,
-                onCancel: () => _setStatus('cancelled', l.toastCancelled),
-                onDelete: _delete),
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(l.detailLoadFailed,
-                      style: const TextStyle(color: Color(0xFFC24444))))
-              : _content(),
-      bottomNavigationBar: _loading || _error != null ? null : _bottomBar(),
+      backgroundColor: AppColors.bg,
+      body: Column(children: [
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeBottom: bar != null,
+            child: CustomScrollView(slivers: [
+              AppSliverHeader(
+                title: l.detailTitle,
+                large: false,
+                backLabel: l.tabRequests,
+                actions: [
+                  if (_canEdit)
+                    AppIconButton(
+                        icon: AppIcons.edit,
+                        label: l.detailEdit,
+                        onPressed: _edit),
+                  if (_d != null)
+                    OrderMenu(
+                        canCancel: _canCancel,
+                        canDelete: _isManager,
+                        onCancel: () =>
+                            _setStatus('cancelled', l.toastCancelled),
+                        onDelete: _delete),
+                ],
+              ),
+              if (_loading)
+                const SliverFillRemaining(
+                    hasScrollBody: false, child: AppLoader())
+              else if (_error != null)
+                SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppEmptyState(
+                        text: l.detailLoadFailed,
+                        error: true,
+                        actionLabel: l.commonRetry,
+                        onAction: _load))
+              else
+                SliverContent(
+                    top: AppSpace.l,
+                    sliver: SliverList.list(children: _content())),
+              const SliverBottomInset(),
+            ]),
+          ),
+        ),
+        if (bar != null) bar,
+      ]),
     );
   }
 
   /// Главные действия по роли и статусу — внизу экрана, не уезжают при
-  /// прокрутке. У заявителя панели нет (его кнопки — в блоке «Действия»).
+  /// прокрутке: основная кнопка и, если есть, круглая вторичная.
+  /// У заявителя панели нет (его кнопки — в блоке «Действия»).
   Widget? _bottomBar() {
-    final buttons = _primary();
-    if (buttons.isEmpty) return null;
-    return Container(
-      decoration: const BoxDecoration(
-          color: Colors.white, border: Border(top: BorderSide(color: _line))),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 10),
-          child: Row(children: [
-            for (var i = 0; i < buttons.length; i++) ...[
-              if (i > 0) const SizedBox(width: 10),
-              Expanded(child: buttons[i]),
-            ],
-          ]),
-        ),
-      ),
+    final (main, extra) = _primary();
+    if (main == null) return null;
+    return BottomActionBar(
+      child: Row(children: [
+        Expanded(child: main),
+        if (extra != null) ...[const SizedBox(width: AppSpace.m), extra],
+      ]),
     );
   }
 
-  Widget _content() {
+  List<Widget> _content() {
     final l = context.l10n;
     final d = _d!;
     final status = (d['status'] ?? 'new') as String;
@@ -918,83 +953,119 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final workType = _workTypeLabel(widget.layers, context.localeCode,
         layerId: d['layer_id'] as String?, workType: d['work_type'] as String?);
     final objId = d['object_id'] as String?;
+    final place = (d['locations'] as Map<String, dynamic>?)?['name'] as String?;
     final contractorId = d['assigned_contractor_id'] as String?;
     final created = DateTime.tryParse('${d['created_at']}');
     final createdText = created == null ? '—' : l.dateTime(created);
+    final due = DateTime.tryParse('${d['due_at'] ?? ''}');
+    final open = status != 'done' && status != 'cancelled';
+    final overdue = open && due != null && due.isBefore(DateTime.now());
+    final channel = switch (d['input_channel']) {
+      'voice' => l.reqViaVoice,
+      'text' => l.reqViaText,
+      _ => null,
+    };
+    final noDesc = desc == null || desc.isEmpty;
+    final actions = _actions(status);
 
-    return ListView(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
-      children: [
-        Row(children: [
-          Expanded(
-              child: Text(
-                  title + (recurring ? '  · ${l.requestRecurringTag}' : ''),
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.w800))),
-          StatusPill(status, large: true),
-        ]),
-        const SizedBox(height: 20),
-        _row(l.fieldObject, _objNameIn(l, widget.objects, objId)),
-        _row(l.fieldContractor,
-            _contractorNameIn(l, widget.contractors, contractorId),
-            action: _canAssign(status)
-                ? TextButton.icon(
-                    onPressed: _assign,
-                    icon: Icon(
-                        contractorId == null
-                            ? Icons.person_add_alt_1_outlined
-                            : Icons.swap_horiz,
-                        size: 18),
-                    label: Text(contractorId == null
-                        ? l.assignInline
-                        : l.assignChangeInline))
-                : null),
+    return [
+      Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
+        StatusPill(status, large: true),
+        PriorityPill(priority, large: true),
+        if (overdue) StatusPill('overdue', label: l.statusOverdue, large: true),
+      ]),
+      const SizedBox(height: AppSpace.m),
+      Text(title + (recurring ? '  · ${l.requestRecurringTag}' : ''),
+          style: AppText.title),
+      const SizedBox(height: AppSpace.xs),
+      Text(
+          [
+            '${l.fieldCreated} ${_isAuthor ? l.createdByYou(createdText) : createdText}',
+            if (channel != null) channel,
+          ].join(' · '),
+          style: AppText.footnote),
+      const SizedBox(height: AppSpace.l),
+      AppGroup(children: [
+        AppRow(
+            leading: const LeadingIcon(AppIcons.building),
+            title: l.fieldObject,
+            value: _objNameIn(l, widget.objects, objId)),
+        if (place != null && place.isNotEmpty)
+          AppRow(
+              leading: const LeadingIcon(AppIcons.room),
+              title: l.reqFieldPlace,
+              value: place),
+        AppRow(
+            leading: const LeadingIcon(AppIcons.workType),
+            title: l.fieldWorkType,
+            value: workType ?? '—'),
+        AppRow(
+          leading: const LeadingIcon(AppIcons.contractor),
+          title: l.fieldContractor,
+          subtitle: _contractorNameIn(l, widget.contractors, contractorId),
+          subtitleMaxLines: 2,
+          trailing: _canAssign(status)
+              ? AppButton.tinted(
+                  small: true,
+                  expand: false,
+                  label: contractorId == null
+                      ? l.assignInline
+                      : l.assignChangeInline,
+                  onPressed: _assign)
+              : null,
+        ),
         if (_executorName != null && _executorName!.isNotEmpty)
-          _row(l.fieldExecutor, _executorName!),
-        _row(l.fieldWorkType, workType ?? '—'),
-        _row(l.fieldPriority, l.priority(priority)),
-        _row(l.fieldKind, recurring ? l.kindRecurring : l.kindOneOff),
-        _row(
-            l.fieldPhotoProof,
-            (d['requires_photo'] == true)
+          AppRow(
+              leading: const LeadingIcon(AppIcons.executor),
+              title: l.fieldExecutor,
+              value: _executorName!),
+        if (due != null)
+          AppRow(
+            leading: overdue
+                ? const LeadingIcon.danger(AppIcons.clock)
+                : const LeadingIcon(AppIcons.clock),
+            title: l.reqFieldDue,
+            trailing: Text(l.dateTime(due),
+                style: AppText.body.copyWith(
+                    color: overdue ? AppColors.danger : AppColors.secondary,
+                    fontWeight: overdue ? FontWeight.w600 : null)),
+          ),
+      ]),
+      AppGroup(children: [
+        AppRow(
+            title: l.fieldKind,
+            value: recurring ? l.kindRecurring : l.kindOneOff),
+        AppRow(
+            title: l.fieldPhotoProof,
+            value: (d['requires_photo'] == true)
                 ? l.photoRequired
                 : l.photoNotRequired),
-        _row(l.fieldCreated,
-            _isAuthor ? l.createdByYou(createdText) : createdText),
-        const SizedBox(height: 16),
-        Text(l.fieldDescription,
-            style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: _card(),
-          child: Text((desc == null || desc.isEmpty) ? l.noDescription : desc,
-              style: TextStyle(
-                  color: (desc == null || desc.isEmpty) ? _muted : _ink,
-                  fontSize: 14)),
+      ]),
+      if ((d['return_reason'] as String?)?.isNotEmpty == true &&
+          status == 'returned')
+        AppCard(
+          color: StatusColors.returned.background,
+          child: Text(l.returnedWithReason('${d['return_reason']}'),
+              style: AppText.callout.copyWith(
+                  color: StatusColors.returned.foreground,
+                  fontWeight: FontWeight.w600)),
         ),
-        if ((d['return_reason'] as String?)?.isNotEmpty == true &&
-            status == 'returned') ...[
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-                color: const Color(0xFFFBE8E8),
-                borderRadius: BorderRadius.circular(14)),
-            child: Text(l.returnedWithReason('${d['return_reason']}'),
-                style: const TextStyle(
-                    color: Color(0xFFC24444), fontWeight: FontWeight.w600)),
-          ),
-        ],
-        if (_photos.isNotEmpty ||
-            _photosFailed ||
-            _canAddBefore(status) ||
-            _canAddAfter(status)) ...[
-          const SizedBox(height: 20),
-          WorkPhotosSection(
+      AppGroup(header: l.fieldDescription, children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: AppSpace.rowH, vertical: AppSpace.rowV),
+          child: Text(noDesc ? l.noDescription : desc,
+              style: AppText.body.copyWith(
+                  color: noDesc ? AppColors.secondary : AppColors.ink)),
+        ),
+      ]),
+      if (_photos.isNotEmpty ||
+          _photosFailed ||
+          _canAddBefore(status) ||
+          _canAddAfter(status))
+        Padding(
+          padding: const EdgeInsetsDirectional.only(bottom: AppSpace.group),
+          child: WorkPhotosSection(
             photos: _photos,
             loadFailed: _photosFailed,
             busy: _uploading,
@@ -1002,21 +1073,17 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
                 _canAddBefore(status) ? () => _addPhoto('before') : null,
             onAddAfter: _canAddAfter(status) ? () => _addPhoto('after') : null,
           ),
-        ],
-        if (_isManager && (_visits.isNotEmpty || _visitsFailed)) ...[
-          const SizedBox(height: 20),
-          VisitsSection(visits: _visits, loadFailed: _visitsFailed),
-        ],
-        if (_actions(status).isNotEmpty) ...[
-          const SizedBox(height: 24),
-          Text(l.actionsTitle,
-              style: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
-          const SizedBox(height: 10),
-          Wrap(spacing: 10, runSpacing: 10, children: _actions(status)),
+        ),
+      if (_isManager && (_visits.isNotEmpty || _visitsFailed))
+        VisitsSection(visits: _visits, loadFailed: _visitsFailed),
+      if (actions.isNotEmpty) ...[
+        SectionHeader(l.actionsTitle),
+        for (var i = 0; i < actions.length; i++) ...[
+          if (i > 0) const SizedBox(height: AppSpace.s),
+          actions[i],
         ],
       ],
-    );
+    ];
   }
 
   // Те же правила проверяет база (миграция 0006).
@@ -1038,81 +1105,92 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   // Без фото «после» кнопка «На проверку» неактивна; база проверяет то же.
   bool get _needPhoto => _d?['requires_photo'] == true && !_hasAfterPhoto;
 
-  ButtonStyle get _filled => FilledButton.styleFrom(
-      backgroundColor: HeyHelpyTheme.brand,
-      foregroundColor: _onBrand,
-      minimumSize: const Size.fromHeight(48));
-
-  Widget _startButton(String status) => FilledButton.icon(
+  Widget _startButton(String status) => AppButton.primary(
         onPressed: _starting ? null : _startWork,
-        style: _filled,
-        icon: const Icon(Icons.play_arrow_rounded, size: 18),
-        label: Text(status == 'returned'
+        loading: _starting,
+        icon: AppIcons.play,
+        label: status == 'returned'
             ? context.l10n.actionRestart
-            : context.l10n.actionStart),
+            : context.l10n.actionStart,
       );
 
-  Widget _photoButton() => FilledButton.icon(
+  Widget _photoButton({bool primary = true}) => AppButton(
+        kind: primary ? AppButtonKind.primary : AppButtonKind.tinted,
         onPressed: _uploading ? null : () => _addPhoto('after'),
-        style: _filled,
-        icon: const Icon(Icons.photo_camera_outlined, size: 18),
-        label: Text(context.l10n.photoTakeResult),
+        loading: _uploading,
+        icon: AppIcons.camera,
+        label: context.l10n.photoTakeResult,
       );
 
-  Widget _submitButton() => FilledButton.icon(
+  Widget _submitButton() => AppButton.primary(
         onPressed: _needPhoto
             ? null
             : () => _setStatus('on_review', context.l10n.toastSubmitted),
-        style: _filled,
-        icon: const Icon(Icons.check_rounded, size: 18),
-        label: Text(context.l10n.actionSubmit),
+        icon: AppIcons.check,
+        label: context.l10n.actionSubmit,
       );
 
-  Widget _acceptButton() => FilledButton.icon(
+  Widget _acceptButton() => AppButton.primary(
         onPressed: () => _setStatus('done', context.l10n.toastAccepted),
-        style: _filled,
-        icon: const Icon(Icons.verified_outlined, size: 18),
-        label: Text(context.l10n.actionAccept),
+        icon: AppIcons.verified,
+        label: context.l10n.actionAccept,
       );
 
-  Widget _returnButton() => OutlinedButton.icon(
+  Widget _returnButton() => AppButton.destructive(
         onPressed: _returnForRework,
-        style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFFC24444),
-            minimumSize: const Size.fromHeight(48)),
-        icon: const Icon(Icons.undo_rounded, size: 18),
-        label: Text(context.l10n.actionReturn),
+        icon: AppIcons.undo,
+        label: context.l10n.actionReturn,
       );
 
-  /// 1–2 главных действия для нижней панели.
-  /// Менеджер: «Новая» → назначить; «На проверке» → принять / вернуть.
-  /// Исполнитель: «Назначена» / «Возвращена» → начать; «В работе» → фото и сдать.
-  List<Widget> _primary() {
+  /// Главное действие нижней панели и необязательное круглое вторичное.
+  /// Менеджер: «Новая» → назначить; «На проверке» → принять (вернуть —
+  /// круглая кнопка). Исполнитель: «Назначена» / «Возвращена» → начать;
+  /// «В работе» → фото «после» (пока его нет), затем сдать.
+  (Widget?, Widget?) _primary() {
     final d = _d;
-    if (d == null) return const [];
+    if (d == null) return (null, null);
     final l = context.l10n;
     final status = (d['status'] ?? 'new') as String;
     if (_isManager) {
       if (status == 'new') {
-        return [
-          FilledButton.icon(
-            onPressed: _assign,
-            style: _filled,
-            icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
-            label: Text(l.actionAssign),
-          ),
-        ];
+        return (
+          AppButton.primary(
+              onPressed: _assign,
+              icon: AppIcons.userAdd,
+              label: l.actionAssign),
+          null
+        );
       }
-      if (status == 'on_review') return [_returnButton(), _acceptButton()];
-      return const [];
+      if (status == 'on_review') {
+        return (
+          _acceptButton(),
+          AppIconButton(
+              icon: AppIcons.undo,
+              label: l.actionReturn,
+              filled: true,
+              size: 52,
+              color: AppColors.danger,
+              onPressed: _returnForRework)
+        );
+      }
+      return (null, null);
     }
     if (_isExecutor) {
-      if (_canStart(status)) return [_startButton(status)];
+      if (_canStart(status)) return (_startButton(status), null);
       if (status == 'in_progress') {
-        return [if (_needPhoto) _photoButton(), _submitButton()];
+        if (_needPhoto) return (_photoButton(), null);
+        return (
+          _submitButton(),
+          AppIconButton(
+              icon: AppIcons.camera,
+              label: l.photoTakeMore,
+              filled: true,
+              size: 52,
+              onPressed: _uploading ? null : () => _addPhoto('after'))
+        );
       }
     }
-    return const [];
+    return (null, null);
   }
 
   /// Отменить можно автору и менеджеру, пока заявка не принята и не отменена.
@@ -1152,49 +1230,28 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       // Менеджер может начать и сдать работу сам — эти кнопки у него здесь.
       if (_isManager && _canStart(status)) _startButton(status),
       if (_isManager && status == 'in_progress') ...[
-        if (_needPhoto) _photoButton(),
+        if (_needPhoto) _photoButton(primary: false),
         _submitButton(),
       ],
       if (_needPhoto && status == 'in_progress' && (_isManager || _isExecutor))
-        Text(l.photoNeededHint,
-            style: const TextStyle(color: _muted, fontSize: 13)),
+        Padding(
+          padding:
+              const EdgeInsetsDirectional.symmetric(horizontal: AppSpace.xs),
+          child: Text(l.photoNeededHint, style: AppText.footnote),
+        ),
       // Заявитель принимает свою работу здесь: нижней панели у него нет.
       if (!inBar && canAccept && status == 'on_review') ...[
         _acceptButton(),
         _returnButton(),
       ],
       if (canAccept && status != 'done' && status != 'cancelled')
-        OutlinedButton.icon(
+        AppButton.destructive(
           onPressed: () => _setStatus('cancelled', l.toastCancelled),
-          style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFC24444)),
-          icon: const Icon(Icons.close_rounded, size: 18),
-          label: Text(l.actionCancel),
+          icon: AppIcons.close,
+          label: l.actionCancel,
         ),
     ];
   }
-
-  /// Строка сведений «подпись — значение»; [action] — кнопка в конце строки.
-  Widget _row(String k, String v, {Widget? action}) => Padding(
-        padding: EdgeInsets.symmetric(vertical: action == null ? 8 : 2),
-        child: Row(
-            crossAxisAlignment: action == null
-                ? CrossAxisAlignment.start
-                : CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                  width: 150,
-                  child: Text(k,
-                      style: const TextStyle(color: _muted, fontSize: 14))),
-              Expanded(
-                  child: Text(v,
-                      style: const TextStyle(
-                          color: _ink,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600))),
-              if (action != null) action,
-            ]),
-      );
 }
 
 Future<bool?> showOrderForm({
@@ -1237,16 +1294,43 @@ Future<bool?> showOrderForm({
   bool recurring = isEdit ? existing['recurrence'] != null : false;
 
   const priorities = ['low', 'normal', 'high', 'critical'];
-  const brand = HeyHelpyTheme.brand;
   final l = context.l10n;
   final locale = context.localeCode;
+  final formTitle = isEdit ? l.formEditTitle : l.formNewTitle;
 
-  return showModalBottomSheet<bool>(
+  Future<void> save(BuildContext ctx) async {
+    if (titleC.text.trim().isEmpty) {
+      showAppMessage(ctx, l.formWhatRequired);
+      return;
+    }
+    try {
+      if (isEdit) {
+        await repo.update(existing['id'] as String,
+            title: titleC.text.trim(),
+            description: descC.text.trim().isEmpty ? null : descC.text.trim(),
+            layer: layer,
+            priority: priority,
+            objectId: objectId,
+            recurring: recurring);
+      } else {
+        await repo.create(
+            companyId: companyId,
+            title: titleC.text.trim(),
+            description: descC.text.trim().isEmpty ? null : descC.text.trim(),
+            layer: layer,
+            priority: priority,
+            objectId: objectId,
+            recurring: recurring);
+      }
+      if (ctx.mounted) Navigator.pop(ctx, true);
+    } catch (_) {
+      if (!ctx.mounted) return;
+      showAppMessage(ctx, l.formSaveFailed, type: AppMessageType.error);
+    }
+  }
+
+  return showAppSheet<bool>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
     builder: (ctx) => Padding(
       padding: EdgeInsetsDirectional.only(
           bottom: MediaQuery.of(ctx).viewInsets.bottom),
@@ -1255,137 +1339,95 @@ Future<bool?> showOrderForm({
         // внизу окна и видна при любой высоте и с открытой клавиатурой.
         builder: (ctx, setSt) =>
             Column(mainAxisSize: MainAxisSize.min, children: [
+          SheetHeader(title: formTitle, cancelLabel: l.commonCancel),
           Flexible(
               child: SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 20, 12),
+            padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpace.screen, AppSpace.xs, AppSpace.screen, AppSpace.l),
             child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
-                      child: Container(
-                          width: 40,
-                          height: 4,
-                          margin: const EdgeInsetsDirectional.only(bottom: 14),
-                          decoration: BoxDecoration(
-                              color: _line,
-                              borderRadius: BorderRadius.circular(4)))),
-                  Text(isEdit ? l.formEditTitle : l.formNewTitle,
-                      style: const TextStyle(
-                          fontSize: 19, fontWeight: FontWeight.w800)),
-                  _lbl(l.formWhat),
-                  _inp(titleC, l.formWhatHint),
-                  _lbl(l.fieldDescription),
-                  _inp(descC, l.formDetailsHint, lines: 3),
-                  _lbl(l.fieldObject),
-                  _Dropdown(
-                      value: objectId,
-                      hint: objects.isEmpty
-                          ? l.formNoObjects(l.tabLocations)
-                          : l.formChooseObject,
-                      items: [
-                        for (final o in objects)
-                          DropdownMenuItem(value: o.id, child: Text(o.name))
-                      ],
-                      onChanged: (v) => setSt(() => objectId = v)),
-                  _lbl(l.fieldWorkType),
-                  if (layersFailed)
-                    Text(l.formLayersFailed,
-                        style: const TextStyle(color: _muted))
-                  else
-                    Wrap(spacing: 8, runSpacing: 8, children: [
-                      for (final t in layers)
-                        _chip(
-                            t.label(locale),
-                            layer?.id == t.id,
-                            brand,
-                            () => setSt(
-                                () => layer = layer?.id == t.id ? null : t))
-                    ]),
-                  _lbl(l.fieldPriority),
-                  Wrap(spacing: 8, runSpacing: 8, children: [
-                    for (final p in priorities)
-                      _chip(l.priority(p), priority == p, brand,
-                          () => setSt(() => priority = p))
+                  AppGroup(header: l.formWhat, children: [
+                    _inp(titleC, l.formWhatHint),
                   ]),
-                  const SizedBox(height: 16),
-                  Row(children: [
-                    Expanded(
-                        child: Text(l.formRecurring,
-                            style: const TextStyle(fontSize: 15))),
-                    Switch(
-                        value: recurring,
-                        activeTrackColor: brand,
-                        onChanged: (v) => setSt(() => recurring = v))
+                  AppGroup(header: l.fieldDescription, children: [
+                    _inp(descC, l.formDetailsHint, lines: 3),
+                  ]),
+                  AppGroup(header: l.fieldObject, children: [
+                    _Dropdown(
+                        value: objectId,
+                        hint: objects.isEmpty
+                            ? l.formNoObjects(l.tabLocations)
+                            : l.formChooseObject,
+                        items: [
+                          for (final o in objects)
+                            DropdownMenuItem(
+                                value: o.id,
+                                child: Text(o.name, style: AppText.body))
+                        ],
+                        onChanged: (v) => setSt(() => objectId = v)),
+                  ]),
+                  SectionHeader(l.fieldWorkType),
+                  if (layersFailed)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                          horizontal: AppSpace.rowH),
+                      child: Text(l.formLayersFailed, style: AppText.footnote),
+                    )
+                  else
+                    Wrap(
+                        spacing: AppSpace.s,
+                        runSpacing: AppSpace.s,
+                        children: [
+                          for (final t in layers)
+                            AppChip(
+                                label: t.label(locale),
+                                selected: layer?.id == t.id,
+                                onTap: () => setSt(
+                                    () => layer = layer?.id == t.id ? null : t))
+                        ]),
+                  SectionHeader(l.fieldPriority),
+                  SegmentedControl<String>(
+                    segments: [
+                      for (final p in priorities) Segment(p, l.priority(p))
+                    ],
+                    selected: priority,
+                    onChanged: (p) => setSt(() => priority = p),
+                  ),
+                  const SizedBox(height: AppSpace.xl),
+                  AppGroup(children: [
+                    AppRow(
+                      title: l.formRecurring,
+                      trailing: Switch(
+                          value: recurring,
+                          onChanged: (v) => setSt(() => recurring = v)),
+                    ),
                   ]),
                 ]),
           )),
           BottomActionBar(
-              child: FilledButton(
-                  style: FilledButton.styleFrom(
-                      backgroundColor: brand,
-                      foregroundColor: _onBrand,
-                      minimumSize: const Size.fromHeight(52)),
-                  onPressed: () async {
-                    if (titleC.text.trim().isEmpty) {
-                      showAppMessage(ctx, l.formWhatRequired);
-                      return;
-                    }
-                    try {
-                      if (isEdit) {
-                        await repo.update(existing['id'] as String,
-                            title: titleC.text.trim(),
-                            description: descC.text.trim().isEmpty
-                                ? null
-                                : descC.text.trim(),
-                            layer: layer,
-                            priority: priority,
-                            objectId: objectId,
-                            recurring: recurring);
-                      } else {
-                        await repo.create(
-                            companyId: companyId,
-                            title: titleC.text.trim(),
-                            description: descC.text.trim().isEmpty
-                                ? null
-                                : descC.text.trim(),
-                            layer: layer,
-                            priority: priority,
-                            objectId: objectId,
-                            recurring: recurring);
-                      }
-                      if (ctx.mounted) Navigator.pop(ctx, true);
-                    } catch (_) {
-                      if (!ctx.mounted) return;
-                      showAppMessage(ctx, l.formSaveFailed,
-                          type: AppMessageType.error);
-                    }
-                  },
-                  child: Text(isEdit ? l.commonSave : l.requestsCreate,
-                      style: const TextStyle(fontWeight: FontWeight.w800)))),
+              child: AppButton.primary(
+                  onPressed: () => save(ctx),
+                  label: isEdit ? l.commonSave : l.requestsCreate)),
         ]),
       ),
     ),
   );
 }
 
-Widget _lbl(String t) => Padding(
-    padding: const EdgeInsetsDirectional.only(top: 16, bottom: 8),
-    child: Text(t,
-        style: const TextStyle(
-            fontSize: 14, fontWeight: FontWeight.w600, color: _ink)));
-
+/// Поле внутри белой группы: без своей заливки и рамки.
 Widget _inp(TextEditingController c, String hint, {int lines = 1}) => TextField(
     controller: c,
     maxLines: lines,
+    style: AppText.body,
     decoration: InputDecoration(
-        hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 15, vertical: 14)));
-
-Widget _chip(String label, bool on, Color brand, VoidCallback onTap) =>
-    ChoiceTag(label: label, selected: on, onTap: onTap);
+      hintText: hint,
+      filled: false,
+      border: InputBorder.none,
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
+    ));
 
 class _Dropdown extends StatelessWidget {
   const _Dropdown(
@@ -1399,17 +1441,19 @@ class _Dropdown extends StatelessWidget {
   final ValueChanged<String?> onChanged;
   @override
   Widget build(BuildContext context) {
-    return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _line)),
+    return Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AppSpace.rowH, vertical: AppSpace.xxs),
         child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
                 value: value,
                 isExpanded: true,
+                dropdownColor: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppRadius.field),
+                icon: const Icon(AppIcons.chevronDown,
+                    size: AppSizes.iconS, color: AppColors.secondary),
                 hint: Text(hint,
-                    style: const TextStyle(color: _muted, fontSize: 15)),
+                    style: AppText.body.copyWith(color: AppColors.secondary)),
                 items: items,
                 onChanged: items.isEmpty ? null : onChanged)));
   }

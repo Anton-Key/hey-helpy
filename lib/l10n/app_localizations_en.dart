@@ -1622,4 +1622,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requestsFilterClear => 'Clear filter';
+
+  @override
+  String get reqSearchHint => 'Search requests';
+
+  @override
+  String reqSegAll(int count) {
+    return 'All · $count';
+  }
+
+  @override
+  String reqSegOpen(int count) {
+    return 'Open · $count';
+  }
+
+  @override
+  String reqSegOverdue(int count) {
+    return 'Overdue · $count';
+  }
+
+  @override
+  String get reqGroupToday => 'Today';
+
+  @override
+  String get reqGroupEarlier => 'Earlier';
+
+  @override
+  String get reqNothingFound => 'Nothing found';
+
+  @override
+  String get reqFieldPlace => 'Room';
+
+  @override
+  String get reqFieldDue => 'Due';
+
+  @override
+  String get reqViaVoice => 'by voice';
+
+  @override
+  String get reqViaText => 'by text';
 }

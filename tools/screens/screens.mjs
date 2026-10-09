@@ -328,7 +328,8 @@ const SCREENS = [
       await see(p, 'Подрядчик').waitFor({ timeout: 20000 });
       await settle(p);
       await p.getByRole('button', { name: /Назначить|Изменить/ }).first().click();
-      await see(p, /^Подрядчики$|Закреплены за этим видом работ|никто не закреплён/)
+      // Подписи секций в шторке — прописными («ЗАКРЕПЛЕНЫ ЗА…»): без учёта регистра.
+      await see(p, /^Подрядчики$|Закреплены за этим видом работ|никто не закреплён/i)
         .waitFor({ timeout: 20000 });
       await settle(p);
       return `заявка «${chosen}»`;

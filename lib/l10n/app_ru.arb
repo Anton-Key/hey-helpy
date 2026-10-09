@@ -701,5 +701,19 @@
   "@mapCluster": {"placeholders": {"count": {"type": "int"}}},
   "requestsFilterObject": "Объект: {name}",
   "@requestsFilterObject": {"placeholders": {"name": {"type": "String"}}},
-  "requestsFilterClear": "Снять фильтр"
+  "requestsFilterClear": "Снять фильтр",
+  "reqSearchHint": "Поиск по заявкам",
+  "reqSegAll": "Все · {count}",
+  "@reqSegAll": {"placeholders": {"count": {"type": "int"}}},
+  "reqSegOpen": "Открытые · {count}",
+  "@reqSegOpen": {"placeholders": {"count": {"type": "int"}}},
+  "reqSegOverdue": "Просрочено · {count}",
+  "@reqSegOverdue": {"placeholders": {"count": {"type": "int"}}},
+  "reqGroupToday": "Сегодня",
+  "reqGroupEarlier": "Ранее",
+  "reqNothingFound": "Ничего не найдено",
+  "reqFieldPlace": "Помещение",
+  "reqFieldDue": "Срок",
+  "reqViaVoice": "голосом",
+  "reqViaText": "текстом"
 }

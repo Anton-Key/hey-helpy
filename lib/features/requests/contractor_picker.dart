@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 
-const _muted = Color(0xFF8A9098);
-const _danger = Color(0xFFC24444);
-
 /// Поиск появляется, когда подрядчиков больше этого числа.
 const _searchFrom = 6;
-
-/// С какой ширины окно — диалог по центру, а не нижняя шторка.
-const _wideFrom = 600.0;
 
 /// Окно выбора подрядчика для заявки. Сверху — закреплённые за видом работ
 /// и объектом заявки (в том же порядке, в каком их выбирает база:
@@ -33,32 +26,12 @@ Future<Contractor?> pickContractor(
       layerLabel: layerLabel,
       objectId: objectId,
       currentId: currentId);
-  final size = MediaQuery.sizeOf(context);
-  if (size.width >= _wideFrom) {
-    return showDialog<Contractor>(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: ConstrainedBox(
-          constraints:
-              BoxConstraints(maxWidth: 520, maxHeight: size.height * 0.8),
-          child: picker,
-        ),
-      ),
-    );
-  }
-  return showModalBottomSheet<Contractor>(
+  // Нижняя шторка (на широком окне — не шире колонки содержимого) на почти
+  // всю высоту: список прокручивается внутри и не обрезается.
+  return showAppSheet<Contractor>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-    // Вся доступная высота: список прокручивается внутри и не обрезается.
     builder: (ctx) =>
-        SizedBox(height: MediaQuery.sizeOf(ctx).height, child: picker),
+        SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.9, child: picker),
   );
 }
 
@@ -152,74 +125,67 @@ class _ContractorPickerState extends State<_ContractorPicker> {
     final others = shown.where((c) => !boundIds.contains(c.id)).toList();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(20, 18, 8, 4),
-        child: Row(children: [
-          Expanded(
-            child: Text(l.actionAssign,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-          ),
-          IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: Icon(Icons.close, semanticLabel: l.commonCancel)),
-        ]),
-      ),
+      SheetHeader(title: l.actionAssign, cancelLabel: l.commonCancel),
       if (widget.contractors.length > _searchFrom)
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 4),
-          child: TextField(
-            controller: _search,
-            decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: l.assignSearch,
-                isDense: true,
-                border: const OutlineInputBorder()),
-          ),
+          padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpace.screen, AppSpace.xs, AppSpace.screen, AppSpace.xs),
+          child: AppSearchField(
+              controller: _search, hint: l.assignSearch, onChanged: (_) {}),
         ),
-      if (_loading) const LinearProgressIndicator(minHeight: 2),
+      if (_loading)
+        const Padding(
+          padding: EdgeInsetsDirectional.only(top: AppSpace.s),
+          child: AppLoader(),
+        ),
       Expanded(
         child: ListView(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 24),
+          padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpace.screen, AppSpace.xs, AppSpace.screen, AppSpace.xl),
           children: [
             if (!_loading && !_failed && boundIds.isEmpty)
               Container(
-                margin: const EdgeInsetsDirectional.only(top: 8, bottom: 4),
-                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsetsDirectional.only(
+                    top: AppSpace.s, bottom: AppSpace.xs),
+                padding: const EdgeInsets.all(AppSpace.m),
                 decoration: BoxDecoration(
-                    color: const Color(0xFFFBF0D9),
-                    borderRadius: BorderRadius.circular(12)),
+                    color: StatusColors.newOrder.background,
+                    borderRadius: BorderRadius.circular(AppRadius.field)),
                 child: Text(
                     widget.layerLabel == null
                         ? l.assignNoLayer
                         : l.assignNobodyBound(widget.layerLabel!),
-                    style: const TextStyle(
-                        color: Color(0xFF7A5300), fontSize: 13)),
+                    style: AppText.footnote
+                        .copyWith(color: StatusColors.newOrder.foreground)),
               ),
-            if (bound.isNotEmpty) ...[
-              SectionTitle(l.assignBound),
-              for (final c in bound)
-                _tile(l, c, fitting.where((b) => b.contractorId == c.id)),
-            ],
-            if (others.isNotEmpty) ...[
-              SectionTitle(bound.isEmpty && boundIds.isEmpty
-                  ? l.assignAll
-                  : l.assignOthers),
-              for (final c in others)
-                _tile(l, c, _bindings.where((b) => b.contractorId == c.id)),
-            ],
+            if (bound.isNotEmpty)
+              AppGroup(header: l.assignBound, children: [
+                for (final c in bound)
+                  _tile(l, c, fitting.where((b) => b.contractorId == c.id)),
+              ]),
+            if (others.isNotEmpty)
+              AppGroup(
+                  header: bound.isEmpty && boundIds.isEmpty
+                      ? l.assignAll
+                      : l.assignOthers,
+                  children: [
+                    for (final c in others)
+                      _tile(
+                          l, c, _bindings.where((b) => b.contractorId == c.id)),
+                  ]),
             if (shown.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: const EdgeInsets.symmetric(vertical: AppSpace.xl),
                 child: Text(l.assignNothingFound,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: _muted)),
+                    style:
+                        AppText.callout.copyWith(color: AppColors.secondary)),
               ),
             if (_failed)
               Padding(
-                padding: const EdgeInsetsDirectional.only(top: 8),
+                padding: const EdgeInsetsDirectional.only(top: AppSpace.s),
                 child: Text(l.assignBindingsFailed,
-                    style: const TextStyle(color: _danger, fontSize: 12)),
+                    style: AppText.caption.copyWith(color: AppColors.danger)),
               ),
           ],
         ),
@@ -233,30 +199,19 @@ class _ContractorPickerState extends State<_ContractorPicker> {
       for (final b in bindings.take(3)) _bindingLine(l, b),
       l.assignExecutors(_executors[c.id] ?? 0),
     ];
-    return TapCard(
-      onTap: () => Navigator.pop(context, c),
+    return AppRow(
+      leading: InitialsTile(c.orgName),
+      title: c.orgName,
+      subtitle: lines.join('\n'),
+      subtitleMaxLines: 4,
       chevron: false,
-      child: Row(children: [
-        const Icon(Icons.business, color: HeyHelpyTheme.link),
-        const SizedBox(width: 12),
-        Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(c.orgName,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
-            for (final line in lines)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(top: 2),
-                child: Text(line,
-                    style: const TextStyle(color: _muted, fontSize: 12)),
-              ),
-          ]),
-        ),
-        if (current)
-          Icon(Icons.check_rounded,
-              color: HeyHelpyTheme.link, semanticLabel: l.assignCurrent),
-      ]),
+      trailing: current
+          ? Icon(AppIcons.check,
+              size: AppSizes.icon,
+              color: AppColors.accentText,
+              semanticLabel: l.assignCurrent)
+          : null,
+      onTap: () => Navigator.pop(context, c),
     );
   }
 

@@ -254,6 +254,40 @@ async function home(page) {
   await settle(page, 2500);
 }
 
+// Фильтр списка заявок хранится на устройстве (localStorage, ключ
+// flutter.orders_filter.<uid>) — после снимков с фильтром его убираем,
+// чтобы остальные снимки видели полный список.
+async function resetOrderFilter(page) {
+  await page.evaluate(() => {
+    for (const k of Object.keys(localStorage)) {
+      if (k.startsWith('flutter.orders_filter.')) localStorage.removeItem(k);
+    }
+  }).catch(() => {});
+}
+
+// Главный экран по ссылке с фильтром (`#/?pri=critical&…`) — как ссылка от коллеги.
+async function homeWith(page, query) {
+  await page.goto('about:blank');
+  await page.goto(`${BASE}#/?${query}`, { waitUntil: 'load' });
+  const placeholder = page.locator('flt-semantics-placeholder');
+  await placeholder.waitFor({ state: 'attached', timeout: 60000 });
+  await placeholder.evaluate((el) => el.click());
+  await profileTab(page).waitFor({ timeout: 60000 });
+  await settle(page, 2500);
+}
+
+// «Таблетка» фильтра по подписи (у активной — «Статус: Новая +1»).
+// Имя узла — подпись таблетки и её текст через перевод строки.
+const chip = (page, label) => page.getByRole('button', { name: new RegExp(`^${label}(?=:|\\s|$)`) }).first();
+
+// Закрыть окно фильтра без «Применить» (Esc; на всякий случай — второй раз для календаря).
+async function closePicker(page) {
+  await page.keyboard.press('Escape').catch(() => {});
+  await settle(page, 400);
+  await page.keyboard.press('Escape').catch(() => {});
+  await settle(page, 400);
+}
+
 const nav = (page, label) => page.getByRole('tab', { name: label })
   .or(page.getByRole('button', { name: label, exact: true })).first();
 
@@ -288,6 +322,55 @@ const SCREENS = [
       for (let i = 0; i < 15; i++) { await p.mouse.wheel(0, 2000); await p.waitForTimeout(150); }
       await settle(p);
     } },
+  // Строка фильтров с активными таблетками — открыта по ссылке с параметрами
+  // (заодно проверка, что ссылка применяет фильтр). Фильтр потом убирается.
+  { key: 'filters-active', title: 'Заявки — фильтры по ссылке: срочность, статус «Просрочено» и др., сортировка по срочности', run: async (p) => {
+      await homeWith(p, 'pri=critical,high&st=overdue,new,assigned,in_progress&sort=priority');
+      // Активная таблетка: «Срочность: Критический +1» — значит, ссылка применилась.
+      await p.getByRole('button', { name: /^Срочность: Критический \+1/ }).first().waitFor({ timeout: 15000 });
+      await see(p, /Найдено \d+ из \d+/).waitFor({ timeout: 15000 });
+      return 'ссылка #/?pri=critical,high&st=overdue,new,assigned,in_progress&sort=priority; группы по срочности';
+    }, after: async (p) => { await resetOrderFilter(p); } },
+  // Окно фильтра «Статус»: на 412 — шторка, на 1280 — выпадающее окно под таблеткой.
+  // Отмечаются 2 пункта, окно закрывается без «Применить».
+  { key: 'filter-picker', title: 'Окно фильтра «Статус» (412 — шторка, 1280 — выпадающее окно)', managerOnly: true, run: async (p) => {
+      await home(p);
+      await chip(p, 'Статус').click();
+      await see(p, 'Применить').waitFor({ timeout: 10000 });
+      await settle(p, 600);
+      await p.getByRole('button', { name: 'Просрочено', exact: true }).last().click();
+      await p.getByRole('button', { name: 'Новая', exact: true }).last().click();
+      await see(p, 'Применить (2)').waitFor({ timeout: 5000 });
+      await settle(p, 800);
+      return p.viewportSize().width >= 900
+        ? 'выпадающее окно под таблеткой; отмечены «Просрочено» и «Новая», закрыто без применения'
+        : 'шторка; отмечены «Просрочено» и «Новая», закрыто без применения';
+    }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
+  // «Период» → «Свой период…»: календарь выбора дат.
+  { key: 'filter-period', title: 'Фильтр «Период» → «Свой период…» (календарь)', managerOnly: true, run: async (p) => {
+      await home(p);
+      await chip(p, 'Период').click();
+      await see(p, 'По сроку').waitFor({ timeout: 10000 });
+      await settle(p, 600);
+      await p.getByRole('button', { name: /Свой период/ }).last().click();
+      await settle(p, 1500);
+      return 'окно «Период» (по дате создания / по сроку, пресеты) и календарь «с — по»; закрыто без выбора';
+    }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
+  // Окно сортировки (справа в строке фильтров).
+  { key: 'filter-sort', title: 'Сортировка списка заявок', managerOnly: true, run: async (p) => {
+      await home(p);
+      await chip(p, 'Сначала новые').click();
+      await see(p, 'По срочности').waitFor({ timeout: 10000 });
+      await settle(p, 800);
+      return '6 вариантов; выбор сразу применяется (здесь закрыто без выбора)';
+    }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
+  // Ничего не найдено: повторяющиеся критические (таких в демо нет).
+  { key: 'filter-empty', title: 'Заявки — «Ничего не найдено» и «Сбросить фильтры»', run: async (p) => {
+      await homeWith(p, 'rec=recurring&pri=critical');
+      await see(p, 'Сбросить фильтры').waitFor({ timeout: 15000 });
+      await settle(p, 800);
+      return 'ссылка #/?rec=recurring&pri=critical';
+    }, after: async (p) => { await resetOrderFilter(p); } },
   { key: 'order', title: `Карточка заявки «${DEMO_ORDER}»`, run: async (p) => {
       await home(p);
       await p.getByRole('button', { name: DEMO_ORDER }).first().click();
@@ -549,10 +632,12 @@ const SCREENS = [
       await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
       await settle(p, 800);
       await p.getByRole('button', { name: 'Заявки', exact: true }).last().click();
-      await btn(p, 'Снять фильтр').waitFor({ timeout: 15000 });
+      await chip(p, 'Объект').waitFor({ timeout: 15000 });
+      await btn(p, 'Объект: БЦ «Демо»').waitFor({ timeout: 15000 });
       await settle(p, 2000);
-      return 'фильтр «Объект: БЦ «Демо»» над списком, снимается крестиком';
+      return 'фильтр «Объект» = БЦ «Демо» (та же таблетка, что в строке фильтров), снимается крестиком';
     }, after: async (p) => {
+      await resetOrderFilter(p);
       await nav(p, 'Локации').click().catch(() => {});
       await settle(p, 800);
       await p.getByRole('button', { name: 'Список', exact: true }).first().click().catch(() => {});

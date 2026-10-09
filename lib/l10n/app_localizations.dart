@@ -2888,6 +2888,306 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'текстом'**
   String get reqViaText;
+
+  /// No description provided for @filterPeriod.
+  ///
+  /// In ru, this message translates to:
+  /// **'Период'**
+  String get filterPeriod;
+
+  /// No description provided for @filterObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get filterObject;
+
+  /// No description provided for @filterRoom.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get filterRoom;
+
+  /// No description provided for @filterContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get filterContractor;
+
+  /// No description provided for @filterPriority.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срочность'**
+  String get filterPriority;
+
+  /// No description provided for @filterStatus.
+  ///
+  /// In ru, this message translates to:
+  /// **'Статус'**
+  String get filterStatus;
+
+  /// No description provided for @filterWorkType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вид работ'**
+  String get filterWorkType;
+
+  /// No description provided for @filterMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё'**
+  String get filterMore;
+
+  /// No description provided for @filterSort.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сортировка'**
+  String get filterSort;
+
+  /// No description provided for @filterPeriodToday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сегодня'**
+  String get filterPeriodToday;
+
+  /// No description provided for @filterPeriod7.
+  ///
+  /// In ru, this message translates to:
+  /// **'7 дней'**
+  String get filterPeriod7;
+
+  /// No description provided for @filterPeriod30.
+  ///
+  /// In ru, this message translates to:
+  /// **'30 дней'**
+  String get filterPeriod30;
+
+  /// No description provided for @filterPeriodThisMonth.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этот месяц'**
+  String get filterPeriodThisMonth;
+
+  /// No description provided for @filterPeriodLastMonth.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прошлый месяц'**
+  String get filterPeriodLastMonth;
+
+  /// No description provided for @filterPeriodCustom.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свой период…'**
+  String get filterPeriodCustom;
+
+  /// No description provided for @filterByCreated.
+  ///
+  /// In ru, this message translates to:
+  /// **'По дате создания'**
+  String get filterByCreated;
+
+  /// No description provided for @filterByDue.
+  ///
+  /// In ru, this message translates to:
+  /// **'По сроку'**
+  String get filterByDue;
+
+  /// No description provided for @filterDueLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок: {period}'**
+  String filterDueLabel(String period);
+
+  /// No description provided for @filterNoContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без подрядчика'**
+  String get filterNoContractor;
+
+  /// No description provided for @filterOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просрочено'**
+  String get filterOverdue;
+
+  /// No description provided for @filterType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип'**
+  String get filterType;
+
+  /// No description provided for @filterOnce.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разовая'**
+  String get filterOnce;
+
+  /// No description provided for @filterRecurring.
+  ///
+  /// In ru, this message translates to:
+  /// **'Повторяющаяся'**
+  String get filterRecurring;
+
+  /// No description provided for @filterSource.
+  ///
+  /// In ru, this message translates to:
+  /// **'Источник'**
+  String get filterSource;
+
+  /// No description provided for @filterChannelVoice.
+  ///
+  /// In ru, this message translates to:
+  /// **'Голос'**
+  String get filterChannelVoice;
+
+  /// No description provided for @filterChannelText.
+  ///
+  /// In ru, this message translates to:
+  /// **'Текст'**
+  String get filterChannelText;
+
+  /// No description provided for @filterChannelButton.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вручную'**
+  String get filterChannelButton;
+
+  /// No description provided for @filterOptions.
+  ///
+  /// In ru, this message translates to:
+  /// **'Условия'**
+  String get filterOptions;
+
+  /// No description provided for @filterNeedsPhoto.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужно фото'**
+  String get filterNeedsPhoto;
+
+  /// No description provided for @filterReturned.
+  ///
+  /// In ru, this message translates to:
+  /// **'Возвращались на доработку'**
+  String get filterReturned;
+
+  /// No description provided for @filterCreatedByMe.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создал я'**
+  String get filterCreatedByMe;
+
+  /// No description provided for @filterAssignedToMe.
+  ///
+  /// In ru, this message translates to:
+  /// **'Назначено мне'**
+  String get filterAssignedToMe;
+
+  /// No description provided for @filterMoreCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё · {count}'**
+  String filterMoreCount(int count);
+
+  /// No description provided for @filterPlus.
+  ///
+  /// In ru, this message translates to:
+  /// **'{label} +{count}'**
+  String filterPlus(String label, int count);
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала новые'**
+  String get sortNewest;
+
+  /// No description provided for @sortOldest.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала старые'**
+  String get sortOldest;
+
+  /// No description provided for @sortDue.
+  ///
+  /// In ru, this message translates to:
+  /// **'По сроку'**
+  String get sortDue;
+
+  /// No description provided for @sortPriority.
+  ///
+  /// In ru, this message translates to:
+  /// **'По срочности'**
+  String get sortPriority;
+
+  /// No description provided for @sortStatus.
+  ///
+  /// In ru, this message translates to:
+  /// **'По статусу'**
+  String get sortStatus;
+
+  /// No description provided for @sortObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'По объекту'**
+  String get sortObject;
+
+  /// No description provided for @filterReset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сбросить'**
+  String get filterReset;
+
+  /// No description provided for @filterApply.
+  ///
+  /// In ru, this message translates to:
+  /// **'Применить'**
+  String get filterApply;
+
+  /// No description provided for @filterApplyCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Применить ({count})'**
+  String filterApplyCount(int count);
+
+  /// No description provided for @filterResetAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сбросить всё'**
+  String get filterResetAll;
+
+  /// No description provided for @filterFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Найдено {shown} из {total}'**
+  String filterFound(int shown, int total);
+
+  /// No description provided for @filterResetFilters.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сбросить фильтры'**
+  String get filterResetFilters;
+
+  /// No description provided for @filterSearchHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск по списку'**
+  String get filterSearchHint;
+
+  /// No description provided for @filterClearOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать фильтр «{name}»'**
+  String filterClearOne(String name);
+
+  /// No description provided for @filterRange.
+  ///
+  /// In ru, this message translates to:
+  /// **'{from} – {to}'**
+  String filterRange(String from, String to);
+
+  /// No description provided for @filterPickDates.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите даты'**
+  String get filterPickDates;
 }
 
 class _AppLocalizationsDelegate

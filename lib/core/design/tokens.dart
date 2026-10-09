@@ -76,6 +76,9 @@ class AppColors {
   /// Затемнение фона под шторкой и диалогом.
   static const scrim = Color(0x660F1A17);
 
+  /// Почти прозрачное затемнение под выпадающим окном (широкий экран).
+  static const popoverScrim = Color(0x0F0F1A17);
+
   /// Цвет точки приоритета: critical — красная, high — оранжевая,
   /// остальные — серая.
   static Color priority(String p) => switch (p) {
@@ -328,6 +331,9 @@ class AppSizes {
   static const searchHeight = 38.0;
   static const segmentHeight = 34.0;
   static const pillHeight = 24.0;
+
+  /// «Таблетка» фильтра над списком.
+  static const filterChip = 34.0;
 
   /// Голосовая кнопка.
   static const voiceHeight = 56.0;

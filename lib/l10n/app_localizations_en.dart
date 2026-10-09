@@ -1661,4 +1661,168 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reqViaText => 'by text';
+
+  @override
+  String get filterPeriod => 'Period';
+
+  @override
+  String get filterObject => 'Site';
+
+  @override
+  String get filterRoom => 'Room';
+
+  @override
+  String get filterContractor => 'Contractor';
+
+  @override
+  String get filterPriority => 'Priority';
+
+  @override
+  String get filterStatus => 'Status';
+
+  @override
+  String get filterWorkType => 'Work type';
+
+  @override
+  String get filterMore => 'More';
+
+  @override
+  String get filterSort => 'Sort';
+
+  @override
+  String get filterPeriodToday => 'Today';
+
+  @override
+  String get filterPeriod7 => '7 days';
+
+  @override
+  String get filterPeriod30 => '30 days';
+
+  @override
+  String get filterPeriodThisMonth => 'This month';
+
+  @override
+  String get filterPeriodLastMonth => 'Last month';
+
+  @override
+  String get filterPeriodCustom => 'Custom range…';
+
+  @override
+  String get filterByCreated => 'By created date';
+
+  @override
+  String get filterByDue => 'By due date';
+
+  @override
+  String filterDueLabel(String period) {
+    return 'Due: $period';
+  }
+
+  @override
+  String get filterNoContractor => 'No contractor';
+
+  @override
+  String get filterOverdue => 'Overdue';
+
+  @override
+  String get filterType => 'Type';
+
+  @override
+  String get filterOnce => 'One-off';
+
+  @override
+  String get filterRecurring => 'Recurring';
+
+  @override
+  String get filterSource => 'Source';
+
+  @override
+  String get filterChannelVoice => 'Voice';
+
+  @override
+  String get filterChannelText => 'Text';
+
+  @override
+  String get filterChannelButton => 'Manual';
+
+  @override
+  String get filterOptions => 'Conditions';
+
+  @override
+  String get filterNeedsPhoto => 'Photo required';
+
+  @override
+  String get filterReturned => 'Returned for rework';
+
+  @override
+  String get filterCreatedByMe => 'Created by me';
+
+  @override
+  String get filterAssignedToMe => 'Assigned to me';
+
+  @override
+  String filterMoreCount(int count) {
+    return 'More · $count';
+  }
+
+  @override
+  String filterPlus(String label, int count) {
+    return '$label +$count';
+  }
+
+  @override
+  String get sortNewest => 'Newest first';
+
+  @override
+  String get sortOldest => 'Oldest first';
+
+  @override
+  String get sortDue => 'By due date';
+
+  @override
+  String get sortPriority => 'By priority';
+
+  @override
+  String get sortStatus => 'By status';
+
+  @override
+  String get sortObject => 'By site';
+
+  @override
+  String get filterReset => 'Reset';
+
+  @override
+  String get filterApply => 'Apply';
+
+  @override
+  String filterApplyCount(int count) {
+    return 'Apply ($count)';
+  }
+
+  @override
+  String get filterResetAll => 'Reset all';
+
+  @override
+  String filterFound(int shown, int total) {
+    return 'Showing $shown of $total';
+  }
+
+  @override
+  String get filterResetFilters => 'Reset filters';
+
+  @override
+  String get filterSearchHint => 'Search the list';
+
+  @override
+  String filterClearOne(String name) {
+    return 'Clear filter “$name”';
+  }
+
+  @override
+  String filterRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String get filterPickDates => 'Choose dates';
 }

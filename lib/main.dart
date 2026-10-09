@@ -7,10 +7,13 @@ import 'core/design/design.dart';
 import 'core/l10n_ext.dart';
 import 'core/locale_controller.dart';
 import 'core/supabase_config.dart';
+import 'core/web_url.dart';
 import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Параметры ссылки (фильтр заявок) — до того, как роутер сменит адрес.
+  AppUrl.captureInitial();
 
   // Язык нужен до первого кадра, чтобы интерфейс не «переключался» при запуске.
   final locale = await LocaleController.load();

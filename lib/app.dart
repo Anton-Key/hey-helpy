@@ -7,6 +7,7 @@ import 'core/router.dart';
 import 'core/session_controller.dart';
 import 'core/theme.dart';
 import 'l10n/app_localizations.dart';
+import 'core/scrolling.dart';
 
 class HeyHelpyApp extends StatefulWidget {
   const HeyHelpyApp({super.key, required this.locale});
@@ -57,6 +58,10 @@ class _HeyHelpyAppState extends State<HeyHelpyApp> {
           onGenerateTitle: (context) => AppLocalizations.of(context).appName,
           debugShowCheckedModeBanner: false,
           theme: HeyHelpyTheme.light(),
+          // Прокрутка колесом, ползунком и клавиатурой — на всех экранах.
+          scrollBehavior: const AppScrollBehavior(),
+          builder: (context, child) =>
+              KeyboardScrolling(child: child ?? const SizedBox.shrink()),
           locale: widget.locale.locale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: const [

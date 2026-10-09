@@ -1433,4 +1433,25 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get voiceBrowserHint =>
       'For voice input, it\'s best to open this in Google Chrome or Microsoft Edge';
+
+  @override
+  String get detailMore => 'More';
+
+  @override
+  String get actionDelete => 'Delete';
+
+  @override
+  String get deleteOrderConfirm =>
+      'Delete this request permanently? Its history, photos and reports will be gone. If the work just isn\'t needed, better “Cancel request”.';
+
+  @override
+  String get toastDeleted => 'Request deleted';
+
+  @override
+  String get deleteOrderDenied =>
+      'Only a manager can delete requests. The request was not deleted.';
+
+  @override
+  String get deleteOrderFailed =>
+      'Couldn\'t delete the request. Check your connection and try again.';
 }

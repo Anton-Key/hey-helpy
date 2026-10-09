@@ -162,6 +162,20 @@ async function openVoice(page) {
   await settle(page, 1000);
 }
 
+// Экран «Проверьте заявку» из голосовой заявки (VOICE_MOCK). «Отправить» не нажимаем.
+async function openConfirm(page) {
+  await openVoice(page);
+  await btn(page, 'Готово').click();
+  await see(page, 'Проверьте заявку').waitFor({ timeout: 20000 });
+  await settle(page, 2000);
+}
+
+// Когда появилось сообщение (для проверки, что оно исчезает само).
+let messageShownAt = 0;
+// Карточка сообщения в дереве доступности Flutter — группа с подписью (liveRegion).
+const messageLocator = (page) =>
+  page.getByRole('group', { name: 'Напишите, что случилось' }).first();
+
 const SCREENS = [
   { key: 'requests', title: 'Список заявок', run: async (p) => { await home(p); } },
   // Список, прокрученный до конца: последняя карточка не под плавающими кнопками.
@@ -177,6 +191,28 @@ const SCREENS = [
       await p.getByRole('button', { name: DEMO_ORDER }).first().click();
       await see(p, 'Подрядчик').waitFor({ timeout: 20000 });
       await settle(p);
+    } },
+  // Меню «⋯» в шапке карточки → «Удалить» → диалог. Нажимается только «Отмена»:
+  // заявка НЕ удаляется (и в after — тоже «Отмена», если что-то пошло не так).
+  { key: 'order-delete', title: 'Карточка заявки — меню «⋯» и диалог удаления', managerOnly: true, run: async (p) => {
+      await home(p);
+      await p.getByRole('button', { name: DEMO_ORDER }).first().click();
+      await see(p, 'Подрядчик').waitFor({ timeout: 20000 });
+      await settle(p);
+      const menu = btn(p, 'Ещё');
+      const box = await menu.boundingBox();
+      if (!box || box.y > 80) throw new Error('Кнопки «⋯» нет в шапке карточки');
+      await menu.click();
+      await p.getByRole('menuitem', { name: 'Удалить' }).waitFor({ timeout: 5000 });
+      await p.getByRole('menuitem', { name: 'Отменить' }).waitFor({ timeout: 2000 });
+      await p.getByRole('menuitem', { name: 'Удалить' }).click();
+      await see(p, 'Удалить заявку безвозвратно?').waitFor({ timeout: 5000 });
+      await settle(p, 800);
+      return 'меню «⋯» в шапке: «Отменить», «Удалить»; диалог закрыт кнопкой «Отмена»';
+    }, after: async (p) => {
+      const cancel = p.getByRole('button', { name: 'Отмена', exact: true }).first();
+      if (await cancel.isVisible().catch(() => false)) await cancel.click();
+      await settle(p, 500);
     } },
   // Окно только открывается и закрывается (Escape): подрядчик не назначается.
   { key: 'picker', title: 'Выбор подрядчика', managerOnly: true, run: async (p) => {
@@ -231,6 +267,79 @@ const SCREENS = [
     }, after: async (p) => {
       const vp = p.viewportSize();
       await p.setViewportSize({ width: vp.width, height: vp.width > 600 ? 800 : 915 });
+    } },
+  // Прокрутка «Проверьте заявку» в низком окне: колесом мыши и клавишами
+  // (Home, щелчок в пустое место, PageDown). Меряем, куда уехала подпись «Срочность».
+  { key: 'confirm-scroll', title: 'Проверьте заявку — прокрутка колесом и PageDown', managerOnly: true, run: async (p) => {
+      const vp = p.viewportSize();
+      const low = { width: vp.width, height: vp.width > 600 ? 720 : 700 };
+      await p.setViewportSize(low);
+      await openConfirm(p);
+      const label = p.getByText('Срочность').first();
+      const y = async () => (await label.boundingBox())?.y ?? NaN;
+      const y0 = await y();
+      await p.mouse.move(low.width / 2, low.height / 2);
+      await p.mouse.wheel(0, 400);
+      await settle(p, 800);
+      const yWheel = await y();
+      if (!(y0 - yWheel > 40)) throw new Error(`Колесо не прокрутило: ${Math.round(y0)} → ${Math.round(yWheel)} px`);
+      await p.keyboard.press('Home');
+      await settle(p, 800);
+      const yHome = await y();
+      if (Math.abs(yHome - y0) > 5) throw new Error(`Home не вернул в начало: ${Math.round(yHome)} вместо ${Math.round(y0)} px`);
+      // Щелчок в пустое место у левого края (поля списка), потом PageDown.
+      await p.mouse.click(6, Math.round(low.height / 2));
+      await p.keyboard.press('PageDown');
+      await settle(p, 800);
+      const yPage = await y();
+      if (!(y0 - yPage > 40)) throw new Error(`PageDown не прокрутил: ${Math.round(y0)} → ${Math.round(yPage)} px`);
+      return `окно ${low.width}×${low.height}: колесо ${Math.round(y0)}→${Math.round(yWheel)} px, Home ${Math.round(yHome)}, PageDown →${Math.round(yPage)} px`;
+    }, after: async (p) => {
+      const vp = p.viewportSize();
+      await p.setViewportSize({ width: vp.width, height: vp.width > 600 ? 800 : 915 });
+    } },
+  // «Ввести текстом» на «Слушаю» — с первого нажатия, курсор сразу в поле.
+  { key: 'voice-type', title: '«Слушаю» → «Ввести текстом» с одного нажатия', managerOnly: true, run: async (p) => {
+      await openVoice(p);
+      await btn(p, 'Ввести текстом').click();
+      await see(p, 'Опишите заявку').waitFor({ timeout: 3000 })
+        .catch(() => { throw new Error('После одного нажатия «Ввести текстом» поле не открылось'); });
+      await settle(p, 800);
+      const tag = await p.evaluate(() => document.activeElement?.tagName ?? '');
+      if (!/INPUT|TEXTAREA/.test(tag)) throw new Error(`Курсор не в поле (фокус: ${tag || 'нет'})`);
+      return 'поле открылось с первого нажатия, курсор в поле';
+    } },
+  // Сообщение: на «Проверьте заявку» стираем «Что случилось?» и жмём «Отправить» —
+  // заявка не уходит, появляется подсказка. На ПК — справа сверху, не над кнопкой.
+  { key: 'message', title: 'Сообщение «Напишите, что случилось»', managerOnly: true, run: async (p) => {
+      await openConfirm(p);
+      const field = p.getByRole('textbox', { name: 'Что случилось?' });
+      await field.click();
+      await settle(p, 500);
+      await p.keyboard.press('ControlOrMeta+A');
+      await p.keyboard.press('Backspace');
+      await settle(p, 300);
+      const len = await p.evaluate(() => document.activeElement?.value?.length ?? -1);
+      if (len !== 0) throw new Error('Не удалось стереть поле «Что случилось?»');
+      await btn(p, 'Отправить').click();
+      const msg = messageLocator(p);
+      await msg.waitFor({ timeout: 3000 });
+      messageShownAt = Date.now();
+      await settle(p, 400);
+      const box = await msg.boundingBox({ timeout: 3000 });
+      const send = await btn(p, 'Отправить').boundingBox();
+      const vp = p.viewportSize();
+      if (!box) throw new Error('Сообщение не найдено на экране');
+      if (box.y > 200) throw new Error(`Сообщение не сверху: y = ${Math.round(box.y)} px`);
+      if (vp.width >= 700 && box.x < vp.width / 2) throw new Error(`На ПК сообщение не справа: x = ${Math.round(box.x)} px`);
+      if (send && box.y + box.height > send.y) throw new Error('Сообщение перекрывает кнопку «Отправить»');
+      return `сверху ${vp.width >= 700 ? 'справа ' : ''}(x ${Math.round(box.x)}, y ${Math.round(box.y)} px), кнопка «Отправить» открыта`;
+    } },
+  { key: 'message-gone', title: 'Сообщение исчезает само (~3 с)', managerOnly: true, run: async (p) => {
+      await messageLocator(p).waitFor({ state: 'hidden', timeout: 8000 });
+      const sec = (Date.now() - messageShownAt) / 1000;
+      if (sec < 2.5 || sec > 4.5) throw new Error(`Сообщение исчезло через ${sec.toFixed(1)} с, ждали ~3 с`);
+      return `исчезло через ${sec.toFixed(1)} с`;
     } },
   { key: 'reports', title: 'Отчёты (30 дней)', managerOnly: true, run: async (p) => {
       await home(p);

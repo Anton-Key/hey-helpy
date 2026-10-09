@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n_ext.dart';
 import 'auth_repository.dart';
+import '../../core/app_message.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,9 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
           fullName: _fullName.text.trim(),
         );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.loginAccountCreated)),
-          );
+          showAppMessage(context, context.l10n.loginAccountCreated,
+              type: AppMessageType.success);
         }
       } else {
         await _auth.signIn(
@@ -67,10 +67,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final l = context.l10n;
     final code = e.code ?? '';
     final m = e.message.toLowerCase();
-    if (code == 'invalid_credentials' || m.contains('invalid login credentials')) {
+    if (code == 'invalid_credentials' ||
+        m.contains('invalid login credentials')) {
       return l.loginErrorInvalidCredentials;
     }
-    if (code == 'user_already_exists' || code == 'email_exists' || m.contains('already registered')) {
+    if (code == 'user_already_exists' ||
+        code == 'email_exists' ||
+        m.contains('already registered')) {
       return l.loginErrorAlreadyRegistered;
     }
     if (code == 'email_not_confirmed' || m.contains('email not confirmed')) {
@@ -81,8 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showError(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    showAppMessage(context, msg, type: AppMessageType.error);
   }
 
   @override
@@ -158,8 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : Text(_isSignUp ? l.loginSignUp : l.loginSignIn),
                     ),
@@ -168,7 +169,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: _loading
                           ? null
                           : () => setState(() => _isSignUp = !_isSignUp),
-                      child: Text(_isSignUp ? l.loginHaveAccount : l.loginNoAccount),
+                      child: Text(
+                          _isSignUp ? l.loginHaveAccount : l.loginNoAccount),
                     ),
                   ],
                 ),

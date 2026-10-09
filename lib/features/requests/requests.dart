@@ -18,7 +18,9 @@ import '../visits/visit_repository.dart';
 import '../visits/visit_section.dart';
 import '../voice/voice_record_screen.dart';
 import 'contractor_picker.dart';
+import 'order_menu.dart';
 import '../voice/wake_word_service.dart';
+import '../../core/app_message.dart';
 
 class WorkOrder {
   final String id;
@@ -50,6 +52,11 @@ class WorkOrder {
       recurring: m['recurrence'] != null,
     );
   }
+}
+
+/// База не дала удалить заявку (не менеджер или заявка чужой компании).
+class OrderDeleteDenied implements Exception {
+  const OrderDeleteDenied();
 }
 
 class RequestsRepo {
@@ -163,6 +170,32 @@ class RequestsRepo {
 
   Future<void> setStatus(String id, String status) async {
     await _c.from('work_orders').update({'status': status}).eq('id', id);
+  }
+
+  /// Удалить заявку навсегда — только менеджер (политика `wo_delete`).
+  /// Сначала файлы фото из Storage, затем сама заявка; визиты, вложения,
+  /// чек-листы и история удаляются базой каскадом. Возвращает, сколько файлов
+  /// осталось в Storage: правило хранилища (0006) разрешает удалять только
+  /// свои файлы, чужие фото остаются (без заявки их никто не видит).
+  /// RLS не дал удалить — [OrderDeleteDenied].
+  Future<int> deleteOrder(String id) async {
+    final rows = await _c
+        .from('attachments')
+        .select('storage_path')
+        .eq('work_order_id', id);
+    final paths = [
+      for (final r in rows)
+        if (r['storage_path'] is String) r['storage_path'] as String,
+    ];
+    var removed = 0;
+    if (paths.isNotEmpty) {
+      removed =
+          (await _c.storage.from(PhotoRepository.bucket).remove(paths)).length;
+    }
+    final deleted =
+        await _c.from('work_orders').delete().eq('id', id).select('id');
+    if (deleted.isEmpty) throw const OrderDeleteDenied();
+    return paths.length - removed;
   }
 
   /// Вернуть работу на доработку с комментарием (только автор или менеджер).
@@ -436,7 +469,7 @@ class _RequestsTabState extends State<RequestsTab> {
 
   Future<void> _openCreate() async {
     if (_companyId == null) {
-      _snack(context.l10n.requestsNoCompany);
+      _snack(context.l10n.requestsNoCompany, type: AppMessageType.error);
       return;
     }
     final ok = await showOrderForm(
@@ -454,7 +487,7 @@ class _RequestsTabState extends State<RequestsTab> {
   Future<void> _openVoice() async {
     if (_voiceOpen || !mounted) return;
     if (_companyId == null) {
-      _snack(context.l10n.requestsNoCompany);
+      _snack(context.l10n.requestsNoCompany, type: AppMessageType.error);
       return;
     }
     _voiceOpen = true;
@@ -470,21 +503,12 @@ class _RequestsTabState extends State<RequestsTab> {
     }
   }
 
-  void _snack(String m) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
-    }
+  void _snack(String m, {AppMessageType type = AppMessageType.info}) {
+    if (mounted) showAppMessage(context, m, type: type);
   }
 
   void _snackOk(String m) {
-    if (!mounted) return;
-    const brand = HeyHelpyTheme.brand;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Row(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.check_circle_rounded, color: brand),
-      const SizedBox(width: 10),
-      Text(m),
-    ])));
+    if (mounted) showAppMessage(context, m, type: AppMessageType.success);
   }
 }
 
@@ -618,7 +642,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       try {
         await widget.repo.setStatus(widget.order.id, 'in_progress');
       } catch (e) {
-        _ok(l.statusError(e));
+        _ok(l.statusError(e), type: AppMessageType.error);
         return;
       }
       var message = l.toastInProgress;
@@ -641,7 +665,11 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         }
       }
       await _load();
-      _ok(message);
+      // Работа начата, но визит без координат или не записан — это не успех.
+      _ok(message,
+          type: message == l.toastInProgress
+              ? AppMessageType.success
+              : AppMessageType.info);
     } finally {
       if (mounted) setState(() => _starting = false);
     }
@@ -657,9 +685,11 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     try {
       photo = await capturePhoto();
     } on CaptureException catch (e) {
-      _ok(e.problem == CaptureProblem.cameraDenied
-          ? l.photoCameraDenied
-          : l.photoCameraFailed);
+      _ok(
+          e.problem == CaptureProblem.cameraDenied
+              ? l.photoCameraDenied
+              : l.photoCameraFailed,
+          type: AppMessageType.error);
       return;
     }
     if (photo == null || !mounted) return;
@@ -674,7 +704,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       _ok(l.photoUploaded);
     } catch (e) {
       debugPrint('upload: $e');
-      _ok(l.photoUploadFailed);
+      _ok(l.photoUploadFailed, type: AppMessageType.error);
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
@@ -702,7 +732,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   Future<void> _assign() async {
     final l = context.l10n;
     if (widget.contractors.isEmpty) {
-      _ok(l.assignNoContractors(l.tabContractors));
+      _ok(l.assignNoContractors(l.tabContractors), type: AppMessageType.info);
       return;
     }
     final d = _d!;
@@ -721,7 +751,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       _ok(l.toastAssignedTo(chosen.orgName));
     } catch (e) {
       debugPrint('assign: $e');
-      _ok(l.errorGeneric);
+      _ok(l.errorGeneric, type: AppMessageType.error);
     }
   }
 
@@ -732,7 +762,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       await _load();
       _ok(okText);
     } catch (e) {
-      _ok(l.statusError(e));
+      _ok(l.statusError(e), type: AppMessageType.error);
     }
   }
 
@@ -759,7 +789,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     );
     if (reason == null) return;
     if (reason.isEmpty) {
-      _ok(l.returnReasonRequired);
+      _ok(l.returnReasonRequired, type: AppMessageType.info);
       return;
     }
     try {
@@ -767,19 +797,12 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       await _load();
       _ok(l.toastReturned);
     } catch (e) {
-      _ok(l.statusError(e));
+      _ok(l.statusError(e), type: AppMessageType.error);
     }
   }
 
-  void _ok(String m) {
-    if (!mounted) return;
-    const brand = HeyHelpyTheme.brand;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Row(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.check_circle_rounded, color: brand),
-      const SizedBox(width: 10),
-      Flexible(child: Text(m)),
-    ])));
+  void _ok(String m, {AppMessageType type = AppMessageType.success}) {
+    if (mounted) showAppMessage(context, m, type: type);
   }
 
   @override
@@ -794,6 +817,12 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
                 tooltip: l.detailEdit,
                 icon: const Icon(Icons.edit_outlined),
                 onPressed: _edit),
+          if (_d != null)
+            OrderMenu(
+                canCancel: _canCancel,
+                canDelete: _isManager,
+                onCancel: () => _setStatus('cancelled', l.toastCancelled),
+                onDelete: _delete),
         ],
       ),
       body: _loading
@@ -1039,6 +1068,33 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     return const [];
   }
 
+  /// Отменить можно автору и менеджеру, пока заявка не принята и не отменена.
+  bool get _canCancel {
+    final status = _d?['status'] as String? ?? widget.order.status;
+    return (_isAuthor || _isManager) &&
+        status != 'done' &&
+        status != 'cancelled';
+  }
+
+  /// Удаление (меню «⋯», только менеджер): подтверждение → фото из Storage →
+  /// заявка → назад к списку с сообщением. Ошибка — заявка остаётся.
+  Future<void> _delete() async {
+    if (!await confirmDeleteOrder(context) || !mounted) return;
+    final l = context.l10n;
+    try {
+      final left = await widget.repo.deleteOrder(widget.order.id);
+      if (left > 0) debugPrint('deleteOrder: $left file(s) left in Storage');
+      if (!mounted) return;
+      showAppMessage(context, l.toastDeleted, type: AppMessageType.success);
+      Navigator.pop(context, true);
+    } on OrderDeleteDenied {
+      _ok(l.deleteOrderDenied, type: AppMessageType.error);
+    } catch (e) {
+      debugPrint('deleteOrder: $e');
+      _ok(l.deleteOrderFailed, type: AppMessageType.error);
+    }
+  }
+
   /// Остальные действия — в блоке «Действия» (без повторов с нижней панелью).
   /// Те же правила проверяет база.
   List<Widget> _actions(String status) {
@@ -1218,8 +1274,7 @@ Future<bool?> showOrderForm({
                       minimumSize: const Size.fromHeight(52)),
                   onPressed: () async {
                     if (titleC.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                          SnackBar(content: Text(l.formWhatRequired)));
+                      showAppMessage(ctx, l.formWhatRequired);
                       return;
                     }
                     try {
@@ -1248,8 +1303,8 @@ Future<bool?> showOrderForm({
                       if (ctx.mounted) Navigator.pop(ctx, true);
                     } catch (_) {
                       if (!ctx.mounted) return;
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                          SnackBar(content: Text(l.formSaveFailed)));
+                      showAppMessage(ctx, l.formSaveFailed,
+                          type: AppMessageType.error);
                     }
                   },
                   child: Text(isEdit ? l.commonSave : l.requestsCreate,

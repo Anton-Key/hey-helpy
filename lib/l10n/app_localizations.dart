@@ -2552,6 +2552,42 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge'**
   String get voiceBrowserHint;
+
+  /// No description provided for @detailMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё'**
+  String get detailMore;
+
+  /// No description provided for @actionDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить'**
+  String get actionDelete;
+
+  /// No description provided for @deleteOrderConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить заявку безвозвратно? История, фото и отчёты по ней исчезнут. Если работа просто не нужна — лучше «Отменить».'**
+  String get deleteOrderConfirm;
+
+  /// No description provided for @toastDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка удалена'**
+  String get toastDeleted;
+
+  /// No description provided for @deleteOrderDenied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалять заявки может только менеджер. Заявка не удалена.'**
+  String get deleteOrderDenied;
+
+  /// No description provided for @deleteOrderFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось удалить заявку. Проверьте интернет и попробуйте ещё раз.'**
+  String get deleteOrderFailed;
 }
 
 class _AppLocalizationsDelegate

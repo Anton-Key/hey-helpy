@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../requests/order_list.dart';
 import 'contractor_card.dart';
 import 'directory.dart';
+import '../../core/app_message.dart';
 
 const _muted = Color(0xFF8A9098);
 const _danger = Color(0xFFC24444);
@@ -74,10 +75,8 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
     }
   }
 
-  void _snack(String m) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
-    }
+  void _snack(String m, {AppMessageType type = AppMessageType.info}) {
+    if (mounted) showAppMessage(context, m, type: type);
   }
 
   Future<void> _edit() async {
@@ -92,7 +91,7 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
     );
     if (saved == true) {
       await _load();
-      _snack(l.toastSaved);
+      _snack(l.toastSaved, type: AppMessageType.success);
     }
   }
 

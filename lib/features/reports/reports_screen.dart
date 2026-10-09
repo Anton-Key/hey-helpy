@@ -711,20 +711,27 @@ class _ContractorTableState extends State<_ContractorTable> {
         Expanded(
           child: SizedBox(
             height: _headH + rows.length * (_rowH + 0.5) + AppSpace.m,
-            child: Scrollbar(
-              controller: _scroll,
-              thumbVisibility: true,
-              // Полоса прокрутки — только своя (под строками): общая полоса
-              // приложения на ПК рисовалась поверх таблицы.
-              child: ScrollConfiguration(
-                behavior:
-                    ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                child: SingleChildScrollView(
-                  controller: _scroll,
-                  scrollDirection: Axis.horizontal,
-                  // Место под полосу прокрутки, чтобы она не закрывала строку.
-                  padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
-                  child: scrolling,
+            // Без нижнего отступа экрана (место под меню вкладок): иначе
+            // полоса прокрутки поднимается на его высоту — на строки таблицы.
+            child: MediaQuery.removePadding(
+              context: context,
+              removeBottom: true,
+              child: Scrollbar(
+                controller: _scroll,
+                thumbVisibility: true,
+                // Полоса прокрутки — только своя (под строками): общая полоса
+                // приложения на ПК рисовалась поверх таблицы.
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context)
+                      .copyWith(scrollbars: false),
+                  child: SingleChildScrollView(
+                    controller: _scroll,
+                    scrollDirection: Axis.horizontal,
+                    // Место под полосу прокрутки, чтобы она не закрывала строку.
+                    padding:
+                        const EdgeInsetsDirectional.only(bottom: AppSpace.m),
+                    child: scrolling,
+                  ),
                 ),
               ),
             ),

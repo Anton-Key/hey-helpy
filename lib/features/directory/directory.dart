@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
+import '../home/home_chrome.dart';
 import '../map/objects_map_view.dart';
 import 'contractor_card.dart';
 import 'object_card.dart';
@@ -350,10 +350,6 @@ class DirectoryRepo {
   }
 }
 
-const _ink = Color(0xFF1C1E22);
-const _muted = Color(0xFF8A9098);
-const _line = Color(0xFFE8EAED);
-
 class ObjectsTab extends StatefulWidget {
   const ObjectsTab({super.key, this.onShowOrders});
 
@@ -412,47 +408,54 @@ class _ObjectsTabState extends State<ObjectsTab> {
     } catch (_) {}
   }
 
+  /// «Список | Карта» — запоминается на устройстве.
+  Widget _modeSwitch(AppLocalizations l) => SegmentedControl<bool>(
+        segments: [
+          Segment(false, l.mapViewList, icon: AppIcons.list),
+          Segment(true, l.mapViewMap, icon: AppIcons.map),
+        ],
+        selected: _mapMode,
+        onChanged: _setMode,
+      );
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 4),
-        child: Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: SegmentedButton<bool>(
-            showSelectedIcon: false,
-            style: SegmentedButton.styleFrom(
-              selectedBackgroundColor: HeyHelpyTheme.mint,
-              selectedForegroundColor: HeyHelpyTheme.onBrand,
-              visualDensity: VisualDensity.compact,
-            ),
-            segments: [
-              ButtonSegment(
-                  value: false,
-                  icon: const Icon(Icons.view_agenda_outlined, size: 18),
-                  label: Text(l.mapViewList)),
-              ButtonSegment(
-                  value: true,
-                  icon: const Icon(Icons.map_outlined, size: 18),
-                  label: Text(l.mapViewMap)),
-            ],
-            selected: {_mapMode},
-            onSelectionChanged: (v) => _setMode(v.first),
-          ),
+    if (_mapMode) {
+      // Карта — во всю ширину, шапка компактная.
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        HomeTopBar(title: l.tabLocations, actions: _actions(l)),
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.s),
+          child: ContentWidth(child: _modeSwitch(l)),
         ),
-      ),
-      Expanded(child: _mapMode ? _mapView(l) : _listView(l)),
-    ]);
+        Expanded(
+          child: MediaQuery.removePadding(
+              context: context, removeTop: true, child: _mapView(l)),
+        ),
+      ]);
+    }
+    return _listView(l);
   }
+
+  List<Widget> _actions(AppLocalizations l) => [
+        if (_isManager)
+          AppIconButton(
+              icon: AppIcons.add,
+              label: l.commonAdd,
+              onPressed: () => _openForm(context)),
+      ];
 
   Widget _mapView(AppLocalizations l) => FutureBuilder<List<Obj>>(
         future: _future,
         builder: (context, snap) {
           // При перечитывании остаётся прежний список — карта не сбрасывается.
           if (!snap.hasData) {
-            if (snap.hasError) return _ErrorView(text: l.objectsLoadFailed);
-            return const Center(child: CircularProgressIndicator());
+            if (snap.hasError) {
+              return AppEmptyState(text: l.objectsLoadFailed, error: true);
+            }
+            return const AppLoader();
           }
           return ObjectsMapView(
             objects: snap.data!,
@@ -465,87 +468,64 @@ class _ObjectsTabState extends State<ObjectsTab> {
       );
 
   Widget _listView(AppLocalizations l) {
-    return Stack(children: [
-      FutureBuilder<List<Obj>>(
-        future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snap.hasError) return _ErrorView(text: l.objectsLoadFailed);
-          final list = snap.data ?? [];
-          if (list.isEmpty) {
-            return _EmptyView(
-                icon: Icons.apartment_outlined, text: l.objectsEmpty);
-          }
-          return ListView.builder(
-            padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 120),
-            itemCount: list.length,
-            itemBuilder: (_, i) {
-              final o = list[i];
-              return TapCard(
-                onTap: () async {
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => ObjectCardScreen(object: o)));
-                  _reload();
-                },
-                child: Row(children: [
-                  Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                          color: const Color(0xFFE8F6F2),
-                          borderRadius: BorderRadius.circular(12)),
-                      child: const Icon(Icons.apartment,
-                          color: HeyHelpyTheme.link)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        Text(o.name,
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 3),
-                        Text(
-                            o.address?.isNotEmpty == true
-                                ? o.address!
-                                : l.objectType(o.type),
-                            style:
-                                const TextStyle(color: _muted, fontSize: 13)),
-                      ])),
-                  Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                          color: const Color(0xFFF2F3F5),
-                          borderRadius: BorderRadius.circular(20)),
-                      child: Text(l.objectType(o.type),
-                          style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: _muted))),
-                ]),
-              );
-            },
+    return FutureBuilder<List<Obj>>(
+      future: _future,
+      builder: (context, snap) {
+        final Widget content;
+        if (snap.connectionState == ConnectionState.waiting) {
+          content = const SliverFillRemaining(
+              hasScrollBody: false, child: AppLoader());
+        } else if (snap.hasError) {
+          content = SliverFillRemaining(
+              hasScrollBody: false,
+              child: AppEmptyState(text: l.objectsLoadFailed, error: true));
+        } else if ((snap.data ?? const []).isEmpty) {
+          content = SliverFillRemaining(
+              hasScrollBody: false,
+              child:
+                  AppEmptyState(icon: AppIcons.building, text: l.objectsEmpty));
+        } else {
+          final list = snap.data!;
+          content = SliverContent(
+            top: 0,
+            sliver: SliverToBoxAdapter(
+              child: AppGroup(children: [
+                for (final o in list)
+                  AppRow(
+                    leading: const LeadingIcon(AppIcons.building),
+                    title: o.name,
+                    subtitle: o.address?.isNotEmpty == true
+                        ? '${o.address} · ${l.objectType(o.type)}'
+                        : l.objectType(o.type),
+                    onTap: () async {
+                      await Navigator.push(
+                          context,
+                          appRoute((_) => ObjectCardScreen(object: o),
+                              title: l.tabLocations));
+                      _reload();
+                    },
+                  ),
+              ]),
+            ),
           );
-        },
-      ),
-      if (_isManager)
-        PositionedDirectional(
-            end: 4,
-            bottom: 8,
-            child: FloatingActionButton.extended(
-                heroTag: 'addObj',
-                backgroundColor: HeyHelpyTheme.brand,
-                foregroundColor: HeyHelpyTheme.onBrand,
-                onPressed: () => _openForm(context),
-                icon: const Icon(Icons.add),
-                label: Text(l.commonAdd,
-                    style: const TextStyle(fontWeight: FontWeight.w800)))),
-    ]);
+        }
+        return CustomScrollView(slivers: [
+          HomeHeader(title: l.tabLocations, actions: _actions(l)),
+          SliverContent(
+            top: AppSpace.s,
+            sliver: SliverToBoxAdapter(
+              child: Padding(
+                padding:
+                    const EdgeInsetsDirectional.only(bottom: AppSpace.group),
+                child: _modeSwitch(l),
+              ),
+            ),
+          ),
+          content,
+          const SliverBottomInset(),
+        ]);
+      },
+    );
   }
 
   Future<void> _openForm(BuildContext context) async {
@@ -557,12 +537,8 @@ class _ObjectsTabState extends State<ObjectsTab> {
     final nameC = TextEditingController();
     final addrC = TextEditingController();
     String type = 'office';
-    final saved = await showModalBottomSheet<bool>(
+    final saved = await showAppSheet<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => Padding(
         padding: EdgeInsetsDirectional.only(
             bottom: MediaQuery.of(ctx).viewInsets.bottom),
@@ -570,20 +546,20 @@ class _ObjectsTabState extends State<ObjectsTab> {
           builder: (ctx, setSt) => _FormSheet(
             title: l.objectFormTitle,
             children: [
-              _label(l.objectFormName),
-              _input(nameC, l.objectFormNameHint),
-              _label(l.objectFormAddress),
-              _input(addrC, l.objectFormAddressHint),
-              _label(l.objectFormType),
-              Wrap(spacing: 8, runSpacing: 8, children: [
+              _field(l.objectFormName, nameC, l.objectFormNameHint),
+              _field(l.objectFormAddress, addrC, l.objectFormAddressHint),
+              SectionHeader(l.objectFormType),
+              Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
                 for (final t in const [
                   'office',
                   'hotel',
                   'apartments',
                   'warehouse'
                 ])
-                  _typeChip(
-                      l.objectType(t), type == t, () => setSt(() => type = t)),
+                  AppChip(
+                      label: l.objectType(t),
+                      selected: type == t,
+                      onTap: () => setSt(() => type = t)),
               ]),
             ],
             onSubmit: () async {
@@ -630,6 +606,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
   late Future<List<Contractor>> _future;
   String? _companyId;
   bool _isManager = false;
+  String _query = '';
   @override
   void initState() {
     super.initState();
@@ -644,62 +621,74 @@ class _ContractorsTabState extends State<ContractorsTab> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return Stack(children: [
-      FutureBuilder<List<Contractor>>(
-        future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snap.hasError) return _ErrorView(text: l.contractorsLoadFailed);
-          final list = snap.data ?? [];
-          if (list.isEmpty) {
-            return _EmptyView(
-                icon: Icons.handshake_outlined, text: l.contractorsEmpty);
-          }
-          return ListView.builder(
-            padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 120),
-            itemCount: list.length,
-            itemBuilder: (_, i) {
-              final c = list[i];
-              return TapCard(
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => ContractorCardScreen(contractor: c))),
-                child: Row(children: [
-                  Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                          color: const Color(0xFFE8F6F2),
-                          borderRadius: BorderRadius.circular(14)),
-                      child: const Icon(Icons.business,
-                          color: HeyHelpyTheme.link)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                      child: Text(c.orgName,
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w700))),
-                ]),
-              );
-            },
+    return FutureBuilder<List<Contractor>>(
+      future: _future,
+      builder: (context, snap) {
+        final Widget content;
+        if (snap.connectionState == ConnectionState.waiting) {
+          content = const SliverFillRemaining(
+              hasScrollBody: false, child: AppLoader());
+        } else if (snap.hasError) {
+          content = SliverFillRemaining(
+              hasScrollBody: false,
+              child: AppEmptyState(text: l.contractorsLoadFailed, error: true));
+        } else if ((snap.data ?? const []).isEmpty) {
+          content = SliverFillRemaining(
+              hasScrollBody: false,
+              child: AppEmptyState(
+                  icon: AppIcons.contractor, text: l.contractorsEmpty));
+        } else {
+          final q = _query.trim().toLowerCase();
+          final list = [
+            for (final c in snap.data!)
+              if (q.isEmpty || c.orgName.toLowerCase().contains(q)) c
+          ];
+          content = SliverContent(
+            top: 0,
+            sliver: SliverToBoxAdapter(
+              child: list.isEmpty
+                  ? AppEmptyState(
+                      icon: AppIcons.search, text: l.contractorsEmpty)
+                  : AppGroup(children: [
+                      for (final c in list)
+                        AppRow(
+                          leading: InitialsTile(c.orgName),
+                          title: c.orgName,
+                          onTap: () => Navigator.push(
+                              context,
+                              appRoute(
+                                  (_) => ContractorCardScreen(contractor: c),
+                                  title: l.tabContractors)),
+                        ),
+                    ]),
+            ),
           );
-        },
-      ),
-      if (_isManager)
-        PositionedDirectional(
-            end: 4,
-            bottom: 8,
-            child: FloatingActionButton.extended(
-                heroTag: 'addCon',
-                backgroundColor: HeyHelpyTheme.brand,
-                foregroundColor: HeyHelpyTheme.onBrand,
-                onPressed: () => _openForm(context),
-                icon: const Icon(Icons.add),
-                label: Text(l.commonAdd,
-                    style: const TextStyle(fontWeight: FontWeight.w800)))),
-    ]);
+        }
+        return CustomScrollView(slivers: [
+          HomeHeader(title: l.tabContractors, actions: [
+            if (_isManager)
+              AppIconButton(
+                  icon: AppIcons.add,
+                  label: l.commonAdd,
+                  onPressed: () => _openForm(context)),
+          ]),
+          SliverContent(
+            top: AppSpace.s,
+            sliver: SliverToBoxAdapter(
+              child: Padding(
+                padding:
+                    const EdgeInsetsDirectional.only(bottom: AppSpace.group),
+                child: AppSearchField(
+                    hint: MaterialLocalizations.of(context).searchFieldLabel,
+                    onChanged: (v) => setState(() => _query = v)),
+              ),
+            ),
+          ),
+          content,
+          const SliverBottomInset(),
+        ]);
+      },
+    );
   }
 
   Future<void> _openForm(BuildContext context) async {
@@ -709,20 +698,15 @@ class _ContractorsTabState extends State<ContractorsTab> {
       return;
     }
     final nameC = TextEditingController();
-    final saved = await showModalBottomSheet<bool>(
+    final saved = await showAppSheet<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => Padding(
         padding: EdgeInsetsDirectional.only(
             bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: _FormSheet(
           title: l.contractorFormTitle,
           children: [
-            _label(l.contractorFormName),
-            _input(nameC, l.contractorFormNameHint)
+            _field(l.contractorFormName, nameC, l.contractorFormNameHint),
           ],
           onSubmit: () async {
             if (nameC.text.trim().isEmpty) {
@@ -752,89 +736,63 @@ class _ContractorsTabState extends State<ContractorsTab> {
   }
 }
 
-class _FormSheet extends StatelessWidget {
+/// Шторка формы: «Отмена · Заголовок · Сохранить», поля ниже.
+class _FormSheet extends StatefulWidget {
   const _FormSheet(
       {required this.title, required this.children, required this.onSubmit});
   final String title;
   final List<Widget> children;
   final Future<void> Function() onSubmit;
+
+  @override
+  State<_FormSheet> createState() => _FormSheetState();
+}
+
+class _FormSheetState extends State<_FormSheet> {
+  bool _busy = false;
+
+  Future<void> _submit() async {
+    setState(() => _busy = true);
+    try {
+      await widget.onSubmit();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-                child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsetsDirectional.only(bottom: 14),
-                    decoration: BoxDecoration(
-                        color: _line, borderRadius: BorderRadius.circular(4)))),
-            Text(title,
-                style:
-                    const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
-            ...children,
-            const SizedBox(height: 22),
-            FilledButton(
-                onPressed: onSubmit,
-                style: FilledButton.styleFrom(
-                    backgroundColor: HeyHelpyTheme.brand,
-                    foregroundColor: HeyHelpyTheme.onBrand),
-                child: Text(context.l10n.commonSave,
-                    style: const TextStyle(fontWeight: FontWeight.w800))),
-          ],
+      top: false,
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        SheetHeader(
+          title: widget.title,
+          doneLabel: context.l10n.commonSave,
+          doneLoading: _busy,
+          onDone: _submit,
         ),
-      ),
+        Flexible(
+          child: SingleChildScrollView(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: widget.children,
+            ),
+          ),
+        ),
+      ]),
     );
   }
 }
 
-Widget _label(String t) => Padding(
-    padding: const EdgeInsetsDirectional.only(top: 16, bottom: 8),
-    child: Text(t,
-        style: const TextStyle(
-            fontSize: 14, fontWeight: FontWeight.w600, color: _ink)));
-
-Widget _input(TextEditingController c, String hint) => TextField(
-    controller: c,
-    decoration: InputDecoration(
-        hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 15, vertical: 14)));
-
-Widget _typeChip(String label, bool on, VoidCallback onTap) =>
-    ChoiceTag(label: label, selected: on, onTap: onTap);
-
-class _EmptyView extends StatelessWidget {
-  const _EmptyView({required this.icon, required this.text});
-  final IconData icon;
-  final String text;
-  @override
-  Widget build(BuildContext context) => Center(
-      child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(icon, size: 52, color: _muted),
-            const SizedBox(height: 12),
-            Text(text,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: _muted)),
-          ])));
-}
-
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.text});
-  final String text;
-  @override
-  Widget build(BuildContext context) => Center(
-      child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFFC24444)))));
-}
+/// Поле формы: подпись секции и белое поле ввода.
+Widget _field(String label, TextEditingController c, String hint) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SectionHeader(label),
+        TextField(controller: c, decoration: InputDecoration(hintText: hint)),
+      ],
+    );

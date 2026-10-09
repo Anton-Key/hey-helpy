@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../directory/directory.dart';
 import 'map_logic.dart';
 
-const _ink = Color(0xFF1C1E22);
-const _muted = Color(0xFF8A9098);
-const _line = Color(0xFFE8EAED);
-const _danger = Color(0xFFC24444);
-
 /// Цвет маркера и текста на нём (контраст текста ≥ 4,5:1).
 (Color, Color) toneColors(MarkerTone t) => switch (t) {
-      MarkerTone.alert => (const Color(0xFFCF3B3B), Colors.white),
-      MarkerTone.warning => (const Color(0xFFF08C2E), const Color(0xFF3A1F00)),
-      MarkerTone.open => (HeyHelpyTheme.brand, HeyHelpyTheme.onBrand),
-      MarkerTone.idle => (const Color(0xFFA9BDB6), const Color(0xFF1F2D28)),
+      MarkerTone.alert => (StatusColors.overdue.foreground, AppColors.surface),
+      MarkerTone.warning => (AppColors.priorityHigh, AppColors.ink),
+      MarkerTone.open => (AppColors.accent, AppColors.onAccent),
+      MarkerTone.idle => (AppColors.tertiary, AppColors.ink),
     };
 
 /// Маркер объекта: круг с числом открытых заявок.
@@ -51,7 +45,7 @@ class ObjectMarker extends StatelessWidget {
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
+                duration: AppMotion.normal,
                 width: d,
                 height: d,
                 alignment: Alignment.center,
@@ -59,20 +53,13 @@ class ObjectMarker extends StatelessWidget {
                   color: bg,
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: selected ? _ink : Colors.white,
+                      color: selected ? AppColors.ink : AppColors.surface,
                       width: selected ? 3 : 2.5),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color(0x40000000),
-                        blurRadius: 6,
-                        offset: Offset(0, 2)),
-                  ],
+                  boxShadow: AppShadows.floating,
                 ),
                 child: Text('${stats.open}',
-                    style: TextStyle(
-                        color: fg,
-                        fontSize: selected ? 18 : 14,
-                        fontWeight: FontWeight.w800)),
+                    style: (selected ? AppText.headline : AppText.caption)
+                        .copyWith(color: fg, fontWeight: FontWeight.w700)),
               ),
             ),
           ),
@@ -82,8 +69,8 @@ class ObjectMarker extends StatelessWidget {
   }
 }
 
-/// Кластер: несколько объектов рядом. Число — сумма открытых заявок,
-/// кольцо — цвет самого тревожного объекта.
+/// Кластер: несколько объектов рядом — акцентный круг. Число — сумма
+/// открытых заявок, кольцо — цвет самого тревожного объекта.
 class ClusterMarker extends StatelessWidget {
   const ClusterMarker(
       {super.key,
@@ -118,24 +105,19 @@ class ClusterMarker extends StatelessWidget {
                 height: size,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.accent,
                   shape: BoxShape.circle,
-                  border: Border.all(color: ring, width: 6),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color(0x40000000),
-                        blurRadius: 6,
-                        offset: Offset(0, 2)),
-                  ],
+                  border: Border.all(color: ring, width: 4),
+                  boxShadow: AppShadows.floating,
                 ),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text('$open',
-                      style: const TextStyle(
-                          color: _ink,
-                          fontSize: 15,
+                      style: AppText.callout.copyWith(
+                          color: AppColors.onAccent,
                           height: 1.1,
-                          fontWeight: FontWeight.w800)),
-                  Icon(Icons.apartment, size: 11, color: ring),
+                          fontWeight: FontWeight.w700)),
+                  const Icon(AppIcons.building,
+                      size: 12, color: AppColors.onAccent),
                 ]),
               ),
             ),
@@ -152,11 +134,15 @@ class MeDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF2F6FE4),
+          color: StatusColors.inProgress.foreground,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 3),
-          boxShadow: const [
-            BoxShadow(color: Color(0x552F6FE4), blurRadius: 10, spreadRadius: 4)
+          border: Border.all(color: AppColors.surface, width: 3),
+          boxShadow: [
+            BoxShadow(
+                color:
+                    StatusColors.inProgress.foreground.withValues(alpha: 0.35),
+                blurRadius: 10,
+                spreadRadius: 4)
           ],
         ),
       );
@@ -190,31 +176,37 @@ class ObjectInfoCard extends StatelessWidget {
     final address = object.address?.isNotEmpty == true
         ? object.address!
         : l.objectType(object.type);
-    Widget counter(String label, int value, {bool alert = false}) => Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            decoration: BoxDecoration(
-              color: alert && value > 0
-                  ? const Color(0xFFFBE8E8)
-                  : const Color(0xFFF4F6F7),
-              borderRadius: BorderRadius.circular(12),
-            ),
+    // Счётчик — капсула статуса: цвет по статусу, число и подпись.
+    Widget counter(String status, String label, int value) {
+      final c = value > 0 || status == 'overdue'
+          ? StatusColors.of(status)
+          : StatusColors.cancelled;
+      return Expanded(
+        child: Container(
+          padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: AppSpace.xs, vertical: AppSpace.s),
+          decoration: BoxDecoration(
+            color: value > 0 ? c.background : AppColors.bg,
+            borderRadius: BorderRadius.circular(AppRadius.field),
+          ),
+          child: MergeSemantics(
             child: Column(children: [
               Text('$value',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: alert && value > 0 ? _danger : _ink)),
-              const SizedBox(height: 2),
+                  style: AppText.headline.copyWith(
+                      color: value > 0 ? c.foreground : AppColors.secondary,
+                      fontWeight: FontWeight.w700)),
               Text(label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11, color: _muted)),
+                  style: AppText.caption.copyWith(
+                      color: value > 0 ? c.foreground : AppColors.secondary)),
             ]),
           ),
-        );
+        ),
+      );
+    }
+
     const gap = SizedBox(width: 6);
-    const buttonSize = WidgetStatePropertyAll(Size.fromHeight(44));
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -226,72 +218,59 @@ class ObjectInfoCard extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
             child: Text('${stats.open}',
-                style: TextStyle(
-                    color: fg, fontSize: 16, fontWeight: FontWeight.w800)),
+                style: AppText.headline
+                    .copyWith(color: fg, fontWeight: FontWeight.w700)),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpace.m),
           Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(object.name,
-                  style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w800, color: _ink)),
+              Text(object.name, style: AppText.headline),
               const SizedBox(height: 2),
-              Text(address,
-                  style: const TextStyle(color: _muted, fontSize: 13)),
+              Text(address, style: AppText.footnote),
               const SizedBox(height: 2),
               Text(l.mapOpenOrders(stats.open),
-                  style: const TextStyle(
-                      color: HeyHelpyTheme.link,
-                      fontSize: 13,
+                  style: AppText.footnote.copyWith(
+                      color: AppColors.accentText,
                       fontWeight: FontWeight.w600)),
             ]),
           ),
-          IconButton(
-            onPressed: onClose,
-            icon: Icon(Icons.close, semanticLabel: l.mapClose),
-            visualDensity: VisualDensity.compact,
-          ),
+          AppIconButton(
+              icon: AppIcons.close,
+              label: l.mapClose,
+              filled: true,
+              size: 30,
+              onPressed: onClose),
         ]),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpace.m),
         Row(children: [
-          counter(l.mapCountNew, stats.fresh),
+          counter('new', l.mapCountNew, stats.fresh),
           gap,
-          counter(l.mapCountInWork, stats.inWork),
+          counter('in_progress', l.mapCountInWork, stats.inWork),
           gap,
-          counter(l.mapCountOnReview, stats.onReview),
+          counter('on_review', l.mapCountOnReview, stats.onReview),
           gap,
-          counter(l.mapCountOverdue, stats.overdue, alert: true),
+          counter('overdue', l.mapCountOverdue, stats.overdue),
         ]),
-        const SizedBox(height: 12),
-        FilledButton.icon(
-          style: brandButtonStyle().copyWith(minimumSize: buttonSize),
-          onPressed: onOpen,
-          icon: const Icon(Icons.apartment, size: 20),
-          label: Text(l.mapOpenObject,
-              style: const TextStyle(fontWeight: FontWeight.w800)),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          style: const ButtonStyle(minimumSize: buttonSize),
-          onPressed: onOrders,
-          icon: const Icon(Icons.list_alt_rounded, size: 20),
-          label: Text(l.mapOrders),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          style: const ButtonStyle(minimumSize: buttonSize),
-          onPressed: onCreate,
-          icon: const Icon(Icons.add, size: 20),
-          label: Text(l.mapCreateHere),
-        ),
+        const SizedBox(height: AppSpace.m),
+        AppButton.primary(
+            label: l.mapOpenObject, icon: AppIcons.building, onPressed: onOpen),
+        const SizedBox(height: AppSpace.s),
+        // Подписи длинные («Создать заявку здесь») — кнопки одна под другой.
+        AppButton.tinted(
+            label: l.mapOrders, icon: AppIcons.list, onPressed: onOrders),
+        const SizedBox(height: AppSpace.s),
+        AppButton.tinted(
+            label: l.mapCreateHere, icon: AppIcons.add, onPressed: onCreate),
         if (isManager)
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: TextButton.icon(
-              onPressed: onMove,
-              icon: const Icon(Icons.edit_location_alt_outlined, size: 20),
-              label: Text(l.mapMoveOnMap),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(top: AppSpace.xs),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: AppButton.plain(
+                  label: l.mapMoveOnMap,
+                  icon: AppIcons.placeEdit,
+                  onPressed: onMove),
             ),
           ),
       ],
@@ -324,37 +303,23 @@ class ObjectMapRow extends StatelessWidget {
           ? object.address!
           : l.objectType(object.type),
     ].join(' · ');
-    return TapCard(
-      onTap: onTap,
-      chevron: false,
-      color: selected ? HeyHelpyTheme.mint : Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-      margin: const EdgeInsetsDirectional.only(bottom: 8),
-      child: Row(children: [
-        Container(
-          width: 30,
-          height: 30,
+    return ColoredBox(
+      color: selected ? AppColors.mint : AppColors.surface,
+      child: AppRow(
+        onTap: onTap,
+        chevron: false,
+        leading: Container(
+          width: AppSizes.iconTile,
+          height: AppSizes.iconTile,
           alignment: Alignment.center,
           decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
           child: Text('${stats.open}',
-              style: TextStyle(
-                  color: fg, fontSize: 13, fontWeight: FontWeight.w800)),
+              style: AppText.caption
+                  .copyWith(color: fg, fontWeight: FontWeight.w700)),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(object.name,
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w700, color: _ink)),
-            const SizedBox(height: 2),
-            Text(sub,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: _muted, fontSize: 13)),
-          ]),
-        ),
-      ]),
+        title: object.name,
+        subtitle: sub,
+      ),
     );
   }
 }
@@ -373,27 +338,17 @@ class UnplacedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return Container(
-      margin: const EdgeInsetsDirectional.only(bottom: 8),
-      padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 6, 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _line),
-      ),
-      child: Row(children: [
-        const Icon(Icons.location_off_outlined, color: _muted, size: 22),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(object.name,
-              style: const TextStyle(fontWeight: FontWeight.w700)),
-        ),
-        if (isManager)
-          TextButton.icon(
-            onPressed: onPlace,
-            icon: const Icon(Icons.add_location_alt_outlined, size: 20),
-            label: Text(l.mapSetOnMap),
-          ),
-      ]),
+    return AppRow(
+      leading: const LeadingIcon.neutral(AppIcons.placeOff),
+      title: object.name,
+      trailing: isManager
+          ? AppButton.tinted(
+              label: l.mapSetOnMap,
+              icon: AppIcons.place,
+              small: true,
+              expand: false,
+              onPressed: onPlace)
+          : null,
     );
   }
 }
@@ -416,32 +371,27 @@ class MapControlButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsetsDirectional.only(bottom: 8),
+      padding: const EdgeInsetsDirectional.only(bottom: AppSpace.s),
       child: Tooltip(
         message: label,
         waitDuration: const Duration(milliseconds: 400),
-        child: Material(
-          color: active ? HeyHelpyTheme.brand : Colors.white,
-          shape: const CircleBorder(),
-          elevation: 3,
-          shadowColor: const Color(0x55000000),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: onPressed,
-            child: SizedBox(
-              width: 44,
-              height: 44,
-              child: busy
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : Icon(icon,
-                      size: 22,
-                      semanticLabel: label,
-                      color: active ? HeyHelpyTheme.onBrand : _ink),
-            ),
-          ),
-        ),
+        child: busy
+            ? Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                    color: AppColors.surface,
+                    shape: BoxShape.circle,
+                    boxShadow: AppShadows.floating),
+                child: const AppLoader(),
+              )
+            : AppIconButton(
+                icon: icon,
+                label: label,
+                onPressed: onPressed,
+                size: 44,
+                shadow: true,
+                accent: active),
       ),
     );
   }

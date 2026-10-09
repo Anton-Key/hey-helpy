@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'design/design.dart';
 import 'l10n_ext.dart';
 
 enum PeriodKind { week, last30, month, custom }
@@ -85,31 +86,35 @@ class PeriodBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SizedBox(
-        width: double.infinity,
-        child: SegmentedButton<PeriodKind>(
-          showSelectedIcon: false,
-          segments: [
-            ButtonSegment(
-                value: PeriodKind.week, label: Text(l.reportsPeriodWeek)),
-            ButtonSegment(
-                value: PeriodKind.last30, label: Text(l.reportsPeriod30)),
-            ButtonSegment(
-                value: PeriodKind.month, label: Text(l.reportsPeriodMonth)),
-            ButtonSegment(
-                value: PeriodKind.custom, label: Text(l.reportsPeriodCustom)),
-          ],
-          selected: {period.kind},
-          onSelectionChanged: (s) => _pick(context, s.first),
-        ),
+      SegmentedControl<PeriodKind>(
+        segments: [
+          Segment(PeriodKind.week, l.reportsPeriodWeek),
+          Segment(PeriodKind.last30, l.reportsPeriod30),
+          Segment(PeriodKind.month, l.reportsPeriodMonth),
+          Segment(PeriodKind.custom, l.reportsPeriodCustom),
+        ],
+        selected: period.kind,
+        onChanged: (k) => _pick(context, k),
       ),
-      const SizedBox(height: 6),
-      // Даты — тоже кнопка: так календарь открывается и когда «Свой период» уже выбран.
-      TextButton.icon(
-        onPressed: () => _pick(context, PeriodKind.custom),
-        icon: const Icon(Icons.edit_calendar_outlined, size: 18),
-        label: Text(period.label(context),
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+      const SizedBox(height: AppSpace.xs),
+      // Даты — тоже кнопка: так календарь открывается и когда «Свой период»
+      // уже выбран.
+      Pressable(
+        onTap: () => _pick(context, PeriodKind.custom),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.symmetric(vertical: 8),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(AppIcons.calendar,
+                size: AppSizes.iconS, color: AppColors.accentText),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(period.label(context),
+                  style: AppText.footnote.copyWith(
+                      color: AppColors.accentText,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ]),
+        ),
       ),
     ]);
   }

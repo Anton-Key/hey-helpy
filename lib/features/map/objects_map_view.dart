@@ -8,20 +8,16 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/app_message.dart';
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
 import '../../core/scrolling.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../directory/directory.dart';
 import '../directory/object_card.dart';
 import '../requests/requests.dart';
 import 'map_config.dart';
 import 'map_logic.dart';
 import 'map_parts.dart';
-
-const _muted = Color(0xFF8A9098);
-const _line = Color(0xFFE8EAED);
 
 /// С какой ширины список стоит слева от карты, а не в выдвижной панели.
 const mapWideBreakpoint = 900.0;
@@ -357,8 +353,10 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
   }
 
   Future<void> _openObject(Obj o) async {
-    await Navigator.push(context,
-        MaterialPageRoute(builder: (_) => ObjectCardScreen(object: o)));
+    await Navigator.push(
+        context,
+        appRoute((_) => ObjectCardScreen(object: o),
+            title: context.l10n.tabLocations));
     if (!mounted) return;
     await Future.wait([widget.onReload(), _loadStats()]);
   }
@@ -431,8 +429,9 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
         return Row(children: [
           SizedBox(
               width: 360,
-              child: Material(color: Colors.white, child: _panel(null))),
-          const VerticalDivider(width: 1, thickness: 1, color: _line),
+              child: ColoredBox(color: AppColors.bg, child: _panel(null))),
+          const VerticalDivider(
+              width: 0.5, thickness: 0.5, color: AppColors.separator),
           Expanded(child: map),
         ]);
       }
@@ -448,17 +447,17 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
             snapSizes: const [0.32, _sheetWithCard],
             builder: (context, scroll) => DecoratedBox(
               decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                boxShadow: [
-                  BoxShadow(
-                      color: Color(0x33000000),
-                      blurRadius: 12,
-                      offset: Offset(0, -2)),
-                ],
+                color: AppColors.bg,
+                borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(AppRadius.sheet)),
+                boxShadow: AppShadows.floating,
               ),
-              child: Material(
-                  type: MaterialType.transparency, child: _panel(scroll)),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppRadius.sheet)),
+                child: Material(
+                    type: MaterialType.transparency, child: _panel(scroll)),
+              ),
             ),
           ),
       ]);
@@ -480,103 +479,101 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
     };
     return ListView(
       controller: scroll,
-      padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 14, 24),
+      padding: EdgeInsetsDirectional.fromSTEB(
+          AppSpace.screen,
+          scroll != null ? 0 : AppSpace.m,
+          AppSpace.screen,
+          AppSpace.xl + MediaQuery.paddingOf(context).bottom),
       children: [
         if (scroll != null)
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsetsDirectional.only(bottom: 12),
-              decoration: BoxDecoration(
-                  color: _line, borderRadius: BorderRadius.circular(4)),
-            ),
+          const Padding(
+            padding: EdgeInsetsDirectional.only(bottom: AppSpace.s),
+            child: SheetGrabber(),
           ),
         // На телефоне карточка выбранного объекта — сверху панели.
-        if (!_wide && selected != null) ...[
-          _infoCard(selected),
-          const Divider(height: 28),
-        ],
-        TextField(
-          controller: _search,
-          onChanged: (_) => setState(() {}),
-          decoration: InputDecoration(
-            hintText: l.mapSearchHint,
-            prefixIcon: const Icon(Icons.search),
-            suffixIcon: _search.text.isEmpty
-                ? null
-                : IconButton(
-                    onPressed: () => setState(_search.clear),
-                    icon: Icon(Icons.close, semanticLabel: l.mapReset)),
-            isDense: true,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+        if (!_wide && selected != null)
+          AppCard(
+            padding: const EdgeInsets.all(AppSpace.l),
+            child: _infoCard(selected),
           ),
+        AppSearchField(
+          controller: _search,
+          hint: l.mapSearchHint,
+          onChanged: (_) => setState(() {}),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSpace.m),
         if (areaText != null)
           Container(
-            margin: const EdgeInsetsDirectional.only(bottom: 10),
+            margin: const EdgeInsetsDirectional.only(bottom: AppSpace.s),
             padding: const EdgeInsetsDirectional.fromSTEB(12, 4, 4, 4),
             decoration: BoxDecoration(
-                color: HeyHelpyTheme.mint,
-                borderRadius: BorderRadius.circular(12)),
+                color: AppColors.accentTint,
+                borderRadius: BorderRadius.circular(AppRadius.field)),
             child: Row(children: [
-              Icon(
-                  area is _CircleArea
-                      ? Icons.radar
-                      : Icons.highlight_alt_rounded,
-                  size: 18,
-                  color: HeyHelpyTheme.link),
-              const SizedBox(width: 8),
+              Icon(area is _CircleArea ? AppIcons.nearby : AppIcons.area,
+                  size: AppSizes.iconS, color: AppColors.accentText),
+              const SizedBox(width: AppSpace.s),
               Expanded(
                   child: Text(areaText,
-                      style: const TextStyle(fontWeight: FontWeight.w600))),
-              TextButton.icon(
-                onPressed: _resetArea,
-                icon: const Icon(Icons.close, size: 18),
-                label: Text(l.mapReset),
-              ),
+                      style: AppText.footnote.copyWith(
+                          color: AppColors.accentText,
+                          fontWeight: FontWeight.w600))),
+              AppButton.plain(
+                  label: l.mapReset,
+                  icon: AppIcons.close,
+                  small: true,
+                  onPressed: _resetArea),
             ]),
           )
         else
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 2),
-            child: Text(l.mapListTitle(listed.length),
-                style: const TextStyle(
-                    color: _muted, fontWeight: FontWeight.w700, fontSize: 13)),
-          ),
+          SectionHeader(l.mapListTitle(listed.length),
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpace.rowH, AppSpace.xs, AppSpace.rowH, AppSpace.s)),
         if (_ordersFailed)
           Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 8),
+            padding: const EdgeInsetsDirectional.only(
+                bottom: AppSpace.s, start: AppSpace.rowH),
             child: Text(l.mapOrdersFailed,
-                style: const TextStyle(color: Color(0xFFC24444), fontSize: 12)),
+                style: AppText.caption.copyWith(color: AppColors.danger)),
           ),
         if (listed.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: AppSpace.m),
             child: Text(l.mapNothingFound,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: _muted)),
+                style: AppText.callout.copyWith(color: AppColors.secondary)),
+          )
+        else
+          AppGroup(
+            separatorInset: AppSpace.separatorInsetIcon,
+            children: [
+              for (final (o, d) in listed)
+                ObjectMapRow(
+                  object: o,
+                  stats: _statsOf(o.id),
+                  selected: o.id == _selectedId,
+                  distanceText: d == null ? null : _distance(d),
+                  onTap: () => _select(o),
+                ),
+            ],
           ),
-        for (final (o, d) in listed)
-          ObjectMapRow(
-            object: o,
-            stats: _statsOf(o.id),
-            selected: o.id == _selectedId,
-            distanceText: d == null ? null : _distance(d),
-            onTap: () => _select(o),
+        if (unplaced.isNotEmpty)
+          AppGroup(
+            header: l.mapNoCoordinates(unplaced.length),
+            separatorInset: AppSpace.separatorInsetIcon,
+            children: [
+              for (final o in unplaced)
+                UnplacedRow(
+                    object: o,
+                    isManager: widget.isManager,
+                    onPlace: () => _startPlacing(o)),
+            ],
           ),
-        if (unplaced.isNotEmpty) ...[
-          SectionTitle(l.mapNoCoordinates(unplaced.length)),
-          for (final o in unplaced)
-            UnplacedRow(
-                object: o,
-                isManager: widget.isManager,
-                onPlace: () => _startPlacing(o)),
-        ],
-        const SizedBox(height: 8),
-        Text(l.mapNearbyHelp,
-            style: const TextStyle(color: _muted, fontSize: 12)),
+        Padding(
+          padding:
+              const EdgeInsetsDirectional.symmetric(horizontal: AppSpace.rowH),
+          child: Text(l.mapNearbyHelp, style: AppText.caption),
+        ),
       ],
     );
   }
@@ -617,7 +614,7 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
               maxZoom: 15),
       minZoom: mapMinZoom,
       maxZoom: mapMaxZoom,
-      backgroundColor: const Color(0xFFF2F3F0),
+      backgroundColor: AppColors.bg,
       interactionOptions: InteractionOptions(
         flags: drawing ? noRotate & ~InteractiveFlag.drag : noRotate,
         keyboardOptions: KeyboardOptions(focusNode: _mapFocus),
@@ -662,8 +659,8 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
                       LatLng(area.rect.north, area.rect.east),
                       LatLng(area.rect.south, area.rect.east),
                     ],
-                    color: HeyHelpyTheme.brand.withValues(alpha: 0.10),
-                    borderColor: HeyHelpyTheme.link,
+                    color: AppColors.accent.withValues(alpha: 0.10),
+                    borderColor: AppColors.accentText,
                     borderStrokeWidth: 2,
                   ),
                 ]),
@@ -673,8 +670,8 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
                     point: _ll(area.center),
                     radius: area.km * 1000,
                     useRadiusInMeter: true,
-                    color: HeyHelpyTheme.brand.withValues(alpha: 0.10),
-                    borderColor: HeyHelpyTheme.link,
+                    color: AppColors.accent.withValues(alpha: 0.10),
+                    borderColor: AppColors.accentText,
                     borderStrokeWidth: 2,
                   ),
                 if (selected != null &&
@@ -684,8 +681,8 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
                     point: LatLng(selected.lat!, selected.lng!),
                     radius: selected.geofenceRadiusM.toDouble(),
                     useRadiusInMeter: true,
-                    color: HeyHelpyTheme.brand.withValues(alpha: 0.18),
-                    borderColor: HeyHelpyTheme.brand,
+                    color: AppColors.accent.withValues(alpha: 0.18),
+                    borderColor: AppColors.accent,
                     borderStrokeWidth: 1.5,
                   ),
               ]),
@@ -697,9 +694,10 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
                       height: 14,
                       child: Container(
                         decoration: BoxDecoration(
-                            color: HeyHelpyTheme.link,
+                            color: AppColors.accentText,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2)),
+                            border:
+                                Border.all(color: AppColors.surface, width: 2)),
                       )),
                 ]),
               if (_me != null)
@@ -722,7 +720,7 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
                 ),
               SimpleAttributionWidget(
                 source: Text(mapAttribution),
-                backgroundColor: Colors.white.withValues(alpha: 0.85),
+                backgroundColor: AppColors.surface.withValues(alpha: 0.85),
               ),
             ],
           ),
@@ -744,15 +742,19 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
               else if (_rectMode)
                 _Banner(text: l.mapSelectAreaHint)
               else if (_moved)
-                FilledButton.icon(
-                  style: brandButtonStyle(),
-                  onPressed: _searchHere,
-                  icon: const Icon(Icons.search, size: 20),
-                  label: Text(l.mapSearchHere,
-                      style: const TextStyle(fontWeight: FontWeight.w800)),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                      boxShadow: AppShadows.floating),
+                  child: AppButton.primary(
+                      label: l.mapSearchHere,
+                      icon: AppIcons.searchArea,
+                      small: true,
+                      expand: false,
+                      onPressed: _searchHere),
                 ),
               if (area is _CircleArea && placing == null) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpace.s),
                 _RadiusCard(
                   km: area.km,
                   label: _km(area.km),
@@ -771,25 +773,25 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
           end: 12,
           child: Column(children: [
             MapControlButton(
-                icon: Icons.add,
+                icon: AppIcons.zoomIn,
                 label: l.mapZoomIn,
                 onPressed: () => _zoomBy(1)),
             MapControlButton(
-                icon: Icons.remove,
+                icon: AppIcons.zoomOut,
                 label: l.mapZoomOut,
                 onPressed: () => _zoomBy(-1)),
             if (placing == null) ...[
               MapControlButton(
-                  icon: Icons.zoom_out_map,
+                  icon: AppIcons.fit,
                   label: l.mapFitAll,
                   onPressed: items.isEmpty ? null : _fitAll),
               MapControlButton(
-                  icon: Icons.my_location,
+                  icon: AppIcons.locate,
                   label: l.mapMyLocation,
                   busy: _locating,
                   onPressed: _locating ? null : _locate),
               MapControlButton(
-                  icon: Icons.highlight_alt_rounded,
+                  icon: AppIcons.area,
                   label: l.mapSelectArea,
                   active: _rectMode,
                   onPressed: () => setState(() => _rectMode = !_rectMode)),
@@ -802,15 +804,13 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
             start: 12,
             bottom: 28,
             width: 360,
-            child: Material(
-              color: Colors.white,
-              elevation: 6,
-              shadowColor: const Color(0x55000000),
-              borderRadius: BorderRadius.circular(18),
-              child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 8, 6),
-                child: _infoCard(selected),
-              ),
+            child: Container(
+              padding: const EdgeInsets.all(AppSpace.l),
+              decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.group),
+                  boxShadow: AppShadows.floating),
+              child: _infoCard(selected),
             ),
           ),
 
@@ -822,39 +822,31 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
-                child: Material(
-                  color: Colors.white,
-                  elevation: 6,
-                  borderRadius: BorderRadius.circular(18),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          style: const ButtonStyle(
-                              minimumSize:
-                                  WidgetStatePropertyAll(Size.fromHeight(48))),
-                          onPressed: _saving
-                              ? null
-                              : () => setState(() => _placing = null),
-                          child: Text(l.commonCancel),
-                        ),
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpace.m),
+                  decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.group),
+                      boxShadow: AppShadows.floating),
+                  child: Row(children: [
+                    Expanded(
+                      child: AppButton.secondary(
+                        label: l.commonCancel,
+                        onPressed: _saving
+                            ? null
+                            : () => setState(() => _placing = null),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: FilledButton.icon(
-                          style: brandButtonStyle().copyWith(
-                              minimumSize: const WidgetStatePropertyAll(
-                                  Size.fromHeight(48))),
-                          onPressed: _saving ? null : _savePlace,
-                          icon: const Icon(Icons.check),
-                          label: Text(l.mapSaveHere,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w800)),
-                        ),
+                    ),
+                    const SizedBox(width: AppSpace.s),
+                    Expanded(
+                      child: AppButton.primary(
+                        label: l.mapSaveHere,
+                        icon: AppIcons.check,
+                        loading: _saving,
+                        onPressed: _savePlace,
                       ),
-                    ]),
-                  ),
+                    ),
+                  ]),
                 ),
               ),
             ),
@@ -895,8 +887,8 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
               child: IgnorePointer(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: HeyHelpyTheme.brand.withValues(alpha: 0.12),
-                    border: Border.all(color: HeyHelpyTheme.link, width: 2),
+                    color: AppColors.accent.withValues(alpha: 0.12),
+                    border: Border.all(color: AppColors.accentText, width: 2),
                   ),
                 ),
               ),
@@ -973,14 +965,14 @@ class _Crosshair extends StatelessWidget {
   Widget build(BuildContext context) => const IgnorePointer(
         child: Center(
           child: Stack(alignment: Alignment.center, children: [
-            Icon(Icons.add, size: 56, color: Colors.white),
-            Icon(Icons.add, size: 48, color: Color(0xFF1C1E22)),
+            Icon(AppIcons.add, size: 56, color: AppColors.surface),
+            Icon(AppIcons.add, size: 48, color: AppColors.ink),
             SizedBox(
               width: 14,
               height: 14,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                    color: HeyHelpyTheme.brand, shape: BoxShape.circle),
+                    color: AppColors.accent, shape: BoxShape.circle),
               ),
             ),
           ]),
@@ -992,15 +984,23 @@ class _Banner extends StatelessWidget {
   const _Banner({required this.text});
   final String text;
   @override
-  Widget build(BuildContext context) => Material(
-        color: const Color(0xFF1C1E22).withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-          child: Text(text,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600)),
-        ),
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AppSpace.m, vertical: 10),
+        decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.field),
+            boxShadow: AppShadows.floating),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(AppIcons.info,
+              size: AppSizes.iconS, color: AppColors.accentText),
+          const SizedBox(width: AppSpace.s),
+          Flexible(
+            child: Text(text,
+                style: AppText.footnote.copyWith(
+                    color: AppColors.ink, fontWeight: FontWeight.w600)),
+          ),
+        ]),
       );
 }
 
@@ -1021,38 +1021,39 @@ class _RadiusCard extends StatelessWidget {
     final l = context.l10n;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 320),
-      child: Material(
-        color: Colors.white,
-        elevation: 4,
-        shadowColor: const Color(0x55000000),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 4, 4),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Row(children: [
-              const Icon(Icons.radar, size: 18, color: HeyHelpyTheme.link),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text('${l.mapNearbyTitle} · $label',
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
-              ),
-              IconButton(
-                onPressed: onClose,
-                visualDensity: VisualDensity.compact,
-                icon: Icon(Icons.close, semanticLabel: l.mapReset),
-              ),
-            ]),
-            Slider(
-              value: km.clamp(nearbyMinKm, nearbyMaxKm),
-              min: nearbyMinKm,
-              max: nearbyMaxKm,
-              divisions: ((nearbyMaxKm - nearbyMinKm) / 0.5).round(),
-              label: label,
-              activeColor: HeyHelpyTheme.brand,
-              onChanged: onChanged,
+      child: Container(
+        padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 6, 4),
+        decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.group),
+            boxShadow: AppShadows.floating),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Row(children: [
+            const Icon(AppIcons.nearby,
+                size: AppSizes.iconS, color: AppColors.accentText),
+            const SizedBox(width: AppSpace.s),
+            Expanded(
+              child: Text('${l.mapNearbyTitle} · $label',
+                  style: AppText.callout.copyWith(fontWeight: FontWeight.w600)),
             ),
+            AppIconButton(
+                icon: AppIcons.close,
+                label: l.mapReset,
+                filled: true,
+                size: 30,
+                onPressed: onClose),
           ]),
-        ),
+          Slider(
+            value: km.clamp(nearbyMinKm, nearbyMaxKm),
+            min: nearbyMinKm,
+            max: nearbyMaxKm,
+            divisions: ((nearbyMaxKm - nearbyMinKm) / 0.5).round(),
+            label: label,
+            activeColor: AppColors.accent,
+            inactiveColor: AppColors.fill,
+            onChanged: onChanged,
+          ),
+        ]),
       ),
     );
   }

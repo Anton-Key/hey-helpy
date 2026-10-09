@@ -1,28 +1,16 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/period.dart';
-import '../../core/directional.dart';
-import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
-import '../requests/order_list.dart';
+import '../home/home_chrome.dart';
 import '../requests/requests.dart';
 import 'report_repository.dart';
-
-const _ink = Color(0xFF1C1E22);
-const _muted = Color(0xFF8A9098);
-const _line = Color(0xFFE8EAED);
-const _link = Color(0xFF177A65);
-const _danger = Color(0xFFC24444);
-const _onBrand = Color(0xFF06342A);
-
-BoxDecoration _card() => BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(16),
-    border: Border.all(color: _line));
 
 /// Вкладка «Отчёты» (только менеджер и администратор): период, фильтры,
 /// четыре главные цифры по компании и показатели по каждому подрядчику.
@@ -145,42 +133,40 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }) async {
     final l = context.l10n;
     // Пустая строка — «Все»: null из шторки означает «закрыли без выбора».
-    final chosen = await showModalBottomSheet<String>(
+    final chosen = await showAppSheet<String>(
       context: context,
-      backgroundColor: Colors.white,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => SafeArea(
+        top: false,
         child: ConstrainedBox(
           constraints:
               BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.7),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                    color: _line, borderRadius: BorderRadius.circular(4))),
-            Padding(
-                padding: const EdgeInsetsDirectional.only(bottom: 6),
-                child: Text(title,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w800))),
+            SheetHeader(title: title),
             Flexible(
-              child: ListView(shrinkWrap: true, children: [
-                for (final (id, label) in [('', l.reportsFilterAll), ...items])
-                  ListTile(
-                    title: Text(label),
-                    trailing: (id.isEmpty ? current == null : id == current)
-                        ? Icon(Icons.check_rounded,
-                            color: Theme.of(ctx).colorScheme.primary)
-                        : null,
-                    onTap: () => Navigator.pop(ctx, id),
-                  ),
-              ]),
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.l),
+                children: [
+                  AppGroup(margin: EdgeInsets.zero, children: [
+                    for (final (id, label) in [
+                      ('', l.reportsFilterAll),
+                      ...items
+                    ])
+                      AppRow(
+                        title: label,
+                        chevron: false,
+                        trailing: (id.isEmpty ? current == null : id == current)
+                            ? const Icon(AppIcons.check,
+                                size: AppSizes.icon,
+                                color: AppColors.accentText)
+                            : null,
+                        onTap: () => Navigator.pop(ctx, id),
+                      ),
+                  ]),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
           ]),
         ),
       ),
@@ -212,57 +198,50 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final List<Widget> body;
     if (_role == null && _loading) {
-      return const Center(child: CircularProgressIndicator());
+      body = const [
+        Padding(
+            padding: EdgeInsetsDirectional.symmetric(vertical: 40),
+            child: AppLoader())
+      ];
+    } else if (_role == null && _failed) {
+      body = [_errorView(l)];
+    } else if (!_isManager) {
+      body = [AppEmptyState(text: l.reportsManagerOnly, icon: AppIcons.lock)];
+    } else {
+      body = [
+        PeriodBar(period: _period, onChanged: _setPeriod),
+        const SizedBox(height: AppSpace.xs),
+        _filters(l),
+        const SizedBox(height: AppSpace.l),
+        ..._content(l),
+      ];
     }
-    if (_role == null && _failed) return _errorView(l);
-    if (!_isManager) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.lock_outline, size: 48, color: _muted),
-            const SizedBox(height: 12),
-            Text(l.reportsManagerOnly,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: _muted)),
-          ]),
-        ),
-      );
-    }
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 120),
-        children: [
-          PeriodBar(period: _period, onChanged: _setPeriod),
-          const SizedBox(height: 10),
-          _filters(l),
-          const SizedBox(height: 14),
-          ..._content(l),
-        ],
-      ),
+    // Отчёты — во всю ширину окна (таблица на широком экране).
+    return CustomScrollView(
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      slivers: [
+        HomeHeader(title: l.navReports),
+        if (_isManager) CupertinoSliverRefreshControl(onRefresh: _load),
+        SliverContent(
+            maxWidth: double.infinity, sliver: SliverList.list(children: body)),
+        const SliverBottomInset(),
+      ],
     );
   }
 
   Widget _filters(AppLocalizations l) {
     final locale = context.localeCode;
-    Widget chip(String title, String? value, VoidCallback onTap) {
-      final active = value != null;
-      return ActionChip(
-        onPressed: onTap,
-        avatar:
-            Icon(Icons.filter_list, size: 18, color: active ? _link : _muted),
-        label: Text(active ? '$title: $value' : title,
-            overflow: TextOverflow.ellipsis),
-        labelStyle: TextStyle(
-            color: active ? _link : _ink, fontWeight: FontWeight.w600),
-        side: BorderSide(color: active ? _link : _line),
-        backgroundColor: Colors.white,
-      );
-    }
+    Widget chip(String title, String? value, VoidCallback onTap) => AppChip(
+          label: value != null ? '$title: $value' : title,
+          selected: value != null,
+          icon: AppIcons.filter,
+          onTap: onTap,
+        );
 
-    return Wrap(spacing: 8, runSpacing: 8, children: [
+    return Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
       chip(
           l.reportsFilterObject,
           _labelOf<Obj>(_objects, _objectId, (o) => o.id, (o) => o.name),
@@ -298,95 +277,92 @@ class _ReportsScreenState extends State<ReportsScreen> {
     if (report == null) {
       return const [
         Padding(
-            padding: EdgeInsets.all(40),
-            child: Center(child: CircularProgressIndicator()))
+            padding: EdgeInsetsDirectional.symmetric(vertical: 40),
+            child: AppLoader())
       ];
     }
     final f = _Fmt(l);
     final c = report.company;
     return [
-      if (_loading) const LinearProgressIndicator(minHeight: 2),
-      if (_loading) const SizedBox(height: 8),
+      if (_loading)
+        const Padding(
+          padding: EdgeInsetsDirectional.only(bottom: AppSpace.s),
+          child: CupertinoActivityIndicator(),
+        ),
       LayoutBuilder(builder: (context, box) {
         final kpis = [
-          _Kpi(value: f.count(c.total), title: l.reportsKpiRequests),
-          _Kpi(
+          KpiTile(value: f.count(c.total), label: l.reportsKpiRequests),
+          KpiTile(
               value: f.pct(c.onTimeShare),
-              title: l.reportsKpiOnTime,
+              label: l.reportsKpiOnTime,
               hint: c.withDue == 0 ? null : l.reportsKpiOf(c.withDue)),
-          _Kpi(
+          KpiTile(
               value: f.pct(c.firstPassShare),
-              title: l.reportsKpiFirstPass,
+              label: l.reportsKpiFirstPass,
               hint: c.accepted == 0 ? null : l.reportsKpiOf(c.accepted)),
-          _Kpi(
+          KpiTile(
               value: f.pct(c.geofenceShare),
-              title: l.reportsKpiGeofence,
+              label: l.reportsKpiGeofence,
               hint: c.visits == 0 ? null : l.reportsKpiOf(c.visits)),
         ];
         final perRow = box.maxWidth >= 600 ? 4 : 2;
-        final w = (box.maxWidth - 10 * (perRow - 1)) / perRow;
-        return Wrap(spacing: 10, runSpacing: 10, children: [
-          for (final k in kpis) SizedBox(width: w, child: k),
-        ]);
+        final w = (box.maxWidth - AppSpace.group * (perRow - 1)) / perRow;
+        return Wrap(
+            spacing: AppSpace.group,
+            runSpacing: AppSpace.group,
+            children: [
+              for (final k in kpis) SizedBox(width: w, child: k),
+            ]);
       }),
-      const SizedBox(height: 20),
-      Text(l.reportsByContractor,
-          style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
-      const SizedBox(height: 10),
+      SectionHeader(l.reportsByContractor),
       if (report.contractors.isEmpty)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Text(l.reportsEmpty,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: _muted)),
-        )
+        AppEmptyState(text: l.reportsEmpty, icon: AppIcons.reports)
       else
         LayoutBuilder(
-          builder: (context, box) => box.maxWidth >= 900
+          builder: (context, box) => box.maxWidth >= AppSpace.wideFrom
               ? _ContractorTable(
                   rows: report.contractors,
                   name: (id) => _contractorName(l, id),
                   fmt: f,
                   onOpen: _openContractor)
-              : Column(children: [
-                  for (final r in report.contractors)
-                    _ContractorCard(
-                        row: r,
-                        name: _contractorName(l, r.contractorId),
-                        fmt: f,
-                        onOpen: () => _openContractor(r)),
-                ]),
+              : AppGroup(
+                  separatorInset: AppSpace.separatorInsetIcon,
+                  children: [
+                      for (final r in report.contractors)
+                        _ContractorRow(
+                            row: r,
+                            name: _contractorName(l, r.contractorId),
+                            fmt: f,
+                            onOpen: () => _openContractor(r)),
+                    ]),
         ),
-      if (!report.normsAvailable) ...[
-        const SizedBox(height: 4),
-        Text(l.reportsNormsMissing,
-            style: const TextStyle(color: _muted, fontSize: 12)),
-      ],
-      const SizedBox(height: 14),
-      Text(l.reportsHelp, style: const TextStyle(color: _muted, fontSize: 12)),
+      if (!report.normsAvailable)
+        Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: AppSpace.rowH, vertical: AppSpace.xs),
+          child: Text(l.reportsNormsMissing, style: AppText.footnote),
+        ),
+      Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(
+            AppSpace.rowH, AppSpace.s, AppSpace.rowH, 0),
+        child: Text(l.reportsHelp, style: AppText.footnote),
+      ),
     ];
   }
 
-  Widget _errorView(AppLocalizations l) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(l.reportsLoadFailed,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: _danger)),
-          const SizedBox(height: 12),
-          OutlinedButton(
-              onPressed: _report == null && _objects.isEmpty ? _init : _load,
-              child: Text(l.commonRetry)),
-        ]),
-      );
+  Widget _errorView(AppLocalizations l) => AppEmptyState(
+      text: l.reportsLoadFailed,
+      error: true,
+      actionLabel: l.commonRetry,
+      onAction: _report == null && _objects.isEmpty ? _init : _load);
 
   Future<void> _openContractor(ContractorReport row) async {
     final l = context.l10n;
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => ContractorOrdersScreen(
+      appRoute(
+        title: l.navReports,
+        (_) => ContractorOrdersScreen(
           title: _contractorName(l, row.contractorId),
           subtitle: _period.label(context),
           orders: row.orders,
@@ -463,37 +439,41 @@ class _Fmt {
       ];
 }
 
-class _Kpi extends StatelessWidget {
-  const _Kpi({required this.value, required this.title, this.hint});
-  final String value;
-  final String title;
-  final String? hint;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-          color: const Color(0xFFD8F0EA),
-          borderRadius: BorderRadius.circular(16)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(value,
-            style: const TextStyle(
-                fontSize: 24, fontWeight: FontWeight.w800, color: _onBrand)),
-        const SizedBox(height: 2),
-        Text(title,
-            style: const TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w600, color: _onBrand)),
-        if (hint != null)
-          Text(hint!, style: const TextStyle(fontSize: 12, color: _link)),
-      ]),
-    );
-  }
+/// Цвет доли «в срок»: от 90 % — акцентный, от 70 % — оранжевый, ниже —
+/// красный; нет данных — вторичный.
+Color _onTimeColor(double? share) {
+  if (share == null) return AppColors.secondary;
+  if (share >= 0.9) return AppColors.accentText;
+  if (share >= 0.7) return StatusColors.returned.foreground;
+  return AppColors.danger;
 }
 
-/// Подрядчик на узком экране: карточка с сеткой показателей.
-class _ContractorCard extends StatelessWidget {
-  const _ContractorCard(
+/// Тонкая полоска выполнения (доля принятых от всех заявок).
+class _Progress extends StatelessWidget {
+  const _Progress(this.value);
+  final double value;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        child: SizedBox(
+          height: 4,
+          child: Stack(children: [
+            const Positioned.fill(child: ColoredBox(color: AppColors.fill)),
+            FractionallySizedBox(
+              alignment: AlignmentDirectional.centerStart,
+              widthFactor: value.clamp(0.0, 1.0),
+              child: const ColoredBox(color: AppColors.accent),
+            ),
+          ]),
+        ),
+      );
+}
+
+/// Подрядчик на узком экране: инициалы, «в срок», полоска выполнения,
+/// ключевые счётчики и остальные показатели мелко.
+class _ContractorRow extends StatelessWidget {
+  const _ContractorRow(
       {required this.row,
       required this.name,
       required this.fmt,
@@ -505,45 +485,65 @@ class _ContractorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TapCard(
+    final s = row.stats;
+    final metrics = fmt.metrics(s);
+    // Первые четыре — заявки, принято, возвращено, просрочено.
+    final key = metrics.take(4).toList();
+    final rest = metrics.skip(4).toList();
+    return AppRow(
+      leading: InitialsTile(name),
+      title: name,
+      titleStyle: AppText.rowTitle.copyWith(fontWeight: FontWeight.w600),
+      trailing: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(fmt.pct(s.onTimeShare),
+                style: AppText.headline
+                    .copyWith(color: _onTimeColor(s.onTimeShare))),
+            Text(fmt.l.reportsOnTime, style: AppText.caption),
+          ]),
       onTap: onOpen,
-      chevron: false,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Expanded(
-              child: Text(name,
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w800))),
-          const ChevronEnd(color: _muted, size: 20),
+      extra: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _Progress(s.total == 0 ? 0 : s.accepted / s.total),
+        const SizedBox(height: 6),
+        Text.rich(
+            TextSpan(children: [
+              for (var i = 0; i < key.length; i++) ...[
+                if (i > 0) const TextSpan(text: ' · '),
+                TextSpan(
+                    text: '${key[i].$1} ${key[i].$2}',
+                    style: key[i].$3
+                        ? const TextStyle(
+                            color: AppColors.danger,
+                            fontWeight: FontWeight.w600)
+                        : null),
+              ]
+            ]),
+            style: AppText.footnote),
+        const SizedBox(height: 4),
+        Wrap(spacing: AppSpace.m, runSpacing: 2, children: [
+          for (final (label, value, alert) in rest)
+            Text.rich(
+                TextSpan(children: [
+                  TextSpan(text: '$label '),
+                  TextSpan(
+                      text: value,
+                      style: TextStyle(
+                          color: alert ? AppColors.danger : AppColors.ink,
+                          fontWeight: FontWeight.w600)),
+                ]),
+                style: AppText.caption),
         ]),
-        const SizedBox(height: 10),
-        LayoutBuilder(builder: (context, box) {
-          final w = (box.maxWidth - 8) / 2;
-          return Wrap(spacing: 8, runSpacing: 8, children: [
-            for (final (label, value, alert) in fmt.metrics(row.stats))
-              SizedBox(
-                width: w,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(label,
-                          style: const TextStyle(color: _muted, fontSize: 12)),
-                      Text(value,
-                          style: TextStyle(
-                              color: alert ? _danger : _ink,
-                              fontWeight: FontWeight.w700)),
-                    ]),
-              ),
-          ]);
-        }),
       ]),
     );
   }
 }
 
-/// Подрядчики на широком экране (веб): таблица, строка открывает заявки.
-/// Колонка «Подрядчик» закреплена, остальные прокручиваются вбок
-/// (полоса прокрутки видна всегда, если столбцы не помещаются).
+/// Подрядчики на широком экране: таблица в белой группе, тонкие
+/// разделители, строка открывает заявки. Колонка «Подрядчик» закреплена,
+/// остальные прокручиваются вбок (полоса прокрутки видна всегда, если
+/// столбцы не помещаются).
 class _ContractorTable extends StatefulWidget {
   const _ContractorTable(
       {required this.rows,
@@ -562,9 +562,9 @@ class _ContractorTable extends StatefulWidget {
 class _ContractorTableState extends State<_ContractorTable> {
   // Высоты строк одинаковые в обеих частях таблицы — строки совпадают.
   static const _headH = 60.0; // до трёх строк заголовка
-  static const _rowH = 48.0;
-  static const _headStyle =
-      TextStyle(color: _muted, fontSize: 12, fontWeight: FontWeight.w700);
+  static const _rowH = 52.0;
+  static const _nameW = 240.0;
+  static const _colW = 104.0;
 
   final _scroll = ScrollController();
 
@@ -574,69 +574,119 @@ class _ContractorTableState extends State<_ContractorTable> {
     super.dispose();
   }
 
-  DataTable _table(List<DataColumn> columns, List<DataRow> rows) => DataTable(
-        showCheckboxColumn: false,
-        headingTextStyle: _headStyle,
-        headingRowHeight: _headH,
-        dataRowMinHeight: _rowH,
-        dataRowMaxHeight: _rowH,
-        columnSpacing: 14,
-        horizontalMargin: 16,
-        columns: columns,
-        rows: rows,
+  Widget _cell(Widget child, {double? width, bool end = false}) => SizedBox(
+        width: width,
+        child: Padding(
+          padding:
+              const EdgeInsetsDirectional.symmetric(horizontal: AppSpace.s),
+          child: Align(
+              alignment: end
+                  ? AlignmentDirectional.centerEnd
+                  : AlignmentDirectional.centerStart,
+              child: child),
+        ),
       );
+
+  Widget _line() => const SizedBox(
+      height: 0.5,
+      width: double.infinity,
+      child: ColoredBox(color: AppColors.separator));
 
   @override
   Widget build(BuildContext context) {
     final rows = widget.rows;
     final header =
         rows.isEmpty ? const [] : widget.fmt.metrics(rows.first.stats);
-    final fixed = _table(
-      [DataColumn(label: Text(context.l10n.reportsFilterContractor))],
-      [
-        for (final r in rows)
-          DataRow(onSelectChanged: (_) => widget.onOpen(r), cells: [
-            DataCell(ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 170),
-                child: Text(widget.name(r.contractorId),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700)))),
-          ]),
+    final metricsW = _colW * header.length + AppSpace.s * 2;
+
+    final fixed =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SizedBox(
+        height: _headH,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(start: AppSpace.s),
+          child: _cell(
+              Text(context.l10n.reportsFilterContractor.toUpperCase(),
+                  style: AppText.section),
+              width: _nameW - AppSpace.s),
+        ),
+      ),
+      for (final r in rows) ...[
+        _line(),
+        Pressable(
+          onTap: () => widget.onOpen(r),
+          effect: PressEffect.highlight,
+          child: SizedBox(
+            height: _rowH,
+            width: _nameW,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(start: AppSpace.s),
+              child: Row(children: [
+                _cell(InitialsTile(widget.name(r.contractorId))),
+                Expanded(
+                  child: Text(widget.name(r.contractorId),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.rowTitle
+                          .copyWith(fontWeight: FontWeight.w600)),
+                ),
+              ]),
+            ),
+          ),
+        ),
       ],
-    );
-    final scrolling = _table(
-      [
-        for (final (label, _, _) in header)
-          DataColumn(
-              label: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 96),
-                  child: Text(label,
-                      softWrap: true,
+    ]);
+
+    final scrolling = SizedBox(
+      width: metricsW,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SizedBox(
+          height: _headH,
+          child: Row(children: [
+            for (final (label, _, _) in header)
+              _cell(
+                  Text(label.toUpperCase(),
                       maxLines: 3,
-                      overflow: TextOverflow.ellipsis))),
-      ],
-      [
-        for (final r in rows)
-          DataRow(onSelectChanged: (_) => widget.onOpen(r), cells: [
-            for (final (_, value, alert) in widget.fmt.metrics(r.stats))
-              DataCell(Text(value,
-                  maxLines: 1,
-                  style: TextStyle(
-                      color: alert ? _danger : _ink,
-                      fontWeight: FontWeight.w600))),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                      style: AppText.caption.copyWith(
+                          fontWeight: FontWeight.w600, letterSpacing: 0.4)),
+                  width: _colW,
+                  end: true),
           ]),
-      ],
+        ),
+        for (final r in rows) ...[
+          _line(),
+          Pressable(
+            onTap: () => widget.onOpen(r),
+            effect: PressEffect.highlight,
+            child: SizedBox(
+              height: _rowH,
+              child: Row(children: [
+                for (final (_, value, alert) in widget.fmt.metrics(r.stats))
+                  _cell(
+                      Text(value,
+                          maxLines: 1,
+                          style: AppText.callout.copyWith(
+                              color: alert ? AppColors.danger : AppColors.ink,
+                              fontWeight: FontWeight.w500)),
+                      width: _colW,
+                      end: true),
+              ]),
+            ),
+          ),
+        ],
+      ]),
     );
-    return Container(
-      decoration: _card(),
-      clipBehavior: Clip.antiAlias,
+
+    return AppCard(
+      padding: EdgeInsets.zero,
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        DecoratedBox(
-            decoration: const BoxDecoration(
-                border: BorderDirectional(
-                    end: BorderSide(color: Color(0xFFE3E7EA)))),
-            child: fixed),
+        fixed,
+        const SizedBox(
+            width: 0.5,
+            height: _headH,
+            child: ColoredBox(color: AppColors.separator)),
         Expanded(
           child: Scrollbar(
             controller: _scroll,
@@ -645,7 +695,7 @@ class _ContractorTableState extends State<_ContractorTable> {
               controller: _scroll,
               scrollDirection: Axis.horizontal,
               // Место под полосу прокрутки, чтобы она не закрывала строку.
-              padding: const EdgeInsetsDirectional.only(bottom: 12),
+              padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
               child: scrolling,
             ),
           ),
@@ -689,45 +739,48 @@ class ContractorOrdersScreen extends StatelessWidget {
     final l = context.l10n;
     final locale = context.localeCode;
     final now = DateTime.now();
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, overflow: TextOverflow.ellipsis),
-          Text(subtitle, style: const TextStyle(fontSize: 12, color: _muted)),
-        ]),
-      ),
-      body: orders.isEmpty
-          ? Center(
-              child: Text(l.reportsOrdersEmpty,
-                  style: const TextStyle(color: _muted)))
-          : ListView.builder(
-              padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 40),
-              itemCount: orders.length,
-              itemBuilder: (context, i) {
-                final o = orders[i];
-                final layer =
-                    Layer.find(layers, id: o.layerId, name: o.workType);
-                final workType = layer?.label(locale) ?? o.workType;
-                final flags = [
-                  if (o.isOverdue(now)) l.statusOverdue,
-                  if (o.returnCount > 0) l.reportsReturnedTimes(o.returnCount),
-                ];
-                return OrderTile(
-                  title: o.title,
-                  status: o.status,
-                  lines: [
-                    [
-                      _objectName(l, o.objectId),
-                      if (workType != null && workType.isNotEmpty) workType,
-                    ].join(' · '),
-                    l.dateTime(o.createdAt),
-                  ],
-                  alerts: flags,
-                  onTap: () => _open(context, o),
-                );
-              },
-            ),
+    return AppScaffold(
+      title: title,
+      eyebrow: subtitle,
+      slivers: [
+        SliverContent(
+          sliver: SliverList.list(children: [
+            if (orders.isEmpty)
+              AppEmptyState(text: l.reportsOrdersEmpty)
+            else
+              AppGroup(children: [
+                for (final o in orders) _row(context, l, locale, now, o),
+              ]),
+          ]),
+        ),
+      ],
+    );
+  }
+
+  Widget _row(BuildContext context, AppLocalizations l, String locale,
+      DateTime now, ReportOrder o) {
+    final layer = Layer.find(layers, id: o.layerId, name: o.workType);
+    final workType = layer?.label(locale) ?? o.workType;
+    final flags = [
+      if (o.isOverdue(now)) l.statusOverdue,
+      if (o.returnCount > 0) l.reportsReturnedTimes(o.returnCount),
+    ];
+    return AppRow(
+      leading: PriorityDot(o.priority),
+      title: o.title,
+      subtitle: [
+        _objectName(l, o.objectId),
+        if (workType != null && workType.isNotEmpty) workType,
+      ].join(' · '),
+      trailing: StatusPill(o.status),
+      extra: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(l.dateTime(o.createdAt), style: AppText.caption),
+        if (flags.isNotEmpty)
+          Text(flags.join(' · '),
+              style: AppText.caption.copyWith(
+                  color: AppColors.danger, fontWeight: FontWeight.w600)),
+      ]),
+      onTap: () => _open(context, o),
     );
   }
 
@@ -735,8 +788,9 @@ class ContractorOrdersScreen extends StatelessWidget {
     final repo = RequestsRepo();
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => WorkOrderDetailScreen(
+      appRoute(
+        title: title,
+        (_) => WorkOrderDetailScreen(
           order: WorkOrder(
               id: o.id,
               title: o.title,

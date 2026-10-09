@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hey_helpy/core/design/icons.dart';
 import 'package:hey_helpy/core/app_message.dart';
 
 /// Экран с кнопкой внизу — сообщение не должно её закрывать.
@@ -49,7 +50,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(seconds: 4));
     expect(find.text('Не удалось'), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.tap(find.byIcon(AppIcons.close));
     await tester.pumpAndSettle();
     expect(find.text('Не удалось'), findsNothing);
   });

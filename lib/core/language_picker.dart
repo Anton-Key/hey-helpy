@@ -1,44 +1,37 @@
 import 'package:flutter/material.dart';
 
+import 'app_message.dart';
+import 'design/design.dart';
 import 'l10n_ext.dart';
 import 'locale_controller.dart';
-import 'app_message.dart';
-
-const _line = Color(0xFFE8EAED);
 
 /// Выбор языка интерфейса (профиль и настройки): нижняя шторка со списком
 /// языков. Выбор сохраняется на телефоне и в profiles.locale.
 Future<void> pickLanguage(BuildContext context) async {
   final controller = LocaleScope.of(context);
-  final chosen = await showModalBottomSheet<Locale>(
+  final chosen = await showAppSheet<Locale>(
     context: context,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
     builder: (ctx) => SafeArea(
+      top: false,
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-                color: _line, borderRadius: BorderRadius.circular(4))),
+        SheetHeader(title: ctx.l10n.profileLanguage),
         Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 6),
-            child: Text(ctx.l10n.profileLanguage,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w800))),
-        for (final loc in LocaleController.supported)
-          ListTile(
-            title: Text(LocaleController.nativeNames[loc.languageCode] ??
-                loc.languageCode),
-            trailing: loc == controller.locale
-                ? Icon(Icons.check_rounded,
-                    color: Theme.of(ctx).colorScheme.primary)
-                : null,
-            onTap: () => Navigator.pop(ctx, loc),
-          ),
-        const SizedBox(height: 8),
+          padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.l),
+          child: AppGroup(margin: EdgeInsets.zero, children: [
+            for (final loc in LocaleController.supported)
+              AppRow(
+                title: LocaleController.nativeNames[loc.languageCode] ??
+                    loc.languageCode,
+                chevron: false,
+                trailing: loc == controller.locale
+                    ? const Icon(AppIcons.check,
+                        size: AppSizes.icon, color: AppColors.accentText)
+                    : null,
+                onTap: () => Navigator.pop(ctx, loc),
+              ),
+          ]),
+        ),
       ]),
     ),
   );

@@ -89,7 +89,7 @@ begin
 
   -- 3. Объект с координатами (для отметки визита по геозоне)
   insert into public.objects (id, company_id, name, type, address, lat, lng)
-  values (c_object, c_company, 'БЦ «Демо»', 'office', 'Москва, ул. Примерная, 1', 55.749400, 37.537600)
+  values (c_object, c_company, 'БЦ «Демо»', 'office', 'Белград, Савски венац (демо)', 44.804710, 20.449415)
   on conflict (id) do update
     set name = excluded.name, type = excluded.type, address = excluded.address,
         lat = excluded.lat, lng = excluded.lng;

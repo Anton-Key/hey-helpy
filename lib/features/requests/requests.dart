@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/directional.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
+import '../../core/paging.dart';
 import '../../core/status_style.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
@@ -87,6 +88,13 @@ class RequestsRepo {
     if (locationId != null) q = q.eq('location_id', locationId);
     return await q.order('created_at', ascending: false).limit(limit);
   }
+
+  /// Заявки для карты объектов: только объект, статус, срочность и срок.
+  /// Видно столько, сколько разрешает RLS.
+  Future<List<Map<String, dynamic>>> mapOrders() => fetchAll(() => _c
+      .from('work_orders')
+      .select('id,object_id,status,priority,due_at')
+      .order('id'));
 
   Future<List<WorkOrder>> list() async {
     final rows = await _c
@@ -242,7 +250,12 @@ String? _workTypeLabel(List<Layer> layers, String locale,
 }
 
 class RequestsTab extends StatefulWidget {
-  const RequestsTab({super.key});
+  const RequestsTab({super.key, this.objectFilter, this.onClearObjectFilter});
+
+  /// Показывать только заявки этого объекта (кнопка «Заявки» на карте).
+  final Obj? objectFilter;
+  final VoidCallback? onClearObjectFilter;
+
   @override
   State<RequestsTab> createState() => _RequestsTabState();
 }
@@ -312,11 +325,22 @@ class _RequestsTabState extends State<RequestsTab> {
     }
   }
 
+  /// Заявки с учётом фильтра по объекту.
+  List<WorkOrder> get _shown {
+    final f = widget.objectFilter;
+    return f == null
+        ? _items
+        : [
+            for (final w in _items)
+              if (w.objectId == f.id) w
+          ];
+  }
+
   String _statusText() {
     final l = context.l10n;
     if (_loading) return l.requestsLoading;
     if (_error != null) return l.requestsLoadErrorShort;
-    return l.requestsCount(_items.length);
+    return l.requestsCount(_shown.length);
   }
 
   Future<void> _openDetail(WorkOrder w) async {
@@ -346,9 +370,30 @@ class _RequestsTabState extends State<RequestsTab> {
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(18, 14, 18, 6),
-            child: Text(_statusText(),
-                style: const TextStyle(
-                    color: _muted, fontWeight: FontWeight.w700, fontSize: 13)),
+            child: Wrap(
+                spacing: 10,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(_statusText(),
+                      style: const TextStyle(
+                          color: _muted,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13)),
+                  if (widget.objectFilter != null)
+                    Chip(
+                      avatar: const Icon(Icons.apartment,
+                          size: 18, color: HeyHelpyTheme.link),
+                      label: Text(context.l10n
+                          .requestsFilterObject(widget.objectFilter!.name)),
+                      backgroundColor: HeyHelpyTheme.mint,
+                      side: BorderSide.none,
+                      deleteIcon: const Icon(Icons.close, size: 18),
+                      deleteButtonTooltipMessage:
+                          context.l10n.requestsFilterClear,
+                      onDeleted: widget.onClearObjectFilter,
+                    ),
+                ]),
           ),
           Expanded(child: _body()),
         ]),
@@ -405,7 +450,8 @@ class _RequestsTabState extends State<RequestsTab> {
             style: const TextStyle(color: Color(0xFFC24444))),
       );
     }
-    if (_items.isEmpty) {
+    final items = _shown;
+    if (items.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(28),
@@ -420,9 +466,9 @@ class _RequestsTabState extends State<RequestsTab> {
     // прокручивается выше них.
     return ListView.builder(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 240),
-      itemCount: _items.length,
+      itemCount: items.length,
       itemBuilder: (_, i) {
-        final w = _items[i];
+        final w = items[i];
         final high = w.priority == 'high' || w.priority == 'critical';
         final workType = _workTypeLabel(_layers, locale,
             layerId: w.layerId, workType: w.workType);
@@ -477,7 +523,8 @@ class _RequestsTabState extends State<RequestsTab> {
         repo: _repo,
         objects: _objects,
         companyId: _companyId!,
-        existing: null);
+        existing: null,
+        initialObjectId: widget.objectFilter?.id);
     if (ok == true) {
       await _load();
       if (mounted) _snackOk(context.l10n.requestsCreated);
@@ -1156,6 +1203,9 @@ Future<bool?> showOrderForm({
   required List<Obj> objects,
   required String companyId,
   Map<String, dynamic>? existing,
+
+  /// Объект новой заявки заранее (кнопка «Создать заявку здесь» на карте).
+  String? initialObjectId,
 }) async {
   // Виды работ = слои компании из базы; ничего не зашито в приложение.
   List<Layer> layers = const [];
@@ -1179,7 +1229,11 @@ Future<bool?> showOrderForm({
       : null;
   String priority =
       isEdit ? (existing['priority'] ?? 'normal') as String : 'normal';
-  String? objectId = isEdit ? existing['object_id'] as String? : null;
+  String? objectId = isEdit
+      ? existing['object_id'] as String?
+      : objects.any((o) => o.id == initialObjectId)
+          ? initialObjectId
+          : null;
   bool recurring = isEdit ? existing['recurrence'] != null : false;
 
   const priorities = ['low', 'normal', 'high', 'critical'];

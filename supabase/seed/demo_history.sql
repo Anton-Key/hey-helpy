@@ -1,12 +1,18 @@
 -- =====================================================================
 -- Hey Helpy · демо-история за последние 30 дней (НЕ миграция)
 --
--- Что делает: добавляет в компанию «Демо БЦ» 25 заявок и 16 визитов,
--- чтобы на демо «История» и «Отчёты» были наполнены:
+-- Что делает: добавляет в компанию «Демо БЦ» 35 заявок и 16 визитов,
+-- чтобы на демо «История» и «Отчёты» были наполнены, и 4 объекта на карте:
 --   • «КлиматСервис» (Климат) — 15 заявок, всё в срок, приёмка почти всегда
 --     с первого раза, 15 визитов при норме 4 в месяц;
 --   • «ЭлектроПро» (Электрика) — 10 заявок, 2 просрочены, 3 возвращали
 --     на доработку, визитов меньше нормы 2 в месяц (один — с подменой GPS).
+--   • эти 25 заявок — на «БЦ «Демо»» (Белград, Савски венац);
+--   • ещё 10 заявок (211–220) — на 4 новых объектах в Белграде
+--     («ТЦ «Демо Плаза»», «Склад «Демо Логистик»», «Офис «Демо Сити»»,
+--     «Отель «Демо Парк»»; 11 помещений) — для карты во вкладке «Локации»:
+--     у «Плазы» просроченная critical (красный маркер), у склада открытых
+--     заявок нет (серо-зелёный). Из них 5 — «ЭлектроПро» (+1 просрочка в отчёте).
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
 -- и миграций 0001–0010. Подробно: docs/DEMO_SETUP.md, шаг 4.
@@ -125,6 +131,11 @@ declare
   c_contr_hvac constant uuid := 'de300000-0000-4000-8000-000000000031';
   c_contr_elec constant uuid := 'de300000-0000-4000-8000-000000000032';
   c_mock_visit constant uuid := 'de300000-0000-4000-8000-000000000316';
+  -- Объекты на карте (шаг 13): id 011–014, помещения 041–051, заявки 211–220.
+  c_obj_plaza  constant uuid := 'de300000-0000-4000-8000-000000000011';
+  c_obj_log    constant uuid := 'de300000-0000-4000-8000-000000000012';
+  c_obj_city   constant uuid := 'de300000-0000-4000-8000-000000000013';
+  c_obj_park   constant uuid := 'de300000-0000-4000-8000-000000000014';
 
   v_manager   uuid;
   v_executor  uuid;
@@ -209,6 +220,51 @@ begin
     raise exception 'Нет закреплений подрядчиков за слоями. Сначала запустите supabase/seed/demo.sql';
   end if;
 
+  -- 3b. Объекты на карте (шаг 13). «БЦ «Демо»» стоит в Белграде — адрес
+  --     под его координаты. Ещё 4 объекта в разных районах Белграда
+  --     (2–10 км друг от друга), по 2–3 помещения. Адреса — без реальных улиц.
+  update public.objects set address = 'Белград, Савски венац (демо)'
+   where id = c_object;
+
+  insert into public.objects (id, company_id, name, type, address, lat, lng, geofence_radius_m)
+  values
+    (c_obj_plaza, c_company, 'ТЦ «Демо Плаза»',       'other',     'Белград, Нови Београд (демо)', 44.803000, 20.404000, 200),
+    (c_obj_log,   c_company, 'Склад «Демо Логистик»', 'warehouse', 'Белград, Земун (демо)',        44.859000, 20.380000, 300),
+    (c_obj_city,  c_company, 'Офис «Демо Сити»',      'office',    'Белград, Дорчол (демо)',       44.823500, 20.470000, 150),
+    (c_obj_park,  c_company, 'Отель «Демо Парк»',     'hotel',     'Белград, Вождовац (демо)',     44.770000, 20.480000, 250)
+  on conflict (id) do update set
+    company_id = excluded.company_id, name = excluded.name, type = excluded.type,
+    address = excluded.address, lat = excluded.lat, lng = excluded.lng,
+    geofence_radius_m = excluded.geofence_radius_m;
+
+  insert into public.locations (id, object_id, name)
+  select ('de300000-0000-4000-8000-' || lpad(p.n::text, 12, '0'))::uuid,
+         ('de300000-0000-4000-8000-' || lpad(p.o::text, 12, '0'))::uuid, p.name
+  from (values
+    (41, 11, 'Фуд-корт, 2 этаж'),
+    (42, 11, 'Торговая галерея, 1 этаж'),
+    (43, 11, 'Парковка, −1 этаж'),
+    (44, 12, 'Зона приёмки, ворота 3'),
+    (45, 12, 'Холодильная камера'),
+    (46, 12, 'Офис склада'),
+    (47, 13, 'Ресепшен, 1 этаж'),
+    (48, 13, 'Серверная, 4 этаж'),
+    (49, 14, 'Лобби'),
+    (50, 14, 'Номер 214'),
+    (51, 14, 'Ресторан')
+  ) as p(n, o, name)
+  on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
+
+  -- «КлиматСервис» — «Климат» и на новых объектах (как на «БЦ «Демо»»);
+  -- «ЭлектроПро» уже закреплён за «Электрикой» на всех объектах.
+  -- У contractor_layers нет уникального ключа — поэтому «если ещё нет».
+  insert into public.contractor_layers (contractor_id, layer_id, object_id)
+  select c_contr_hvac, v_layer_hvac, o.id
+  from unnest(array[c_obj_plaza, c_obj_log, c_obj_city, c_obj_park]) as o(id)
+  where not exists (select 1 from public.contractor_layers cl
+                     where cl.contractor_id = c_contr_hvac
+                       and cl.layer_id = v_layer_hvac and cl.object_id = o.id);
+
   -- 4. Четвёртый пользователь (если указан) — исполнитель «ЭлектроПро»
   if v_elec_exec is not null then
     insert into public.profiles (id, company_id, role, full_name)
@@ -239,9 +295,7 @@ begin
     return_reason, return_count)
   select
     ('de300000-0000-4000-8000-' || lpad(t.n::text, 12, '0'))::uuid,
-    c_company, c_object,
-    case t.loc when 'meet' then c_loc_meet when 'elec' then c_loc_elec
-               when 'open' then c_loc_open else c_loc_hall end,
+    c_company, coalesce(lo.object_id, c_object), lc.id,
     t.title, t.descr,
     case t.layer when 'hvac' then 'Климат' else 'Электрика' end,
     case t.layer when 'hvac' then v_layer_hvac else v_layer_elec end,
@@ -249,8 +303,9 @@ begin
     case t.layer when 'hvac' then v_photo_hvac else v_photo_elec end,
     t.channel,
     case t.author when 'mgr' then v_manager else v_requester end,
-    case t.layer when 'hvac' then c_contr_hvac else c_contr_elec end,
-    'rule',
+    case when t.status <> 'new' then
+      case t.layer when 'hvac' then c_contr_hvac else c_contr_elec end end,
+    case when t.status <> 'new' then 'rule' end,
     x.created + make_interval(hours => t.due_h),
     case when t.sub is not null then t.sub end,
     x.created,
@@ -294,12 +349,33 @@ begin
     (207,'elec','elec','Не работает освещение в электрощитовой','В щитовой темно, работать со щитом невозможно.','normal','returned','mgr','text',6,8,1560,150,null,72,1,'Заменили не тот светильник: в щитовой по-прежнему темно.',2940),
     (208,'elec','meet','Нет питания на розетках в переговорной','Не работают все розетки у стола, в 15:00 совещание.','high','assigned','req','voice',5,9,null,null,null,24,0,null,null),
     (209,'elec','elec','Проверить щит после скачка напряжения','Ночью был скачок, часть линий отключилась.','normal','in_progress','mgr','text',2,9,1500,null,null,120,0,null,null),
-    (210,'elec','hall','Замена светильника в холле','Светильник над входом треснул, нужна замена.','low','on_review','req','text',4,10,1500,1500,null,120,0,null,null)
+    (210,'elec','hall','Замена светильника в холле','Светильник над входом треснул, нужна замена.','low','on_review','req','text',4,10,1500,1500,null,120,0,null,null),
+    -- Объекты на карте (шаг 13); loc — номер помещения (041–051), объект — по помещению.
+    -- «ТЦ «Демо Плаза»»: просроченная critical — красный маркер
+    (211,'elec','41','Нет света в фуд-корте','Обесточена половина фуд-корта, арендаторы не могут работать.','critical','assigned','mgr','text',1,7,null,null,null,4,0,null,null),
+    (212,'hvac','42','Душно в торговой галерее','Не работает приточная вентиляция у эскалатора.','normal','new','req','voice',1,10,null,null,null,72,0,null,null),
+    (213,'elec','43','Заменить лампы на парковке','Не горят 5 светильников у въезда.','low','done','req','text',6,9,300,60,120,120,0,null,null),
+    -- «Склад «Демо Логистик»»: открытых заявок нет — серо-зелёный маркер
+    (214,'hvac','45','ТО холодильной камеры','Плановая проверка компрессора и уплотнителей.','low','done','mgr','button',9,7,90,120,180,120,0,null,null),
+    (215,'elec','44','Дубль: свет у ворот 3','Создана повторно по ошибке.','low','cancelled','req','text',4,8,null,null,null,120,0,null,30),
+    -- «Офис «Демо Сити»»: срочная в работе — оранжевый маркер
+    (216,'hvac','48','Перегрев в серверной','В серверной 31°, кондиционер не справляется.','high','in_progress','mgr','text',1,8,40,null,null,72,0,null,null),
+    (217,'elec','47','Мигает подсветка ресепшена','Светодиодная лента над стойкой мигает.','normal','on_review','req','text',2,9,200,90,null,72,0,null,null),
+    -- «Отель «Демо Парк»»: обычные открытые — бирюзовый маркер
+    (218,'hvac','50','Не работает кондиционер в номере 214','Гость жалуется: в номере жарко.','normal','new','req','voice',1,9,null,null,null,72,0,null,null),
+    (219,'elec','51','Не работает розетка у барной стойки','Не включается кофемашина, розетка без питания.','low','assigned','mgr','text',2,11,null,null,null,120,0,null,null),
+    (220,'hvac','49','Чистка фильтров в лобби','Плановое ТО кондиционеров лобби.','low','done','mgr','button',12,6,100,80,200,120,0,null,null)
   ) as t(n, layer, loc, title, descr, priority, status, author, channel,
          d, h, r, sub, acc, due_h, rc, reason, upd)
   cross join lateral (
     select v_today - make_interval(days => t.d) + make_interval(hours => t.h) as created
   ) x
+  cross join lateral (
+    select case t.loc when 'meet' then c_loc_meet when 'elec' then c_loc_elec
+                      when 'open' then c_loc_open when 'hall' then c_loc_hall
+           else ('de300000-0000-4000-8000-' || lpad(t.loc, 12, '0'))::uuid end as id
+  ) lc
+  left join public.locations lo on lo.id = lc.id
   on conflict (id) do update set
     company_id = excluded.company_id, object_id = excluded.object_id,
     location_id = excluded.location_id, asset_id = null,

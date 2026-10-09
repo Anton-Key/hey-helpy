@@ -105,19 +105,8 @@ class _ContractorCardScreenState extends State<ContractorCardScreen> {
       appRoute(
           (_) => Scaffold(
                 backgroundColor: AppColors.bg,
-                body: Column(children: [
-                  // Только «назад»: заголовок «Отчёты» — в шапке самого
-                  // ReportsScreen.
-                  const AppNavBar(border: false),
-                  Expanded(
-                    child: MediaQuery.removePadding(
-                      context: context,
-                      removeTop: true,
-                      child: ReportsScreen(
-                          initialContractorId: widget.contractor.id),
-                    ),
-                  ),
-                ]),
+                // Шапка с «назад» — у самого ReportsScreen.
+                body: ReportsScreen(initialContractorId: widget.contractor.id),
               ),
           title: widget.contractor.orgName));
 

@@ -223,7 +223,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       physics:
           const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
-        HomeHeader(title: l.navReports),
+        // Из карточки подрядчика — своя шапка с «назад» (без колокольчика).
+        if (widget.initialContractorId == null)
+          HomeHeader(title: l.navReports)
+        else
+          AppSliverHeader(title: l.navReports),
         if (_isManager) CupertinoSliverRefreshControl(onRefresh: _load),
         SliverContent(
             maxWidth: double.infinity, sliver: SliverList.list(children: body)),

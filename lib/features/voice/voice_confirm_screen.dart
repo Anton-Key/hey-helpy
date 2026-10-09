@@ -1,21 +1,13 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../directory/directory.dart';
 import '../requests/requests.dart';
 import 'voice_draft.dart';
 import 'voice_intake_client.dart';
 import '../../core/app_message.dart';
-
-const _ink = Color(0xFF1C1E22);
-const _muted = Color(0xFF8A9098);
-const _onBrand = Color(0xFF06342A);
-const _mint = Color(0xFFD8F0EA);
-const _danger = Color(0xFFC24444);
+import '../../l10n/app_localizations.dart';
 
 const _priorities = ['low', 'normal', 'high', 'critical'];
 
@@ -183,179 +175,240 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
     }
   }
 
+  /// Название выбранного места или «Не указано».
+  String _whereName() {
+    final w = _where;
+    if (w != null && w.startsWith('p:')) {
+      for (final p in _places) {
+        if (p.id == w.substring(2)) return p.fullName;
+      }
+    } else if (w != null && w.startsWith('o:')) {
+      for (final o in widget.objects) {
+        if (o.id == w.substring(2)) return o.name;
+      }
+    }
+    return context.l10n.commonNotSpecified;
+  }
+
+  /// Выбор места — шторка со списком: «Не указано», объекты, помещения.
+  Future<void> _pickWhere() async {
+    final l = context.l10n;
+    Widget option(String? value, String title, IconData? icon) => AppRow(
+          leading: icon == null ? null : LeadingIcon(icon),
+          title: title,
+          chevron: false,
+          trailing: _where == value
+              ? const Icon(AppIcons.check,
+                  size: AppSizes.icon, color: AppColors.accentText)
+              : null,
+          // В Navigator.pop нельзя передать null как «выбрано „Не указано“»:
+          // null — это «закрыли шторку». Поэтому — пустая строка.
+          onTap: () => Navigator.pop(context, value ?? ''),
+        );
+    final picked = await showAppSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        top: false,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SheetHeader(title: l.voiceWhere, cancelLabel: l.commonCancel),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.l),
+              children: [
+                AppGroup(
+                    separatorInset: AppSpace.separatorInsetIcon,
+                    children: [
+                      option(null, l.commonNotSpecified, null),
+                      for (final o in widget.objects)
+                        option('o:${o.id}', o.name, AppIcons.building),
+                      for (final p in _places)
+                        option('p:${p.id}', p.fullName, AppIcons.room),
+                    ]),
+              ],
+            ),
+          ),
+        ]),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _where = picked.isEmpty ? null : picked);
+  }
+
+  /// Поле внутри белой группы: без рамки, подпись — имя поля для диктора.
+  InputDecoration _field(String label) => InputDecoration(
+        labelText: label,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        filled: true,
+        fillColor: AppColors.surface,
+      );
+
+  /// Срочность — сегмент-контрол. На узком экране (телефон) сегменты
+  /// по ширине подписей: «Критический» не помещается в четверть строки.
+  Widget _urgency() {
+    final l = context.l10n;
+    return LayoutBuilder(builder: (context, c) {
+      final wide = c.maxWidth >= 440;
+      final control = SegmentedControl<String>(
+        expand: wide,
+        segments: [
+          for (final p in _priorities) Segment(p, l.priority(p)),
+        ],
+        selected: _priority,
+        onChanged: (p) => setState(() => _priority = p),
+      );
+      return wide
+          ? control
+          : Align(alignment: AlignmentDirectional.centerStart, child: control);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    const brand = HeyHelpyTheme.brand;
     final l = context.l10n;
     final locale = context.localeCode;
-    final side = math.max(16.0, (MediaQuery.sizeOf(context).width - 640) / 2);
+    // Вид шторки: язычок и шапка «Отмена · Проверьте заявку».
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-          title: Text(l.voiceConfirmTitle), backgroundColor: Colors.white),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          // Поля прокручиваются, «Отправить» закреплена внизу и видна всегда.
-          : Column(children: [
-              // Полосу прокрутки с ползунком рисует AppScrollBehavior.
-              Expanded(
-                child: ListView(
-                    // На широком экране — колонка до 640 px по центру.
-                    padding: EdgeInsetsDirectional.fromSTEB(side, 8, side, 24),
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                            color: _mint,
-                            borderRadius: BorderRadius.circular(16)),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                  widget.typed
-                                      ? l.voiceYouWrote
-                                      : l.voiceYouSaid,
-                                  style: const TextStyle(
-                                      color: _onBrand,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13)),
-                              const SizedBox(height: 6),
-                              Text(l.quoted(widget.draft.transcript),
-                                  style: const TextStyle(
-                                      color: _ink, fontSize: 15, height: 1.35)),
-                            ]),
-                      ),
-                      const SizedBox(height: 10),
-                      _SourceNote(source: widget.draft.source),
-                      const SizedBox(height: 8),
-                      Text(l.voiceEditHint,
-                          style: const TextStyle(color: _muted, fontSize: 13)),
-                      const SizedBox(height: 12),
-                      TextField(
-                          controller: _titleC,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: InputDecoration(
-                              labelText: l.formWhat,
-                              border: const OutlineInputBorder())),
-                      const SizedBox(height: 12),
-                      TextField(
-                          controller: _descC,
-                          minLines: 2,
-                          maxLines: 5,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: InputDecoration(
-                              labelText: l.formDetailsHint,
-                              border: const OutlineInputBorder())),
-                      const SizedBox(height: 18),
-                      _label(l.fieldWorkType),
-                      if (_layers.isEmpty)
-                        Text(l.formLayersFailed,
-                            style: const TextStyle(color: _muted))
-                      else
-                        Wrap(spacing: 8, runSpacing: 8, children: [
-                          for (final t in _layers)
-                            _chip(
-                                t.label(locale),
-                                _layer?.id == t.id,
-                                brand,
-                                () => setState(() =>
-                                    _layer = _layer?.id == t.id ? null : t)),
-                        ]),
-                      if (_layer == null && _layers.isNotEmpty)
-                        Padding(
-                            padding: const EdgeInsetsDirectional.only(top: 6),
-                            child: Text(l.voicePickLayer,
-                                style: const TextStyle(
-                                    color: _danger, fontSize: 13))),
-                      const SizedBox(height: 18),
-                      _label(l.voiceWhere),
-                      DropdownButtonFormField<String?>(
-                        initialValue: _where,
-                        isExpanded: true,
-                        decoration:
-                            const InputDecoration(border: OutlineInputBorder()),
-                        items: [
-                          DropdownMenuItem<String?>(
-                              value: null, child: Text(l.commonNotSpecified)),
-                          for (final o in widget.objects)
-                            DropdownMenuItem<String?>(
-                                value: 'o:${o.id}',
-                                child: Text(o.name,
-                                    overflow: TextOverflow.ellipsis)),
-                          for (final p in _places)
-                            DropdownMenuItem<String?>(
-                                value: 'p:${p.id}',
-                                child: Text(p.fullName,
-                                    overflow: TextOverflow.ellipsis)),
-                        ],
-                        onChanged: (v) => setState(() => _where = v),
-                      ),
-                      if (widget.draft.locationHint != null)
-                        Padding(
-                            padding: const EdgeInsetsDirectional.only(top: 6),
-                            child: Text(
-                                l.voiceHeard(widget.draft.locationHint!),
-                                style: const TextStyle(
-                                    color: _muted, fontSize: 13))),
-                      const SizedBox(height: 18),
-                      _label(l.voiceUrgency),
-                      Wrap(spacing: 8, runSpacing: 8, children: [
-                        for (final p in _priorities)
-                          _chip(l.priority(p), _priority == p, brand,
-                              () => setState(() => _priority = p)),
-                      ]),
-                    ]),
-              ),
-              BottomActionBar(
-                  child: FilledButton(
-                style: FilledButton.styleFrom(
-                    backgroundColor: brand,
-                    foregroundColor: _onBrand,
-                    minimumSize: const Size.fromHeight(56)),
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
+        bottom: false,
+        child: Column(children: [
+          const SheetGrabber(),
+          SheetHeader(
+              title: l.voiceConfirmTitle,
+              cancelLabel: l.commonCancel,
+              onCancel: () => Navigator.pop(context, false)),
+          if (_loading)
+            const Expanded(child: AppLoader())
+          else ...[
+            // Поля прокручиваются, «Отправить» закреплена внизу и видна всегда.
+            // Полосу прокрутки с ползунком рисует AppScrollBehavior.
+            Expanded(
+              child: ListView(
+                  padding: const EdgeInsetsDirectional.fromSTEB(AppSpace.screen,
+                      AppSpace.s, AppSpace.screen, AppSpace.xl),
+                  children: [
+                    ContentWidth(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: _content(l, locale)),
+                    ),
+                  ]),
+            ),
+            BottomActionBar(
+              child: AppButton.primary(
+                label: l.voiceSend,
+                icon: AppIcons.send,
+                loading: _saving,
                 onPressed: _saving ? null : _submit,
-                child: _saving
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2.5, color: _onBrand))
-                    : Text(l.voiceSend,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w800, fontSize: 17)),
-              )),
-            ]),
+              ),
+            ),
+          ],
+        ]),
+      ),
     );
   }
 
-  Widget _label(String t) => Padding(
-      padding: const EdgeInsetsDirectional.only(bottom: 8),
-      child: Text(t,
-          style: const TextStyle(
-              color: _ink, fontWeight: FontWeight.w700, fontSize: 15)));
-
-  Widget _chip(String text, bool selected, Color brand, VoidCallback onTap) =>
-      ChoiceTag(label: text, selected: selected, onTap: onTap, filled: true);
+  List<Widget> _content(AppLocalizations l, String locale) => [
+        // «Вы сказали» — на тонированном фоне, с пометкой, кто разобрал.
+        AppCard(
+          color: AppColors.accentTint,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Expanded(
+                child: Text(widget.typed ? l.voiceYouWrote : l.voiceYouSaid,
+                    style: AppText.footnote.copyWith(
+                        color: AppColors.accentText,
+                        fontWeight: FontWeight.w600)),
+              ),
+              const SizedBox(width: AppSpace.s),
+              _SourceBadge(source: widget.draft.source),
+            ]),
+            const SizedBox(height: 6),
+            Text(l.quoted(widget.draft.transcript), style: AppText.callout),
+          ]),
+        ),
+        Padding(
+          padding:
+              const EdgeInsetsDirectional.symmetric(horizontal: AppSpace.rowH),
+          child: Text(l.voiceEditHint, style: AppText.footnote),
+        ),
+        const SizedBox(height: AppSpace.m),
+        AppGroup(children: [
+          TextField(
+              controller: _titleC,
+              textCapitalization: TextCapitalization.sentences,
+              style: AppText.body,
+              decoration: _field(l.formWhat)),
+          TextField(
+              controller: _descC,
+              minLines: 2,
+              maxLines: 5,
+              textCapitalization: TextCapitalization.sentences,
+              style: AppText.body,
+              decoration: _field(l.formDetailsHint)),
+        ]),
+        SectionHeader(l.fieldWorkType),
+        if (_layers.isEmpty)
+          Text(l.formLayersFailed, style: AppText.footnote)
+        else
+          Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
+            for (final t in _layers)
+              AppChip(
+                  label: t.label(locale),
+                  selected: _layer?.id == t.id,
+                  onTap: () =>
+                      setState(() => _layer = _layer?.id == t.id ? null : t)),
+          ]),
+        if (_layer == null && _layers.isNotEmpty)
+          Padding(
+              padding: const EdgeInsetsDirectional.only(top: AppSpace.s),
+              child: Text(l.voicePickLayer,
+                  style: AppText.footnote.copyWith(color: AppColors.danger))),
+        SectionHeader(l.voiceWhere),
+        AppGroup(children: [
+          AppRow(
+            leading: const LeadingIcon(AppIcons.place),
+            title: _whereName(),
+            subtitle: widget.draft.locationHint == null
+                ? null
+                : l.voiceHeard(widget.draft.locationHint!),
+            onTap: _pickWhere,
+          ),
+        ]),
+        SectionHeader(l.voiceUrgency),
+        _urgency(),
+      ];
 }
 
-/// Пометка «Разобрано ИИ» / «Разобрано по словарю».
-class _SourceNote extends StatelessWidget {
-  const _SourceNote({required this.source});
+/// Пометка «✦ Разобрано ИИ» / «Разобрано по словарю» — капсула.
+class _SourceBadge extends StatelessWidget {
+  const _SourceBadge({required this.source});
   final DraftSource source;
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
     final ai = source == DraftSource.ai;
-    return Row(children: [
-      Icon(ai ? Icons.auto_awesome : Icons.menu_book_outlined,
-          size: 16, color: ai ? HeyHelpyTheme.link : _muted),
-      const SizedBox(width: 6),
-      Flexible(
-          child: Text(ai ? l.voiceParsedByAi : l.voiceParsedByDictionary,
-              style: TextStyle(
-                  color: ai ? HeyHelpyTheme.link : _muted,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600))),
-    ]);
+    final color = ai ? AppColors.accentText : AppColors.secondary;
+    return Container(
+      height: AppSizes.pillHeight,
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: 9),
+      decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.pill)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(ai ? AppIcons.sparkles : AppIcons.list, size: 14, color: color),
+        const SizedBox(width: 5),
+        Text(ai ? l.voiceParsedByAi : l.voiceParsedByDictionary,
+            maxLines: 1,
+            style: AppText.caption
+                .copyWith(color: color, fontWeight: FontWeight.w600)),
+      ]),
+    );
   }
 }

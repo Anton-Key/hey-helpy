@@ -408,5 +408,11 @@
   "voiceMicFailedWeb": "The browser isn't getting sound from the microphone. Check which microphone is selected: chrome://settings/content/microphone (in Edge — edge://settings/content/microphone), then tap “Try again”.",
   "voiceErrorCode": "code: {code}",
   "voiceMicSilent": "The microphone doesn't hear any sound — check which microphone is selected",
-  "voiceBrowserHint": "For voice input, it's best to open this in Google Chrome or Microsoft Edge"
+  "voiceBrowserHint": "For voice input, it's best to open this in Google Chrome or Microsoft Edge",
+  "detailMore": "More",
+  "actionDelete": "Delete",
+  "deleteOrderConfirm": "Delete this request permanently? Its history, photos and reports will be gone. If the work just isn't needed, better “Cancel request”.",
+  "toastDeleted": "Request deleted",
+  "deleteOrderDenied": "Only a manager can delete requests. The request was not deleted.",
+  "deleteOrderFailed": "Couldn't delete the request. Check your connection and try again."
 }

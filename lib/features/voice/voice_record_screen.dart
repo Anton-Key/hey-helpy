@@ -43,6 +43,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   final _speech = createSpeechInput();
   final _client = createVoiceIntakeClient();
   final _typeC = TextEditingController();
+  final _typeFocus = FocusNode();
   late final _pulse = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 1200));
   late final Future<IntakeCatalog> _catalog = _loadCatalog();
@@ -57,10 +58,16 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   /// Индикатор громкости в браузере: микрофон всё время молчит.
   bool _micSilent = false;
   String _text = '';
-  double _level = 0;
-  Duration _elapsed = Duration.zero;
+
+  /// Громкость и время меняются по 4–10 раз в секунду: их слушают только
+  /// круг и строка таймера, а не весь экран — кнопки не перестраиваются.
+  final _level = ValueNotifier<double>(0);
+  final _elapsed = ValueNotifier<Duration>(Duration.zero);
   Timer? _ticker;
   Timer? _stopGuard;
+
+  /// Номер попытки: «Ввести текстом» во время запуска отменяет её.
+  int _attempt = 0;
 
   @override
   void initState() {
@@ -72,9 +79,14 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   void dispose() {
     _ticker?.cancel();
     _stopGuard?.cancel();
-    if (_phase == _Phase.listening) _speech.cancel();
+    if (_phase == _Phase.listening || _phase == _Phase.starting) {
+      _speech.cancel();
+    }
     _pulse.dispose();
+    _level.dispose();
+    _elapsed.dispose();
     _typeC.dispose();
+    _typeFocus.dispose();
     super.dispose();
   }
 
@@ -97,24 +109,25 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   Future<void> _start() async {
     if (!mounted) return;
     final localeId = speechLocaleId(context.localeCode);
+    final attempt = ++_attempt;
+    _elapsed.value = Duration.zero;
     setState(() {
       _phase = _Phase.starting;
       _error = null;
       _errorCode = null;
       _micSilent = false;
       _text = '';
-      _elapsed = Duration.zero;
     });
     final problem = await _speech.init();
-    if (!mounted) return;
+    if (!mounted || attempt != _attempt) return;
     if (problem != null) return _fail(problem);
     setState(() => _phase = _Phase.listening);
     _pulse.repeat();
     final startedAt = DateTime.now();
     _ticker = Timer.periodic(const Duration(milliseconds: 250), (_) {
       if (!mounted) return;
-      setState(() => _elapsed = DateTime.now().difference(startedAt));
-      if (_elapsed >= VoiceRecordScreen.listenFor) _finish();
+      _elapsed.value = DateTime.now().difference(startedAt);
+      if (_elapsed.value >= VoiceRecordScreen.listenFor) _finish();
     });
     await _speech.start(
       localeId: localeId,
@@ -124,10 +137,12 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
         if (mounted && _phase == _Phase.listening) setState(() => _text = t);
       },
       onLevel: (l) {
-        if (mounted) setState(() => _level = l);
+        if (mounted && _phase == _Phase.listening) _level.value = l;
       },
       onMicSilent: (silent) {
-        if (mounted) setState(() => _micSilent = silent);
+        if (mounted && _phase == _Phase.listening && silent != _micSilent) {
+          setState(() => _micSilent = silent);
+        }
       },
       onDone: _onSpeechDone,
       onError: (p, code) {
@@ -167,7 +182,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   void _stopListening() {
     _ticker?.cancel();
     _pulse.stop();
-    _level = 0;
+    _level.value = 0;
     _micSilent = false;
     _speech.cancel();
   }
@@ -199,7 +214,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
       } else {
         // Вернулись без отправки — можно сказать заново или поправить текст.
         _typeC.text = TextIntake.stripWakePhrase(text);
-        setState(() => _phase = _Phase.typing);
+        _openTyping();
       }
     } catch (_) {
       _fail(SpeechProblem.failed);
@@ -218,19 +233,29 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     });
   }
 
+  /// «Ввести текстом» — одним нажатием в любом состоянии: останавливает
+  /// распознавание (и запуск, если он ещё идёт), закрывает микрофон и
+  /// открывает поле с курсором в нём.
   void _typeInstead() {
-    if (_phase == _Phase.listening) _stopListening();
+    _attempt++;
+    _stopGuard?.cancel();
+    _stopGuard = null;
+    _stopListening();
     if (_typeC.text.isEmpty) _typeC.text = TextIntake.stripWakePhrase(_text);
+    _openTyping();
+  }
+
+  void _openTyping() {
     setState(() => _phase = _Phase.typing);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _phase == _Phase.typing) _typeFocus.requestFocus();
+    });
   }
 
   void _submitTyped() {
     final text = _typeC.text.trim();
-    if (text.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(context.l10n.formWhatRequired)));
-      return;
-    }
+    // Кнопка «Далее» неактивна, пока поле пустое.
+    if (text.isEmpty) return;
     _process(text, typed: true);
   }
 
@@ -259,31 +284,78 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
       backgroundColor: Colors.white,
       appBar: AppBar(
           title: Text(context.l10n.voiceTitle), backgroundColor: Colors.white),
-      body: _phase == _Phase.typing
-          ? _typingBody()
-          : SafeArea(
-              child: LayoutBuilder(
-                builder: (context, box) => SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 24),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: box.maxHeight - 36),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: _voice(),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+      body: _phase == _Phase.typing ? _typingBody() : _voiceBody(),
     );
+  }
+
+  /// «Слушаю»: круг и текст прокручиваются, кнопки закреплены внизу и не
+  /// сдвигаются, когда растёт распознанный текст или появляется подсказка.
+  Widget _voiceBody() => Column(children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 16),
+            child: Center(
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: _voice()),
+            ),
+          ),
+        ),
+        if (_phase != _Phase.processing)
+          BottomActionBar(maxWidth: 520, child: _voiceButtons()),
+      ]);
+
+  Widget _voiceButtons() {
+    final l = context.l10n;
+    final listening = _phase == _Phase.listening;
+    final canRetry =
+        _phase == _Phase.error && _error != SpeechProblem.unsupported;
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (listening)
+            FilledButton.icon(
+                key: const ValueKey('voice-done'),
+                style: brandButtonStyle().copyWith(
+                    minimumSize:
+                        const WidgetStatePropertyAll(Size.fromHeight(56))),
+                onPressed: _finish,
+                icon: const Icon(Icons.check_rounded),
+                label: Text(l.voiceDone,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 17))),
+          if (canRetry)
+            FilledButton.icon(
+                key: const ValueKey('voice-again'),
+                style: brandButtonStyle().copyWith(
+                    minimumSize:
+                        const WidgetStatePropertyAll(Size.fromHeight(56))),
+                onPressed: _start,
+                icon: const Icon(Icons.mic),
+                label: Text(l.voiceAgain,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 17))),
+          if (listening || canRetry) const SizedBox(height: 10),
+          // Всегда активна: и пока включается микрофон, и пока слушаем,
+          // и после ошибки. Нажимается вся кнопка, высота 52.
+          OutlinedButton.icon(
+              key: const ValueKey('voice-type'),
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: HeyHelpyTheme.link,
+                  minimumSize: const Size.fromHeight(52)),
+              onPressed: _typeInstead,
+              icon: const Icon(Icons.keyboard_alt_outlined),
+              label: Text(l.voiceTypeInstead,
+                  style: const TextStyle(fontWeight: FontWeight.w700))),
+          const SizedBox(height: 4),
+          _cancel(),
+        ]);
   }
 
   Widget _voice() {
     final l = context.l10n;
     final listening = _phase == _Phase.listening;
-    final left = VoiceRecordScreen.listenFor - _elapsed;
     final canRetry =
         _phase == _Phase.error && _error != SpeechProblem.unsupported;
     return Column(mainAxisSize: MainAxisSize.min, children: [
@@ -310,10 +382,17 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
           const SizedBox(height: 10),
         ],
         if (listening)
-          Text(
-              '${l.voiceTimer(_fmt(_elapsed), left.inSeconds < 0 ? 0 : left.inSeconds)}\n${l.voiceAutoStop}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: _muted, fontSize: 13, height: 1.4)),
+          ValueListenableBuilder<Duration>(
+            valueListenable: _elapsed,
+            builder: (context, elapsed, _) {
+              final left = VoiceRecordScreen.listenFor - elapsed;
+              return Text(
+                  '${l.voiceTimer(_fmt(elapsed), left.inSeconds < 0 ? 0 : left.inSeconds)}\n${l.voiceAutoStop}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: _muted, fontSize: 13, height: 1.4));
+            },
+          ),
       ],
       if (_phase == _Phase.error && _error != null) ...[
         Text(_problemText(_error!),
@@ -326,38 +405,6 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
               style: const TextStyle(color: _muted, fontSize: 12)),
         ],
       ],
-      const SizedBox(height: 28),
-      if (listening)
-        FilledButton.icon(
-            style: brandButtonStyle().copyWith(
-                minimumSize: const WidgetStatePropertyAll(Size.fromHeight(56))),
-            onPressed: _finish,
-            icon: const Icon(Icons.check_rounded),
-            label: Text(l.voiceDone,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w800, fontSize: 17))),
-      if (canRetry)
-        FilledButton.icon(
-            style: brandButtonStyle().copyWith(
-                minimumSize: const WidgetStatePropertyAll(Size.fromHeight(56))),
-            onPressed: _start,
-            icon: const Icon(Icons.mic),
-            label: Text(l.voiceAgain,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w800, fontSize: 17))),
-      if (listening || _phase == _Phase.error) ...[
-        const SizedBox(height: 10),
-        OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-                foregroundColor: HeyHelpyTheme.link,
-                minimumSize: const Size.fromHeight(50)),
-            onPressed: _typeInstead,
-            icon: const Icon(Icons.keyboard_alt_outlined),
-            label: Text(l.voiceTypeInstead,
-                style: const TextStyle(fontWeight: FontWeight.w700))),
-      ],
-      const SizedBox(height: 8),
-      if (_phase != _Phase.processing) _cancel(),
     ]);
   }
 
@@ -376,14 +423,18 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
         ),
         BottomActionBar(
           maxWidth: 520,
-          child: FilledButton(
-              style: brandButtonStyle().copyWith(
-                  minimumSize:
-                      const WidgetStatePropertyAll(Size.fromHeight(56))),
-              onPressed: _submitTyped,
-              child: Text(context.l10n.voiceNext,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 17))),
+          // «Далее» неактивна, пока поле пустое.
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _typeC,
+            builder: (context, v, _) => FilledButton(
+                style: brandButtonStyle().copyWith(
+                    minimumSize:
+                        const WidgetStatePropertyAll(Size.fromHeight(56))),
+                onPressed: v.text.trim().isEmpty ? null : _submitTyped,
+                child: Text(context.l10n.voiceNext,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 17))),
+          ),
         ),
       ]);
 
@@ -399,6 +450,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
           const SizedBox(height: 14),
           TextField(
             controller: _typeC,
+            focusNode: _typeFocus,
             autofocus: true,
             minLines: 4,
             maxLines: 8,
@@ -407,6 +459,16 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
                 hintText: l.voiceTypeHint,
                 hintMaxLines: 3,
                 border: const OutlineInputBorder()),
+          ),
+          // Подсказка обычным текстом под полем, пока оно пустое.
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _typeC,
+            builder: (context, v, _) => v.text.trim().isEmpty
+                ? Padding(
+                    padding: const EdgeInsetsDirectional.only(top: 8),
+                    child: Text(l.formWhatRequired,
+                        style: const TextStyle(color: _muted, fontSize: 13)))
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
@@ -501,7 +563,7 @@ class _MicCircle extends StatelessWidget {
       required this.busy,
       this.onTap});
   final Animation<double> pulse;
-  final double level;
+  final ValueListenable<double> level;
   final bool active, busy;
   final VoidCallback? onTap;
 
@@ -512,19 +574,26 @@ class _MicCircle extends StatelessWidget {
       width: 200,
       height: 200,
       child: Stack(alignment: Alignment.center, children: [
-        if (active)
-          AnimatedBuilder(
-            animation: pulse,
-            builder: (_, __) => Stack(alignment: Alignment.center, children: [
-              for (final shift in const [0.0, 0.5])
-                _wave(((pulse.value + shift) % 1.0), level),
-            ]),
+        // Волны и фон — только картинка: нажатия не перехватывают.
+        IgnorePointer(
+          child: AnimatedBuilder(
+            animation: Listenable.merge([pulse, level]),
+            builder: (_, __) {
+              final l = level.value;
+              return Stack(alignment: Alignment.center, children: [
+                if (active)
+                  for (final shift in const [0.0, 0.5])
+                    _wave(((pulse.value + shift) % 1.0), l),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 120),
+                  width: active ? 132 + 40 * l : 132,
+                  height: active ? 132 + 40 * l : 132,
+                  decoration:
+                      const BoxDecoration(color: _mint, shape: BoxShape.circle),
+                ),
+              ]);
+            },
           ),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          width: active ? 132 + 40 * level : 132,
-          height: active ? 132 + 40 * level : 132,
-          decoration: const BoxDecoration(color: _mint, shape: BoxShape.circle),
         ),
         Material(
           color: brand,

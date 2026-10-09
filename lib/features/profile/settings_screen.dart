@@ -7,6 +7,7 @@ import '../../core/theme.dart';
 import '../../core/ui.dart';
 import '../../models/profile.dart';
 import 'profile_repository.dart';
+import '../../core/app_message.dart';
 
 const _muted = Color(0xFF8A9098);
 
@@ -44,8 +45,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
-  void _toast(String text) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  void _toast(String text, {AppMessageType type = AppMessageType.info}) =>
+      showAppMessage(context, text, type: type);
 
   Future<void> _saveProfile() async {
     final l = context.l10n;
@@ -54,10 +55,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await _repo.updateMe(fullName: _name.text, phone: _phone.text);
       _changed = true;
-      _toast(l.settingsSaved);
+      _toast(l.settingsSaved, type: AppMessageType.success);
     } catch (e) {
       debugPrint('Settings profile: $e');
-      _toast(l.settingsSaveFailed);
+      _toast(l.settingsSaveFailed, type: AppMessageType.error);
     } finally {
       if (mounted) setState(() => _savingProfile = false);
     }
@@ -83,7 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _repo.changePassword(p);
       _pass.clear();
       _pass2.clear();
-      _toast(l.settingsPasswordChanged);
+      _toast(l.settingsPasswordChanged, type: AppMessageType.success);
     } catch (e) {
       debugPrint('Settings password: $e');
       if (mounted) setState(() => _passError = l.settingsPasswordFailed);

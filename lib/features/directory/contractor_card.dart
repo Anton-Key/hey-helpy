@@ -9,6 +9,7 @@ import '../reports/reports_screen.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'directory.dart';
+import '../../core/app_message.dart';
 
 const _ink = Color(0xFF1C1E22);
 const _muted = Color(0xFF8A9098);
@@ -71,10 +72,8 @@ class _ContractorCardScreenState extends State<ContractorCardScreen> {
     }
   }
 
-  void _snack(String m) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
-    }
+  void _snack(String m, {AppMessageType type = AppMessageType.info}) {
+    if (mounted) showAppMessage(context, m, type: type);
   }
 
   Future<void> _editNorm(Binding b) async {
@@ -89,10 +88,10 @@ class _ContractorCardScreenState extends State<ContractorCardScreen> {
     try {
       await _dir.setVisitNorm(b.id, result.value);
       await _load();
-      _snack(l.toastSaved);
+      _snack(l.toastSaved, type: AppMessageType.success);
     } catch (e) {
       debugPrint('setVisitNorm: $e');
-      _snack(l.saveFailed);
+      _snack(l.saveFailed, type: AppMessageType.error);
     }
   }
 

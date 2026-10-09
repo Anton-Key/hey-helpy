@@ -646,5 +646,11 @@
   "voiceErrorCode": "код: {code}",
   "@voiceErrorCode": {"placeholders": {"code": {"type": "String"}}},
   "voiceMicSilent": "Микрофон не слышит звук — проверьте, какой микрофон выбран",
-  "voiceBrowserHint": "Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge"
+  "voiceBrowserHint": "Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge",
+  "detailMore": "Ещё",
+  "actionDelete": "Удалить",
+  "deleteOrderConfirm": "Удалить заявку безвозвратно? История, фото и отчёты по ней исчезнут. Если работа просто не нужна — лучше «Отменить».",
+  "toastDeleted": "Заявка удалена",
+  "deleteOrderDenied": "Удалять заявки может только менеджер. Заявка не удалена.",
+  "deleteOrderFailed": "Не удалось удалить заявку. Проверьте интернет и попробуйте ещё раз."
 }

@@ -1442,4 +1442,25 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get voiceBrowserHint =>
       'Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge';
+
+  @override
+  String get detailMore => 'Ещё';
+
+  @override
+  String get actionDelete => 'Удалить';
+
+  @override
+  String get deleteOrderConfirm =>
+      'Удалить заявку безвозвратно? История, фото и отчёты по ней исчезнут. Если работа просто не нужна — лучше «Отменить».';
+
+  @override
+  String get toastDeleted => 'Заявка удалена';
+
+  @override
+  String get deleteOrderDenied =>
+      'Удалять заявки может только менеджер. Заявка не удалена.';
+
+  @override
+  String get deleteOrderFailed =>
+      'Не удалось удалить заявку. Проверьте интернет и попробуйте ещё раз.';
 }

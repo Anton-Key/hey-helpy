@@ -12,6 +12,7 @@ import '../directory/directory.dart';
 import '../onboarding/onboarding_repository.dart';
 import '../onboarding/onboarding_screen.dart';
 import 'profile_repository.dart';
+import '../../core/app_message.dart';
 
 const _muted = Color(0xFF8A9098);
 const _danger = Color(0xFFC24444);
@@ -87,8 +88,8 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
     }
   }
 
-  void _toast(String text) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  void _toast(String text, {AppMessageType type = AppMessageType.info}) =>
+      showAppMessage(context, text, type: type);
 
   // ---------------------------------------------------------------------
   // Название компании
@@ -121,14 +122,14 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
     try {
       final ok = await _repo.renameCompany(_me.companyId!, name);
       if (!ok) {
-        _toast(l.companyRenameUnavailable);
+        _toast(l.companyRenameUnavailable, type: AppMessageType.error);
         return;
       }
-      _toast(l.companyRenamed);
+      _toast(l.companyRenamed, type: AppMessageType.success);
       await _load();
     } catch (e) {
       debugPrint('Company rename: $e');
-      _toast(l.companyRenameUnavailable);
+      _toast(l.companyRenameUnavailable, type: AppMessageType.error);
     }
   }
 
@@ -180,13 +181,13 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
     if (chosen == null || chosen == m.role) return;
     try {
       await _onb.setMemberRole(m.id, chosen.name);
-      _toast(l.companyRoleChanged);
+      _toast(l.companyRoleChanged, type: AppMessageType.success);
       await _load();
     } on OnboardingException catch (e) {
-      _toast(onboardingErrorText(l, e.error));
+      _toast(onboardingErrorText(l, e.error), type: AppMessageType.error);
     } catch (e) {
       debugPrint('Role: $e');
-      _toast(l.errorGeneric);
+      _toast(l.errorGeneric, type: AppMessageType.error);
     }
   }
 
@@ -261,7 +262,7 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
       if (mounted) await _showInvite(invite);
     } catch (e) {
       debugPrint('Invite: $e');
-      _toast(l.inviteFailed);
+      _toast(l.inviteFailed, type: AppMessageType.error);
     }
   }
 
@@ -277,7 +278,7 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
 
   Future<void> _copy(String text, String done) async {
     await Clipboard.setData(ClipboardData(text: text));
-    _toast(done);
+    _toast(done, type: AppMessageType.success);
   }
 
   /// Готовое приглашение: код, ссылка, «скопировать», «отозвать».
@@ -344,11 +345,11 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
     if (revoke != true) return;
     try {
       await _repo.revokeInvite(i.id);
-      _toast(l.inviteRevoked);
+      _toast(l.inviteRevoked, type: AppMessageType.success);
       await _load();
     } catch (e) {
       debugPrint('Invite revoke: $e');
-      _toast(l.errorGeneric);
+      _toast(l.errorGeneric, type: AppMessageType.error);
     }
   }
 

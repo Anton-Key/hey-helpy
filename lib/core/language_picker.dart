@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'l10n_ext.dart';
 import 'locale_controller.dart';
+import 'app_message.dart';
 
 const _line = Color(0xFFE8EAED);
 
@@ -44,8 +45,8 @@ Future<void> pickLanguage(BuildContext context) async {
   if (chosen == null || chosen == controller.locale) return;
   final synced = await controller.select(chosen);
   if (!synced && context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.profileLanguageNotSynced)));
+    showAppMessage(context, context.l10n.profileLanguageNotSynced,
+        type: AppMessageType.error);
   }
 }
 

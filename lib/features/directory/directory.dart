@@ -6,6 +6,7 @@ import '../../core/theme.dart';
 import '../../core/ui.dart';
 import 'contractor_card.dart';
 import 'object_card.dart';
+import '../../core/app_message.dart';
 
 class Obj {
   final String id;
@@ -461,7 +462,7 @@ class _ObjectsTabState extends State<ObjectsTab> {
   Future<void> _openForm(BuildContext context) async {
     final l = context.l10n;
     if (_companyId == null) {
-      _snack(l.requestsNoCompany);
+      _snack(l.requestsNoCompany, type: AppMessageType.error);
       return;
     }
     final nameC = TextEditingController();
@@ -511,7 +512,7 @@ class _ObjectsTabState extends State<ObjectsTab> {
                 if (ctx.mounted) Navigator.pop(ctx, true);
               } catch (e) {
                 debugPrint('addObject: $e');
-                _snack(l.saveFailed);
+                _snack(l.saveFailed, type: AppMessageType.error);
               }
             },
           ),
@@ -520,14 +521,12 @@ class _ObjectsTabState extends State<ObjectsTab> {
     );
     if (saved == true) {
       _reload();
-      _snack(l.objectAdded);
+      _snack(l.objectAdded, type: AppMessageType.success);
     }
   }
 
-  void _snack(String m) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
-    }
+  void _snack(String m, {AppMessageType type = AppMessageType.info}) {
+    if (mounted) showAppMessage(context, m, type: type);
   }
 }
 
@@ -617,7 +616,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
   Future<void> _openForm(BuildContext context) async {
     final l = context.l10n;
     if (_companyId == null) {
-      _snack(l.requestsNoCompany);
+      _snack(l.requestsNoCompany, type: AppMessageType.error);
       return;
     }
     final nameC = TextEditingController();
@@ -647,7 +646,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
               if (ctx.mounted) Navigator.pop(ctx, true);
             } catch (e) {
               debugPrint('addContractor: $e');
-              _snack(l.saveFailed);
+              _snack(l.saveFailed, type: AppMessageType.error);
             }
           },
         ),
@@ -655,14 +654,12 @@ class _ContractorsTabState extends State<ContractorsTab> {
     );
     if (saved == true) {
       _reload();
-      _snack(l.contractorAdded);
+      _snack(l.contractorAdded, type: AppMessageType.success);
     }
   }
 
-  void _snack(String m) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
-    }
+  void _snack(String m, {AppMessageType type = AppMessageType.info}) {
+    if (mounted) showAppMessage(context, m, type: type);
   }
 }
 

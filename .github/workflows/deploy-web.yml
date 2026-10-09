@@ -57,6 +57,7 @@ jobs:
           --base-href /hey-helpy/
           --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          --dart-define=MAP_TILE_KEY=${{ secrets.MAP_TILE_KEY }}
 
       # Если адрес внутри приложения открыть напрямую — Pages отдаст приложение, а не ошибку.
       - run: cp build/web/index.html build/web/404.html

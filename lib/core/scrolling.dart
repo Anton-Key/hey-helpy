@@ -219,6 +219,8 @@ class _ScrollKeyAction extends Action<ScrollKeyIntent> {
       binding.hitTestInView(result, point, view.viewId);
       for (final entry in result.path) {
         final target = entry.target;
+        // Под мышью карта — клавиши ей (или ничего), список не трогаем.
+        if (target is RenderKeyboardScrollBlocker) return null;
         if (target is RenderObject) {
           final s = byBox[target];
           if (s != null) return s.position;
@@ -228,3 +230,16 @@ class _ScrollKeyAction extends Action<ScrollKeyIntent> {
     return null;
   }
 }
+
+/// Область, над которой [KeyboardScrolling] не прокручивает списки:
+/// например, карта — над ней стрелки двигают саму карту (когда она в фокусе)
+/// или ничего не делают.
+class KeyboardScrollBlocker extends SingleChildRenderObjectWidget {
+  const KeyboardScrollBlocker({super.key, super.child});
+
+  @override
+  RenderKeyboardScrollBlocker createRenderObject(BuildContext context) =>
+      RenderKeyboardScrollBlocker();
+}
+
+class RenderKeyboardScrollBlocker extends RenderProxyBox {}

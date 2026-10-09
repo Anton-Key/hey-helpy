@@ -2588,6 +2588,240 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не удалось удалить заявку. Проверьте интернет и попробуйте ещё раз.'**
   String get deleteOrderFailed;
+
+  /// No description provided for @mapViewList.
+  ///
+  /// In ru, this message translates to:
+  /// **'Список'**
+  String get mapViewList;
+
+  /// No description provided for @mapViewMap.
+  ///
+  /// In ru, this message translates to:
+  /// **'Карта'**
+  String get mapViewMap;
+
+  /// No description provided for @mapZoomIn.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приблизить'**
+  String get mapZoomIn;
+
+  /// No description provided for @mapZoomOut.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отдалить'**
+  String get mapZoomOut;
+
+  /// No description provided for @mapFitAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать все объекты'**
+  String get mapFitAll;
+
+  /// No description provided for @mapMyLocation.
+  ///
+  /// In ru, this message translates to:
+  /// **'Где я'**
+  String get mapMyLocation;
+
+  /// No description provided for @mapMyLocationFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось определить, где вы. Включите геолокацию и разрешите её приложению.'**
+  String get mapMyLocationFailed;
+
+  /// No description provided for @mapSelectArea.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выделить область'**
+  String get mapSelectArea;
+
+  /// No description provided for @mapSelectAreaHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Протяните рамку по карте'**
+  String get mapSelectAreaHint;
+
+  /// No description provided for @mapSearchHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Искать в этой области'**
+  String get mapSearchHere;
+
+  /// No description provided for @mapInArea.
+  ///
+  /// In ru, this message translates to:
+  /// **'В области: {count, plural, =0{нет объектов} one{{count} объект} few{{count} объекта} many{{count} объектов} other{{count} объекта}}'**
+  String mapInArea(int count);
+
+  /// No description provided for @mapInRect.
+  ///
+  /// In ru, this message translates to:
+  /// **'В выделенной области: {count, plural, =0{нет объектов} one{{count} объект} few{{count} объекта} many{{count} объектов} other{{count} объекта}}'**
+  String mapInRect(int count);
+
+  /// No description provided for @mapNearby.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рядом, до {radius}: {count, plural, =0{нет объектов} one{{count} объект} few{{count} объекта} many{{count} объектов} other{{count} объекта}}'**
+  String mapNearby(int count, String radius);
+
+  /// No description provided for @mapReset.
+  ///
+  /// In ru, this message translates to:
+  /// **'сбросить'**
+  String get mapReset;
+
+  /// No description provided for @mapNearbyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объекты рядом'**
+  String get mapNearbyTitle;
+
+  /// No description provided for @mapKm.
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} км'**
+  String mapKm(String value);
+
+  /// No description provided for @mapNearbyHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правый клик или долгое нажатие на карте — объекты рядом. Shift + перетаскивание — выделить область.'**
+  String get mapNearbyHelp;
+
+  /// No description provided for @mapNoCoordinates.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без места на карте ({count})'**
+  String mapNoCoordinates(int count);
+
+  /// No description provided for @mapSetOnMap.
+  ///
+  /// In ru, this message translates to:
+  /// **'Указать на карте'**
+  String get mapSetOnMap;
+
+  /// No description provided for @mapMoveOnMap.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить место на карте'**
+  String get mapMoveOnMap;
+
+  /// No description provided for @mapPlaceHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Передвиньте карту: перекрестие — на «{name}»'**
+  String mapPlaceHint(String name);
+
+  /// No description provided for @mapSaveHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить здесь'**
+  String get mapSaveHere;
+
+  /// No description provided for @mapPlaceSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Место на карте сохранено'**
+  String get mapPlaceSaved;
+
+  /// No description provided for @mapOpenObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть объект'**
+  String get mapOpenObject;
+
+  /// No description provided for @mapOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявки'**
+  String get mapOrders;
+
+  /// No description provided for @mapCreateHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать заявку здесь'**
+  String get mapCreateHere;
+
+  /// No description provided for @mapCountNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новые'**
+  String get mapCountNew;
+
+  /// No description provided for @mapCountInWork.
+  ///
+  /// In ru, this message translates to:
+  /// **'В работе'**
+  String get mapCountInWork;
+
+  /// No description provided for @mapCountOnReview.
+  ///
+  /// In ru, this message translates to:
+  /// **'На проверке'**
+  String get mapCountOnReview;
+
+  /// No description provided for @mapCountOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просрочено'**
+  String get mapCountOverdue;
+
+  /// No description provided for @mapOpenOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =0{Открытых заявок нет} one{{count} открытая заявка} few{{count} открытые заявки} many{{count} открытых заявок} other{{count} открытой заявки}}'**
+  String mapOpenOrders(int count);
+
+  /// No description provided for @mapSearchHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск по названию и адресу'**
+  String get mapSearchHint;
+
+  /// No description provided for @mapNothingFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не найдено'**
+  String get mapNothingFound;
+
+  /// No description provided for @mapListTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объекты на карте ({count})'**
+  String mapListTitle(int count);
+
+  /// No description provided for @mapOrdersFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить заявки — числа на маркерах могут быть неточными.'**
+  String get mapOrdersFailed;
+
+  /// No description provided for @mapClose.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закрыть'**
+  String get mapClose;
+
+  /// No description provided for @mapCluster.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объектов: {count}. Нажмите, чтобы приблизить'**
+  String mapCluster(int count);
+
+  /// No description provided for @requestsFilterObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект: {name}'**
+  String requestsFilterObject(String name);
+
+  /// No description provided for @requestsFilterClear.
+  ///
+  /// In ru, this message translates to:
+  /// **'Снять фильтр'**
+  String get requestsFilterClear;
 }
 
 class _AppLocalizationsDelegate

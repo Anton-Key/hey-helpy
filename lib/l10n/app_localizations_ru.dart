@@ -1463,4 +1463,180 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get deleteOrderFailed =>
       'Не удалось удалить заявку. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get mapViewList => 'Список';
+
+  @override
+  String get mapViewMap => 'Карта';
+
+  @override
+  String get mapZoomIn => 'Приблизить';
+
+  @override
+  String get mapZoomOut => 'Отдалить';
+
+  @override
+  String get mapFitAll => 'Показать все объекты';
+
+  @override
+  String get mapMyLocation => 'Где я';
+
+  @override
+  String get mapMyLocationFailed =>
+      'Не удалось определить, где вы. Включите геолокацию и разрешите её приложению.';
+
+  @override
+  String get mapSelectArea => 'Выделить область';
+
+  @override
+  String get mapSelectAreaHint => 'Протяните рамку по карте';
+
+  @override
+  String get mapSearchHere => 'Искать в этой области';
+
+  @override
+  String mapInArea(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count объекта',
+      many: '$count объектов',
+      few: '$count объекта',
+      one: '$count объект',
+      zero: 'нет объектов',
+    );
+    return 'В области: $_temp0';
+  }
+
+  @override
+  String mapInRect(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count объекта',
+      many: '$count объектов',
+      few: '$count объекта',
+      one: '$count объект',
+      zero: 'нет объектов',
+    );
+    return 'В выделенной области: $_temp0';
+  }
+
+  @override
+  String mapNearby(int count, String radius) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count объекта',
+      many: '$count объектов',
+      few: '$count объекта',
+      one: '$count объект',
+      zero: 'нет объектов',
+    );
+    return 'Рядом, до $radius: $_temp0';
+  }
+
+  @override
+  String get mapReset => 'сбросить';
+
+  @override
+  String get mapNearbyTitle => 'Объекты рядом';
+
+  @override
+  String mapKm(String value) {
+    return '$value км';
+  }
+
+  @override
+  String get mapNearbyHelp =>
+      'Правый клик или долгое нажатие на карте — объекты рядом. Shift + перетаскивание — выделить область.';
+
+  @override
+  String mapNoCoordinates(int count) {
+    return 'Без места на карте ($count)';
+  }
+
+  @override
+  String get mapSetOnMap => 'Указать на карте';
+
+  @override
+  String get mapMoveOnMap => 'Изменить место на карте';
+
+  @override
+  String mapPlaceHint(String name) {
+    return 'Передвиньте карту: перекрестие — на «$name»';
+  }
+
+  @override
+  String get mapSaveHere => 'Сохранить здесь';
+
+  @override
+  String get mapPlaceSaved => 'Место на карте сохранено';
+
+  @override
+  String get mapOpenObject => 'Открыть объект';
+
+  @override
+  String get mapOrders => 'Заявки';
+
+  @override
+  String get mapCreateHere => 'Создать заявку здесь';
+
+  @override
+  String get mapCountNew => 'Новые';
+
+  @override
+  String get mapCountInWork => 'В работе';
+
+  @override
+  String get mapCountOnReview => 'На проверке';
+
+  @override
+  String get mapCountOverdue => 'Просрочено';
+
+  @override
+  String mapOpenOrders(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count открытой заявки',
+      many: '$count открытых заявок',
+      few: '$count открытые заявки',
+      one: '$count открытая заявка',
+      zero: 'Открытых заявок нет',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapSearchHint => 'Поиск по названию и адресу';
+
+  @override
+  String get mapNothingFound => 'Ничего не найдено';
+
+  @override
+  String mapListTitle(int count) {
+    return 'Объекты на карте ($count)';
+  }
+
+  @override
+  String get mapOrdersFailed =>
+      'Не удалось загрузить заявки — числа на маркерах могут быть неточными.';
+
+  @override
+  String get mapClose => 'Закрыть';
+
+  @override
+  String mapCluster(int count) {
+    return 'Объектов: $count. Нажмите, чтобы приблизить';
+  }
+
+  @override
+  String requestsFilterObject(String name) {
+    return 'Объект: $name';
+  }
+
+  @override
+  String get requestsFilterClear => 'Снять фильтр';
 }

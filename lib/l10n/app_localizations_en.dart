@@ -1454,4 +1454,172 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteOrderFailed =>
       'Couldn\'t delete the request. Check your connection and try again.';
+
+  @override
+  String get mapViewList => 'List';
+
+  @override
+  String get mapViewMap => 'Map';
+
+  @override
+  String get mapZoomIn => 'Zoom in';
+
+  @override
+  String get mapZoomOut => 'Zoom out';
+
+  @override
+  String get mapFitAll => 'Show all locations';
+
+  @override
+  String get mapMyLocation => 'My location';
+
+  @override
+  String get mapMyLocationFailed =>
+      'Couldn\'t find your location. Turn on location services and allow the app to use them.';
+
+  @override
+  String get mapSelectArea => 'Select area';
+
+  @override
+  String get mapSelectAreaHint => 'Drag a box on the map';
+
+  @override
+  String get mapSearchHere => 'Search this area';
+
+  @override
+  String mapInArea(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count locations',
+      one: '$count location',
+      zero: 'no locations',
+    );
+    return 'In this area: $_temp0';
+  }
+
+  @override
+  String mapInRect(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count locations',
+      one: '$count location',
+      zero: 'no locations',
+    );
+    return 'In the selected area: $_temp0';
+  }
+
+  @override
+  String mapNearby(int count, String radius) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count locations',
+      one: '$count location',
+      zero: 'no locations',
+    );
+    return 'Within $radius: $_temp0';
+  }
+
+  @override
+  String get mapReset => 'reset';
+
+  @override
+  String get mapNearbyTitle => 'Nearby locations';
+
+  @override
+  String mapKm(String value) {
+    return '$value km';
+  }
+
+  @override
+  String get mapNearbyHelp =>
+      'Right-click or long-press the map to find nearby locations. Shift + drag selects an area.';
+
+  @override
+  String mapNoCoordinates(int count) {
+    return 'Not on the map ($count)';
+  }
+
+  @override
+  String get mapSetOnMap => 'Set on map';
+
+  @override
+  String get mapMoveOnMap => 'Move on map';
+
+  @override
+  String mapPlaceHint(String name) {
+    return 'Move the map so the crosshair is on “$name”';
+  }
+
+  @override
+  String get mapSaveHere => 'Save here';
+
+  @override
+  String get mapPlaceSaved => 'Map location saved';
+
+  @override
+  String get mapOpenObject => 'Open location';
+
+  @override
+  String get mapOrders => 'Requests';
+
+  @override
+  String get mapCreateHere => 'New request here';
+
+  @override
+  String get mapCountNew => 'New';
+
+  @override
+  String get mapCountInWork => 'In progress';
+
+  @override
+  String get mapCountOnReview => 'In review';
+
+  @override
+  String get mapCountOverdue => 'Overdue';
+
+  @override
+  String mapOpenOrders(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open requests',
+      one: '$count open request',
+      zero: 'No open requests',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapSearchHint => 'Search by name or address';
+
+  @override
+  String get mapNothingFound => 'Nothing found';
+
+  @override
+  String mapListTitle(int count) {
+    return 'Locations on the map ($count)';
+  }
+
+  @override
+  String get mapOrdersFailed =>
+      'Couldn\'t load requests — marker numbers may be inaccurate.';
+
+  @override
+  String get mapClose => 'Close';
+
+  @override
+  String mapCluster(int count) {
+    return '$count locations. Tap to zoom in';
+  }
+
+  @override
+  String requestsFilterObject(String name) {
+    return 'Location: $name';
+  }
+
+  @override
+  String get requestsFilterClear => 'Clear filter';
 }

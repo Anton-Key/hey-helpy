@@ -35,6 +35,102 @@ const DEMO_TITLES = [...readFileSync(join(ROOT, 'supabase/seed/demo_history.sql'
 const ASSIGNABLE = /(Новая|Назначена|Возвращена)\s*$/;
 
 // ---------------------------------------------------------------------------
+// Карта «Локации»: объекты шага 13 из demo_history.sql (id …011–014, заявки 211–220).
+// Пока Refresh demo после merge не запущен, их нет в базе — тогда снимки карты
+// менеджера показывают их как ПРЕДПРОСМОТР: Playwright добавляет эти записи
+// в ответ сервера (только в браузере, база не меняется), в README — пометка.
+// ---------------------------------------------------------------------------
+const SEED = readFileSync(join(ROOT, 'supabase/seed/demo_history.sql'), 'utf8');
+const SEED_IDS = Object.fromEntries([...SEED.matchAll(/(c_obj_\w+)\s+constant uuid := '([0-9a-f-]+)'/g)]
+  .map((m) => [m[1], m[2]]));
+const SEED_OBJECTS = [...SEED.matchAll(
+  /\((c_obj_\w+),\s*c_company,\s*'([^']+)',\s*'(\w+)',\s*'([^']+)',\s*([\d.]+),\s*([\d.]+),\s*(\d+)\)/g)]
+  .map((m) => ({ id: SEED_IDS[m[1]], company_id: 'de300000-0000-4000-8000-000000000001', name: m[2],
+    type: m[3], address: m[4], lat: +m[5], lng: +m[6], geofence_radius_m: +m[7],
+    created_at: '2026-10-01T00:00:00Z' }));
+const uuid = (n) => 'de300000-0000-4000-8000-' + String(n).padStart(12, '0');
+const SEED_PLACE_OBJ = Object.fromEntries([...SEED.matchAll(/^\s*\((\d{2}), (\d{2}), '[^']+'\)/gm)]
+  .map((m) => [m[1], uuid(m[2])]));
+const SEED_ORDERS = [...SEED.matchAll(
+  /^\s*\((2[1-4]\d),'\w+','(\d+)','(?:[^']|'')*','(?:[^']|'')*','(\w+)','(\w+)','\w+','\w+',(\d+),(\d+),(?:null|\d+),(?:null|\d+),(?:null|\d+),(\d+),/gm)]
+  .map((m) => {
+    const today = new Date(); today.setUTCHours(0, 0, 0, 0);
+    const created = today.getTime() - +m[5] * 864e5 + +m[6] * 36e5;
+    return { id: uuid(m[1]), object_id: SEED_PLACE_OBJ[m[2]], priority: m[3], status: m[4],
+      due_at: new Date(created + +m[7] * 36e5).toISOString() };
+  });
+let mapPreview = false;
+
+// Подмешать объекты и заявки шага 13 в ответы сервера (если их ещё нет в базе).
+async function routeMapPreview(page) {
+  mapPreview = false;
+  const merge = (extra) => async (route) => {
+    const url = decodeURIComponent(route.request().url());
+    const res = await route.fetch();
+    let body = await res.text();
+    try {
+      const rows = JSON.parse(body);
+      const listQuery = Array.isArray(rows) && !/[?&]id=eq\./.test(url) &&
+        (!url.includes('work_orders') || url.includes('select=id,object_id,status,priority,due_at'));
+      if (listQuery && !rows.some((r) => r.id === extra[0].id)) {
+        body = JSON.stringify([...rows, ...extra]);
+        mapPreview = true;
+      }
+    } catch {}
+    await route.fulfill({ response: res, body });
+  };
+  await page.route('**/rest/v1/objects?*', merge(SEED_OBJECTS));
+  await page.route('**/rest/v1/work_orders?*', merge(SEED_ORDERS));
+}
+
+async function unrouteMapPreview(page) {
+  await page.unroute('**/rest/v1/objects?*');
+  await page.unroute('**/rest/v1/work_orders?*');
+}
+
+// Ждать, пока загрузятся плитки подложки (CARTO или OSM): нет запросов в полёте 1,5 с.
+async function waitTiles(page, timeout = 25000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    if (page.tilesPending === 0 && Date.now() - page.tilesLastDone > 1500 && page.tilesLoaded > 0) return;
+    await page.waitForTimeout(250);
+  }
+  if (!page.tilesLoaded) throw new Error('Плитки карты не загрузились (нет доступа к серверу плиток?)');
+}
+
+function trackTiles(page) {
+  page.tilesPending = 0;
+  page.tilesLoaded = 0;
+  page.tilesLastDone = 0;
+  const isTile = (r) => /basemaps\.cartocdn\.com|tile\.openstreetmap\.org/.test(r.url());
+  page.on('request', (r) => { if (isTile(r)) page.tilesPending++; });
+  const done = (ok) => (r) => {
+    if (!isTile(r)) return;
+    page.tilesPending = Math.max(0, page.tilesPending - 1);
+    page.tilesLastDone = Date.now();
+    if (ok) page.tilesLoaded++;
+  };
+  page.on('requestfinished', done(true));
+  page.on('requestfailed', done(false));
+}
+
+// Вкладка «Локации» → «Карта».
+async function openMap(page, preview) {
+  if (preview) await routeMapPreview(page);
+  await home(page);
+  await nav(page, 'Локации').click();
+  await settle(page, 1200);
+  await page.getByRole('button', { name: 'Карта', exact: true }).first().click();
+  await see(page, /Объекты на карте|Поиск по названию/).waitFor({ timeout: 20000 });
+  await settle(page, 1500);
+  await waitTiles(page);
+}
+
+const previewNote = (text) => (mapPreview
+  ? `${text}. ПРЕДПРОСМОТР: 4 объекта и 10 заявок шага 13 подставлены в ответ сервера из demo_history.sql — в базе появятся после Refresh demo`
+  : text);
+
+// ---------------------------------------------------------------------------
 // Логины: .env.demo (KEY=VALUE, строки с # — комментарии)
 // ---------------------------------------------------------------------------
 const ENV_FILE = join(ROOT, '.env.demo');
@@ -362,6 +458,97 @@ const SCREENS = [
       await nav(p, 'Локации').click();
       await settle(p, 2500);
     } },
+  // Карта объектов (шаг 13). После снимков вкладка возвращается в «Список»
+  // (в конце map-orders; у исполнителя и заявителя режим остаётся только в их браузере).
+  { key: 'map', jpeg: true, title: 'Локации — карта, все объекты', run: async (p) => {
+      // Предпросмотр — только у менеджера: исполнитель и заявитель видят то, что есть в базе.
+      await openMap(p, p.role === 'manager');
+      return previewNote('все объекты, маркер — число открытых заявок');
+    }, after: async (p) => { await unrouteMapPreview(p); } },
+  { key: 'map-selected', jpeg: true, title: 'Локации — карта, выбранный объект', managerOnly: true, run: async (p) => {
+      await openMap(p, true);
+      const name = SEED_OBJECTS[0]?.name ?? 'БЦ «Демо»';
+      const row = p.getByRole('button', { name }).first();
+      await (await row.count() ? row : p.getByRole('button', { name: 'БЦ «Демо»' }).first()).click();
+      await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
+      await settle(p, 1500);
+      await waitTiles(p);
+      return previewNote('карточка объекта, круг геозоны');
+    }, after: async (p) => { await unrouteMapPreview(p); } },
+  { key: 'map-area', jpeg: true, title: 'Локации — карта, выделенная область', managerOnly: true, run: async (p) => {
+      await openMap(p, true);
+      await btn(p, 'Выделить область').click();
+      await see(p, 'Протяните рамку по карте').waitFor({ timeout: 5000 });
+      const vp = p.viewportSize();
+      const wide = vp.width >= 900;
+      // Рамка — внутри карты, мимо кнопок справа и подсказки слева сверху
+      // (на телефоне — над панелью списка).
+      const [x0, y0, x1, y1] = wide
+        ? [560, 250, 1060, 620]
+        : [30, 240, 300, 520];
+      // Протянуть рамку; если строка «сбросить» не появилась — ещё раз (бывает,
+      // что первое нажатие приходит, пока карта перерисовывается).
+      for (let attempt = 0; ; attempt++) {
+        await settle(p, 600);
+        await p.mouse.move(x0, y0);
+        await p.mouse.down();
+        for (let i = 1; i <= 10; i++) await p.mouse.move(x0 + (x1 - x0) * i / 10, y0 + (y1 - y0) * i / 10);
+        await p.mouse.up();
+        try {
+          await btn(p, 'сбросить').waitFor({ timeout: 4000 });
+          break;
+        } catch (e) {
+          if (attempt >= 1) throw e;
+          if (!(await see(p, 'Протяните рамку по карте').isVisible().catch(() => false))) {
+            await btn(p, 'Выделить область').click();
+          }
+        }
+      }
+      await settle(p, 1000);
+      return previewNote('рамка протянута мышью, список — только объекты внутри');
+    }, after: async (p) => { await unrouteMapPreview(p); } },
+  // Правый клик по карте → «Объекты рядом»: круг и ползунок радиуса.
+  { key: 'map-nearby', jpeg: true, title: 'Локации — карта, «Объекты рядом» (правый клик)', managerOnly: true, run: async (p) => {
+      await openMap(p, true);
+      const vp = p.viewportSize();
+      const [x, y] = vp.width >= 900 ? [820, 470] : [200, 420];
+      await p.mouse.click(x, y, { button: 'right' });
+      await see(p, /Объекты рядом/).waitFor({ timeout: 5000 });
+      await settle(p, 1200);
+      await waitTiles(p);
+      return previewNote('радиус 3 км, список — по удалённости');
+    }, after: async (p) => { await unrouteMapPreview(p); } },
+  // «Изменить место на карте»: перекрестие и «Сохранить здесь». Нажимается только
+  // «Отмена» — место НЕ сохраняется.
+  { key: 'map-place', jpeg: true, title: 'Локации — карта, «Изменить место на карте»', managerOnly: true, run: async (p) => {
+      await openMap(p, false);
+      await p.getByRole('button', { name: 'БЦ «Демо»' }).first().click();
+      await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
+      await btn(p, 'Изменить место на карте').click();
+      await btn(p, 'Сохранить здесь').waitFor({ timeout: 5000 });
+      await settle(p, 1200);
+      await waitTiles(p);
+      return 'перекрестие по центру; закрыто кнопкой «Отмена», место не сохранено';
+    }, after: async (p) => {
+      await btn(p, 'Отмена').click().catch(() => {});
+      await settle(p, 500);
+    } },
+  // Карточка объекта → «Заявки»: вкладка «Заявки» с фильтром по объекту (крестик снимает).
+  { key: 'map-orders', title: 'Карта → «Заявки» объекта (фильтр)', managerOnly: true, run: async (p) => {
+      await openMap(p, false);
+      await p.getByRole('button', { name: 'БЦ «Демо»' }).first().click();
+      await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
+      await settle(p, 800);
+      await p.getByRole('button', { name: 'Заявки', exact: true }).last().click();
+      await btn(p, 'Снять фильтр').waitFor({ timeout: 15000 });
+      await settle(p, 2000);
+      return 'фильтр «Объект: БЦ «Демо»» над списком, снимается крестиком';
+    }, after: async (p) => {
+      await nav(p, 'Локации').click().catch(() => {});
+      await settle(p, 800);
+      await p.getByRole('button', { name: 'Список', exact: true }).first().click().catch(() => {});
+      await settle(p, 500);
+    } },
   { key: 'profile', title: 'Профиль', run: async (p) => {
       await home(p);
       await nav(p, 'Профиль').click();
@@ -375,6 +562,10 @@ const SCREENS = [
       await settle(p, 2500);
     } },
 ];
+
+// --only=map — снять только экраны, чей ключ начинается с «map» (для отладки;
+// README тогда содержит только их).
+const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '';
 
 const RUNS = [
   { role: 'manager', label: 'Менеджер', width: 1280, height: 800 },
@@ -396,6 +587,8 @@ try {
     const ctx = await browser.newContext({
       viewport: { width: r.width, height: r.height }, locale: 'ru-RU', deviceScaleFactor: 1 });
     const page = await ctx.newPage();
+    trackTiles(page);
+    page.role = r.role;
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 200)));
     let loggedIn = true;
@@ -411,21 +604,25 @@ try {
     }
     for (const s of SCREENS) {
       if (!loggedIn) break;
+      if (ONLY && !s.key.startsWith(ONLY)) continue;
       if (s.managerOnly && r.role !== 'manager') {
         results.push({ ...r, key: s.key, title: s.title, ok: null, note: 'Нет у этой роли (так задумано)' });
         continue;
       }
-      const name = `${r.role}-${r.width}-${s.key}.png`;
+      // Карта — JPEG: плитки подложки похожи на фото, в PNG снимок весит 600–850 КБ.
+      const ext = s.jpeg ? '.jpg' : '.png';
+      const name = `${r.role}-${r.width}-${s.key}${ext}`;
+      const shot = s.jpeg ? { type: 'jpeg', quality: 80 } : {};
       try {
         const note = await s.run(page);
-        await page.screenshot({ path: join(OUT, name) });
+        await page.screenshot({ path: join(OUT, name), ...shot });
         results.push({ ...r, key: s.key, title: s.title, ok: true, file: name,
           note: typeof note === 'string' ? note : undefined });
         if (s.after) await s.after(page).catch(() => {});
       } catch (e) {
-        await page.screenshot({ path: join(OUT, name.replace('.png', '-error.png')) }).catch(() => {});
+        await page.screenshot({ path: join(OUT, name.replace(ext, '-error' + ext)), ...shot }).catch(() => {});
         if (s.after) await s.after(page).catch(() => {});
-        results.push({ ...r, key: s.key, title: s.title, ok: false, file: name.replace('.png', '-error.png'),
+        results.push({ ...r, key: s.key, title: s.title, ok: false, file: name.replace(ext, '-error' + ext),
           note: String(e.message).split('\n')[0].slice(0, 200) });
       }
     }
@@ -441,9 +638,10 @@ try {
 // Размер PNG и README с итогами
 // ---------------------------------------------------------------------------
 let big = [];
-for (const f of readdirSync(OUT).filter((f) => f.endsWith('.png'))) {
+for (const f of readdirSync(OUT).filter((f) => /\.(png|jpg)$/.test(f))) {
   const size = statSync(join(OUT, f)).size;
-  if (size > MAX_PNG) {
+  if (size > MAX_PNG && f.endsWith('.jpg')) big.push(f);
+  else if (size > MAX_PNG) {
     try { execFileSync('pngquant', ['--force', '--skip-if-larger', '--quality=60-90', '--ext', '.png', join(OUT, f)]); } catch {}
     if (statSync(join(OUT, f)).size > MAX_PNG) big.push(f);
   }

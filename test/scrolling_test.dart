@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -63,5 +64,41 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
     await tester.pumpAndSettle();
     expect(c.offset, 0);
+  });
+
+  testWidgets('над картой (KeyboardScrollBlocker) стрелки список не трогают',
+      (tester) async {
+    final c = ScrollController();
+    addTearDown(c.dispose);
+    await tester.pumpWidget(MaterialApp(
+      builder: (context, child) => KeyboardScrolling(child: child!),
+      home: Scaffold(
+        body: Row(children: [
+          Expanded(
+            child: ListView(controller: c, children: [
+              for (var i = 0; i < 100; i++)
+                SizedBox(height: 50, child: Text('row $i')),
+            ]),
+          ),
+          const Expanded(
+              child: KeyboardScrollBlocker(
+                  key: Key('map'), child: ColoredBox(color: Colors.green))),
+        ]),
+      ),
+    ));
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    await mouse.addPointer(
+        location: tester.getCenter(find.byKey(const Key('map'))));
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    expect(c.offset, 0);
+    // Мышь над списком — прокручивается он.
+    await mouse.moveTo(tester.getCenter(find.text('row 3')));
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    expect(c.offset, scrollLineStep);
   });
 }

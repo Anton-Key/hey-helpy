@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n_ext.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
+import '../map/objects_map_view.dart';
 import 'contractor_card.dart';
 import 'object_card.dart';
 import '../../core/app_message.dart';
+import '../../l10n/app_localizations.dart';
 
 class Obj {
   final String id;
@@ -352,7 +355,10 @@ const _muted = Color(0xFF8A9098);
 const _line = Color(0xFFE8EAED);
 
 class ObjectsTab extends StatefulWidget {
-  const ObjectsTab({super.key});
+  const ObjectsTab({super.key, this.onShowOrders});
+
+  /// «Заявки» в карточке объекта на карте — открыть заявки объекта.
+  final ValueChanged<Obj>? onShowOrders;
   @override
   State<ObjectsTab> createState() => _ObjectsTabState();
 }
@@ -362,6 +368,11 @@ class _ObjectsTabState extends State<ObjectsTab> {
   late Future<List<Obj>> _future;
   String? _companyId;
   bool _isManager = false;
+
+  /// Режим вкладки: список карточек или карта. Запоминается на устройстве.
+  bool _mapMode = false;
+  static const _modeKey = 'locations_view_mode';
+
   @override
   void initState() {
     super.initState();
@@ -369,13 +380,91 @@ class _ObjectsTabState extends State<ObjectsTab> {
       if (mounted) setState(() => _isManager = v);
     }, onError: (_) {});
     _future = _repo.objects();
-    _repo.myCompanyId().then((v) => setState(() => _companyId = v));
+    _repo.myCompanyId().then((v) {
+      if (mounted) setState(() => _companyId = v);
+    }, onError: (_) {});
+    _loadMode();
+  }
+
+  Future<void> _loadMode() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      final map = p.getString(_modeKey) == 'map';
+      if (mounted && map != _mapMode) setState(() => _mapMode = map);
+    } catch (_) {}
+  }
+
+  Future<void> _setMode(bool map) async {
+    setState(() => _mapMode = map);
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString(_modeKey, map ? 'map' : 'list');
+    } catch (_) {}
   }
 
   void _reload() => setState(() => _future = _repo.objects());
+
+  Future<void> _reloadAndWait() async {
+    final f = _repo.objects();
+    setState(() => _future = f);
+    try {
+      await f;
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 4),
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: SegmentedButton<bool>(
+            showSelectedIcon: false,
+            style: SegmentedButton.styleFrom(
+              selectedBackgroundColor: HeyHelpyTheme.mint,
+              selectedForegroundColor: HeyHelpyTheme.onBrand,
+              visualDensity: VisualDensity.compact,
+            ),
+            segments: [
+              ButtonSegment(
+                  value: false,
+                  icon: const Icon(Icons.view_agenda_outlined, size: 18),
+                  label: Text(l.mapViewList)),
+              ButtonSegment(
+                  value: true,
+                  icon: const Icon(Icons.map_outlined, size: 18),
+                  label: Text(l.mapViewMap)),
+            ],
+            selected: {_mapMode},
+            onSelectionChanged: (v) => _setMode(v.first),
+          ),
+        ),
+      ),
+      Expanded(child: _mapMode ? _mapView(l) : _listView(l)),
+    ]);
+  }
+
+  Widget _mapView(AppLocalizations l) => FutureBuilder<List<Obj>>(
+        future: _future,
+        builder: (context, snap) {
+          // При перечитывании остаётся прежний список — карта не сбрасывается.
+          if (!snap.hasData) {
+            if (snap.hasError) return _ErrorView(text: l.objectsLoadFailed);
+            return const Center(child: CircularProgressIndicator());
+          }
+          return ObjectsMapView(
+            objects: snap.data!,
+            isManager: _isManager,
+            companyId: _companyId,
+            onReload: _reloadAndWait,
+            onShowOrders: (o) => widget.onShowOrders?.call(o),
+          );
+        },
+      );
+
+  Widget _listView(AppLocalizations l) {
     return Stack(children: [
       FutureBuilder<List<Obj>>(
         future: _future,

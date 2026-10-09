@@ -31,6 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
   int _section = 0;
   int _tab = 0;
   Profile? _profile;
+
+  /// Фильтр «Заявки» по объекту — из карточки объекта на карте.
+  Obj? _ordersObject;
   final _notifications = NotificationRepository();
 
   /// Новых уведомлений с прошлого открытия — число у колокольчика.
@@ -158,9 +161,16 @@ class _HomeScreenState extends State<HomeScreen> {
           case 1:
             return const ContractorsTab();
           case 2:
-            return const ObjectsTab();
+            return ObjectsTab(
+                onShowOrders: (o) => setState(() {
+                      _ordersObject = o;
+                      _tab = 0;
+                    }));
           default:
-            return const RequestsTab();
+            return RequestsTab(
+                objectFilter: _ordersObject,
+                onClearObjectFilter: () =>
+                    setState(() => _ordersObject = null));
         }
     }
   }

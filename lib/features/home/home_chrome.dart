@@ -90,10 +90,17 @@ class _MainTabs extends StatelessWidget {
 /// переключатель вкладок (в разделе «Главная»).
 class HomeHeader extends StatelessWidget {
   const HomeHeader(
-      {super.key, required this.title, this.eyebrow, this.actions = const []});
+      {super.key,
+      required this.title,
+      this.eyebrow,
+      this.actions = const [],
+      this.maxWidth = AppSpace.contentMax});
   final String title;
   final String? eyebrow;
   final List<Widget> actions;
+
+  /// Как у содержимого вкладки: 720 у списков, во всю ширину — у отчётов.
+  final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +113,7 @@ class HomeHeader extends StatelessWidget {
       actions: [...actions, _Bell(chrome)],
       bottom: tabs ? _MainTabs(chrome) : null,
       bottomHeight: tabs ? _tabsHeight : 0,
+      maxWidth: maxWidth,
     );
   }
 }

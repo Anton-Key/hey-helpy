@@ -200,6 +200,26 @@ void main() {
     expect(opacities.first, 1);
   });
 
+  testWidgets('appRoute: кнопка «назад» подписана экраном, откуда пришли',
+      (t) async {
+    await t.pumpWidget(_app(Builder(
+      builder: (context) => AppButton(
+        label: 'Открыть',
+        onPressed: () => Navigator.push(
+            context,
+            appRoute(
+                (_) => const AppScaffold(title: 'Заявка', slivers: []),
+                title: 'Заявки')),
+      ),
+    )));
+    await t.tap(find.text('Открыть'));
+    await t.pumpAndSettle();
+    expect(find.text('Заявки'), findsOneWidget);
+    await t.tap(find.text('Заявки'));
+    await t.pumpAndSettle();
+    expect(find.text('Открыть'), findsOneWidget);
+  });
+
   testWidgets('AppTabBar: вкладки, активная, переключение', (t) async {
     var index = 0;
     await t.pumpWidget(_app(StatefulBuilder(
@@ -307,6 +327,9 @@ void main() {
     )));
     await t.tap(find.text('Удалить заявку'));
     await t.pumpAndSettle();
+    // Вопрос и пояснение доступны диктору, а не только кнопки.
+    expect(find.bySemanticsLabel('Удалить?'), findsOneWidget);
+    expect(find.bySemanticsLabel('Действие нельзя отменить'), findsOneWidget);
     await t.tap(find.text('Удалить'));
     await t.pumpAndSettle();
     expect(result, isTrue);

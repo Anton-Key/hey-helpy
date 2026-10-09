@@ -50,8 +50,8 @@ class FrostedBar extends StatelessWidget {
 }
 
 /// Кнопка «назад» в шапке: шеврон и подпись предыдущего экрана акцентом.
-/// Подпись — [label], иначе название предыдущего экрана (если он открыт
-/// через [appRoute] с `title`), иначе «Назад».
+/// Подпись — [label], иначе название предыдущего экрана (из [appRoute]
+/// с `title`), иначе «Назад».
 class AppBackButton extends StatelessWidget {
   const AppBackButton({super.key, this.label, this.onPressed});
   final String? label;
@@ -60,9 +60,7 @@ class AppBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final route = ModalRoute.of(context);
-    final previous = route is CupertinoRouteTransitionMixin
-        ? route.previousTitle.value
-        : null;
+    final previous = route is AppPageRoute ? route.backLabel : null;
     final text = label ??
         ((previous != null && previous.isNotEmpty)
             ? previous
@@ -152,6 +150,7 @@ class AppSliverHeader extends StatelessWidget {
     this.large = true,
     this.showBack = true,
     this.backLabel,
+    this.maxWidth = AppSpace.contentMax,
   });
 
   final String title;
@@ -163,6 +162,11 @@ class AppSliverHeader extends StatelessWidget {
   final bool large;
   final bool showBack;
   final String? backLabel;
+
+  /// Ширина колонки шапки на широком окне — как у содержимого (720),
+  /// чтобы заголовок и кнопки стояли над списком. Экраны во всю ширину
+  /// (отчёты) передают [double.infinity].
+  final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -180,6 +184,7 @@ class AppSliverHeader extends StatelessWidget {
         bottomHeight: bottom == null ? 0 : bottomHeight,
         large: large,
         topPadding: top,
+        maxWidth: maxWidth,
       ),
     );
   }
@@ -195,6 +200,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.bottomHeight,
     required this.large,
     required this.topPadding,
+    required this.maxWidth,
   });
 
   final String title;
@@ -205,6 +211,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   final double bottomHeight;
   final bool large;
   final double topPadding;
+  final double maxWidth;
 
   double get _eyebrowHeight => eyebrow == null ? 0 : 18;
   double get _largeHeight => large ? AppSizes.largeTitle + _eyebrowHeight : 0;
@@ -228,85 +235,88 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
       borderOpacity: math.max(lineOpacity, overlaps && t >= 1 ? 1 : 0),
       child: Padding(
         padding: EdgeInsetsDirectional.only(top: topPadding),
-        child: Column(children: [
-          SizedBox(
-            height: AppSizes.navBar,
-            child: NavigationToolbar(
-              leading: leading == null
-                  ? null
-                  : Padding(
-                      padding: const EdgeInsetsDirectional.only(start: 6),
-                      child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 140),
-                          child: leading),
-                    ),
-              middle: Opacity(
-                opacity: smallOpacity,
-                child: ExcludeSemantics(
-                  excluding: large && smallOpacity == 0,
-                  child: Text(title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.headline),
-                ),
-              ),
-              trailing: actions.isEmpty
-                  ? null
-                  : Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                          end: AppSpace.screen),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        for (var i = 0; i < actions.length; i++) ...[
-                          if (i > 0) const SizedBox(width: AppSpace.s),
-                          actions[i],
-                        ]
-                      ]),
-                    ),
-              middleSpacing: AppSpace.s,
-            ),
-          ),
-          if (large)
+        child: ContentWidth(
+          maxWidth: maxWidth,
+          child: Column(children: [
             SizedBox(
-              height: largeVisible,
-              child: ClipRect(
-                child: OverflowBox(
-                  alignment: AlignmentDirectional.bottomStart,
-                  minHeight: _largeHeight,
-                  maxHeight: _largeHeight,
-                  child: Opacity(
-                    opacity: (1 - t * 1.6).clamp(0.0, 1.0),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          AppSpace.screen, 0, AppSpace.screen, 6),
-                      child: Align(
-                        alignment: AlignmentDirectional.bottomStart,
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (eyebrow != null)
-                                Text(eyebrow!,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppText.footnote.copyWith(
-                                        color: AppColors.accentText,
-                                        fontWeight: FontWeight.w600)),
-                              Semantics(
-                                header: true,
-                                child: Text(title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppText.largeTitle),
-                              ),
-                            ]),
+              height: AppSizes.navBar,
+              child: NavigationToolbar(
+                leading: leading == null
+                    ? null
+                    : Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 6),
+                        child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 140),
+                            child: leading),
+                      ),
+                middle: Opacity(
+                  opacity: smallOpacity,
+                  child: ExcludeSemantics(
+                    excluding: large && smallOpacity == 0,
+                    child: Text(title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.headline),
+                  ),
+                ),
+                trailing: actions.isEmpty
+                    ? null
+                    : Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                            end: AppSpace.screen),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          for (var i = 0; i < actions.length; i++) ...[
+                            if (i > 0) const SizedBox(width: AppSpace.s),
+                            actions[i],
+                          ]
+                        ]),
+                      ),
+                middleSpacing: AppSpace.s,
+              ),
+            ),
+            if (large)
+              SizedBox(
+                height: largeVisible,
+                child: ClipRect(
+                  child: OverflowBox(
+                    alignment: AlignmentDirectional.bottomStart,
+                    minHeight: _largeHeight,
+                    maxHeight: _largeHeight,
+                    child: Opacity(
+                      opacity: (1 - t * 1.6).clamp(0.0, 1.0),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            AppSpace.screen, 0, AppSpace.screen, 6),
+                        child: Align(
+                          alignment: AlignmentDirectional.bottomStart,
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (eyebrow != null)
+                                  Text(eyebrow!,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppText.footnote.copyWith(
+                                          color: AppColors.accentText,
+                                          fontWeight: FontWeight.w600)),
+                                Semantics(
+                                  header: true,
+                                  child: Text(title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppText.largeTitle),
+                                ),
+                              ]),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          if (bottom != null) SizedBox(height: bottomHeight, child: bottom),
-        ]),
+            if (bottom != null) SizedBox(height: bottomHeight, child: bottom),
+          ]),
+        ),
       ),
     );
   }
@@ -320,7 +330,8 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
       old.bottom != bottom ||
       old.bottomHeight != bottomHeight ||
       old.large != large ||
-      old.topPadding != topPadding;
+      old.topPadding != topPadding ||
+      old.maxWidth != maxWidth;
 }
 
 /// Компактная шапка без прокрутки (над картой, на экранах без списка):
@@ -536,7 +547,16 @@ class AppScaffold extends StatelessWidget {
   }
 }
 
-/// Маршрут экрана с переходом в стиле iOS. [title] — подпись кнопки
-/// «назад» на следующем экране.
+/// Маршрут экрана с переходом в стиле iOS. [title] — название экрана,
+/// **с которого** переходим: это подпись кнопки «‹ назад» на новом экране.
 Route<T> appRoute<T>(WidgetBuilder builder, {String? title}) =>
-    CupertinoPageRoute<T>(builder: builder, title: title);
+    AppPageRoute<T>(builder: builder, backLabel: title);
+
+/// Маршрут iOS с подписью кнопки «назад» ([backLabel]).
+class AppPageRoute<T> extends CupertinoPageRoute<T> {
+  AppPageRoute(
+      {required super.builder, this.backLabel, super.fullscreenDialog});
+
+  /// Название предыдущего экрана — подпись «‹ назад».
+  final String? backLabel;
+}

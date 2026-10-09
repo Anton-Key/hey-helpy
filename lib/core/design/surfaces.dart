@@ -406,13 +406,22 @@ Future<T?> showAppDialog<T>({
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(title,
-                    textAlign: TextAlign.center, style: AppText.headline),
+                // Отдельные узлы доступности: иначе диктор (и /screens)
+                // видят в диалоге только кнопки.
+                Semantics(
+                  container: true,
+                  header: true,
+                  child: Text(title,
+                      textAlign: TextAlign.center, style: AppText.headline),
+                ),
                 if (message != null) ...[
                   const SizedBox(height: 6),
-                  Text(message,
-                      textAlign: TextAlign.center,
-                      style: AppText.footnote.copyWith(fontSize: 14)),
+                  Semantics(
+                    container: true,
+                    child: Text(message,
+                        textAlign: TextAlign.center,
+                        style: AppText.footnote.copyWith(fontSize: 14)),
+                  ),
                 ],
                 if (content != null) ...[
                   const SizedBox(height: AppSpace.m),

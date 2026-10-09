@@ -225,9 +225,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
       slivers: [
         // Из карточки подрядчика — своя шапка с «назад» (без колокольчика).
         if (widget.initialContractorId == null)
-          HomeHeader(title: l.navReports)
+          HomeHeader(title: l.navReports, maxWidth: double.infinity)
         else
-          AppSliverHeader(title: l.navReports),
+          AppSliverHeader(title: l.navReports, maxWidth: double.infinity),
         if (_isManager) CupertinoSliverRefreshControl(onRefresh: _load),
         SliverContent(
             maxWidth: double.infinity, sliver: SliverList.list(children: body)),
@@ -309,14 +309,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
               label: l.reportsKpiGeofence,
               hint: c.visits == 0 ? null : l.reportsKpiOf(c.visits)),
         ];
+        // Плитки в ряду — одной высоты.
         final perRow = box.maxWidth >= 600 ? 4 : 2;
-        final w = (box.maxWidth - AppSpace.group * (perRow - 1)) / perRow;
-        return Wrap(
-            spacing: AppSpace.group,
-            runSpacing: AppSpace.group,
-            children: [
-              for (final k in kpis) SizedBox(width: w, child: k),
-            ]);
+        return Column(children: [
+          for (var i = 0; i < kpis.length; i += perRow) ...[
+            if (i > 0) const SizedBox(height: AppSpace.group),
+            IntrinsicHeight(
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var j = i; j < i + perRow && j < kpis.length; j++) ...[
+                      if (j > i) const SizedBox(width: AppSpace.group),
+                      Expanded(child: kpis[j]),
+                    ],
+                  ]),
+            ),
+          ],
+        ]);
       }),
       SectionHeader(l.reportsByContractor),
       if (report.contractors.isEmpty)
@@ -462,6 +471,7 @@ class _Progress extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.pill),
         child: SizedBox(
           height: 4,
+          width: double.infinity,
           child: Stack(children: [
             const Positioned.fill(child: ColoredBox(color: AppColors.fill)),
             FractionallySizedBox(
@@ -691,16 +701,21 @@ class _ContractorTableState extends State<_ContractorTable> {
             width: 0.5,
             height: _headH,
             child: ColoredBox(color: AppColors.separator)),
+        // Высота задана явно: горизонтальной прокрутке внутри списка нужна
+        // ограниченная высота (иначе ошибка вёрстки и пустая таблица).
         Expanded(
-          child: Scrollbar(
-            controller: _scroll,
-            thumbVisibility: true,
-            child: SingleChildScrollView(
+          child: SizedBox(
+            height: _headH + rows.length * (_rowH + 0.5) + AppSpace.m,
+            child: Scrollbar(
               controller: _scroll,
-              scrollDirection: Axis.horizontal,
-              // Место под полосу прокрутки, чтобы она не закрывала строку.
-              padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
-              child: scrolling,
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                controller: _scroll,
+                scrollDirection: Axis.horizontal,
+                // Место под полосу прокрутки, чтобы она не закрывала строку.
+                padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
+                child: scrolling,
+              ),
             ),
           ),
         ),

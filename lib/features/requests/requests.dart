@@ -511,9 +511,14 @@ class _RequestsTabState extends State<RequestsTab> {
         title: w.title + (w.recurring ? '  · ${l.requestRecurringTag}' : ''),
         subtitle: [place, if (workType != null) workType].join(' · '),
         subtitleMaxLines: 1,
-        trailing: overdue
-            ? StatusPill('overdue', label: l.statusOverdue)
-            : StatusPill(w.status),
+        // Капсула — всегда настоящий статус; просрочка — красной подписью
+        // под строкой (иначе не видно, новая заявка или уже в работе).
+        extra: overdue
+            ? Text(l.statusOverdue,
+                style: AppText.footnote.copyWith(
+                    color: AppColors.danger, fontWeight: FontWeight.w600))
+            : null,
+        trailing: StatusPill(w.status),
         onTap: () => _openDetail(w),
       );
     }

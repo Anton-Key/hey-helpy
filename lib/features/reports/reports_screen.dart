@@ -11,6 +11,8 @@ import '../directory/directory.dart';
 import '../home/home_chrome.dart';
 import '../requests/requests.dart';
 import 'report_repository.dart';
+import '../directory/city.dart';
+import '../directory/object_picker.dart';
 
 /// Вкладка «Отчёты» (только менеджер и администратор): период, фильтры,
 /// четыре главные цифры по компании и показатели по каждому подрядчику.
@@ -36,7 +38,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   List<Layer> _layers = const [];
 
   Period _period = const Period(PeriodKind.last30);
-  String? _objectId;
+  Set<String> _objectIds = const {};
   late String? _contractorId = widget.initialContractorId;
   String? _layerId;
 
@@ -100,7 +102,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ReportQuery(
             from: r.from,
             to: r.to,
-            objectId: _objectId,
+            objectIds: _objectIds,
             contractorId: _contractorId,
             layerId: _layerId),
         contractorOrder: [for (final c in _contractors) c.id],
@@ -178,6 +180,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
     await _load();
   }
 
+  Future<void> _pickObjects(BuildContext anchor) async {
+    final picked = await showFilterPicker<Set<String>>(
+      context: anchor,
+      builder: (_) => ObjectPickerPanel(
+          title: context.l10n.reportsFilterObject,
+          objects: _objects,
+          selected: _objectIds),
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _objectIds = picked);
+    await _load();
+  }
+
   String _contractorName(AppLocalizations l, String? id) {
     if (id == null) return l.reportsNoContractor;
     for (final c in _contractors) {
@@ -246,14 +261,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
         );
 
     return Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
-      chip(
-          l.reportsFilterObject,
-          _labelOf<Obj>(_objects, _objectId, (o) => o.id, (o) => o.name),
-          () => _pickFilter(
-              title: l.reportsFilterObject,
-              items: [for (final o in _objects) (o.id, o.name)],
-              current: _objectId,
-              apply: (v) => _objectId = v)),
+      // Объекты — по городам, с «Весь город» (как фильтр заявок).
+      Builder(
+        builder: (anchor) => chip(
+            l.reportsFilterObject,
+            objectsSelectionLabel(l, _objectIds, _objects),
+            () => _pickObjects(anchor)),
+      ),
       chip(
           l.reportsFilterContractor,
           _labelOf<Contractor>(
@@ -766,7 +780,7 @@ class ContractorOrdersScreen extends StatelessWidget {
   String _objectName(AppLocalizations l, String? id) {
     if (id == null) return l.objectNone;
     for (final o in objects) {
-      if (o.id == id) return o.name;
+      if (o.id == id) return objectDisplayName(o);
     }
     return l.objectUnknown;
   }

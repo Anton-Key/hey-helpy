@@ -1825,4 +1825,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterPickDates => 'Choose dates';
+
+  @override
+  String get cityNone => 'No city';
+
+  @override
+  String cityCount(String city, int count) {
+    return '$city · $count';
+  }
+
+  @override
+  String get cityAll => 'All';
+
+  @override
+  String get filterCityAll => 'Whole city';
+
+  @override
+  String filterCityWhole(String city, int count) {
+    return '$city ($count)';
+  }
+
+  @override
+  String objectsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sites',
+      one: '$count site',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String contractorCoverage(String cities, String objects) {
+    return '$cities · $objects';
+  }
+
+  @override
+  String get cardWorkTypes => 'Work types';
+
+  @override
+  String get cardObjectsByCity => 'Sites';
+
+  @override
+  String mapCityZoom(String city) {
+    return 'Show $city';
+  }
 }

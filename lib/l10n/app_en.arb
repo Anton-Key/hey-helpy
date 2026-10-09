@@ -517,5 +517,15 @@
   "filterSearchHint": "Search the list",
   "filterClearOne": "Clear filter “{name}”",
   "filterRange": "{from} – {to}",
-  "filterPickDates": "Choose dates"
+  "filterPickDates": "Choose dates",
+  "cityNone": "No city",
+  "cityCount": "{city} · {count}",
+  "cityAll": "All",
+  "filterCityAll": "Whole city",
+  "filterCityWhole": "{city} ({count})",
+  "objectsCount": "{count, plural, one{{count} site} other{{count} sites}}",
+  "contractorCoverage": "{cities} · {objects}",
+  "cardWorkTypes": "Work types",
+  "cardObjectsByCity": "Sites",
+  "mapCityZoom": "Show {city}"
 }

@@ -7,6 +7,7 @@ import '../../core/location.dart';
 import '../../l10n/app_localizations.dart';
 import '../requests/order_list.dart';
 import 'contractor_card.dart';
+import 'city.dart';
 import 'directory.dart';
 import '../../core/app_message.dart';
 
@@ -173,7 +174,9 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
                   context,
                   appRoute(
                       (_) => WorkOrderListScreen(
-                          title: p.name, subtitle: _obj.name, locationId: p.id),
+                          title: p.name,
+                          subtitle: objectDisplayName(_obj),
+                          locationId: p.id),
                       title: _obj.name)),
             ),
       ]),
@@ -229,7 +232,7 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
                 appRoute(
                     (_) => WorkOrderListScreen(
                         title: l.cardAllObjectOrders,
-                        subtitle: _obj.name,
+                        subtitle: objectDisplayName(_obj),
                         objectId: _obj.id),
                     title: _obj.name)),
           ),

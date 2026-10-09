@@ -6,13 +6,15 @@ import '../../core/paging.dart';
 class ReportQuery {
   final DateTime from;
   final DateTime to;
-  final String? objectId;
+
+  /// Объекты (несколько — например «весь город»); пусто — все.
+  final Set<String> objectIds;
   final String? contractorId;
   final String? layerId;
   const ReportQuery(
       {required this.from,
       required this.to,
-      this.objectId,
+      this.objectIds = const {},
       this.contractorId,
       this.layerId});
 }
@@ -286,7 +288,9 @@ class Report {
       if (query.layerId != null && n.layerId != query.layerId) continue;
       // Норма «на все объекты» не делится по объектам — при фильтре по объекту
       // учитываются только нормы этого объекта.
-      if (query.objectId != null && n.objectId != query.objectId) continue;
+      if (query.objectIds.isNotEmpty && !query.objectIds.contains(n.objectId)) {
+        continue;
+      }
       if (query.contractorId != null && n.contractorId != query.contractorId) {
         continue;
       }
@@ -342,7 +346,9 @@ class ReportRepository {
           .select()
           .gte('created_at', from)
           .lt('created_at', to);
-      if (q.objectId != null) b = b.eq('object_id', q.objectId!);
+      if (q.objectIds.isNotEmpty) {
+        b = b.inFilter('object_id', q.objectIds.toList());
+      }
       if (q.contractorId != null) {
         b = b.eq('assigned_contractor_id', q.contractorId!);
       }
@@ -361,7 +367,9 @@ class ReportRepository {
               : '$visitFields,work_orders!inner(layer_id)')
           .gte('started_at', from)
           .lt('started_at', to);
-      if (q.objectId != null) b = b.eq('object_id', q.objectId!);
+      if (q.objectIds.isNotEmpty) {
+        b = b.inFilter('object_id', q.objectIds.toList());
+      }
       if (q.contractorId != null) b = b.eq('contractor_id', q.contractorId!);
       if (q.layerId != null) b = b.eq('work_orders.layer_id', q.layerId!);
       return b.order('started_at').order('id');

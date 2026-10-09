@@ -112,10 +112,14 @@ class AppCheckRow extends StatelessWidget {
     this.leading,
     this.child,
     this.subtitle,
+    this.partial = false,
   });
 
   final String title;
   final bool selected;
+
+  /// Выбрана часть (например не все объекты города) — «полугалочка» (минус).
+  final bool partial;
   final VoidCallback? onTap;
   final Widget? leading;
   final Widget? child;
@@ -125,6 +129,7 @@ class AppCheckRow extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
         selected: selected,
         checked: selected,
+        mixed: !selected && partial ? true : null,
         child: Pressable(
           onTap: onTap,
           effect: PressEffect.highlight,
@@ -160,7 +165,10 @@ class AppCheckRow extends StatelessWidget {
                   child: selected
                       ? const Icon(AppIcons.check,
                           size: 20, color: AppColors.accentText)
-                      : null,
+                      : partial
+                          ? const Icon(AppIcons.remove,
+                              size: 20, color: AppColors.accentText)
+                          : null,
                 ),
               ]),
             ),

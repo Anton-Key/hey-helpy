@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
+import '../directory/directory.dart';
+import '../directory/object_picker.dart';
 import 'order_filter.dart';
 
 /// Пункт списка в окне фильтра.
@@ -27,8 +29,8 @@ class FilterChoices {
     this.places = const [],
   });
 
-  /// id → название (объекты и подрядчики — как в справочниках).
-  final List<FilterOption> objects;
+  /// Объекты (в окне — по городам) и подрядчики — как в справочниках.
+  final List<Obj> objects;
   final List<FilterOption> contractors;
   final List<FilterOption> layers;
 
@@ -217,10 +219,15 @@ class OrderFilterBar extends StatelessWidget {
       ),
       chip(
         label: l.filterObject,
-        active: lb.multi(f.objectIds, choices.objects),
+        active: objectsSelectionLabel(l, f.objectIds, choices.objects),
         open: (a) async {
-          final r =
-              await pickMulti(a, l.filterObject, choices.objects, f.objectIds);
+          final r = await showFilterPicker<Set<String>>(
+            context: a,
+            builder: (_) => ObjectPickerPanel(
+                title: l.filterObject,
+                objects: choices.objects,
+                selected: f.objectIds),
+          );
           return r == null ? null : f.copyWith(objectIds: r);
         },
         clear: () => f.copyWith(objectIds: const {}),

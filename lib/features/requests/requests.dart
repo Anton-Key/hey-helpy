@@ -19,6 +19,7 @@ import 'order_filter.dart';
 import 'order_menu.dart';
 import 'work_order.dart';
 import '../../core/app_message.dart';
+import '../directory/city.dart';
 
 export 'requests_tab.dart';
 export 'work_order.dart';
@@ -208,7 +209,7 @@ class RequestsRepo {
 String _objNameIn(AppLocalizations l, List<Obj> objects, String? id) {
   if (id == null) return l.objectNone;
   for (final o in objects) {
-    if (o.id == id) return o.name;
+    if (o.id == id) return objectDisplayName(o);
   }
   return l.objectUnknown;
 }
@@ -1009,11 +1010,15 @@ Future<bool?> showOrderForm({
                         hint: objects.isEmpty
                             ? l.formNoObjects(l.tabLocations)
                             : l.formChooseObject,
+                        // По городам: «Москва · Офис 3» (одинаковые названия
+                        // бывают в разных городах).
                         items: [
-                          for (final o in objects)
-                            DropdownMenuItem(
-                                value: o.id,
-                                child: Text(o.name, style: AppText.body))
+                          for (final g in groupObjectsByCity(objects))
+                            for (final o in g.items)
+                              DropdownMenuItem(
+                                  value: o.id,
+                                  child: Text(objectDisplayName(o),
+                                      style: AppText.body))
                         ],
                         onChanged: (v) => setSt(() => objectId = v)),
                   ]),

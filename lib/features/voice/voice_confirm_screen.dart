@@ -8,6 +8,7 @@ import 'voice_draft.dart';
 import 'voice_intake_client.dart';
 import '../../core/app_message.dart';
 import '../../l10n/app_localizations.dart';
+import '../directory/city.dart';
 
 const _priorities = ['low', 'normal', 'high', 'critical'];
 
@@ -184,7 +185,7 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
       }
     } else if (w != null && w.startsWith('o:')) {
       for (final o in widget.objects) {
-        if (o.id == w.substring(2)) return o.name;
+        if (o.id == w.substring(2)) return objectDisplayName(o);
       }
     }
     return context.l10n.commonNotSpecified;
@@ -221,8 +222,10 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
                     separatorInset: AppSpace.separatorInsetIcon,
                     children: [
                       option(null, l.commonNotSpecified, null),
-                      for (final o in widget.objects)
-                        option('o:${o.id}', o.name, AppIcons.building),
+                      for (final g in groupObjectsByCity(widget.objects))
+                        for (final o in g.items)
+                          option('o:${o.id}', objectDisplayName(o),
+                              AppIcons.building),
                       for (final p in _places)
                         option('p:${p.id}', p.fullName, AppIcons.room),
                     ]),

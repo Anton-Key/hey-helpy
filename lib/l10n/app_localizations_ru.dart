@@ -1842,4 +1842,52 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get filterPickDates => 'Выберите даты';
+
+  @override
+  String get cityNone => 'Без города';
+
+  @override
+  String cityCount(String city, int count) {
+    return '$city · $count';
+  }
+
+  @override
+  String get cityAll => 'Все';
+
+  @override
+  String get filterCityAll => 'Весь город';
+
+  @override
+  String filterCityWhole(String city, int count) {
+    return '$city ($count)';
+  }
+
+  @override
+  String objectsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count объекта',
+      many: '$count объектов',
+      few: '$count объекта',
+      one: '$count объект',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String contractorCoverage(String cities, String objects) {
+    return '$cities · $objects';
+  }
+
+  @override
+  String get cardWorkTypes => 'Виды работ';
+
+  @override
+  String get cardObjectsByCity => 'Объекты';
+
+  @override
+  String mapCityZoom(String city) {
+    return 'Показать город $city';
+  }
 }

@@ -203,4 +203,35 @@ void main() {
       expect(clusterByGrid(<MapItem<String>>[], 10), isEmpty);
     });
   });
+
+  group('clusterMap — города на мелком масштабе', () {
+    const moscowA =
+        MapItem(id: 'm1', point: GeoPoint(55.749, 37.537), value: 'Москва');
+    const moscowB =
+        MapItem(id: 'm2', point: GeoPoint(55.697, 37.359), value: 'Москва');
+    const dubai =
+        MapItem(id: 'd1', point: GeoPoint(25.186, 55.265), value: 'Дубай');
+    const none = MapItem(id: 'x', point: GeoPoint(10, 10), value: '');
+    final items = [moscowA, moscowB, dubai, none];
+    String city(String v) => v;
+
+    test('мир: один кластер на город с подписью, даже из одного объекта', () {
+      final c = clusterMap(items, 3, cityOf: city);
+      final byKey = {for (final x in c) x.key: x};
+      expect(byKey['city:Москва']!.items.length, 2);
+      expect(byKey['city:Москва']!.label, 'Москва');
+      expect(byKey['city:Дубай']!.items.single.id, 'd1');
+      // Без города — по сетке, без подписи.
+      expect(c.where((x) => x.label == null).single.items.single.id, 'x');
+      final center = byKey['city:Москва']!.center;
+      expect(center.lat, closeTo((55.749 + 55.697) / 2, 1e-9));
+    });
+
+    test('город и крупнее — обычная сетка', () {
+      final c = clusterMap(items, cityClusterMaxZoom, cityOf: city);
+      expect(c.every((x) => x.label == null), isTrue);
+      expect(clusterMap(items, 3).every((x) => x.label == null), isTrue,
+          reason: 'без cityOf — как раньше');
+    });
+  });
 }

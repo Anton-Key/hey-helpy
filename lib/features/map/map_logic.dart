@@ -78,8 +78,8 @@ const nearbyMinKm = 0.5;
 const nearbyMaxKm = 20.0;
 const nearbyDefaultKm = 3.0;
 
-/// Зум карты: 3 (страна) … 19 (здание).
-const mapMinZoom = 3.0;
+/// Зум карты: 1 (весь мир — объекты в разных странах) … 19 (здание).
+const mapMinZoom = 1.0;
 const mapMaxZoom = 19.0;
 
 /// Заявка в том объёме, который нужен карте.
@@ -256,8 +256,14 @@ bool matchesQuery(String query, String name, String? address) {
 /// Группа маркеров на карте: один объект или кластер из нескольких.
 class MapCluster<T> {
   const MapCluster(
-      {required this.items, required this.center, required this.key});
+      {required this.items,
+      required this.center,
+      required this.key,
+      this.label});
   final List<MapItem<T>> items;
+
+  /// Город — у кластера «весь город» на мелком масштабе ([clusterMap]).
+  final String? label;
 
   /// Средняя точка группы.
   final GeoPoint center;
@@ -316,5 +322,43 @@ List<MapCluster<T>> clusterByGrid<T>(List<MapItem<T>> items, double zoom,
                       e.value.length,
                   e.value.map((i) => i.point.lng).reduce((a, b) => a + b) /
                       e.value.length)),
+  ];
+}
+
+/// Мельче этого зума объекты одного города собираются в один кластер
+/// с подписью города (страна, континент, весь мир).
+const cityClusterMaxZoom = 9.0;
+
+/// Кластеры для карты: на мелком масштабе (зум < [cityClusterMaxZoom]) —
+/// по городам ([cityOf] возвращает город объекта, `''` — без города: такие
+/// группируются по сетке); крупнее — по сетке ([clusterByGrid]).
+List<MapCluster<T>> clusterMap<T>(List<MapItem<T>> items, double zoom,
+    {String Function(T value)? cityOf}) {
+  if (cityOf == null || zoom >= cityClusterMaxZoom) {
+    return clusterByGrid(items, zoom);
+  }
+  final byCity = <String, List<MapItem<T>>>{};
+  final noCity = <MapItem<T>>[];
+  for (final i in items) {
+    final c = cityOf(i.value);
+    if (c.isEmpty) {
+      noCity.add(i);
+    } else {
+      byCity.putIfAbsent(c, () => []).add(i);
+    }
+  }
+  return [
+    for (final e in byCity.entries)
+      MapCluster(
+        items: e.value,
+        key: 'city:${e.key}',
+        label: e.key,
+        center: GeoPoint(
+            e.value.map((i) => i.point.lat).reduce((a, b) => a + b) /
+                e.value.length,
+            e.value.map((i) => i.point.lng).reduce((a, b) => a + b) /
+                e.value.length),
+      ),
+    ...clusterByGrid(noCity, zoom),
   ];
 }

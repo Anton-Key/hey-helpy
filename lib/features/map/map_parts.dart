@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
+import '../directory/city.dart';
 import '../directory/directory.dart';
 import 'map_logic.dart';
 
@@ -77,18 +78,53 @@ class ClusterMarker extends StatelessWidget {
       required this.objects,
       required this.open,
       required this.tone,
-      required this.onTap});
+      required this.onTap,
+      this.city});
   final int objects;
   final int open;
   final MarkerTone tone;
   final VoidCallback onTap;
 
+  /// Подпись города под кружком (кластер «весь город» на мелком масштабе).
+  final String? city;
+
   static const size = 50.0;
+
+  /// Высота подписи города; маркер с подписью выше на 2 подписи, чтобы
+  /// кружок оставался ровно над точкой.
+  static const labelHeight = 22.0;
+  static const labelWidth = 150.0;
 
   @override
   Widget build(BuildContext context) {
+    final circle = _circle(context);
+    if (city == null) return circle;
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      const SizedBox(height: labelHeight),
+      circle,
+      Container(
+        height: labelHeight - 4,
+        margin: const EdgeInsetsDirectional.only(top: 4),
+        padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            boxShadow: AppShadows.floating),
+        child: Text(city!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppText.caption
+                .copyWith(color: AppColors.ink, fontWeight: FontWeight.w600)),
+      ),
+    ]);
+  }
+
+  Widget _circle(BuildContext context) {
     final (ring, _) = toneColors(tone);
-    final label = context.l10n.mapCluster(objects);
+    final label = city == null
+        ? context.l10n.mapCluster(objects)
+        : '$city · ${context.l10n.mapCluster(objects)}';
     return Center(
       child: Tooltip(
         message: label,
@@ -229,7 +265,7 @@ class ObjectInfoCard extends StatelessWidget {
           Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(object.name, style: AppText.headline),
+              Text(objectDisplayName(object), style: AppText.headline),
               const SizedBox(height: 2),
               Text(address, style: AppText.footnote),
               const SizedBox(height: 2),
@@ -293,12 +329,16 @@ class ObjectMapRow extends StatelessWidget {
       required this.stats,
       required this.selected,
       required this.onTap,
-      this.distanceText});
+      this.distanceText,
+      this.withCity = false});
   final Obj object;
   final ObjectStats stats;
   final bool selected;
   final VoidCallback onTap;
   final String? distanceText;
+
+  /// Список не разбит по городам (поиск «рядом») — «Москва · Офис 3».
+  final bool withCity;
 
   @override
   Widget build(BuildContext context) {
@@ -324,7 +364,7 @@ class ObjectMapRow extends StatelessWidget {
               style: AppText.caption
                   .copyWith(color: fg, fontWeight: FontWeight.w700)),
         ),
-        title: object.name,
+        title: objectDisplayName(object, withCity: withCity),
         subtitle: sub,
       ),
     );

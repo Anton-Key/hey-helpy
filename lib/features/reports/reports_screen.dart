@@ -580,7 +580,8 @@ class _ContractorTableState extends State<_ContractorTable> {
   static const _headH = 60.0; // до трёх строк заголовка
   static const _rowH = 52.0;
   static const _nameW = 240.0;
-  static const _colW = 104.0;
+  static const _colW =
+      120.0; // «ВОЗВРАЩЕНО», «ВЫПОЛНЕНИЕ» — без переноса посреди слова
 
   final _scroll = ScrollController();
 
@@ -713,12 +714,18 @@ class _ContractorTableState extends State<_ContractorTable> {
             child: Scrollbar(
               controller: _scroll,
               thumbVisibility: true,
-              child: SingleChildScrollView(
-                controller: _scroll,
-                scrollDirection: Axis.horizontal,
-                // Место под полосу прокрутки, чтобы она не закрывала строку.
-                padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
-                child: scrolling,
+              // Полоса прокрутки — только своя (под строками): общая полоса
+              // приложения на ПК рисовалась поверх таблицы.
+              child: ScrollConfiguration(
+                behavior:
+                    ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                child: SingleChildScrollView(
+                  controller: _scroll,
+                  scrollDirection: Axis.horizontal,
+                  // Место под полосу прокрутки, чтобы она не закрывала строку.
+                  padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
+                  child: scrolling,
+                ),
               ),
             ),
           ),

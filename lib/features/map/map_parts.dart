@@ -195,14 +195,15 @@ class ObjectInfoCard extends StatelessWidget {
                   style: AppText.headline.copyWith(
                       color: value > 0 ? c.foreground : AppColors.secondary,
                       fontWeight: FontWeight.w700)),
-              // До двух строк: «На проверке» и «Просрочено» не помещаются
-              // в узкую плитку одной строкой.
-              Text(label,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.caption.copyWith(
-                      color: value > 0 ? c.foreground : AppColors.secondary)),
+              // Одной строкой, при нехватке места — чуть мельче: длинное
+              // слово («Просрочено») не должно переноситься посередине.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(label,
+                    maxLines: 1,
+                    style: AppText.caption.copyWith(
+                        color: value > 0 ? c.foreground : AppColors.secondary)),
+              ),
             ]),
           ),
         ),

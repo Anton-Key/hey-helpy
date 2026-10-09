@@ -248,12 +248,12 @@ class AppFilterPanel extends StatelessWidget {
           top: false,
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(pad, 4, pad, pad),
+            // «Сбросить» — по ширине текста, «Применить (N)» — всё остальное:
+            // число на главной кнопке не обрезается и в узком окне.
             child: Row(children: [
               if (onReset != null) ...[
-                Expanded(
-                  child: AppButton.secondary(
-                      label: resetLabel, onPressed: onReset),
-                ),
+                AppButton.secondary(
+                    label: resetLabel, onPressed: onReset, expand: false),
                 const SizedBox(width: AppSpace.m),
               ],
               Expanded(
@@ -350,4 +350,87 @@ class AppPanelGroup extends StatelessWidget {
         separatorInset: AppSpace.rowH,
         children: children,
       );
+}
+
+/// Горизонтальная прокрутка с плавным затуханием у края, за которым есть
+/// ещё содержимое (строка таблеток фильтров): видно, что её можно
+/// прокрутить. Затухание — с той стороны, куда можно листать (с учётом RTL).
+class AppFadingScroll extends StatefulWidget {
+  const AppFadingScroll({super.key, required this.child, this.fade = 28});
+  final Widget child;
+
+  /// Ширина затухания, px.
+  final double fade;
+
+  @override
+  State<AppFadingScroll> createState() => _AppFadingScrollState();
+}
+
+class _AppFadingScrollState extends State<AppFadingScroll> {
+  final _c = ScrollController();
+  bool _start = false;
+  bool _end = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _update());
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  void _update() {
+    if (!mounted || !_c.hasClients) return;
+    final p = _c.position;
+    final start = p.pixels > 1;
+    final end = p.pixels < p.maxScrollExtent - 1;
+    if (start != _start || end != _end) {
+      setState(() {
+        _start = start;
+        _end = end;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scroll = NotificationListener<ScrollMetricsNotification>(
+      onNotification: (_) {
+        _update();
+        return false;
+      },
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (_) {
+          _update();
+          return false;
+        },
+        child: SingleChildScrollView(
+          controller: _c,
+          scrollDirection: Axis.horizontal,
+          child: widget.child,
+        ),
+      ),
+    );
+    if (!_start && !_end) return scroll;
+    return LayoutBuilder(builder: (context, box) {
+      final w = box.maxWidth;
+      final f = (widget.fade / w).clamp(0.0, 0.5);
+      const solid = Color(0xFF000000);
+      const clear = Color(0x00000000);
+      return ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (rect) => LinearGradient(
+          begin: AlignmentDirectional.centerStart,
+          end: AlignmentDirectional.centerEnd,
+          colors: [_start ? clear : solid, solid, solid, _end ? clear : solid],
+          stops: [0, f, 1 - f, 1],
+        ).createShader(rect, textDirection: Directionality.of(context)),
+        child: scroll,
+      );
+    });
+  }
 }

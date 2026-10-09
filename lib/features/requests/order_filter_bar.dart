@@ -325,8 +325,9 @@ class OrderFilterBar extends StatelessWidget {
 
     return Row(children: [
       Expanded(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
+        // Сортировка — отдельно справа, а строка таблеток прокручивается
+        // и плавно гаснет у края: видно, что за ним есть ещё фильтры.
+        child: AppFadingScroll(
           // Выбранные фильтры — первыми: на телефоне их видно без прокрутки.
           child: Row(children: [
             for (final c in chips)
@@ -336,7 +337,7 @@ class OrderFilterBar extends StatelessWidget {
           ]),
         ),
       ),
-      const SizedBox(width: AppSpace.s),
+      const SizedBox(width: AppSpace.m),
       Builder(
         builder: (anchor) => AppFilterChip(
           icon: AppIcons.sort,

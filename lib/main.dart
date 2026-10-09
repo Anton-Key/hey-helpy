@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'core/design/design.dart';
 import 'core/l10n_ext.dart';
 import 'core/locale_controller.dart';
 import 'core/supabase_config.dart';
@@ -39,6 +40,7 @@ class _MisconfiguredApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: AppTheme.light(),
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
@@ -50,17 +52,19 @@ class _MisconfiguredApp extends StatelessWidget {
       home: Builder(builder: (context) {
         final l = context.l10n;
         return Scaffold(
+          backgroundColor: AppColors.bg,
           body: Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.settings_suggest, size: 56),
+                  const Icon(AppIcons.settings,
+                      size: 48, color: AppColors.secondary),
                   const SizedBox(height: 16),
                   Text(
                     l.misconfiguredTitle,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: AppText.title2,
                   ),
                   const SizedBox(height: 12),
                   Text(

@@ -1,17 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/status_style.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/profile.dart';
 import '../requests/order_list.dart';
 import 'notification_repository.dart';
-
-const _muted = Color(0xFF8A9098);
-const _danger = Color(0xFFC24444);
 
 /// Уведомления (профиль и колокольчик в шапке): события за 14 дней по роли.
 /// Открытие экрана отмечает всё прочитанным; новые с прошлого раза — с точкой.
@@ -73,97 +68,78 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-          title: Text(l.profileNotifications), backgroundColor: Colors.white),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 40),
-          children: [
+    final ctx = _ctx;
+    return AppScaffold(
+      title: l.profileNotifications,
+      onRefresh: _load,
+      slivers: [
+        SliverContent(
+          sliver: SliverList.list(children: [
             Padding(
-              padding: const EdgeInsetsDirectional.only(bottom: 10),
-              child: Text(l.notifPeriod(NotificationRepository.days),
-                  style: const TextStyle(
-                      color: _muted,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13)),
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpace.rowH, 0, AppSpace.rowH, AppSpace.s),
+              child: Row(children: [
+                Expanded(
+                  child: Text(l.notifPeriod(NotificationRepository.days),
+                      style: AppText.footnote
+                          .copyWith(fontWeight: FontWeight.w600)),
+                ),
+                if (_loading && ctx != null)
+                  const CupertinoActivityIndicator(radius: 8),
+              ]),
             ),
-            if (_loading) const LinearProgressIndicator(minHeight: 2),
-            if (_failed)
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(children: [
-                  Text(l.notifLoadFailed,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: _danger)),
-                  const SizedBox(height: 12),
-                  OutlinedButton(onPressed: _load, child: Text(l.commonRetry)),
-                ]),
+            if (_loading && ctx == null)
+              const Padding(
+                padding: EdgeInsetsDirectional.symmetric(vertical: 40),
+                child: AppLoader(),
               )
+            else if (_failed)
+              AppEmptyState(
+                  text: l.notifLoadFailed,
+                  error: true,
+                  actionLabel: l.commonRetry,
+                  onAction: _load)
             else if (!_loading && _items.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Text(l.notifEmpty,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: _muted)),
-              )
-            else if (_ctx != null)
-              for (final n in _items) _tile(l, _ctx!, n),
-          ],
+              AppEmptyState(text: l.notifEmpty, icon: AppIcons.bell)
+            else if (ctx != null)
+              AppGroup(children: [
+                for (final n in _items) _tile(l, ctx, n),
+              ]),
+          ]),
         ),
-      ),
+      ],
     );
   }
 
   Widget _tile(AppLocalizations l, OrderContext ctx, AppNotification n) {
     final isNew = _seenBefore == null || n.at.isAfter(_seenBefore!);
-    final (icon, color) = _look(n.kind);
-    return TapCard(
+    final (icon, colors) = _look(n.kind);
+    final reason = (n.order['return_reason'] as String?) ?? '';
+    return AppRow(
+      leading: LeadingIcon(icon,
+          color: colors.foreground, background: colors.background),
+      title: _text(l, n),
+      titleStyle: AppText.rowTitle.copyWith(fontWeight: FontWeight.w600),
+      subtitle: (n.order['title'] ?? '') as String,
+      trailing: isNew
+          ? Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                  color: AppColors.accent, shape: BoxShape.circle))
+          : null,
+      extra: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(ctx.placeLine(context, n.order), style: AppText.caption),
+        if (n.kind == NotificationKind.returned && reason.isNotEmpty)
+          Text(l.returnedWithReason(reason),
+              style: AppText.caption.copyWith(color: AppColors.danger)),
+        Text(l.dateTime(n.at),
+            style: AppText.caption.copyWith(color: AppColors.secondary)),
+      ]),
       onTap: () async {
         await ctx.open(context, n.order);
         if (mounted) await _load();
       },
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, color: color, size: 22),
-        const SizedBox(width: 12),
-        Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(
-                child: Text(_text(l, n),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 14)),
-              ),
-              if (isNew)
-                Container(
-                    width: 8,
-                    height: 8,
-                    margin: const EdgeInsetsDirectional.only(start: 6),
-                    decoration: const BoxDecoration(
-                        color: HeyHelpyTheme.brand, shape: BoxShape.circle)),
-            ]),
-            const SizedBox(height: 3),
-            Text((n.order['title'] ?? '') as String,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 2),
-            Text(ctx.placeLine(context, n.order),
-                style: const TextStyle(color: _muted, fontSize: 12)),
-            if (n.kind == NotificationKind.returned &&
-                ((n.order['return_reason'] as String?) ?? '').isNotEmpty)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(top: 2),
-                child: Text(l.returnedWithReason('${n.order['return_reason']}'),
-                    style: const TextStyle(color: _danger, fontSize: 12)),
-              ),
-            const SizedBox(height: 2),
-            Text(l.dateTime(n.at),
-                style: const TextStyle(color: _muted, fontSize: 12)),
-          ]),
-        ),
-      ]),
     );
   }
 
@@ -181,32 +157,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         NotificationKind.accepted => l.notifAccepted,
       };
 
-  (IconData, Color) _look(NotificationKind k) => switch (k) {
+  /// Значок и цвета квадрата — как у статуса, к которому относится событие.
+  (IconData, StatusColors) _look(NotificationKind k) => switch (k) {
         NotificationKind.assigned => (
-            Icons.assignment_ind_outlined,
-            StatusStyle.blue.foreground
+            AppIcons.executor,
+            StatusColors.of('assigned')
           ),
-        NotificationKind.returned => (Icons.replay, StatusStyle.red.foreground),
+        NotificationKind.returned => (
+            AppIcons.undo,
+            StatusColors.of('returned')
+          ),
         NotificationKind.onReview => (
-            Icons.fact_check_outlined,
-            StatusStyle.blue.foreground
+            AppIcons.checklist,
+            StatusColors.of('on_review')
           ),
         NotificationKind.overdue => (
-            Icons.schedule,
-            StatusStyle.red.foreground
+            AppIcons.clock,
+            StatusColors.of('overdue')
           ),
         NotificationKind.visitOutside => (
-            Icons.wrong_location_outlined,
-            _danger
+            AppIcons.placeOff,
+            StatusColors.of('overdue')
           ),
         NotificationKind.visitMock => (
-            Icons.gps_off,
-            StatusStyle.red.foreground
+            AppIcons.warning,
+            StatusColors.of('overdue')
           ),
         NotificationKind.inProgress => (
-            Icons.engineering_outlined,
-            StatusStyle.blue.foreground
+            AppIcons.wrench,
+            StatusColors.of('in_progress')
           ),
-        NotificationKind.accepted => (Icons.task_alt, HeyHelpyTheme.ink),
+        NotificationKind.accepted => (
+            AppIcons.accepted,
+            StatusColors.of('done')
+          ),
       };
 }

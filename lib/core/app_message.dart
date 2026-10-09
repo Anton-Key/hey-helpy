@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'theme.dart';
+import 'design/icons.dart';
+import 'design/pressable.dart';
+import 'design/tokens.dart';
 
 /// Вид сообщения: от него зависят значок и сколько оно висит.
 enum AppMessageType { info, success, error }
@@ -85,7 +87,7 @@ class _MessageHost extends StatelessWidget {
         // Только сама стопка ловит нажатия — остальной экран работает.
         return Stack(children: [
           PositionedDirectional(
-            top: mq.padding.top + kToolbarHeight + 8,
+            top: mq.padding.top + AppSizes.navBar + 8,
             end: wide ? 24 : 16,
             start: wide ? null : 16,
             child: SizedBox(
@@ -146,15 +148,9 @@ class _MessageCardState extends State<_MessageCard>
   @override
   Widget build(BuildContext context) {
     final (icon, color) = switch (widget.msg.type) {
-      AppMessageType.info => (Icons.info_outline_rounded, HeyHelpyTheme.link),
-      AppMessageType.success => (
-          Icons.check_circle_rounded,
-          HeyHelpyTheme.brand
-        ),
-      AppMessageType.error => (
-          Icons.error_outline_rounded,
-          const Color(0xFFC24444)
-        ),
+      AppMessageType.info => (AppIcons.info, AppColors.accentText),
+      AppMessageType.success => (AppIcons.success, AppColors.accentText),
+      AppMessageType.error => (AppIcons.error, AppColors.danger),
     };
     final curve = CurvedAnimation(parent: _anim, curve: Curves.easeOut);
     return FadeTransition(
@@ -169,36 +165,35 @@ class _MessageCardState extends State<_MessageCard>
           child: Semantics(
             container: true,
             liveRegion: true,
-            child: Material(
-              color: Colors.white,
-              elevation: 6,
-              shadowColor: const Color(0x55000000),
-              borderRadius: BorderRadius.circular(14),
-              child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 4, 6),
-                child: Row(children: [
-                  Icon(icon, color: color, size: 22),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Padding(
-                      padding:
-                          const EdgeInsetsDirectional.symmetric(vertical: 8),
-                      child: Text(widget.msg.text,
-                          style: const TextStyle(
-                              color: HeyHelpyTheme.ink,
-                              fontSize: 14,
-                              height: 1.35)),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _close,
-                    tooltip:
-                        MaterialLocalizations.of(context).closeButtonTooltip,
-                    icon: const Icon(Icons.close_rounded,
-                        size: 18, color: Color(0xFF8A9098)),
-                  ),
-                ]),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppRadius.group),
+                boxShadow: AppShadows.floating,
               ),
+              padding: const EdgeInsetsDirectional.fromSTEB(14, 4, 6, 4),
+              child: Row(children: [
+                Icon(icon, color: color, size: AppSizes.icon),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Padding(
+                    padding:
+                        const EdgeInsetsDirectional.symmetric(vertical: 10),
+                    child: Text(widget.msg.text, style: AppText.callout),
+                  ),
+                ),
+                Pressable(
+                  onTap: _close,
+                  semanticLabel:
+                      MaterialLocalizations.of(context).closeButtonTooltip,
+                  child: const SizedBox(
+                    width: 36,
+                    height: 36,
+                    child: Icon(AppIcons.close,
+                        size: 18, color: AppColors.secondary),
+                  ),
+                ),
+              ]),
             ),
           ),
         ),

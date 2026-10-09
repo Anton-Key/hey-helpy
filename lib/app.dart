@@ -57,7 +57,7 @@ class _HeyHelpyAppState extends State<HeyHelpyApp> {
         builder: (context, _) => MaterialApp.router(
           onGenerateTitle: (context) => AppLocalizations.of(context).appName,
           debugShowCheckedModeBanner: false,
-          theme: HeyHelpyTheme.light(),
+          theme: AppTheme.light(),
           // Прокрутка колесом, ползунком и клавиатурой — на всех экранах.
           scrollBehavior: const AppScrollBehavior(),
           builder: (context, child) =>

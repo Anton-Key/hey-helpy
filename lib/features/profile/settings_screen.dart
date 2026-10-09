@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../core/design/design.dart';
 import '../../core/language_picker.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../../models/profile.dart';
 import 'profile_repository.dart';
 import '../../core/app_message.dart';
-
-const _muted = Color(0xFF8A9098);
 
 /// Пароль Supabase Auth — не короче 6 символов (настройка проекта по умолчанию).
 const _minPassword = 6;
@@ -97,16 +94,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l = context.l10n;
     final info = await _info;
     if (!mounted) return;
-    showAboutDialog(
+    await showAppDialog<void>(
       context: context,
-      applicationName: l.appName,
-      applicationVersion: l.settingsVersion(info.version, info.buildNumber),
-      applicationIcon: const CircleAvatar(
-          backgroundColor: HeyHelpyTheme.brand,
-          child: Icon(Icons.support_agent, color: HeyHelpyTheme.onBrand)),
-      children: [
-        const SizedBox(height: 12),
-        Text(l.settingsAboutText(l.appName)),
+      title: l.settingsAboutApp(l.appName),
+      message: '${l.settingsVersion(info.version, info.buildNumber)}\n\n'
+          '${l.settingsAboutText(l.appName)}',
+      actions: [
+        AppDialogAction(MaterialLocalizations.of(context).okButtonLabel, null,
+            primary: true),
       ],
     );
   }
@@ -119,98 +114,82 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) Navigator.pop(context, _changed);
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-            title: Text(l.profileSettings), backgroundColor: Colors.white),
-        body: ListView(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 40),
-          children: [
-            SectionTitle(l.settingsProfile),
-            TextField(
-              controller: _name,
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                  labelText: l.settingsName,
-                  border: const OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _phone,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                  labelText: l.settingsPhone,
-                  hintText: l.settingsPhoneHint,
-                  border: const OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            FilledButton(
-                style: brandButtonStyle(),
-                onPressed: _savingProfile ? null : _saveProfile,
-                child: Text(l.commonSave)),
-            SectionTitle(l.settingsPassword),
-            TextField(
-              controller: _pass,
-              obscureText: true,
-              autofillHints: const [AutofillHints.newPassword],
-              decoration: InputDecoration(
-                  labelText: l.settingsNewPassword,
-                  border: const OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _pass2,
-              obscureText: true,
-              decoration: InputDecoration(
-                  labelText: l.settingsRepeatPassword,
-                  errorText: _passError,
-                  border: const OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-                onPressed: _savingPassword ? null : _savePassword,
-                child: Text(l.settingsChangePassword)),
-            SectionTitle(l.profileLanguage),
-            TapCard(
-              onTap: () => pickLanguage(context),
-              child: Row(children: [
-                const Icon(Icons.language, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: Text(currentLanguageName(context),
-                        style: const TextStyle(fontWeight: FontWeight.w600))),
-              ]),
-            ),
-            SectionTitle(l.settingsAbout),
-            TapCard(
-              onTap: _about,
-              chevron: false,
-              child: Row(children: [
-                const Icon(Icons.info_outline, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l.settingsAboutApp(l.appName),
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w600)),
-                        FutureBuilder<PackageInfo>(
-                          future: _info,
-                          builder: (_, s) => Text(
-                              s.hasData
-                                  ? l.settingsVersion(
-                                      s.data!.version, s.data!.buildNumber)
-                                  : '…',
-                              style:
-                                  const TextStyle(color: _muted, fontSize: 13)),
-                        ),
-                      ]),
+      child: AppScaffold(
+        title: l.profileSettings,
+        slivers: [
+          SliverContent(
+            sliver: SliverList.list(children: [
+              AppGroup(header: l.settingsProfile, children: [
+                TextField(
+                  controller: _name,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(labelText: l.settingsName),
+                ),
+                TextField(
+                  controller: _phone,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                      labelText: l.settingsPhone,
+                      hintText: l.settingsPhoneHint),
                 ),
               ]),
-            ),
-          ],
-        ),
+              AppButton.primary(
+                  label: l.commonSave,
+                  loading: _savingProfile,
+                  onPressed: _saveProfile),
+              const SizedBox(height: AppSpace.s),
+              AppGroup(header: l.settingsPassword, children: [
+                TextField(
+                  controller: _pass,
+                  obscureText: true,
+                  autofillHints: const [AutofillHints.newPassword],
+                  decoration: InputDecoration(labelText: l.settingsNewPassword),
+                ),
+                TextField(
+                  controller: _pass2,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                      labelText: l.settingsRepeatPassword,
+                      errorText: _passError),
+                ),
+              ]),
+              AppButton.tinted(
+                  label: l.settingsChangePassword,
+                  loading: _savingPassword,
+                  onPressed: _savePassword),
+              const SizedBox(height: AppSpace.s),
+              AppGroup(header: l.profileLanguage, children: [
+                AppRow(
+                  leading: const LeadingIcon(AppIcons.language),
+                  title: l.profileLanguage,
+                  value: currentLanguageName(context),
+                  onTap: () => pickLanguage(context),
+                ),
+              ]),
+              AppGroup(header: l.settingsAbout, children: [
+                AppRow(
+                  leading: const LeadingIcon(AppIcons.info),
+                  title: l.settingsAboutApp(l.appName),
+                  chevron: false,
+                  onTap: _about,
+                ),
+              ]),
+              FutureBuilder<PackageInfo>(
+                future: _info,
+                builder: (_, s) => Padding(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AppSpace.rowH),
+                  child: Text(
+                      s.hasData
+                          ? l.settingsVersion(
+                              s.data!.version, s.data!.buildNumber)
+                          : '…',
+                      style: AppText.footnote),
+                ),
+              ),
+            ]),
+          ),
+        ],
       ),
     );
   }

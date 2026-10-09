@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
 import 'onboarding_repository.dart';
@@ -31,6 +32,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _companyCtrl = TextEditingController();
   final _inviteCtrl = TextEditingController();
   bool _busy = false;
+
   /// null — ошибки нет; иначе причина (текст подбирается при отрисовке).
   OnboardingError? _error;
   bool _offline = false;
@@ -70,74 +72,68 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l = context.l10n;
-    final errorText = _offline ? l.onboardingNoConnection : (_error == null ? null : onboardingErrorText(l, _error!));
+    final errorText = _offline
+        ? l.onboardingNoConnection
+        : (_error == null ? null : onboardingErrorText(l, _error!));
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.onboardingTitle)),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Text(l.onboardingChoose(l.appName),
-                    style: theme.textTheme.titleMedium),
-                const SizedBox(height: 20),
-                _Section(
-                  icon: Icons.apartment_outlined,
-                  title: l.onboardingCreateTitle,
-                  subtitle: l.onboardingCreateSubtitle,
-                  field: TextField(
-                    controller: _companyCtrl,
-                    enabled: !_busy,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      labelText: l.onboardingCompanyName,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  actionLabel: l.onboardingCreate,
-                  onAction: _busy
-                      ? null
-                      : () => _run(() => _repo.createCompany(_companyCtrl.text)),
-                ),
-                const SizedBox(height: 16),
-                _Section(
-                  icon: Icons.handyman_outlined,
-                  title: l.onboardingInviteTitle,
-                  subtitle: l.onboardingInviteSubtitle,
-                  field: TextField(
-                    controller: _inviteCtrl,
-                    enabled: !_busy,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelText: l.onboardingInviteCode,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  actionLabel: l.onboardingJoin,
-                  onAction: _busy
-                      ? null
-                      : () => _run(() => _repo.acceptInvite(_inviteCtrl.text)),
-                ),
-                if (_busy) ...[
-                  const SizedBox(height: 20),
-                  const Center(child: CircularProgressIndicator()),
-                ],
-                if (errorText != null) ...[
-                  const SizedBox(height: 16),
-                  Text(errorText,
-                      style: TextStyle(color: theme.colorScheme.error),
-                      textAlign: TextAlign.center),
-                ],
-              ],
+    return AppScaffold(
+      title: l.onboardingTitle,
+      slivers: [
+        SliverContent(
+          maxWidth: 520,
+          sliver: SliverList.list(children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                  horizontal: AppSpace.xs),
+              child: Text(l.onboardingChoose(l.appName),
+                  style: AppText.callout.copyWith(color: AppColors.secondary)),
             ),
-          ),
+            _Section(
+              icon: AppIcons.building,
+              title: l.onboardingCreateTitle,
+              subtitle: l.onboardingCreateSubtitle,
+              field: TextField(
+                controller: _companyCtrl,
+                enabled: !_busy,
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(labelText: l.onboardingCompanyName),
+              ),
+              actionLabel: l.onboardingCreate,
+              primary: true,
+              onAction: _busy
+                  ? null
+                  : () => _run(() => _repo.createCompany(_companyCtrl.text)),
+            ),
+            _Section(
+              icon: AppIcons.wrench,
+              title: l.onboardingInviteTitle,
+              subtitle: l.onboardingInviteSubtitle,
+              field: TextField(
+                controller: _inviteCtrl,
+                enabled: !_busy,
+                autocorrect: false,
+                decoration: InputDecoration(labelText: l.onboardingInviteCode),
+              ),
+              actionLabel: l.onboardingJoin,
+              primary: false,
+              onAction: _busy
+                  ? null
+                  : () => _run(() => _repo.acceptInvite(_inviteCtrl.text)),
+            ),
+            if (_busy) ...[
+              const SizedBox(height: AppSpace.xl),
+              const AppLoader(),
+            ],
+            if (errorText != null) ...[
+              const SizedBox(height: AppSpace.l),
+              Text(errorText,
+                  style: AppText.callout.copyWith(color: AppColors.danger),
+                  textAlign: TextAlign.center),
+            ],
+          ]),
         ),
-      ),
+      ],
     );
   }
 }
@@ -166,6 +162,7 @@ class _Section extends StatelessWidget {
     required this.field,
     required this.actionLabel,
     required this.onAction,
+    required this.primary,
   });
 
   final IconData icon;
@@ -175,28 +172,37 @@ class _Section extends StatelessWidget {
   final String actionLabel;
   final VoidCallback? onAction;
 
+  /// Главный путь — акцентная кнопка, второй — тонированная.
+  final bool primary;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(children: [
-              Icon(icon, color: theme.colorScheme.primary),
-              const SizedBox(width: 10),
-              Expanded(child: Text(title, style: theme.textTheme.titleMedium)),
-            ]),
-            const SizedBox(height: 6),
-            Text(subtitle, style: theme.textTheme.bodySmall),
-            const SizedBox(height: 14),
-            field,
-            const SizedBox(height: 12),
-            FilledButton(onPressed: onAction, child: Text(actionLabel)),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(top: AppSpace.s),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SectionHeader(title),
+          AppGroup(
+            margin: EdgeInsets.zero,
+            children: [
+              AppRow(
+                leading: LeadingIcon(icon),
+                title: title,
+                subtitle: subtitle,
+                subtitleMaxLines: 4,
+              ),
+              field,
+            ],
+          ),
+          const SizedBox(height: AppSpace.m),
+          AppButton(
+            label: actionLabel,
+            kind: primary ? AppButtonKind.primary : AppButtonKind.tinted,
+            onPressed: onAction,
+          ),
+          const SizedBox(height: AppSpace.s),
+        ],
       ),
     );
   }

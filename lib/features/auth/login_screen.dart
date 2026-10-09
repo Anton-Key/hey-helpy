@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import 'auth_repository.dart';
 import '../../core/app_message.dart';
@@ -89,13 +90,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l = context.l10n;
     return Scaffold(
+      backgroundColor: AppColors.bg,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpace.xl),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Form(
@@ -104,73 +105,66 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      l.appName,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l.appTagline,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 32),
-                    if (_isSignUp) ...[
-                      TextFormField(
-                        controller: _fullName,
-                        decoration: InputDecoration(
-                          labelText: l.loginName,
-                          prefixIcon: const Icon(Icons.person_outline),
+                    Text(l.appName,
+                        textAlign: TextAlign.center, style: AppText.largeTitle),
+                    const SizedBox(height: AppSpace.s),
+                    Text(l.appTagline,
+                        textAlign: TextAlign.center,
+                        style: AppText.callout
+                            .copyWith(color: AppColors.secondary)),
+                    const SizedBox(height: AppSpace.xxl),
+                    AppGroup(children: [
+                      if (_isSignUp)
+                        TextFormField(
+                          controller: _fullName,
+                          decoration: InputDecoration(
+                            labelText: l.loginName,
+                            prefixIcon: const Icon(AppIcons.user,
+                                size: AppSizes.icon,
+                                color: AppColors.secondary),
+                          ),
                         ),
+                      TextFormField(
+                        controller: _email,
+                        keyboardType: TextInputType.emailAddress,
+                        autofillHints: const [AutofillHints.email],
+                        decoration: InputDecoration(
+                          labelText: l.loginEmail,
+                          prefixIcon: const Icon(AppIcons.mail,
+                              size: AppSizes.icon, color: AppColors.secondary),
+                        ),
+                        validator: (v) => (v == null || !v.contains('@'))
+                            ? l.loginEmailInvalid
+                            : null,
                       ),
-                      const SizedBox(height: 12),
-                    ],
-                    TextFormField(
-                      controller: _email,
-                      keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email],
-                      decoration: InputDecoration(
-                        labelText: l.loginEmail,
-                        prefixIcon: const Icon(Icons.mail_outline),
+                      TextFormField(
+                        controller: _password,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: l.loginPassword,
+                          prefixIcon: const Icon(AppIcons.lock,
+                              size: AppSizes.icon, color: AppColors.secondary),
+                        ),
+                        validator: (v) => (v == null || v.length < 6)
+                            ? l.loginPasswordTooShort
+                            : null,
                       ),
-                      validator: (v) => (v == null || !v.contains('@'))
-                          ? l.loginEmailInvalid
-                          : null,
+                    ]),
+                    const SizedBox(height: AppSpace.m),
+                    AppButton.primary(
+                      label: _isSignUp ? l.loginSignUp : l.loginSignIn,
+                      loading: _loading,
+                      onPressed: _submit,
                     ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _password,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: l.loginPassword,
-                        prefixIcon: const Icon(Icons.lock_outline),
+                    const SizedBox(height: AppSpace.s),
+                    Center(
+                      child: AppButton.plain(
+                        label:
+                            _isSignUp ? l.loginHaveAccount : l.loginNoAccount,
+                        onPressed: _loading
+                            ? null
+                            : () => setState(() => _isSignUp = !_isSignUp),
                       ),
-                      validator: (v) => (v == null || v.length < 6)
-                          ? l.loginPasswordTooShort
-                          : null,
-                    ),
-                    const SizedBox(height: 24),
-                    FilledButton(
-                      onPressed: _loading ? null : _submit,
-                      child: _loading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(_isSignUp ? l.loginSignUp : l.loginSignIn),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: _loading
-                          ? null
-                          : () => setState(() => _isSignUp = !_isSignUp),
-                      child: Text(
-                          _isSignUp ? l.loginHaveAccount : l.loginNoAccount),
                     ),
                   ],
                 ),

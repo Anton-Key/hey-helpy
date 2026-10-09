@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hey_helpy/core/design/design.dart';
 import 'package:hey_helpy/features/requests/order_menu.dart';
 import 'package:hey_helpy/l10n/app_localizations.dart';
 
@@ -18,6 +19,10 @@ Widget _app(Widget menu, {Widget? body}) => MaterialApp(
           body: body),
     );
 
+/// Кнопка «⋯» — круглая кнопка-значок с подписью «Ещё» для диктора.
+final _more =
+    find.byWidgetPredicate((w) => w is AppIconButton && w.label == 'Ещё');
+
 void main() {
   testWidgets('менеджер: в меню «⋯» есть «Отменить» и «Удалить»',
       (tester) async {
@@ -28,7 +33,7 @@ void main() {
         onCancel: () => cancelled++,
         onDelete: () => deleted++)));
     // Кнопка меню — в шапке, видна без прокрутки.
-    final menu = find.byTooltip('Ещё');
+    final menu = _more;
     expect(menu, findsOneWidget);
     expect(tester.getRect(menu).top, lessThan(kToolbarHeight));
     await tester.tap(menu);
@@ -45,7 +50,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(_app(OrderMenu(
         canCancel: true, canDelete: false, onCancel: () {}, onDelete: () {})));
-    await tester.tap(find.byTooltip('Ещё'));
+    await tester.tap(_more);
     await tester.pumpAndSettle();
     expect(find.text('Отменить'), findsOneWidget);
     expect(find.text('Удалить'), findsNothing);
@@ -53,7 +58,7 @@ void main() {
     await tester.pumpWidget(_app(OrderMenu(
         canCancel: false, canDelete: false, onCancel: () {}, onDelete: () {})));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('Ещё'), findsNothing);
+    expect(_more, findsNothing);
   });
 
   testWidgets('диалог удаления: текст, «Удалить» и «Отмена»', (tester) async {
@@ -68,14 +73,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Удалить заявку безвозвратно?'), findsOneWidget);
     expect(find.textContaining('лучше «Отменить»'), findsOneWidget);
-    expect(find.widgetWithText(FilledButton, 'Удалить'), findsOneWidget);
+    expect(find.widgetWithText(AppButton, 'Удалить'), findsOneWidget);
     await tester.tap(find.text('Отмена'));
     await tester.pumpAndSettle();
     expect(answer, isFalse);
 
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Удалить'));
+    await tester.tap(find.widgetWithText(AppButton, 'Удалить'));
     await tester.pumpAndSettle();
     expect(answer, isTrue);
   });

@@ -2822,6 +2822,72 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Снять фильтр'**
   String get requestsFilterClear;
+
+  /// No description provided for @reqSearchHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск по заявкам'**
+  String get reqSearchHint;
+
+  /// No description provided for @reqSegAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все · {count}'**
+  String reqSegAll(int count);
+
+  /// No description provided for @reqSegOpen.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открытые · {count}'**
+  String reqSegOpen(int count);
+
+  /// No description provided for @reqSegOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просрочено · {count}'**
+  String reqSegOverdue(int count);
+
+  /// No description provided for @reqGroupToday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сегодня'**
+  String get reqGroupToday;
+
+  /// No description provided for @reqGroupEarlier.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ранее'**
+  String get reqGroupEarlier;
+
+  /// No description provided for @reqNothingFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не найдено'**
+  String get reqNothingFound;
+
+  /// No description provided for @reqFieldPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get reqFieldPlace;
+
+  /// No description provided for @reqFieldDue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок'**
+  String get reqFieldDue;
+
+  /// No description provided for @reqViaVoice.
+  ///
+  /// In ru, this message translates to:
+  /// **'голосом'**
+  String get reqViaVoice;
+
+  /// No description provided for @reqViaText.
+  ///
+  /// In ru, this message translates to:
+  /// **'текстом'**
+  String get reqViaText;
 }
 
 class _AppLocalizationsDelegate

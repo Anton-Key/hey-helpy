@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/paging.dart';
 import '../../core/period.dart';
 import '../../l10n/app_localizations.dart';
+import '../home/home_chrome.dart';
 import '../requests/order_list.dart';
-
-const _muted = Color(0xFF8A9098);
-const _danger = Color(0xFFC24444);
 
 /// Завершённая заявка в истории.
 class HistoryItem {
@@ -142,51 +142,63 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final done = _items.where((i) => i.status == 'done').length;
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 120),
-        children: [
-          PeriodBar(
-              period: _period,
-              onChanged: (p) {
-                setState(() => _period = p);
-                _load();
-              }),
-          const SizedBox(height: 6),
-          if (_loading) const LinearProgressIndicator(minHeight: 2),
-          if (_failed)
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(children: [
-                Text(l.historyLoadFailed,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: _danger)),
-                const SizedBox(height: 12),
-                OutlinedButton(onPressed: _load, child: Text(l.commonRetry)),
-              ]),
-            )
-          else if (_ctx != null) ...[
-            Padding(
-              padding: const EdgeInsetsDirectional.only(top: 8, bottom: 10),
-              child: Text(l.historyDoneInPeriod(done),
-                  style: const TextStyle(
-                      color: _muted,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13)),
-            ),
-            if (_items.isEmpty)
+    final ctx = _ctx;
+    // Группы по дню завершения (список уже отсортирован по убыванию).
+    final day = DateFormat.yMMMMd(l.localeName);
+    final groups = <String, List<HistoryItem>>{};
+    for (final i in _items) {
+      groups.putIfAbsent(day.format(i.finishedAt.toLocal()), () => []).add(i);
+    }
+    return CustomScrollView(
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      slivers: [
+        HomeHeader(title: l.navHistory),
+        CupertinoSliverRefreshControl(onRefresh: _load),
+        SliverContent(
+          sliver: SliverList.list(children: [
+            PeriodBar(
+                period: _period,
+                onChanged: (p) {
+                  setState(() => _period = p);
+                  _load();
+                }),
+            if (_loading && ctx == null)
+              const Padding(
+                padding: EdgeInsetsDirectional.symmetric(vertical: 40),
+                child: AppLoader(),
+              ),
+            if (_failed)
+              AppEmptyState(
+                  text: l.historyLoadFailed,
+                  error: true,
+                  actionLabel: l.commonRetry,
+                  onAction: _load)
+            else if (ctx != null) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Text(l.historyEmpty,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: _muted)),
-              )
-            else
-              for (final i in _items) _tile(l, _ctx!, i),
-          ],
-        ],
-      ),
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpace.rowH, AppSpace.xs, AppSpace.rowH, 0),
+                child: Row(children: [
+                  Expanded(
+                    child: Text(l.historyDoneInPeriod(done),
+                        style: AppText.footnote
+                            .copyWith(fontWeight: FontWeight.w600)),
+                  ),
+                  if (_loading) const CupertinoActivityIndicator(radius: 8),
+                ]),
+              ),
+              if (_items.isEmpty)
+                AppEmptyState(text: l.historyEmpty, icon: AppIcons.history)
+              else
+                for (final g in groups.entries)
+                  AppGroup(header: g.key, children: [
+                    for (final i in g.value) _tile(l, ctx, i),
+                  ]),
+            ],
+          ]),
+        ),
+        const SliverBottomInset(),
+      ],
     );
   }
 
@@ -199,22 +211,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
       if (contractor != null) contractor,
     ].join(' · ');
     final when = l.dateTime(i.finishedAt);
-    return OrderTile(
+    final lines = [
+      i.status == 'done'
+          ? l.historyAcceptedAt(when)
+          : l.historyCancelledAt(when),
+      if (i.execution != null) l.historyExecution(l.duration(i.execution!)),
+      if (who.isNotEmpty) l.historyExecutor(who),
+      if (i.visitGeofence == true) l.historyVisitInGeofence,
+    ];
+    final alerts = [
+      if (i.returnCount > 0) l.reportsReturnedTimes(i.returnCount),
+      if (i.visitGeofence == false) l.historyVisitOutside,
+    ];
+    return AppRow(
+      leading: PriorityDot((r['priority'] ?? 'normal') as String),
       title: (r['title'] ?? '') as String,
-      status: i.status,
-      lines: [
-        ctx.placeLine(context, r),
-        i.status == 'done'
-            ? l.historyAcceptedAt(when)
-            : l.historyCancelledAt(when),
-        if (i.execution != null) l.historyExecution(l.duration(i.execution!)),
-        if (who.isNotEmpty) l.historyExecutor(who),
-        if (i.visitGeofence == true) l.historyVisitInGeofence,
-      ],
-      alerts: [
-        if (i.returnCount > 0) l.reportsReturnedTimes(i.returnCount),
-        if (i.visitGeofence == false) l.historyVisitOutside,
-      ],
+      subtitle: ctx.placeLine(context, r),
+      trailing: StatusPill(i.status),
+      extra: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        for (final line in lines) Text(line, style: AppText.caption),
+        if (alerts.isNotEmpty)
+          Text(alerts.join(' · '),
+              style: AppText.caption.copyWith(
+                  color: AppColors.danger, fontWeight: FontWeight.w600)),
+      ]),
       onTap: () async {
         await ctx.open(context, r);
         if (mounted) await _load();

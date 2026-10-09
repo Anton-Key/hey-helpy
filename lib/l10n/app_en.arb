@@ -453,5 +453,19 @@
   "mapClose": "Close",
   "mapCluster": "{count} locations. Tap to zoom in",
   "requestsFilterObject": "Location: {name}",
-  "requestsFilterClear": "Clear filter"
+  "requestsFilterClear": "Clear filter",
+  "reqSearchHint": "Search requests",
+  "reqSegAll": "All · {count}",
+  "@reqSegAll": {"placeholders": {"count": {"type": "int"}}},
+  "reqSegOpen": "Open · {count}",
+  "@reqSegOpen": {"placeholders": {"count": {"type": "int"}}},
+  "reqSegOverdue": "Overdue · {count}",
+  "@reqSegOverdue": {"placeholders": {"count": {"type": "int"}}},
+  "reqGroupToday": "Today",
+  "reqGroupEarlier": "Earlier",
+  "reqNothingFound": "Nothing found",
+  "reqFieldPlace": "Room",
+  "reqFieldDue": "Due",
+  "reqViaVoice": "by voice",
+  "reqViaText": "by text"
 }

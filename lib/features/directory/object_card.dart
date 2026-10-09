@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../requests/order_list.dart';
 import 'contractor_card.dart';
 import 'directory.dart';
 import '../../core/app_message.dart';
-
-const _muted = Color(0xFF8A9098);
-const _danger = Color(0xFFC24444);
 
 /// Карточка объекта: тип, адрес, координаты и радиус геозоны (меняет только
 /// менеджер — проверяет база), помещения, подрядчики по видам работ,
@@ -81,12 +77,8 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
 
   Future<void> _edit() async {
     final l = context.l10n;
-    final saved = await showModalBottomSheet<bool>(
+    final saved = await showAppSheet<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => _GeoForm(object: _obj, repo: _dir),
     );
     if (saved == true) {
@@ -98,33 +90,31 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(title: Text(_obj.name)),
-      body: _loading && _ctx == null
-          ? const Center(child: CircularProgressIndicator())
-          : _failed
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      Text(l.cardLoadFailed,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: _danger)),
-                      const SizedBox(height: 12),
-                      OutlinedButton(
-                          onPressed: _load, child: Text(l.commonRetry)),
-                    ]),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 40),
-                    children: _content(l),
-                  ),
-                ),
+    final List<Widget> slivers;
+    if (_loading && _ctx == null) {
+      slivers = const [
+        SliverFillRemaining(hasScrollBody: false, child: AppLoader())
+      ];
+    } else if (_failed) {
+      slivers = [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: AppEmptyState(
+              text: l.cardLoadFailed,
+              error: true,
+              actionLabel: l.commonRetry,
+              onAction: _load),
+        )
+      ];
+    } else {
+      slivers = [
+        SliverContent(sliver: SliverList.list(children: _content(l))),
+      ];
+    }
+    return AppScaffold(
+      title: _obj.name,
+      onRefresh: _load,
+      slivers: slivers,
     );
   }
 
@@ -133,163 +123,118 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
     final locale = context.localeCode;
     final coord = NumberFormat('0.00000', l.localeName);
     final num = NumberFormat.decimalPattern(l.localeName);
-    Widget info(IconData icon, String label, String value) => Padding(
-          padding: const EdgeInsetsDirectional.only(top: 8),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(icon, size: 18, color: _muted),
-            const SizedBox(width: 8),
-            SizedBox(
-                width: 110,
-                child: Text(label,
-                    style: const TextStyle(color: _muted, fontSize: 13))),
-            Expanded(
-                child: Text(value,
-                    style: const TextStyle(fontWeight: FontWeight.w600))),
-          ]),
-        );
+    String contractorOf(Binding b) =>
+        b.contractorName ??
+        ctx.contractorName(b.contractorId) ??
+        l.contractorUnknown;
     return [
-      TapCard(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                  color: HeyHelpyTheme.mint,
-                  borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.apartment, color: HeyHelpyTheme.link),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(_obj.name,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
-            ),
-          ]),
-          const SizedBox(height: 6),
-          info(Icons.category_outlined, l.objectFormType,
-              l.objectType(_obj.type)),
-          info(
-              Icons.place_outlined,
-              l.objectFormAddress,
-              _obj.address?.isNotEmpty == true
+      AppGroup(
+        footer: _obj.hasCoordinates ? null : l.cardNoCoordinatesHint,
+        children: [
+          AppRow(
+              leading: const LeadingIcon(AppIcons.building),
+              title: l.objectFormType,
+              value: l.objectType(_obj.type)),
+          AppRow(
+              leading: const LeadingIcon(AppIcons.place),
+              title: l.objectFormAddress,
+              value: _obj.address?.isNotEmpty == true
                   ? _obj.address!
                   : l.commonNotSpecified),
-          info(
-              Icons.my_location,
-              l.cardCoordinates,
-              _obj.hasCoordinates
+          AppRow(
+              leading: const LeadingIcon(AppIcons.locate),
+              title: l.cardCoordinates,
+              value: _obj.hasCoordinates
                   ? '${coord.format(_obj.lat)}, ${coord.format(_obj.lng)}'
                   : l.cardCoordinatesNotSet),
-          info(Icons.radar, l.cardGeofenceRadius,
-              l.cardMeters(num.format(_obj.geofenceRadiusM))),
-          if (!_obj.hasCoordinates)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(top: 8),
-              child: Text(l.cardNoCoordinatesHint,
-                  style: const TextStyle(color: _danger, fontSize: 12)),
-            ),
-        ]),
+          AppRow(
+              leading: const LeadingIcon(AppIcons.nearby),
+              title: l.cardGeofenceRadius,
+              value: l.cardMeters(num.format(_obj.geofenceRadiusM))),
+        ],
       ),
       if (ctx.isManager)
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: FilledButton.icon(
-            style: brandButtonStyle().copyWith(
-                minimumSize: const WidgetStatePropertyAll(Size(0, 48))),
-            onPressed: _edit,
-            icon: const Icon(Icons.edit_location_alt_outlined, size: 20),
-            label: Text(l.cardEditGeo,
-                style: const TextStyle(fontWeight: FontWeight.w800)),
-          ),
+        Padding(
+          padding: const EdgeInsetsDirectional.only(bottom: AppSpace.group),
+          child: AppButton.tinted(
+              icon: AppIcons.placeEdit, label: l.cardEditGeo, onPressed: _edit),
         ),
 
       // Помещения
-      SectionTitle(l.cardPlacesTitle),
-      if (_places.isEmpty)
-        Text(l.cardPlacesEmpty, style: const TextStyle(color: _muted))
-      else
-        for (final p in _places)
-          TapCard(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => WorkOrderListScreen(
-                        title: p.name, subtitle: _obj.name, locationId: p.id))),
-            child: Row(children: [
-              const Icon(Icons.meeting_room_outlined, color: _muted),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: Text(p.name,
-                      style: const TextStyle(fontWeight: FontWeight.w700))),
-            ]),
-          ),
+      AppGroup(header: l.cardPlacesTitle, children: [
+        if (_places.isEmpty)
+          AppRow(title: l.cardPlacesEmpty, titleStyle: AppText.callout)
+        else
+          for (final p in _places)
+            AppRow(
+              leading: const LeadingIcon.neutral(AppIcons.room),
+              title: p.name,
+              onTap: () => Navigator.push(
+                  context,
+                  appRoute(
+                      (_) => WorkOrderListScreen(
+                          title: p.name, subtitle: _obj.name, locationId: p.id),
+                      title: _obj.name)),
+            ),
+      ]),
 
       // Подрядчики по видам работ
-      SectionTitle(l.cardObjectContractorsTitle),
-      if (_bindings.isEmpty)
-        Text(l.cardBindingsEmpty, style: const TextStyle(color: _muted))
-      else
-        for (final b in _bindings)
-          TapCard(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => ContractorCardScreen(
-                        contractor: Contractor(
-                            id: b.contractorId,
-                            orgName: b.contractorName ??
-                                ctx.contractorName(b.contractorId) ??
-                                l.contractorUnknown)))),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(b.layer?.label(locale) ?? l.commonNotSpecified,
-                  style: const TextStyle(
-                      color: _muted,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600)),
-              const SizedBox(height: 2),
-              Text(
-                  b.contractorName ??
-                      ctx.contractorName(b.contractorId) ??
-                      l.contractorUnknown,
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
-              if (b.objectId == null)
-                Text(l.cardAllObjects,
-                    style: const TextStyle(color: _muted, fontSize: 12)),
-            ]),
-          ),
+      AppGroup(header: l.cardObjectContractorsTitle, children: [
+        if (_bindings.isEmpty)
+          AppRow(title: l.cardBindingsEmpty, titleStyle: AppText.callout)
+        else
+          for (final b in _bindings)
+            AppRow(
+              leading: InitialsTile(contractorOf(b)),
+              title: contractorOf(b),
+              subtitle: [
+                b.layer?.label(locale) ?? l.commonNotSpecified,
+                if (b.objectId == null) l.cardAllObjects,
+              ].join(' · '),
+              onTap: () => Navigator.push(
+                  context,
+                  appRoute(
+                      (_) => ContractorCardScreen(
+                          contractor: Contractor(
+                              id: b.contractorId, orgName: contractorOf(b))),
+                      title: _obj.name)),
+            ),
+      ]),
 
       // Последние заявки
-      SectionTitle(l.cardRecentOrders),
-      if (_recent.isEmpty)
-        Text(l.cardOrdersEmpty, style: const TextStyle(color: _muted))
-      else ...[
-        for (final r in _recent)
-          OrderTile(
-            title: (r['title'] ?? '') as String,
-            status: (r['status'] ?? 'new') as String,
-            lines: [
-              ctx.placeLine(context, r),
-              l.dateTime(DateTime.parse('${r['created_at']}')),
-            ],
-            onTap: () async {
-              await ctx.open(context, r);
-              if (mounted) await _load();
-            },
+      AppGroup(header: l.cardRecentOrders, children: [
+        if (_recent.isEmpty)
+          AppRow(title: l.cardOrdersEmpty, titleStyle: AppText.callout)
+        else ...[
+          for (final r in _recent)
+            AppRow(
+              leading: PriorityDot((r['priority'] ?? 'normal') as String),
+              title: (r['title'] ?? '') as String,
+              subtitle: [
+                ctx.placeLine(context, r),
+                l.dateTime(DateTime.parse('${r['created_at']}')),
+              ].join('\n'),
+              trailing: StatusPill((r['status'] ?? 'new') as String),
+              onTap: () async {
+                await ctx.open(context, r);
+                if (mounted) await _load();
+              },
+            ),
+          AppRow(
+            leading: const LeadingIcon(AppIcons.list),
+            title: l.cardAllObjectOrders,
+            titleStyle: AppText.rowTitle.copyWith(color: AppColors.accentText),
+            onTap: () => Navigator.push(
+                context,
+                appRoute(
+                    (_) => WorkOrderListScreen(
+                        title: l.cardAllObjectOrders,
+                        subtitle: _obj.name,
+                        objectId: _obj.id),
+                    title: _obj.name)),
           ),
-        TextButton.icon(
-          onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => WorkOrderListScreen(
-                      title: l.cardAllObjectOrders,
-                      subtitle: _obj.name,
-                      objectId: _obj.id))),
-          icon: const Icon(Icons.list_alt_rounded),
-          label: Text(l.cardAllObjectOrders),
-        ),
-      ],
+        ],
+      ]),
     ];
   }
 }
@@ -394,77 +339,72 @@ class _GeoFormState extends State<_GeoForm> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    InputDecoration deco(String label, [String? hint]) => InputDecoration(
-          labelText: label,
-          hintText: hint,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        );
+    InputDecoration deco(String label, [String? hint]) =>
+        InputDecoration(labelText: label, hintText: hint);
     const numKeys =
         TextInputType.numberWithOptions(decimal: true, signed: true);
     return Padding(
       padding: EdgeInsetsDirectional.only(
           bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(l.cardEditGeo,
-                  style: const TextStyle(
-                      fontSize: 19, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 16),
-              TextField(
-                  controller: _address,
-                  decoration:
-                      deco(l.objectFormAddress, l.objectFormAddressHint)),
-              const SizedBox(height: 12),
-              Row(children: [
-                Expanded(
-                    child: TextField(
-                        controller: _lat,
-                        keyboardType: numKeys,
-                        decoration: deco(l.cardLatitude))),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: TextField(
-                        controller: _lng,
-                        keyboardType: numKeys,
-                        decoration: deco(l.cardLongitude))),
-              ]),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: _locating ? null : _useMyLocation,
-                icon: _locating
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.my_location),
-                label: Text(l.cardUseMyLocation),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                  controller: _radius,
-                  keyboardType: TextInputType.number,
-                  decoration: deco(l.cardGeofenceRadiusInput)),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(top: 10),
-                  child: Text(_error!,
-                      style: const TextStyle(color: _danger, fontSize: 13)),
-                ),
-              const SizedBox(height: 18),
-              FilledButton(
-                style: brandButtonStyle(),
-                onPressed: _saving ? null : _save,
-                child: Text(l.commonSave,
-                    style: const TextStyle(fontWeight: FontWeight.w800)),
-              ),
-            ],
+        top: false,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SheetHeader(
+            title: l.cardEditGeo,
+            doneLabel: l.commonSave,
+            doneLoading: _saving,
+            onDone: _saving ? null : _save,
           ),
-        ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.xl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                      controller: _address,
+                      decoration:
+                          deco(l.objectFormAddress, l.objectFormAddressHint)),
+                  const SizedBox(height: AppSpace.m),
+                  Row(children: [
+                    Expanded(
+                        child: TextField(
+                            controller: _lat,
+                            keyboardType: numKeys,
+                            decoration: deco(l.cardLatitude))),
+                    const SizedBox(width: AppSpace.s),
+                    Expanded(
+                        child: TextField(
+                            controller: _lng,
+                            keyboardType: numKeys,
+                            decoration: deco(l.cardLongitude))),
+                  ]),
+                  const SizedBox(height: AppSpace.s),
+                  AppButton.tinted(
+                    icon: AppIcons.locate,
+                    label: l.cardUseMyLocation,
+                    loading: _locating,
+                    onPressed: _locating ? null : _useMyLocation,
+                  ),
+                  const SizedBox(height: AppSpace.m),
+                  TextField(
+                      controller: _radius,
+                      keyboardType: TextInputType.number,
+                      decoration: deco(l.cardGeofenceRadiusInput)),
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(top: 10),
+                      child: Text(_error!,
+                          style: AppText.footnote
+                              .copyWith(color: AppColors.danger)),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ]),
       ),
     );
   }

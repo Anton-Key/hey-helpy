@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import 'photo_repository.dart';
-
-const _ink = Color(0xFF1C1E22);
-const _muted = Color(0xFF8A9098);
-const _line = Color(0xFFE8EAED);
-const _mint = Color(0xFFD8F0EA);
-const _link = Color(0xFF177A65);
-const _danger = Color(0xFFC24444);
 
 /// Блок «Фото» в карточке заявки: две колонки «До» и «После».
 /// По нажатию фото открывается на весь экран.
@@ -36,12 +30,11 @@ class WorkPhotosSection extends StatelessWidget {
     final before = photos.where((p) => p.stage == 'before').toList();
     final after = photos.where((p) => p.stage != 'before').toList();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text(l.photosTitle,
-          style: const TextStyle(
-              fontSize: 14, fontWeight: FontWeight.w700, color: _ink)),
-      const SizedBox(height: 10),
+      SectionHeader(l.photosTitle),
       if (loadFailed)
-        Text(l.photoLoadFailed, style: const TextStyle(color: _danger))
+        AppCard(
+            child: Text(l.photoLoadFailed,
+                style: AppText.callout.copyWith(color: AppColors.danger)))
       else
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(
@@ -52,7 +45,7 @@ class WorkPhotosSection extends StatelessWidget {
                   busy: busy,
                   addLabel:
                       before.isEmpty ? l.photoAddBefore : l.photoTakeMore)),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpace.m),
           Expanded(
               child: _Column(
                   title: l.photosAfter,
@@ -83,54 +76,55 @@ class _Column extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text(title,
-          style: const TextStyle(
-              color: _muted, fontSize: 13, fontWeight: FontWeight.w600)),
-      const SizedBox(height: 6),
+      Padding(
+        padding: const EdgeInsetsDirectional.only(
+            start: AppSpace.xs, bottom: AppSpace.s - 2),
+        child: Text(title,
+            style: AppText.footnote.copyWith(fontWeight: FontWeight.w600)),
+      ),
       for (final p in photos)
         Padding(
-          padding: const EdgeInsetsDirectional.only(bottom: 8),
+          padding: const EdgeInsetsDirectional.only(bottom: AppSpace.s),
           child: _Thumb(photo: p),
         ),
       if (photos.isEmpty && onAdd == null)
         Container(
-          height: 90,
+          height: 96,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _line)),
-          child: Text(l.photosNone,
-              style: const TextStyle(color: _muted, fontSize: 13)),
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.group)),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(AppIcons.camera,
+                size: AppSizes.icon, color: AppColors.tertiary),
+            const SizedBox(height: AppSpace.xs),
+            Text(l.photosNone, style: AppText.footnote),
+          ]),
         ),
       if (onAdd != null)
-        // Material + InkWell: у Container с заливкой эффект нажатия не виден.
-        Material(
-          color: _mint,
-          borderRadius: BorderRadius.circular(14),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: busy ? null : onAdd,
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 90),
-              padding: const EdgeInsets.all(8),
-              alignment: Alignment.center,
-              child: busy
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2.5, color: _link))
-                  : Column(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.photo_camera_outlined, color: _link),
-                      const SizedBox(height: 4),
-                      Text(addLabel,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              color: _link,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13)),
-                    ]),
-            ),
+        Pressable(
+          onTap: busy ? null : onAdd,
+          effect: PressEffect.highlight,
+          borderRadius: BorderRadius.circular(AppRadius.group),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 96),
+            padding: const EdgeInsets.all(AppSpace.s),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                color: AppColors.accentTint,
+                borderRadius: BorderRadius.circular(AppRadius.group)),
+            child: busy
+                ? const AppLoader()
+                : Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(AppIcons.camera,
+                        size: AppSizes.iconL, color: AppColors.accentText),
+                    const SizedBox(height: AppSpace.xs),
+                    Text(addLabel,
+                        textAlign: TextAlign.center,
+                        style: AppText.footnote.copyWith(
+                            color: AppColors.accentText,
+                            fontWeight: FontWeight.w600)),
+                  ]),
           ),
         ),
     ]);
@@ -145,47 +139,54 @@ class _Thumb extends StatelessWidget {
   Widget build(BuildContext context) {
     final open = photo.url == null
         ? null
-        : () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => PhotoViewerScreen(photo: photo)));
-    // Эффект нажатия рисуется поверх снимка; значок лупы подсказывает,
-    // что фото открывается на весь экран.
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+        : () => Navigator.push(
+            context,
+            appRoute((_) => PhotoViewerScreen(photo: photo),
+                title: context.l10n.detailTitle));
+    // Значок лупы подсказывает, что фото открывается на весь экран.
+    const broken = ColoredBox(
+        color: AppColors.fill,
+        child: Icon(AppIcons.imageBroken, color: AppColors.secondary));
+    final image = ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.group),
       child: AspectRatio(
         aspectRatio: 4 / 3,
         child: Stack(fit: StackFit.expand, children: [
           photo.url == null
-              ? const ColoredBox(
-                  color: _line,
-                  child: Icon(Icons.broken_image_outlined, color: _muted))
+              ? broken
               : Image.network(photo.url!,
                   fit: BoxFit.cover,
                   loadingBuilder: (_, child, progress) => progress == null
                       ? child
                       : const ColoredBox(
-                          color: _line,
-                          child: Center(
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2))),
-                  errorBuilder: (_, __, ___) => const ColoredBox(
-                      color: _line,
-                      child: Icon(Icons.broken_image_outlined, color: _muted))),
-          if (open != null) ...[
-            const PositionedDirectional(
+                          color: AppColors.fill, child: AppLoader()),
+                  errorBuilder: (_, __, ___) => broken),
+          if (open != null)
+            PositionedDirectional(
               end: 6,
               bottom: 6,
-              child: CircleAvatar(
-                radius: 13,
-                backgroundColor: Color(0x99000000),
-                child: Icon(Icons.zoom_in, size: 16, color: Colors.white),
+              child: Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                    color: AppColors.ink.withValues(alpha: 0.6),
+                    shape: BoxShape.circle),
+                child: const Icon(AppIcons.zoomIn,
+                    size: 16, color: AppColors.surface),
               ),
             ),
-            Material(
-                type: MaterialType.transparency, child: InkWell(onTap: open)),
-          ],
         ]),
       ),
     );
+    if (open == null) return image;
+    return Pressable(
+        onTap: open,
+        effect: PressEffect.highlight,
+        borderRadius: BorderRadius.circular(AppRadius.group),
+        semanticLabel: photo.stage == 'before'
+            ? context.l10n.photosBefore
+            : context.l10n.photosAfter,
+        child: image);
   }
 }
 
@@ -203,14 +204,31 @@ class PhotoViewerScreen extends StatelessWidget {
     final where = photo.mockLocation
         ? l.photoMockLocation
         : (photo.hasLocation ? l.photoWithLocation : l.photoNoLocation);
+    // Тёмный просмотр: фото на чёрном фоне, подписи — светлые.
+    final light = AppColors.surface.withValues(alpha: 0.75);
+    final warn = StatusColors.returned.background;
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: Text(photo.stage == 'before' ? l.photosBefore : l.photosAfter),
-      ),
+      backgroundColor: AppColors.ink,
       body: Column(children: [
+        SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: AppSizes.navBar,
+            child: NavigationToolbar(
+              leading: Padding(
+                padding: const EdgeInsetsDirectional.only(start: AppSpace.s),
+                child: AppIconButton(
+                    icon: AppIcons.close,
+                    label: MaterialLocalizations.of(context).closeButtonTooltip,
+                    filled: true,
+                    onPressed: () => Navigator.maybePop(context)),
+              ),
+              middle: Text(
+                  photo.stage == 'before' ? l.photosBefore : l.photosAfter,
+                  style: AppText.headline.copyWith(color: AppColors.surface)),
+            ),
+          ),
+        ),
         Expanded(
           child: InteractiveViewer(
             minScale: 1,
@@ -222,28 +240,18 @@ class PhotoViewerScreen extends StatelessWidget {
         SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpace.l),
             child: Row(children: [
               if (when != null)
                 Expanded(
                     child: Text(when,
-                        style: const TextStyle(
-                            color: Colors.white70, fontSize: 13))),
-              Icon(
-                  photo.mockLocation
-                      ? Icons.warning_amber_rounded
-                      : Icons.place_outlined,
-                  size: 16,
-                  color: photo.mockLocation
-                      ? const Color(0xFFFFB4A9)
-                      : Colors.white70),
-              const SizedBox(width: 4),
+                        style: AppText.footnote.copyWith(color: light))),
+              Icon(photo.mockLocation ? AppIcons.warning : AppIcons.place,
+                  size: 16, color: photo.mockLocation ? warn : light),
+              const SizedBox(width: AppSpace.xs),
               Text(where,
-                  style: TextStyle(
-                      color: photo.mockLocation
-                          ? const Color(0xFFFFB4A9)
-                          : Colors.white70,
-                      fontSize: 13)),
+                  style: AppText.footnote
+                      .copyWith(color: photo.mockLocation ? warn : light)),
             ]),
           ),
         ),

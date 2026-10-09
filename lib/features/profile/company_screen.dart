@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_links.dart';
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/profile.dart';
 import '../../models/user_role.dart';
@@ -13,9 +12,6 @@ import '../onboarding/onboarding_repository.dart';
 import '../onboarding/onboarding_screen.dart';
 import 'profile_repository.dart';
 import '../../core/app_message.dart';
-
-const _muted = Color(0xFF8A9098);
-const _danger = Color(0xFFC24444);
 
 /// Сроки приглашения на выбор (дней). Больше 7 не даём: так решено в 0008.
 const _inviteDays = [1, 3, 7];
@@ -97,26 +93,22 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
   Future<void> _rename() async {
     final l = context.l10n;
     final ctrl = TextEditingController(text: _name ?? '');
-    final name = await showDialog<String>(
+    final save = await showAppDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l.companyRenameTitle),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          maxLength: 200,
-          decoration: InputDecoration(labelText: l.onboardingCompanyName),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: Text(l.commonCancel)),
-          FilledButton(
-              style: brandButtonStyle(),
-              onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-              child: Text(l.commonSave)),
-        ],
+      title: l.companyRenameTitle,
+      content: TextField(
+        controller: ctrl,
+        autofocus: true,
+        maxLength: 200,
+        decoration: InputDecoration(
+            labelText: l.onboardingCompanyName, fillColor: AppColors.fill),
       ),
+      actions: [
+        AppDialogAction(l.commonSave, true, primary: true),
+        AppDialogAction(l.commonCancel, false),
+      ],
     );
+    final name = save == true ? ctrl.text.trim() : null;
     ctrl.dispose();
     if (name == null || name.isEmpty || name == _name) return;
     try {
@@ -149,31 +141,31 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
       UserRole.requester,
       UserRole.executor,
     ];
-    final chosen = await showModalBottomSheet<UserRole>(
+    final chosen = await showAppSheet<UserRole>(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => SafeArea(
+        top: false,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SheetHeader(title: l.companyRoleTitle(_memberName(l, m))),
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(20, 18, 20, 4),
-            child: Text(l.companyRoleTitle(_memberName(l, m)),
-                style:
-                    const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-          ),
-          for (final r in roles)
-            ListTile(
-              title: Text(l.role(r)),
-              trailing: r == m.role
-                  ? const Icon(Icons.check_rounded, color: HeyHelpyTheme.link)
-                  : null,
-              onTap: () => Navigator.pop(ctx, r),
+            padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.l),
+            child: AppGroup(
+              margin: EdgeInsets.zero,
+              footer: l.companyRoleExecutorHint,
+              children: [
+                for (final r in roles)
+                  AppRow(
+                    title: l.role(r),
+                    chevron: false,
+                    trailing: r == m.role
+                        ? const Icon(AppIcons.check,
+                            size: AppSizes.icon, color: AppColors.accentText)
+                        : null,
+                    onTap: () => Navigator.pop(ctx, r),
+                  ),
+              ],
             ),
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(20, 4, 20, 16),
-            child: Text(l.companyRoleExecutorHint,
-                style: const TextStyle(color: _muted, fontSize: 12)),
           ),
         ]),
       ),
@@ -202,49 +194,61 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
     }
     var contractorId = _contractors.first.id;
     var days = _inviteDays.last;
-    final ok = await showDialog<bool>(
+    final ok = await showAppSheet<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, set) => AlertDialog(
-          title: Text(l.inviteTitle),
-          content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DropdownButtonFormField<String>(
-                  initialValue: contractorId,
-                  isExpanded: true,
-                  decoration: InputDecoration(labelText: l.inviteContractor),
-                  items: [
-                    for (final c in _contractors)
-                      DropdownMenuItem(value: c.id, child: Text(c.orgName)),
-                  ],
-                  onChanged: (v) => set(() => contractorId = v ?? contractorId),
-                ),
-                const SizedBox(height: 14),
-                Text(l.inviteRoleInfo,
-                    style: const TextStyle(color: _muted, fontSize: 13)),
-                const SizedBox(height: 14),
-                Text(l.inviteValidity,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Wrap(spacing: 8, children: [
-                  for (final d in _inviteDays)
-                    ChoiceTag(
-                        label: l.inviteDays(d),
-                        selected: d == days,
-                        onTap: () => set(() => days = d)),
-                ]),
-              ]),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l.commonCancel)),
-            FilledButton(
-                style: brandButtonStyle(),
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l.inviteCreate)),
-          ],
+        builder: (ctx, set) => SafeArea(
+          top: false,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            SheetHeader(
+                title: l.inviteTitle,
+                doneLabel: l.inviteCreate,
+                onDone: () => Navigator.pop(ctx, true)),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpace.screen, 0, AppSpace.screen, AppSpace.l),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AppGroup(
+                        header: l.inviteContractor,
+                        footer: l.inviteRoleInfo,
+                        children: [
+                          for (final c in _contractors)
+                            AppRow(
+                              leading: InitialsTile(c.orgName),
+                              title: c.orgName,
+                              chevron: false,
+                              trailing: c.id == contractorId
+                                  ? const Icon(AppIcons.check,
+                                      size: AppSizes.icon,
+                                      color: AppColors.accentText)
+                                  : null,
+                              onTap: () => set(() => contractorId = c.id),
+                            ),
+                        ],
+                      ),
+                      SectionHeader(l.inviteValidity),
+                      Wrap(
+                          spacing: AppSpace.s,
+                          runSpacing: AppSpace.s,
+                          children: [
+                            for (final d in _inviteDays)
+                              AppChip(
+                                  label: l.inviteDays(d),
+                                  selected: d == days,
+                                  onTap: () => set(() => days = d)),
+                          ]),
+                      const SizedBox(height: AppSpace.xl),
+                      AppButton.primary(
+                          label: l.inviteCreate,
+                          icon: AppIcons.userAdd,
+                          onPressed: () => Navigator.pop(ctx, true)),
+                    ]),
+              ),
+            ),
+          ]),
         ),
       ),
     );
@@ -284,62 +288,57 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
   /// Готовое приглашение: код, ссылка, «скопировать», «отозвать».
   Future<void> _showInvite(Invite i) async {
     final l = context.l10n;
-    final revoke = await showModalBottomSheet<bool>(
+    final revoke = await showAppSheet<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(20, 18, 20, 16),
-          child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(l.inviteReadyTitle(_contractorName(i.contractorId)),
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 4),
-                Text(
-                    l.inviteValidUntil(
-                        i.expiresAt == null ? '—' : l.dateTime(i.expiresAt!)),
-                    style: const TextStyle(color: _muted, fontSize: 13)),
-                const SizedBox(height: 14),
-                Text(l.inviteCodeLabel,
-                    style: const TextStyle(color: _muted, fontSize: 12)),
-                SelectableText(i.token,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'monospace')),
-                const SizedBox(height: 10),
-                Text(l.inviteLinkLabel,
-                    style: const TextStyle(color: _muted, fontSize: 12)),
-                SelectableText(inviteLink(i.token),
-                    style: const TextStyle(
-                        color: HeyHelpyTheme.link, fontSize: 13)),
-                const SizedBox(height: 10),
-                Text(l.inviteHowTo,
-                    style: const TextStyle(color: _muted, fontSize: 12)),
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                    style: brandButtonStyle(),
-                    onPressed: () => _copy(_inviteText(l, i), l.inviteCopied),
-                    icon: const Icon(Icons.copy_rounded),
-                    label: Text(l.inviteCopyMessage)),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                    onPressed: () => _copy(i.token, l.inviteCodeCopied),
-                    icon: const Icon(Icons.key_outlined),
-                    label: Text(l.inviteCopyCode)),
-                if (i.id.isNotEmpty)
-                  TextButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: Text(l.inviteRevoke,
-                          style: const TextStyle(color: _danger))),
-              ]),
-        ),
+        top: false,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SheetHeader(title: l.inviteTitle),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.l),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(l.inviteReadyTitle(_contractorName(i.contractorId)),
+                        style: AppText.title2),
+                    const SizedBox(height: AppSpace.xs),
+                    Text(
+                        l.inviteValidUntil(i.expiresAt == null
+                            ? '—'
+                            : l.dateTime(i.expiresAt!)),
+                        style: AppText.footnote),
+                    const SizedBox(height: AppSpace.l),
+                    AppGroup(footer: l.inviteHowTo, children: [
+                      _selectable(l.inviteCodeLabel, i.token, AppText.headline),
+                      _selectable(
+                          l.inviteLinkLabel,
+                          inviteLink(i.token),
+                          AppText.footnote
+                              .copyWith(color: AppColors.accentText)),
+                    ]),
+                    const SizedBox(height: AppSpace.s),
+                    AppButton.primary(
+                        icon: AppIcons.copy,
+                        label: l.inviteCopyMessage,
+                        onPressed: () =>
+                            _copy(_inviteText(l, i), l.inviteCopied)),
+                    const SizedBox(height: AppSpace.s),
+                    AppButton.secondary(
+                        icon: AppIcons.key,
+                        label: l.inviteCopyCode,
+                        onPressed: () => _copy(i.token, l.inviteCodeCopied)),
+                    if (i.id.isNotEmpty) ...[
+                      const SizedBox(height: AppSpace.s),
+                      AppButton.destructive(
+                          label: l.inviteRevoke,
+                          onPressed: () => Navigator.pop(ctx, true)),
+                    ],
+                  ]),
+            ),
+          ),
+        ]),
       ),
     );
     if (revoke != true) return;
@@ -358,157 +357,123 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
           ? l.profileDefaultName
           : m.fullName!;
 
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-          title: Text(l.profileMyCompany), backgroundColor: Colors.white),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 40),
-          children: [
-            if (_loading) const LinearProgressIndicator(minHeight: 2),
-            if (_failed)
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(children: [
-                  Text(l.companyLoadFailed,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: _danger)),
-                  const SizedBox(height: 12),
-                  OutlinedButton(onPressed: _load, child: Text(l.commonRetry)),
-                ]),
-              )
-            else ...[
-              _companyCard(l),
-              SectionTitle(l.companyMembers(_members.length)),
-              for (final m in _members) _memberTile(l, m),
-              if (_canManage) ...[
-                SectionTitle(l.companyInvites,
-                    trailing: FilledButton.icon(
-                        style: brandButtonStyle(),
-                        onPressed: _loading ? null : _createInvite,
-                        icon: const Icon(Icons.person_add_alt_1, size: 18),
-                        label: Text(l.companyInvite))),
-                if (_invites.isEmpty)
-                  Text(l.companyNoInvites,
-                      style: const TextStyle(color: _muted, fontSize: 13))
-                else
-                  for (final i in _invites)
-                    TapCard(
-                      onTap: () => _showInvite(i),
-                      chevron: false,
-                      child: Row(children: [
-                        const Icon(Icons.link, color: _muted, size: 20),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                              l.companyInviteRow(
-                                  _contractorName(i.contractorId),
-                                  i.expiresAt == null
-                                      ? '—'
-                                      : l.dateTime(i.expiresAt!)),
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w600)),
-                        ),
-                        const Icon(Icons.copy_rounded, color: _muted, size: 18),
-                      ]),
-                    ),
-              ],
-              SectionTitle(l.companyDirectory),
-              TapCard(
-                onTap: () => Navigator.pop(context, companyTabContractors),
-                child: _iconText(Icons.handshake_outlined, l.tabContractors),
-              ),
-              TapCard(
-                onTap: () => Navigator.pop(context, companyTabObjects),
-                child: _iconText(Icons.apartment_outlined, l.tabLocations),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _iconText(IconData icon, String text) => Row(children: [
-        Icon(icon, size: 20, color: HeyHelpyTheme.ink),
-        const SizedBox(width: 12),
-        Expanded(
-            child: Text(text,
-                style: const TextStyle(fontWeight: FontWeight.w600))),
-      ]);
-
-  Widget _companyCard(AppLocalizations l) => TapCard(
-        onTap: _canManage && !_loading ? _rename : null,
-        chevron: false,
-        child: Row(children: [
-          const Icon(Icons.apartment, color: HeyHelpyTheme.link),
-          const SizedBox(width: 12),
-          Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(l.companyNameLabel,
-                  style: const TextStyle(color: _muted, fontSize: 12)),
-              Text(_name ?? '…',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
-            ]),
-          ),
-          if (_canManage)
-            Icon(Icons.edit_outlined,
-                color: HeyHelpyTheme.link,
-                size: 20,
-                semanticLabel: l.companyRenameTitle),
+  /// Строка группы с подписью и выделяемым текстом (код, ссылка).
+  Widget _selectable(String label, String text, TextStyle style) => Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AppSpace.rowH, vertical: AppSpace.rowV),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label, style: AppText.caption),
+          const SizedBox(height: AppSpace.xxs),
+          SelectableText(text, style: style),
         ]),
       );
 
-  Widget _memberTile(AppLocalizations l, Member m) {
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AppScaffold(
+      title: l.profileMyCompany,
+      onRefresh: _load,
+      slivers: [
+        SliverContent(
+          sliver: SliverList.list(children: [
+            if (_loading && _name == null)
+              const Padding(
+                padding: EdgeInsetsDirectional.only(top: AppSpace.xxl),
+                child: AppLoader(),
+              )
+            else if (_failed)
+              AppEmptyState(
+                  text: l.companyLoadFailed,
+                  error: true,
+                  actionLabel: l.commonRetry,
+                  onAction: _load)
+            else ...[
+              _companyGroup(l),
+              AppGroup(
+                header: l.companyMembers(_members.length),
+                children: [for (final m in _members) _memberRow(l, m)],
+              ),
+              if (_canManage)
+                AppGroup(
+                  header: l.companyInvites,
+                  headerTrailing: AppButton.tinted(
+                      small: true,
+                      expand: false,
+                      icon: AppIcons.userAdd,
+                      label: l.companyInvite,
+                      onPressed: _loading ? null : _createInvite),
+                  footer: _invites.isEmpty ? l.companyNoInvites : null,
+                  children: [
+                    for (final i in _invites)
+                      AppRow(
+                        leading: const LeadingIcon(AppIcons.link),
+                        title: l.companyInviteRow(
+                            _contractorName(i.contractorId),
+                            i.expiresAt == null
+                                ? '—'
+                                : l.dateTime(i.expiresAt!)),
+                        trailing: const Icon(AppIcons.copy,
+                            size: AppSizes.iconS, color: AppColors.tertiary),
+                        chevron: false,
+                        onTap: () => _showInvite(i),
+                      ),
+                  ],
+                ),
+              AppGroup(header: l.companyDirectory, children: [
+                AppRow(
+                  leading: const LeadingIcon(AppIcons.contractor),
+                  title: l.tabContractors,
+                  onTap: () => Navigator.pop(context, companyTabContractors),
+                ),
+                AppRow(
+                  leading: const LeadingIcon(AppIcons.building),
+                  title: l.tabLocations,
+                  onTap: () => Navigator.pop(context, companyTabObjects),
+                ),
+              ]),
+            ],
+          ]),
+        ),
+      ],
+    );
+  }
+
+  Widget _companyGroup(AppLocalizations l) => AppGroup(children: [
+        AppRow(
+          leading: const LeadingIcon(AppIcons.building),
+          title: _name ?? '…',
+          titleStyle: AppText.headline,
+          subtitle: l.companyNameLabel,
+          chevron: false,
+          trailing: _canManage
+              ? Icon(AppIcons.edit,
+                  size: AppSizes.iconS,
+                  color: AppColors.accentText,
+                  semanticLabel: l.companyRenameTitle)
+              : null,
+          onTap: _canManage && !_loading ? _rename : null,
+        ),
+      ]);
+
+  Widget _memberRow(AppLocalizations l, Member m) {
     final canChange = _canChangeRole(m);
     final phone =
         (m.phone == null || m.phone!.isEmpty) ? l.companyNoPhone : m.phone!;
-    return TapCard(
+    return AppRow(
+      leading: InitialsTile(_memberName(l, m)),
+      title: m.id == _me.id
+          ? l.companyMemberYou(_memberName(l, m))
+          : _memberName(l, m),
+      subtitle: phone,
+      chevron: canChange,
+      trailing: Text(l.role(m.role),
+          semanticsLabel:
+              canChange ? '${l.role(m.role)}, ${l.companyRoleChange}' : null,
+          style: AppText.footnote.copyWith(
+              color: canChange ? AppColors.accentText : AppColors.secondary,
+              fontWeight: FontWeight.w600)),
       onTap: canChange ? () => _changeRole(m) : null,
-      chevron: false,
-      child: Row(children: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: HeyHelpyTheme.mint,
-          child: Text(_memberName(l, m).characters.first.toUpperCase(),
-              style: const TextStyle(
-                  color: HeyHelpyTheme.onBrand, fontWeight: FontWeight.w800)),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(
-                m.id == _me.id
-                    ? l.companyMemberYou(_memberName(l, m))
-                    : _memberName(l, m),
-                style: const TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 2),
-            SelectableText(phone,
-                style: const TextStyle(color: _muted, fontSize: 13)),
-          ]),
-        ),
-        const SizedBox(width: 8),
-        Text(l.role(m.role),
-            style: TextStyle(
-                color: canChange ? HeyHelpyTheme.link : _muted,
-                fontWeight: FontWeight.w700,
-                fontSize: 13)),
-        if (canChange) ...[
-          const SizedBox(width: 4),
-          Icon(Icons.edit_outlined,
-              color: HeyHelpyTheme.link,
-              size: 16,
-              semanticLabel: l.companyRoleChange),
-        ],
-      ]),
     );
   }
 }

@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../reports/reports_screen.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'directory.dart';
 import '../../core/app_message.dart';
-
-const _ink = Color(0xFF1C1E22);
-const _muted = Color(0xFF8A9098);
-const _danger = Color(0xFFC24444);
 
 /// Карточка подрядчика: контакты (исполнители), виды работ и объекты с нормой
 /// визитов, кнопки «Заявки подрядчика» и «Отчёт». Норму меняет только менеджер —
@@ -82,6 +77,7 @@ class _ContractorCardScreenState extends State<ContractorCardScreen> {
     // (value: null) — убрать норму.
     final result = await showDialog<({int? value})>(
       context: context,
+      barrierColor: AppColors.scrim,
       builder: (_) => _NormDialog(initial: b.visitsPerMonth),
     );
     if (result == null || !mounted) return;
@@ -95,168 +91,131 @@ class _ContractorCardScreenState extends State<ContractorCardScreen> {
     }
   }
 
+  void _openOrders(AppLocalizations l) => Navigator.push(
+      context,
+      appRoute(
+          (_) => WorkOrderListScreen(
+              title: l.cardContractorOrders,
+              subtitle: widget.contractor.orgName,
+              contractorId: widget.contractor.id),
+          title: widget.contractor.orgName));
+
+  void _openReport(AppLocalizations l) => Navigator.push(
+      context,
+      appRoute(
+          (_) => Scaffold(
+                backgroundColor: AppColors.bg,
+                // Шапка с «назад» — у самого ReportsScreen.
+                body: ReportsScreen(initialContractorId: widget.contractor.id),
+              ),
+          title: widget.contractor.orgName));
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(title: Text(widget.contractor.orgName)),
-      body: _loading && _role == null
-          ? const Center(child: CircularProgressIndicator())
-          : _failed
-              ? _error(l)
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 40),
-                    children: _content(l),
-                  ),
+    final List<Widget> slivers;
+    if (_loading && _role == null) {
+      slivers = const [
+        SliverFillRemaining(hasScrollBody: false, child: AppLoader())
+      ];
+    } else if (_failed) {
+      slivers = [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: AppEmptyState(
+              text: l.cardLoadFailed,
+              error: true,
+              actionLabel: l.commonRetry,
+              onAction: _load),
+        )
+      ];
+    } else {
+      slivers = [
+        SliverContent(sliver: SliverList.list(children: _content(l))),
+      ];
+    }
+    return AppScaffold(
+      title: widget.contractor.orgName,
+      onRefresh: _load,
+      slivers: slivers,
+      bottomBar: _failed || (_loading && _role == null)
+          ? null
+          : BottomActionBar(
+              child: Row(children: [
+                Expanded(
+                  child: AppButton.primary(
+                      icon: AppIcons.list,
+                      label: l.cardContractorOrders,
+                      onPressed: () => _openOrders(l)),
                 ),
+                if (_isManager) ...[
+                  const SizedBox(width: AppSpace.m),
+                  AppIconButton(
+                      icon: AppIcons.reports,
+                      label: l.cardContractorReport,
+                      size: 52,
+                      filled: true,
+                      onPressed: () => _openReport(l)),
+                ],
+              ]),
+            ),
     );
   }
-
-  Widget _error(AppLocalizations l) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(l.cardLoadFailed,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: _danger)),
-            const SizedBox(height: 12),
-            OutlinedButton(onPressed: _load, child: Text(l.commonRetry)),
-          ]),
-        ),
-      );
 
   List<Widget> _content(AppLocalizations l) {
     final locale = context.localeCode;
     return [
-      // Название и кнопки
-      TapCard(
-        child: Row(children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-                color: HeyHelpyTheme.mint,
-                borderRadius: BorderRadius.circular(14)),
-            child: const Icon(Icons.business, color: HeyHelpyTheme.link),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(widget.contractor.orgName,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-          ),
-        ]),
-      ),
-      Wrap(spacing: 10, runSpacing: 10, children: [
-        FilledButton.icon(
-          style: brandButtonStyle()
-              .copyWith(minimumSize: const WidgetStatePropertyAll(Size(0, 48))),
-          onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => WorkOrderListScreen(
-                      title: l.cardContractorOrders,
-                      subtitle: widget.contractor.orgName,
-                      contractorId: widget.contractor.id))),
-          icon: const Icon(Icons.list_alt_rounded, size: 20),
-          label: Text(l.cardContractorOrders,
-              style: const TextStyle(fontWeight: FontWeight.w800)),
-        ),
-        if (_isManager)
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
-            onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => Scaffold(
-                          backgroundColor: Colors.white,
-                          appBar: AppBar(title: Text(l.navReports)),
-                          body: ReportsScreen(
-                              initialContractorId: widget.contractor.id),
-                        ))),
-            icon: const Icon(Icons.bar_chart_rounded, size: 20),
-            label: Text(l.cardContractorReport),
-          ),
-      ]),
-
       // Виды работ и объекты
-      SectionTitle(l.cardBindingsTitle),
       if (_bindings.isEmpty)
-        Text(l.cardBindingsEmpty, style: const TextStyle(color: _muted))
-      else ...[
-        if (_isManager)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 8),
-            child: Text(l.cardNormHint,
-                style: const TextStyle(color: _muted, fontSize: 12)),
-          ),
-        for (final b in _bindings)
-          TapCard(
-            onTap: _isManager ? () => _editNorm(b) : null,
-            chevron: false,
-            child: Row(children: [
-              Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(b.layer?.label(locale) ?? l.commonNotSpecified,
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 3),
-                      Text(b.objectName ?? l.cardAllObjects,
-                          style: const TextStyle(color: _muted, fontSize: 13)),
-                      const SizedBox(height: 3),
-                      Text(
-                          b.visitsPerMonth == null
-                              ? l.cardNormNotSet
-                              : l.cardNormPerMonth(b.visitsPerMonth!),
-                          style: TextStyle(
-                              color: b.visitsPerMonth == null
-                                  ? _muted
-                                  : HeyHelpyTheme.link,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600)),
-                    ]),
+        AppGroup(header: l.cardBindingsTitle, children: [
+          AppRow(title: l.cardBindingsEmpty, titleStyle: AppText.callout),
+        ])
+      else
+        AppGroup(
+          header: l.cardBindingsTitle,
+          footer: _isManager ? l.cardNormHint : null,
+          children: [
+            for (final b in _bindings)
+              AppRow(
+                leading: const LeadingIcon(AppIcons.workType),
+                title: b.layer?.label(locale) ?? l.commonNotSpecified,
+                subtitle: b.objectName ?? l.cardAllObjects,
+                extra: Text(
+                    b.visitsPerMonth == null
+                        ? l.cardNormNotSet
+                        : l.cardNormPerMonth(b.visitsPerMonth!),
+                    style: AppText.footnote.copyWith(
+                        color: b.visitsPerMonth == null
+                            ? AppColors.secondary
+                            : AppColors.accentText,
+                        fontWeight: FontWeight.w600)),
+                trailing: _isManager
+                    ? const Icon(AppIcons.edit,
+                        size: AppSizes.iconS, color: AppColors.accentText)
+                    : null,
+                chevron: false,
+                onTap: _isManager ? () => _editNorm(b) : null,
               ),
-              if (_isManager)
-                const Icon(Icons.edit_outlined,
-                    color: HeyHelpyTheme.link, size: 20),
-            ]),
-          ),
-      ],
+          ],
+        ),
 
       // Исполнители и контакты
-      SectionTitle(l.cardExecutorsTitle),
-      if (_executors.isEmpty)
-        Text(l.cardExecutorsEmpty, style: const TextStyle(color: _muted))
-      else
-        for (final e in _executors)
-          TapCard(
-            child: Row(children: [
-              const Icon(Icons.person_outline, color: _muted),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          e.name?.isNotEmpty == true
-                              ? e.name!
-                              : l.profileDefaultName,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700, color: _ink)),
-                      if (e.phone?.isNotEmpty == true)
-                        SelectableText(e.phone!,
-                            style: const TextStyle(
-                                color: HeyHelpyTheme.link, fontSize: 13)),
-                    ]),
-              ),
-            ]),
-          ),
+      AppGroup(header: l.cardExecutorsTitle, children: [
+        if (_executors.isEmpty)
+          AppRow(title: l.cardExecutorsEmpty, titleStyle: AppText.callout)
+        else
+          for (final e in _executors)
+            AppRow(
+              leading: const LeadingIcon.neutral(AppIcons.executor),
+              title:
+                  e.name?.isNotEmpty == true ? e.name! : l.profileDefaultName,
+              extra: e.phone?.isNotEmpty == true
+                  ? SelectableText(e.phone!,
+                      style: AppText.footnote
+                          .copyWith(color: AppColors.accentText))
+                  : null,
+            ),
+      ]),
     ];
   }
 }
@@ -298,26 +257,39 @@ class _NormDialogState extends State<_NormDialog> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return AlertDialog(
-      title: Text(l.cardNormDialogTitle),
-      content: TextField(
-        controller: _c,
-        autofocus: true,
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration:
-            InputDecoration(hintText: l.cardNormDialogHint, errorText: _error),
-        onSubmitted: (_) => _save(),
+    return Dialog(
+      insetPadding: const EdgeInsets.all(AppSpace.xl),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(20, 22, 20, 16),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(l.cardNormDialogTitle,
+                    textAlign: TextAlign.center, style: AppText.headline),
+                const SizedBox(height: AppSpace.m),
+                TextField(
+                  controller: _c,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                      hintText: l.cardNormDialogHint,
+                      errorText: _error,
+                      fillColor: AppColors.fill),
+                  onSubmitted: (_) => _save(),
+                ),
+                const SizedBox(height: 18),
+                AppButton.primary(label: l.commonSave, onPressed: _save),
+                const SizedBox(height: AppSpace.s),
+                AppButton.secondary(
+                    label: l.commonCancel,
+                    onPressed: () => Navigator.pop(context)),
+              ]),
+        ),
       ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l.commonCancel)),
-        FilledButton(
-            style: brandButtonStyle(),
-            onPressed: _save,
-            child: Text(l.commonSave)),
-      ],
     );
   }
 }

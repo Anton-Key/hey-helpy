@@ -1639,4 +1639,43 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get requestsFilterClear => 'Снять фильтр';
+
+  @override
+  String get reqSearchHint => 'Поиск по заявкам';
+
+  @override
+  String reqSegAll(int count) {
+    return 'Все · $count';
+  }
+
+  @override
+  String reqSegOpen(int count) {
+    return 'Открытые · $count';
+  }
+
+  @override
+  String reqSegOverdue(int count) {
+    return 'Просрочено · $count';
+  }
+
+  @override
+  String get reqGroupToday => 'Сегодня';
+
+  @override
+  String get reqGroupEarlier => 'Ранее';
+
+  @override
+  String get reqNothingFound => 'Ничего не найдено';
+
+  @override
+  String get reqFieldPlace => 'Помещение';
+
+  @override
+  String get reqFieldDue => 'Срок';
+
+  @override
+  String get reqViaVoice => 'голосом';
+
+  @override
+  String get reqViaText => 'текстом';
 }

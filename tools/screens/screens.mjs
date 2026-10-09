@@ -208,9 +208,15 @@ const btn = (page, name) => page.getByRole('button', { name, exact: false }).fir
 const settle = (page, ms = 1500) => page.waitForTimeout(ms);
 // Нижнее меню у Flutter — вкладки (tab) с подписью, заявки и пункты — кнопки, в имени
 // которых весь их текст; обычный текст — отдельными узлами. Ищем во всех трёх.
-const see = (page, text) => page.getByRole('tab', { name: text })
-  .or(page.getByRole('button', { name: text }))
-  .or(page.getByText(text)).first();
+// Текст внутри блоков (группы, шторки) Flutter отдаёт подписью узла
+// (aria-label), а не текстом — ищем и там. Подписи секций в новом дизайне
+// прописные («СРОЧНОСТЬ»): регулярные выражения — без учёта регистра.
+const ci = (text) => (text instanceof RegExp && !text.flags.includes('i')
+  ? new RegExp(text.source, text.flags + 'i') : text);
+const see = (page, text) => page.getByRole('tab', { name: ci(text) })
+  .or(page.getByRole('button', { name: ci(text) }))
+  .or(page.getByText(ci(text)))
+  .or(page.getByLabel(ci(text))).first();
 const profileTab = (page) => page.getByRole('tab', { name: 'Профиль' });
 
 async function login(page, email, password) {
@@ -328,7 +334,8 @@ const SCREENS = [
       await see(p, 'Подрядчик').waitFor({ timeout: 20000 });
       await settle(p);
       await p.getByRole('button', { name: /Назначить|Изменить/ }).first().click();
-      await see(p, /^Подрядчики$|Закреплены за этим видом работ|никто не закреплён/)
+      // Подписи секций в шторке — прописными («ЗАКРЕПЛЕНЫ ЗА…»): без учёта регистра.
+      await see(p, /^Подрядчики$|Закреплены за этим видом работ|никто не закреплён/i)
         .waitFor({ timeout: 20000 });
       await settle(p);
       return `заявка «${chosen}»`;
@@ -368,7 +375,9 @@ const SCREENS = [
   // (Home, щелчок в пустое место, PageDown). Меряем, куда уехала подпись «Срочность».
   { key: 'confirm-scroll', title: 'Проверьте заявку — прокрутка колесом и PageDown', managerOnly: true, run: async (p) => {
       const vp = p.viewportSize();
-      const low = { width: vp.width, height: vp.width > 600 ? 720 : 700 };
+      // После редизайна 13b экран компактнее: при 1280×720 прокручивается
+      // всего ~35 px. Окно 560 — чтобы было что прокручивать.
+      const low = { width: vp.width, height: vp.width > 600 ? 560 : 700 };
       await p.setViewportSize(low);
       await openConfirm(p);
       const label = p.getByText('Срочность').first();

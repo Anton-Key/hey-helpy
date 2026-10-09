@@ -1,22 +1,16 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/theme.dart';
-import '../../core/ui.dart';
 import '../directory/directory.dart';
 import 'speech_input.dart';
 import 'text_intake.dart';
 import 'voice_confirm_screen.dart';
 import 'voice_intake_client.dart';
-
-const _ink = Color(0xFF1C1E22);
-const _muted = Color(0xFF8A9098);
-const _onBrand = Color(0xFF06342A);
-const _mint = Color(0xFFD8F0EA);
-const _danger = Color(0xFFC24444);
 
 enum _Phase { starting, listening, processing, error, typing }
 
@@ -198,9 +192,12 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
       final draft =
           await _client.process(text, locale: locale, catalog: catalog);
       if (!mounted) return;
+      // Снизу, как шторка (fullscreenDialog), с переходом iOS.
       final created = await Navigator.push<bool>(
           context,
-          MaterialPageRoute(
+          CupertinoPageRoute(
+            fullscreenDialog: true,
+            title: context.l10n.voiceTitle,
             builder: (_) => VoiceConfirmScreen(
                 draft: draft,
                 companyId: widget.companyId,
@@ -280,30 +277,40 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-          title: Text(context.l10n.voiceTitle), backgroundColor: Colors.white),
-      body: _phase == _Phase.typing ? _typingBody() : _voiceBody(),
+    final l = context.l10n;
+    final typing = _phase == _Phase.typing;
+    return AppScaffold(
+      title: l.voiceTitle,
+      large: false,
+      // «Отмена» — как у модального экрана iOS: закрыть без заявки.
+      leading: AppBarTextButton(
+          label: l.commonCancel,
+          onPressed: () => Navigator.pop(context, false)),
+      slivers: [
+        SliverContent(
+          maxWidth: 520,
+          top: AppSpace.l,
+          sliver: SliverToBoxAdapter(child: typing ? _typing() : _voice()),
+        ),
+      ],
+      // Кнопки закреплены внизу и не сдвигаются, когда растёт распознанный
+      // текст; с клавиатурой «Далее» поднимается вместе с ней.
+      bottomBar: typing
+          ? BottomActionBar(
+              maxWidth: 520,
+              // «Далее» неактивна, пока поле пустое.
+              child: ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _typeC,
+                builder: (context, v, _) => AppButton.primary(
+                    label: l.voiceNext,
+                    onPressed: v.text.trim().isEmpty ? null : _submitTyped),
+              ),
+            )
+          : (_phase == _Phase.processing
+              ? null
+              : BottomActionBar(maxWidth: 520, child: _voiceButtons())),
     );
   }
-
-  /// «Слушаю»: круг и текст прокручиваются, кнопки закреплены внизу и не
-  /// сдвигаются, когда растёт распознанный текст или появляется подсказка.
-  Widget _voiceBody() => Column(children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 16),
-            child: Center(
-              child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  child: _voice()),
-            ),
-          ),
-        ),
-        if (_phase != _Phase.processing)
-          BottomActionBar(maxWidth: 520, child: _voiceButtons()),
-      ]);
 
   Widget _voiceButtons() {
     final l = context.l10n;
@@ -315,41 +322,25 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (listening)
-            FilledButton.icon(
+            AppButton.primary(
                 key: const ValueKey('voice-done'),
-                style: brandButtonStyle().copyWith(
-                    minimumSize:
-                        const WidgetStatePropertyAll(Size.fromHeight(56))),
-                onPressed: _finish,
-                icon: const Icon(Icons.check_rounded),
-                label: Text(l.voiceDone,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 17))),
+                label: l.voiceDone,
+                icon: AppIcons.check,
+                onPressed: _finish),
           if (canRetry)
-            FilledButton.icon(
+            AppButton.primary(
                 key: const ValueKey('voice-again'),
-                style: brandButtonStyle().copyWith(
-                    minimumSize:
-                        const WidgetStatePropertyAll(Size.fromHeight(56))),
-                onPressed: _start,
-                icon: const Icon(Icons.mic),
-                label: Text(l.voiceAgain,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 17))),
-          if (listening || canRetry) const SizedBox(height: 10),
+                label: l.voiceAgain,
+                icon: AppIcons.mic,
+                onPressed: _start),
+          if (listening || canRetry) const SizedBox(height: AppSpace.s),
           // Всегда активна: и пока включается микрофон, и пока слушаем,
-          // и после ошибки. Нажимается вся кнопка, высота 52.
-          OutlinedButton.icon(
+          // и после ошибки.
+          AppButton.tinted(
               key: const ValueKey('voice-type'),
-              style: OutlinedButton.styleFrom(
-                  foregroundColor: HeyHelpyTheme.link,
-                  minimumSize: const Size.fromHeight(52)),
-              onPressed: _typeInstead,
-              icon: const Icon(Icons.keyboard_alt_outlined),
-              label: Text(l.voiceTypeInstead,
-                  style: const TextStyle(fontWeight: FontWeight.w700))),
-          const SizedBox(height: 4),
-          _cancel(),
+              label: l.voiceTypeInstead,
+              icon: AppIcons.keyboard,
+              onPressed: _typeInstead),
         ]);
   }
 
@@ -360,27 +351,21 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
         _phase == _Phase.error && _error != SpeechProblem.unsupported;
     return Column(mainAxisSize: MainAxisSize.min, children: [
       if (_speech.weakBrowser) _Notice(text: l.voiceBrowserHint),
-      const SizedBox(height: 8),
+      const SizedBox(height: AppSpace.s),
       _MicCircle(
           pulse: _pulse,
           level: _level,
           active: listening,
           busy: _phase == _Phase.processing || _phase == _Phase.starting,
+          label: listening ? l.voiceDone : (canRetry ? l.voiceAgain : null),
           // Круг нажимается так же, как главная кнопка: «Готово» или «Ещё раз».
           onTap: listening ? _finish : (canRetry ? _start : null)),
-      const SizedBox(height: 20),
-      Text(_title(),
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-              color: _ink, fontSize: 22, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 14),
+      const SizedBox(height: AppSpace.l),
+      Text(_title(), textAlign: TextAlign.center, style: AppText.title2),
+      const SizedBox(height: AppSpace.l),
       if (listening || _phase == _Phase.processing) ...[
         _LiveText(text: _text, placeholder: l.voicePrompt),
-        const SizedBox(height: 10),
-        if (listening && _micSilent) ...[
-          _Notice(text: l.voiceMicSilent),
-          const SizedBox(height: 10),
-        ],
+        if (listening && _micSilent) _Notice(text: l.voiceMicSilent),
         if (listening)
           ValueListenableBuilder<Duration>(
             valueListenable: _elapsed,
@@ -389,106 +374,67 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
               return Text(
                   '${l.voiceTimer(_fmt(elapsed), left.inSeconds < 0 ? 0 : left.inSeconds)}\n${l.voiceAutoStop}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: _muted, fontSize: 13, height: 1.4));
+                  style: AppText.footnote);
             },
           ),
       ],
       if (_phase == _Phase.error && _error != null) ...[
+        const Icon(AppIcons.error, size: 36, color: AppColors.danger),
+        const SizedBox(height: AppSpace.m),
         Text(_problemText(_error!),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: _danger, fontSize: 15, height: 1.4)),
+            style: AppText.callout.copyWith(color: AppColors.danger)),
         if (_errorCode?.isNotEmpty ?? false) ...[
           const SizedBox(height: 6),
           SelectableText(l.voiceErrorCode(_errorCode!),
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: _muted, fontSize: 12)),
+              textAlign: TextAlign.center, style: AppText.caption),
         ],
       ],
     ]);
   }
 
-  /// «Ввести текстом»: поле прокручивается, «Далее» закреплена внизу и
-  /// видна всегда, в том числе с открытой клавиатурой.
-  Widget _typingBody() => Column(children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 24),
-            child: Center(
-              child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
-                  child: _typing()),
-            ),
-          ),
-        ),
-        BottomActionBar(
-          maxWidth: 520,
-          // «Далее» неактивна, пока поле пустое.
-          child: ValueListenableBuilder<TextEditingValue>(
-            valueListenable: _typeC,
-            builder: (context, v, _) => FilledButton(
-                style: brandButtonStyle().copyWith(
-                    minimumSize:
-                        const WidgetStatePropertyAll(Size.fromHeight(56))),
-                onPressed: v.text.trim().isEmpty ? null : _submitTyped,
-                child: Text(context.l10n.voiceNext,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 17))),
-          ),
-        ),
-      ]);
-
+  /// «Ввести текстом»: поле в белой карточке, «Далее» — в нижней панели.
   Widget _typing() {
     final l = context.l10n;
     return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(l.voiceTypeTitle,
-              style: const TextStyle(
-                  color: _ink, fontSize: 22, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 14),
-          TextField(
-            controller: _typeC,
-            focusNode: _typeFocus,
-            autofocus: true,
-            minLines: 4,
-            maxLines: 8,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-                hintText: l.voiceTypeHint,
-                hintMaxLines: 3,
-                border: const OutlineInputBorder()),
+          Text(l.voiceTypeTitle, style: AppText.title2),
+          const SizedBox(height: AppSpace.m),
+          AppCard(
+            padding: EdgeInsets.zero,
+            margin: EdgeInsets.zero,
+            child: TextField(
+              controller: _typeC,
+              focusNode: _typeFocus,
+              autofocus: true,
+              minLines: 4,
+              maxLines: 8,
+              style: AppText.body,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                  hintText: l.voiceTypeHint,
+                  hintMaxLines: 3,
+                  filled: true,
+                  fillColor: AppColors.surface),
+            ),
           ),
           // Подсказка обычным текстом под полем, пока оно пустое.
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _typeC,
             builder: (context, v, _) => v.text.trim().isEmpty
                 ? Padding(
-                    padding: const EdgeInsetsDirectional.only(top: 8),
-                    child: Text(l.formWhatRequired,
-                        style: const TextStyle(color: _muted, fontSize: 13)))
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        AppSpace.rowH, AppSpace.s, AppSpace.rowH, 0),
+                    child: Text(l.formWhatRequired, style: AppText.footnote))
                 : const SizedBox.shrink(),
           ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                  foregroundColor: HeyHelpyTheme.link,
-                  minimumSize: const Size.fromHeight(50)),
-              onPressed: _start,
-              icon: const Icon(Icons.mic),
-              label: Text(l.voiceAgain,
-                  style: const TextStyle(fontWeight: FontWeight.w700))),
-          const SizedBox(height: 8),
-          _cancel(),
+          const SizedBox(height: AppSpace.l),
+          AppButton.secondary(
+              label: l.voiceAgain, icon: AppIcons.mic, onPressed: _start),
         ]);
   }
-
-  Widget _cancel() => TextButton(
-      onPressed: () => Navigator.pop(context, false),
-      child: Text(context.l10n.commonCancel,
-          style: const TextStyle(
-              color: HeyHelpyTheme.link, fontWeight: FontWeight.w700)));
 
   String _title() {
     final l = context.l10n;
@@ -511,44 +457,38 @@ class _LiveText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final empty = text.trim().isEmpty;
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 96),
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 14),
-      decoration:
-          BoxDecoration(color: _mint, borderRadius: BorderRadius.circular(16)),
-      child: Text(empty ? placeholder : text,
-          textAlign: empty ? TextAlign.center : TextAlign.start,
-          style: TextStyle(
-              color: empty ? _muted : _ink,
-              fontSize: empty ? 15 : 18,
-              height: 1.4,
-              fontWeight: empty ? FontWeight.w400 : FontWeight.w600)),
+    return AppCard(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 64),
+        child: SizedBox(
+          width: double.infinity,
+          child: Text(empty ? placeholder : text,
+              textAlign: empty ? TextAlign.center : TextAlign.start,
+              style: empty
+                  ? AppText.callout.copyWith(color: AppColors.secondary)
+                  : AppText.headline),
+        ),
+      ),
     );
   }
 }
 
-/// Подсказка в рамке: совет открыть в Chrome / Edge, «микрофон молчит».
+/// Подсказка: совет открыть в Chrome / Edge, «микрофон молчит».
 class _Notice extends StatelessWidget {
   const _Notice({required this.text});
   final String text;
 
   @override
-  Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        margin: const EdgeInsetsDirectional.only(bottom: 8),
+  Widget build(BuildContext context) => AppCard(
+        color: StatusColors.newOrder.background,
         padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 14, 10),
-        decoration: BoxDecoration(
-            color: const Color(0xFFFFF6DB),
-            borderRadius: BorderRadius.circular(12)),
         child: Row(children: [
-          const Icon(Icons.info_outline_rounded,
-              size: 20, color: Color(0xFF8A6D00)),
+          Icon(AppIcons.info,
+              size: AppSizes.iconS, color: StatusColors.newOrder.foreground),
           const SizedBox(width: 10),
           Expanded(
               child: Text(text,
-                  style: const TextStyle(
-                      color: _ink, fontSize: 14, height: 1.35))),
+                  style: AppText.footnote.copyWith(color: AppColors.ink))),
         ]),
       );
 }
@@ -561,15 +501,16 @@ class _MicCircle extends StatelessWidget {
       required this.level,
       required this.active,
       required this.busy,
+      this.label,
       this.onTap});
   final Animation<double> pulse;
   final ValueListenable<double> level;
   final bool active, busy;
+  final String? label;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    const brand = HeyHelpyTheme.brand;
     return SizedBox(
       width: 200,
       height: 200,
@@ -585,33 +526,31 @@ class _MicCircle extends StatelessWidget {
                   for (final shift in const [0.0, 0.5])
                     _wave(((pulse.value + shift) % 1.0), l),
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 120),
+                  duration: AppMotion.fast,
                   width: active ? 132 + 40 * l : 132,
                   height: active ? 132 + 40 * l : 132,
-                  decoration:
-                      const BoxDecoration(color: _mint, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                      color: AppColors.mint, shape: BoxShape.circle),
                 ),
               ]);
             },
           ),
         ),
-        Material(
-          color: brand,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: SizedBox(
-              width: 108,
-              height: 108,
-              child: busy
-                  ? const Padding(
-                      padding: EdgeInsets.all(34),
-                      child: CircularProgressIndicator(
-                          color: _onBrand, strokeWidth: 3))
-                  : Icon(active ? Icons.graphic_eq_rounded : Icons.mic,
-                      size: 52, color: _onBrand),
-            ),
+        Pressable(
+          onTap: onTap,
+          semanticLabel: label,
+          child: Container(
+            width: 108,
+            height: 108,
+            decoration: const BoxDecoration(
+                color: AppColors.accent,
+                shape: BoxShape.circle,
+                boxShadow: AppShadows.voice),
+            child: busy
+                ? const CupertinoActivityIndicator(
+                    radius: 14, color: AppColors.onAccent)
+                : Icon(active ? AppIcons.audio : AppIcons.mic,
+                    size: 48, color: AppColors.onAccent),
           ),
         ),
       ]),
@@ -625,7 +564,7 @@ class _MicCircle extends StatelessWidget {
         decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-                color: HeyHelpyTheme.brand
+                color: AppColors.accent
                     .withValues(alpha: (0.4 + 0.5 * level) * (1 - t)),
                 width: 3 + 3 * level)),
       );

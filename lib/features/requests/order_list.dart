@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
-import '../../core/status_style.dart';
-import '../../core/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import 'requests.dart';
-
-const _muted = Color(0xFF8A9098);
-const _danger = Color(0xFFC24444);
 
 /// Справочники и роль, нужные карточке заявки. Загружаются один раз на экран.
 class OrderContext {
@@ -91,8 +87,8 @@ class OrderContext {
   Future<void> open(BuildContext context, Map<String, dynamic> row) =>
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => WorkOrderDetailScreen(
+        appRoute(
+          (_) => WorkOrderDetailScreen(
             order: WorkOrder.fromMap(row),
             objects: objects,
             contractors: contractors,
@@ -106,18 +102,21 @@ class OrderContext {
       );
 }
 
-/// Строка заявки в списке: название, подписи, пометки, статус, стрелка.
+/// Строка заявки в списке (внутри [AppGroup]): точка приоритета, название,
+/// серые подписи, красные пометки, статус и стрелка.
 class OrderTile extends StatelessWidget {
   const OrderTile(
       {super.key,
       required this.title,
       required this.status,
       required this.onTap,
+      this.priority = 'normal',
       this.lines = const [],
       this.alerts = const []});
 
   final String title;
   final String status;
+  final String priority;
   final VoidCallback onTap;
 
   /// Серые строки под названием (место, дата, исполнитель…).
@@ -128,37 +127,18 @@ class OrderTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TapCard(
+    return AppRow(
+      leading: PriorityDot(priority),
+      title: title,
+      subtitle: lines.join('\n'),
+      subtitleMaxLines: 3,
+      extra: alerts.isEmpty
+          ? null
+          : Text(alerts.join(' · '),
+              style: AppText.footnote.copyWith(
+                  color: AppColors.danger, fontWeight: FontWeight.w600)),
+      trailing: StatusPill(status),
       onTap: onTap,
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title,
-                style:
-                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-            for (final line in lines)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(top: 3),
-                child: Text(line,
-                    style: const TextStyle(color: _muted, fontSize: 13)),
-              ),
-            if (alerts.isNotEmpty)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(top: 3),
-                child: Text(alerts.join(' · '),
-                    style: const TextStyle(
-                        color: _danger,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600)),
-              ),
-          ]),
-        ),
-        const SizedBox(width: 8),
-        Padding(
-            padding: const EdgeInsetsDirectional.only(top: 1),
-            child: StatusPill(status)),
-      ]),
     );
   }
 }
@@ -226,53 +206,42 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Column(children: [
-          Text(widget.title, overflow: TextOverflow.ellipsis),
-          if (widget.subtitle != null)
-            Text(widget.subtitle!,
-                style: const TextStyle(fontSize: 12, color: _muted)),
-        ]),
-      ),
-      body: _body(l),
+    return AppScaffold(
+      title: widget.title,
+      eyebrow: widget.subtitle,
+      onRefresh: _ctx == null ? null : _load,
+      slivers: [_body(l)],
     );
   }
 
   Widget _body(AppLocalizations l) {
     if (_loading && _ctx == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const SliverFillRemaining(
+          hasScrollBody: false, child: AppLoader());
     }
     if (_failed) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(l.requestsLoadFailed,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: _danger)),
-            const SizedBox(height: 12),
-            OutlinedButton(onPressed: _load, child: Text(l.commonRetry)),
-          ]),
-        ),
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: AppEmptyState(
+            text: l.requestsLoadFailed,
+            error: true,
+            actionLabel: l.commonRetry,
+            onAction: _load),
       );
     }
     if (_rows.isEmpty) {
-      return Center(
-          child:
-              Text(l.cardOrdersEmpty, style: const TextStyle(color: _muted)));
+      return SliverFillRemaining(
+          hasScrollBody: false, child: AppEmptyState(text: l.cardOrdersEmpty));
     }
     final ctx = _ctx!;
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 40),
-        children: [
+    return SliverContent(
+      sliver: SliverToBoxAdapter(
+        child: AppGroup(children: [
           for (final r in _rows)
             OrderTile(
               title: (r['title'] ?? '') as String,
               status: (r['status'] ?? 'new') as String,
+              priority: (r['priority'] ?? 'normal') as String,
               lines: [
                 ctx.placeLine(context, r),
                 l.dateTime(DateTime.parse('${r['created_at']}')),
@@ -286,7 +255,7 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
                 if (mounted) await _load();
               },
             ),
-        ],
+        ]),
       ),
     );
   }

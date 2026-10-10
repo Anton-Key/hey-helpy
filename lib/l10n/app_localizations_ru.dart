@@ -2126,6 +2126,16 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось загрузить план. Проверьте интернет и попробуйте ещё раз.';
 
   @override
+  String planStorageDenied(String code) {
+    return 'Хранилище отклонило загрузку (код $code). Попробуйте ещё раз или сообщите администратору.';
+  }
+
+  @override
+  String planDbDenied(String code) {
+    return 'База отклонила изменение (код $code). Попробуйте ещё раз или сообщите администратору.';
+  }
+
+  @override
   String get planUploaded => 'План загружен';
 
   @override

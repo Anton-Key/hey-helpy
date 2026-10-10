@@ -3609,6 +3609,18 @@ abstract class AppLocalizations {
   /// **'Не удалось загрузить план. Проверьте интернет и попробуйте ещё раз.'**
   String get planUploadFailed;
 
+  /// No description provided for @planStorageDenied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Хранилище отклонило загрузку (код {code}). Попробуйте ещё раз или сообщите администратору.'**
+  String planStorageDenied(String code);
+
+  /// No description provided for @planDbDenied.
+  ///
+  /// In ru, this message translates to:
+  /// **'База отклонила изменение (код {code}). Попробуйте ещё раз или сообщите администратору.'**
+  String planDbDenied(String code);
+
   /// No description provided for @planUploaded.
   ///
   /// In ru, this message translates to:

@@ -163,9 +163,9 @@ class FloorsSection extends StatelessWidget {
         try {
           await repo.uploadPlan(f, r.plan!.bytes, r.plan!.info);
         } catch (e) {
-          debugPrint('FloorsSection upload: ${e.runtimeType}');
+          logPlanError('FloorsSection upload', e);
           if (context.mounted) {
-            showAppMessage(context, planErrorText(l, e),
+            showAppMessage(context, planErrorText(l, e, isManager: isManager),
                 type: AppMessageType.error);
           }
         }
@@ -174,9 +174,9 @@ class FloorsSection extends StatelessWidget {
         showAppMessage(context, l.toastSaved, type: AppMessageType.success);
       }
     } catch (e) {
-      debugPrint('FloorsSection create: ${e.runtimeType}');
+      logPlanError('FloorsSection create', e);
       if (context.mounted) {
-        showAppMessage(context, planErrorText(l, e),
+        showAppMessage(context, planErrorText(l, e, isManager: isManager),
             type: AppMessageType.error);
       }
     }
@@ -240,9 +240,9 @@ class FloorsSection extends StatelessWidget {
           if (context.mounted) showAppMessage(context, l.floorDeleted);
       }
     } catch (e) {
-      debugPrint('FloorsSection ${a.name}: ${e.runtimeType}');
+      logPlanError('FloorsSection ${a.name}', e);
       if (context.mounted) {
-        showAppMessage(context, planErrorText(l, e),
+        showAppMessage(context, planErrorText(l, e, isManager: isManager),
             type: AppMessageType.error);
       }
     }

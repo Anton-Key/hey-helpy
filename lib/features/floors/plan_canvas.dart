@@ -95,6 +95,7 @@ class _PlanCanvasState extends State<PlanCanvas>
   Offset? _dragPos;
 
   Size get _plan => planSize(widget.floor);
+
   /// Видимая часть холста (без панели снизу).
   Size get _visible => Size(
       _viewport.width, math.max(1.0, _viewport.height - widget.bottomInset));

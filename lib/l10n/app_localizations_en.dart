@@ -2103,6 +2103,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn’t upload the plan. Check your connection and try again.';
 
   @override
+  String planStorageDenied(String code) {
+    return 'Storage rejected the upload (code $code). Try again or contact your administrator.';
+  }
+
+  @override
+  String planDbDenied(String code) {
+    return 'The database rejected the change (code $code). Try again or contact your administrator.';
+  }
+
+  @override
   String get planUploaded => 'Plan uploaded';
 
   @override

@@ -146,8 +146,9 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   }
 
   void _fail(Object e) {
-    debugPrint('FloorPlan: ${e.runtimeType}');
-    _msg(planErrorText(context.l10n, e), type: AppMessageType.error);
+    logPlanError('FloorPlan', e);
+    _msg(planErrorText(context.l10n, e, isManager: _isManager),
+        type: AppMessageType.error);
   }
 
   // ------------------------------------------------------------ этажи

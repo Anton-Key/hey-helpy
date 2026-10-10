@@ -45,7 +45,12 @@ class PlanCanvas extends StatefulWidget {
     this.onMoved,
     this.labelOf,
     this.initialFocus,
+    this.bottomInset = 0,
   });
+
+  /// Сколько снизу закрыто панелью (телефон): «вписать» и центрирование —
+  /// в видимой части.
+  final double bottomInset;
 
   /// Маркер ([PlanItem.key]), на котором открыть план (из заявки, по ссылке).
   final String? initialFocus;
@@ -90,8 +95,12 @@ class _PlanCanvasState extends State<PlanCanvas>
   Offset? _dragPos;
 
   Size get _plan => planSize(widget.floor);
+  /// Видимая часть холста (без панели снизу).
+  Size get _visible => Size(
+      _viewport.width, math.max(1.0, _viewport.height - widget.bottomInset));
+
   double get _fitScale =>
-      planFitScale(_viewport, _plan, margin: _viewport.width < 600 ? 8 : 24);
+      planFitScale(_visible, _plan, margin: _viewport.width < 600 ? 8 : 24);
   double get _scale => _tc.value.getMaxScaleOnAxis();
 
   @override
@@ -137,8 +146,8 @@ class _PlanCanvasState extends State<PlanCanvas>
   void _fit({bool animate = false}) {
     if (_viewport.isEmpty) return;
     final s = _fitScale;
-    final t = Offset((_viewport.width - _plan.width * s) / 2,
-        (_viewport.height - _plan.height * s) / 2);
+    final t = Offset((_visible.width - _plan.width * s) / 2,
+        (_visible.height - _plan.height * s) / 2);
     final m = _matrix(t, s);
     animate ? _animateTo(m) : _tc.value = m;
   }
@@ -162,7 +171,7 @@ class _PlanCanvasState extends State<PlanCanvas>
     _touched = true;
     final p = fractionToPixels(i.x!, i.y!, _plan);
     final s = math.max(_scale, _fitScale * 2.5).clamp(_minScale, _maxScale);
-    _animateTo(_matrix(planCenterOn(p, s.toDouble(), _viewport), s.toDouble()));
+    _animateTo(_matrix(planCenterOn(p, s.toDouble(), _visible), s.toDouble()));
   }
 
   (double, double)? _viewCenter() {

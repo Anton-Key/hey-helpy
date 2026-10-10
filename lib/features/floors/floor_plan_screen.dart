@@ -585,6 +585,8 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
   Widget _body(AppLocalizations l) {
     final floor = _floor!;
+    // Телефон: снизу панель списка (~14 % высоты экрана плана).
+    final bottomInset = _wide ? 0.0 : MediaQuery.sizeOf(context).height * 0.12;
     final now = DateTime.now();
     final stats = planStats(_orders, now);
     final visible = [
@@ -600,6 +602,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           controller: _canvas,
           highlight: _highlight,
           initialFocus: widget.floorId == _floorId ? widget.focus : null,
+          bottomInset: bottomInset,
           editing: _editing,
           labelOf: (i) => _itemLabel(l, i),
           onMarkerTap: (i) {

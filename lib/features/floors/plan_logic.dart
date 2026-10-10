@@ -284,3 +284,135 @@ PlanImageInfo? readImageInfo(Uint8List b) {
   }
   return null;
 }
+
+// ------------------------------------------------- подсветка и подписи (H)
+
+/// Как «оживлён» маркер плана.
+enum MarkerFx {
+  /// Без анимации и ореола.
+  none,
+
+  /// Выбранный маркер, первые секунды: расходящиеся волны.
+  ripple,
+
+  /// Выбранный маркер после волн (или без анимации): спокойный ореол.
+  halo,
+
+  /// Оборудование с просроченной заявкой: медленно «дышит».
+  breathe,
+}
+
+/// Сколько длятся волны у только что выбранного маркера.
+const kPlanPulseWindow = Duration(seconds: 4);
+
+/// Эффект маркера: выбранный — волны в окне [pulsing], потом ореол;
+/// оборудование с просроченной заявкой — «дыхание». При «уменьшении
+/// движения» ([reduceMotion]) — без анимации: выбранный — только ореол.
+MarkerFx markerFx({
+  required bool selected,
+  required bool pulsing,
+  required bool isPlace,
+  required int overdue,
+  required bool reduceMotion,
+}) {
+  if (selected) {
+    return pulsing && !reduceMotion ? MarkerFx.ripple : MarkerFx.halo;
+  }
+  if (!isPlace && overdue > 0 && !reduceMotion) return MarkerFx.breathe;
+  return MarkerFx.none;
+}
+
+/// Нужен ли общий тикер анимации: есть волны или «дыхание».
+bool planNeedsTicker(Iterable<MarkerFx> fx) =>
+    fx.any((f) => f == MarkerFx.ripple || f == MarkerFx.breathe);
+
+/// Подпись маркера на плане. Названия помещений уже нарисованы на картинке,
+/// поэтому подпись помещения — только у выбранного / наведённого или при
+/// сильном приближении; оборудования — при обычном приближении
+/// ([labelsVisible]).
+bool planLabelWanted({
+  required bool isPlace,
+  required bool selected,
+  required bool hovered,
+  required double scale,
+  required double fitScale,
+}) {
+  if (selected || hovered) return true;
+  return isPlace ? scale >= fitScale * 3.5 : labelsVisible(scale, fitScale);
+}
+
+/// Маркер на экране для раскладки подписей.
+class PlanLabelBox {
+  const PlanLabelBox(this.key, this.center, this.text,
+      {this.wanted = true, this.priority = false});
+  final String key;
+
+  /// Центр маркера (экранные px).
+  final Offset center;
+  final String text;
+
+  /// Подпись хочется показать ([planLabelWanted]).
+  final bool wanted;
+
+  /// Выбранный / наведённый: размещается первым и показывается всегда.
+  final bool priority;
+}
+
+/// Полуразмер маркера и высота подписи (px) для раскладки.
+const kPlanMarkerHalf = 17.0;
+const kPlanLabelHeight = 18.0;
+const kPlanLabelGap = 22.0;
+
+/// Ширина подписи на глаз: ~6.5 px на символ + поля, не шире 140.
+double planLabelWidth(String text) => math.min(140, text.length * 6.5 + 12);
+
+/// Прямоугольник подписи под маркером.
+Rect planLabelRect(Offset center, String text) {
+  final w = planLabelWidth(text);
+  return Rect.fromLTWH(
+      center.dx - w / 2, center.dy + kPlanLabelGap, w, kPlanLabelHeight);
+}
+
+/// Какие подписи показать: сначала приоритетные (всегда), потом остальные
+/// по порядку; подпись не ставится, если наезжает на чужой маркер или на
+/// уже поставленную подпись.
+Set<String> planLabelLayout(List<PlanLabelBox> boxes) {
+  final markers = {
+    for (final b in boxes)
+      b.key: Rect.fromCenter(
+          center: b.center,
+          width: kPlanMarkerHalf * 2,
+          height: kPlanMarkerHalf * 2)
+  };
+  final placed = <Rect>[];
+  final shown = <String>{};
+  final order = [
+    ...boxes.where((b) => b.priority),
+    ...boxes.where((b) => !b.priority && b.wanted),
+  ];
+  for (final b in order) {
+    final r = planLabelRect(b.center, b.text);
+    if (!b.priority) {
+      final hitsMarker =
+          markers.entries.any((m) => m.key != b.key && m.value.overlaps(r));
+      if (hitsMarker || placed.any((p) => p.overlaps(r))) continue;
+    }
+    placed.add(r);
+    shown.add(b.key);
+  }
+  return shown;
+}
+
+/// Этаж для подзаголовка шторки маркера: null, если он уже есть в одном из
+/// названий ([names] — помещение, сам маркер), чтобы не было
+/// «Серверная, 3 этаж · 3 этаж».
+String? floorPartIfNew(String? floor, Iterable<String?> names) {
+  if (floor == null || floor.trim().isEmpty) return null;
+  // «3 этаж» не находится в «13 этаж»: перед совпадением — не буква и не цифра.
+  final re = RegExp(r'(?<![\p{L}\p{N}])' + RegExp.escape(floor.trim()),
+      caseSensitive: false, unicode: true);
+  for (final n in names) {
+    if (n != null && re.hasMatch(n)) return null;
+  }
+  return floor;
+}

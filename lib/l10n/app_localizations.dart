@@ -3987,6 +3987,12 @@ abstract class AppLocalizations {
   /// **'Бирюзовый — есть открытые заявки, серый — открытых нет.'**
   String get infoPlan3;
 
+  /// No description provided for @infoPlan4.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мигает — у оборудования просроченная заявка. Волны и ореол — выбранный маркер, нажмите на пустое место, чтобы снять выбор.'**
+  String get infoPlan4;
+
   /// No description provided for @infoEditTitle.
   ///
   /// In ru, this message translates to:

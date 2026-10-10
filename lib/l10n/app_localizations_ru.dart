@@ -2348,6 +2348,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Бирюзовый — есть открытые заявки, серый — открытых нет.';
 
   @override
+  String get infoPlan4 =>
+      'Мигает — у оборудования просроченная заявка. Волны и ореол — выбранный маркер, нажмите на пустое место, чтобы снять выбор.';
+
+  @override
   String get infoEditTitle => 'Режим расстановки';
 
   @override

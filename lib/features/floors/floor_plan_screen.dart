@@ -328,7 +328,10 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
     final details = [
       if (!i.isPlace && i.category != null) l.assetCategory(i.category!),
       if (!i.isPlace && place != null) place.name,
-      if (_floorName(i.floorId) case final f?) f,
+      // Этаж — только если его нет в названии («Серверная, 3 этаж»).
+      if (floorPartIfNew(_floorName(i.floorId), [i.name, place?.name])
+          case final f?)
+        f,
       if (!i.placed) l.placeNotOnPlan,
     ].join(' · ');
     final a = await showAppSheet<_MarkerAction>(
@@ -603,7 +606,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
         actions: [
           AppInfoButton(
             title: l.infoPlanTitle,
-            lines: [l.infoPlan1, l.infoPlan2, l.infoPlan3],
+            lines: [l.infoPlan1, l.infoPlan2, l.infoPlan3, l.infoPlan4],
             closeLabel: l.commonGotIt,
             semanticLabel: l.infoShowHint(l.infoPlanTitle),
           ),
@@ -660,6 +663,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
             _showMarker(i);
           },
           onEmptyTap: _emptyTap,
+          onClear: () => setState(() => _highlight = null),
           onMoved: _move,
         ),
       ),

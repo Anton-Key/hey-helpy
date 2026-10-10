@@ -2323,6 +2323,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get infoPlan3 => 'Teal — there are open requests, grey — none open.';
 
   @override
+  String get infoPlan4 =>
+      'Pulsing — equipment with an overdue request. Ripples and a glow — the selected marker; tap an empty spot to clear it.';
+
+  @override
   String get infoEditTitle => 'Placement mode';
 
   @override

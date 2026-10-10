@@ -654,6 +654,7 @@
   "infoPlan1": "Circle — a room, the number is its open requests. Square — equipment.",
   "infoPlan2": "Red — overdue or critical requests, orange — urgent or in progress.",
   "infoPlan3": "Teal — there are open requests, grey — none open.",
+  "infoPlan4": "Pulsing — equipment with an overdue request. Ripples and a glow — the selected marker; tap an empty spot to clear it.",
   "infoEditTitle": "Placement mode",
   "infoEdit1": "Drag a marker to move it (on a phone — long-press first). It saves right away, with Undo.",
   "infoEdit2": "Tap an empty spot to add a room or equipment, or to place something not yet on the plan.",

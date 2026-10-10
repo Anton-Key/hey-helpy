@@ -4160,6 +4160,246 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Нужна миграция {number}: раздел заработает, когда её применят в базе (Actions → «Apply migration»).'**
   String migrationNeeded(String number);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Печать отчёта'**
+  String get reportPrint;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Готовим PDF…'**
+  String get reportPrintPreparing;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сформировать PDF. Попробуйте ещё раз.'**
+  String get reportPrintFailed;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'PDF собирается по тем же фильтрам, что сейчас на экране: период, объекты, регион, подрядчик, вид работ и тип задачи.'**
+  String get reportPrintInfo1;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'В браузере откроется окно печати — там же можно выбрать «Сохранить как PDF».'**
+  String get reportPrintInfo2;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'На телефоне файл можно отправить в мессенджер или почту либо распечатать.'**
+  String get reportPrintInfo3;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'В отчёте: показатели, таблицы «По регионам» и «По подрядчикам», список заявок с номерами страниц.'**
+  String get reportPrintInfo4;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион'**
+  String get reportFilterRegion;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип'**
+  String get reportFilterKind;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Разовые'**
+  String get reportKindOnce;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Повторяющиеся'**
+  String get reportKindRecurring;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get reportKindPpr;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы'**
+  String get reportRegionsGroup;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Страны'**
+  String get reportCountriesGroup;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'По регионам'**
+  String get reportByRegion;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'По городам'**
+  String get reportByCity;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Без региона'**
+  String get reportNoRegion;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Без города'**
+  String get reportNoCity;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР выполнено'**
+  String get reportPprDone;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'{done} из {total}'**
+  String reportPprOf(String done, String total);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Отчёт по заявкам и подрядчикам'**
+  String get pdfTitle;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания: {name}'**
+  String pdfCompany(String name);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Период: {period}'**
+  String pdfPeriod(String period);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры: {filters}'**
+  String pdfFilters(String filters);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'все объекты, подрядчики и виды работ'**
+  String get pdfNoFilters;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформирован: {date}, {name}'**
+  String pdfGenerated(String date, String name);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'стр. {page} из {pages}'**
+  String pdfPageOf(String page, String pages);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявки'**
+  String get pdfOrders;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'За период заявок нет.'**
+  String get pdfOrdersEmpty;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'№'**
+  String get pdfColNumber;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата'**
+  String get pdfColDate;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get pdfColObject;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get pdfColPlace;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get pdfColLayer;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get pdfColContractor;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Статус'**
+  String get pdfColStatus;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок'**
+  String get pdfColDue;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион'**
+  String get pdfColRegion;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Город'**
+  String get pdfColCity;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'HeyHelpy_Отчёт_{period}.pdf'**
+  String pdfFileName(String period);
 }
 
 class _AppLocalizationsDelegate

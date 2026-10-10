@@ -5366,6 +5366,480 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Изменить страну, город, регион'**
   String get geoEdit;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование · {count}'**
+  String equipSectionTitle(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Название, номер, модель'**
+  String get equipSearchHint;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудования пока нет'**
+  String get equipEmpty;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить оборудование'**
+  String get equipAdd;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импорт из Excel / CSV'**
+  String get equipImport;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Без системы'**
+  String get equipNoSystem;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не найдено'**
+  String get equipNothingFound;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'{system} · {count}'**
+  String equipGroupTitle(String system, int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Новое оборудование'**
+  String get assetFormNewTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get assetFormEditTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get assetFieldName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, кондиционер переговорной'**
+  String get assetFieldNameHint;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get assetFieldSystem;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get assetFieldRoom;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите помещение'**
+  String get assetChooseRoom;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Инвентарный номер'**
+  String get assetFieldInventory;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Производитель'**
+  String get assetFieldManufacturer;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Модель'**
+  String get assetFieldModel;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Серийный номер'**
+  String get assetFieldSerial;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата ввода'**
+  String get assetFieldInstalled;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите название'**
+  String get assetNameRequired;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите помещение'**
+  String get assetRoomRequired;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование сохранено'**
+  String get assetSaved;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить. Проверьте связь и попробуйте ещё раз.'**
+  String get assetSaveFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала добавьте помещение в объект'**
+  String get assetNoPlaces;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Паспорт'**
+  String get assetCardPassport;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Где стоит'**
+  String get assetCardWhere;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get assetCardObject;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж'**
+  String get assetCardFloor;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Планы ППР'**
+  String get assetCardPlans;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет планов ППР'**
+  String get assetCardPlansEmpty;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявки · {count}'**
+  String assetCardOrders(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявок по этому оборудованию нет'**
+  String get assetCardOrdersEmpty;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать заявку'**
+  String get assetCreateOrder;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить оборудование'**
+  String get assetLoadFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get assetEdit;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый месяц'**
+  String get assetPeriodMonth;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый квартал'**
+  String get assetPeriodQuarter;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'раз в полгода'**
+  String get assetPeriodHalfYear;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'раз в год'**
+  String get assetPeriodYear;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'каждые {days} дн.'**
+  String assetPeriodDays(int days);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'приостановлен'**
+  String get assetPlanPaused;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импорт оборудования'**
+  String get importTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать шаблон Excel'**
+  String get importTemplateXlsx;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать шаблон CSV'**
+  String get importTemplateCsv;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать файл (.xlsx, .csv)'**
+  String get importPickFile;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Первая строка — заголовки. Обязательны «Название» и «Помещение».'**
+  String get importFooter;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаблон сохранён'**
+  String get importTemplateSaved;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить шаблон'**
+  String get importTemplateFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось прочитать файл. Сохраните его как .xlsx или .csv (UTF-8) и попробуйте ещё раз.'**
+  String get importReadFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'В файле нет строк с оборудованием'**
+  String get importEmpty;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'В файле нет колонок: {columns}. Скачайте шаблон и перенесите данные в него.'**
+  String importMissingColumns(String columns);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get importColName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get importColRoom;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Строк: {total} · готово: {ok} · с ошибками: {bad}'**
+  String importSummary(int total, int ok, int bad);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать недостающие помещения ({count})'**
+  String importCreateRooms(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'С ошибками — не будут загружены'**
+  String get importErrorsTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово к импорту'**
+  String get importReadyTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Строка {line} · {name}'**
+  String importRowTitle(int line, String name);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'без названия'**
+  String get importNoRowName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'И ещё {count}'**
+  String importMore(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'нет названия'**
+  String get importIssueNoName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'не указано помещение'**
+  String get importIssueNoRoom;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'нет помещения «{room}»'**
+  String importIssueRoomNotFound(String room);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'нет системы «{system}»'**
+  String importIssueUnknownSystem(String system);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'инвентарный номер повторяется в файле'**
+  String get importIssueDupFile;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'такой инвентарный номер уже есть'**
+  String get importIssueDupDb;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'дата не распознана (нужно ГГГГ-ММ-ДД или ДД.ММ.ГГГГ)'**
+  String get importIssueBadDate;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'слишком длинное значение (больше 120 символов)'**
+  String get importIssueTooLong;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{Импортировать {count} строку} few{Импортировать {count} строки} other{Импортировать {count} строк}}'**
+  String importButton(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импортировано: {count}'**
+  String importDone(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импорт не выполнен — ничего не загружено. Проверьте связь и попробуйте ещё раз.'**
+  String get importFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импорт оборудования'**
+  String get importInfoTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачайте шаблон Excel или CSV: первая строка — заголовки, вторая — пример (её можно удалить).'**
+  String get importInfo1;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Обязательны «Название» и «Помещение». Помещение — по номеру («305») или по названию, как в карточке объекта.'**
+  String get importInfo2;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'«Система» — как в видах работ (Климат, Электрика…). Дата ввода — ГГГГ-ММ-ДД или ДД.ММ.ГГГГ.'**
+  String get importInfo3;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Строки с ошибками не загружаются: исправьте их в файле и выберите файл ещё раз. Недостающие помещения можно создать при импорте.'**
+  String get importInfo4;
+
+  /// Имя файла шаблона импорта, без расширения (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'HeyHelpy_Оборудование_шаблон'**
+  String get importTemplateFileName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, КЛ-3-001'**
+  String get assetFieldInventoryHint;
 }
 
 class _AppLocalizationsDelegate

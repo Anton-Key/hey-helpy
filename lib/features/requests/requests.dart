@@ -969,6 +969,9 @@ Future<bool?> showOrderForm({
   String? initialLocationId,
   String? initialAssetId,
   String? initialAssetName,
+
+  /// Вид работ заранее (заявка на оборудование — система оборудования, шаг 16).
+  String? initialLayerId,
 }) async {
   // Виды работ = слои компании из базы; ничего не зашито в приложение.
   List<Layer> layers = const [];
@@ -989,7 +992,7 @@ Future<bool?> showOrderForm({
       ? Layer.find(layers,
           id: existing['layer_id'] as String?,
           name: existing['work_type'] as String?)
-      : null;
+      : Layer.find(layers, id: initialLayerId);
   String priority =
       isEdit ? (existing['priority'] ?? 'normal') as String : 'normal';
   String? objectId = isEdit

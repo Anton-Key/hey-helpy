@@ -3171,4 +3171,284 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get geoEdit => 'Изменить страну, город, регион';
+
+  @override
+  String equipSectionTitle(int count) {
+    return 'Оборудование · $count';
+  }
+
+  @override
+  String get equipSearchHint => 'Название, номер, модель';
+
+  @override
+  String get equipEmpty => 'Оборудования пока нет';
+
+  @override
+  String get equipAdd => 'Добавить оборудование';
+
+  @override
+  String get equipImport => 'Импорт из Excel / CSV';
+
+  @override
+  String get equipNoSystem => 'Без системы';
+
+  @override
+  String get equipNothingFound => 'Ничего не найдено';
+
+  @override
+  String equipGroupTitle(String system, int count) {
+    return '$system · $count';
+  }
+
+  @override
+  String get assetFormNewTitle => 'Новое оборудование';
+
+  @override
+  String get assetFormEditTitle => 'Оборудование';
+
+  @override
+  String get assetFieldName => 'Название';
+
+  @override
+  String get assetFieldNameHint => 'Например, кондиционер переговорной';
+
+  @override
+  String get assetFieldSystem => 'Система';
+
+  @override
+  String get assetFieldRoom => 'Помещение';
+
+  @override
+  String get assetChooseRoom => 'Выберите помещение';
+
+  @override
+  String get assetFieldInventory => 'Инвентарный номер';
+
+  @override
+  String get assetFieldManufacturer => 'Производитель';
+
+  @override
+  String get assetFieldModel => 'Модель';
+
+  @override
+  String get assetFieldSerial => 'Серийный номер';
+
+  @override
+  String get assetFieldInstalled => 'Дата ввода';
+
+  @override
+  String get assetNameRequired => 'Укажите название';
+
+  @override
+  String get assetRoomRequired => 'Выберите помещение';
+
+  @override
+  String get assetSaved => 'Оборудование сохранено';
+
+  @override
+  String get assetSaveFailed =>
+      'Не удалось сохранить. Проверьте связь и попробуйте ещё раз.';
+
+  @override
+  String get assetNoPlaces => 'Сначала добавьте помещение в объект';
+
+  @override
+  String get assetCardPassport => 'Паспорт';
+
+  @override
+  String get assetCardWhere => 'Где стоит';
+
+  @override
+  String get assetCardObject => 'Объект';
+
+  @override
+  String get assetCardFloor => 'Этаж';
+
+  @override
+  String get assetCardPlans => 'Планы ППР';
+
+  @override
+  String get assetCardPlansEmpty => 'Нет планов ППР';
+
+  @override
+  String assetCardOrders(int count) {
+    return 'Заявки · $count';
+  }
+
+  @override
+  String get assetCardOrdersEmpty => 'Заявок по этому оборудованию нет';
+
+  @override
+  String get assetCreateOrder => 'Создать заявку';
+
+  @override
+  String get assetLoadFailed => 'Не удалось загрузить оборудование';
+
+  @override
+  String get assetEdit => 'Изменить';
+
+  @override
+  String get assetPeriodMonth => 'каждый месяц';
+
+  @override
+  String get assetPeriodQuarter => 'каждый квартал';
+
+  @override
+  String get assetPeriodHalfYear => 'раз в полгода';
+
+  @override
+  String get assetPeriodYear => 'раз в год';
+
+  @override
+  String assetPeriodDays(int days) {
+    return 'каждые $days дн.';
+  }
+
+  @override
+  String get assetPlanPaused => 'приостановлен';
+
+  @override
+  String get importTitle => 'Импорт оборудования';
+
+  @override
+  String get importTemplateXlsx => 'Скачать шаблон Excel';
+
+  @override
+  String get importTemplateCsv => 'Скачать шаблон CSV';
+
+  @override
+  String get importPickFile => 'Выбрать файл (.xlsx, .csv)';
+
+  @override
+  String get importFooter =>
+      'Первая строка — заголовки. Обязательны «Название» и «Помещение».';
+
+  @override
+  String get importTemplateSaved => 'Шаблон сохранён';
+
+  @override
+  String get importTemplateFailed => 'Не удалось сохранить шаблон';
+
+  @override
+  String get importReadFailed =>
+      'Не удалось прочитать файл. Сохраните его как .xlsx или .csv (UTF-8) и попробуйте ещё раз.';
+
+  @override
+  String get importEmpty => 'В файле нет строк с оборудованием';
+
+  @override
+  String importMissingColumns(String columns) {
+    return 'В файле нет колонок: $columns. Скачайте шаблон и перенесите данные в него.';
+  }
+
+  @override
+  String get importColName => 'Название';
+
+  @override
+  String get importColRoom => 'Помещение';
+
+  @override
+  String importSummary(int total, int ok, int bad) {
+    return 'Строк: $total · готово: $ok · с ошибками: $bad';
+  }
+
+  @override
+  String importCreateRooms(int count) {
+    return 'Создать недостающие помещения ($count)';
+  }
+
+  @override
+  String get importErrorsTitle => 'С ошибками — не будут загружены';
+
+  @override
+  String get importReadyTitle => 'Готово к импорту';
+
+  @override
+  String importRowTitle(int line, String name) {
+    return 'Строка $line · $name';
+  }
+
+  @override
+  String get importNoRowName => 'без названия';
+
+  @override
+  String importMore(int count) {
+    return 'И ещё $count';
+  }
+
+  @override
+  String get importIssueNoName => 'нет названия';
+
+  @override
+  String get importIssueNoRoom => 'не указано помещение';
+
+  @override
+  String importIssueRoomNotFound(String room) {
+    return 'нет помещения «$room»';
+  }
+
+  @override
+  String importIssueUnknownSystem(String system) {
+    return 'нет системы «$system»';
+  }
+
+  @override
+  String get importIssueDupFile => 'инвентарный номер повторяется в файле';
+
+  @override
+  String get importIssueDupDb => 'такой инвентарный номер уже есть';
+
+  @override
+  String get importIssueBadDate =>
+      'дата не распознана (нужно ГГГГ-ММ-ДД или ДД.ММ.ГГГГ)';
+
+  @override
+  String get importIssueTooLong =>
+      'слишком длинное значение (больше 120 символов)';
+
+  @override
+  String importButton(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Импортировать $count строк',
+      few: 'Импортировать $count строки',
+      one: 'Импортировать $count строку',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importDone(int count) {
+    return 'Импортировано: $count';
+  }
+
+  @override
+  String get importFailed =>
+      'Импорт не выполнен — ничего не загружено. Проверьте связь и попробуйте ещё раз.';
+
+  @override
+  String get importInfoTitle => 'Импорт оборудования';
+
+  @override
+  String get importInfo1 =>
+      'Скачайте шаблон Excel или CSV: первая строка — заголовки, вторая — пример (её можно удалить).';
+
+  @override
+  String get importInfo2 =>
+      'Обязательны «Название» и «Помещение». Помещение — по номеру («305») или по названию, как в карточке объекта.';
+
+  @override
+  String get importInfo3 =>
+      '«Система» — как в видах работ (Климат, Электрика…). Дата ввода — ГГГГ-ММ-ДД или ДД.ММ.ГГГГ.';
+
+  @override
+  String get importInfo4 =>
+      'Строки с ошибками не загружаются: исправьте их в файле и выберите файл ещё раз. Недостающие помещения можно создать при импорте.';
+
+  @override
+  String get importTemplateFileName => 'HeyHelpy_Оборудование_шаблон';
+
+  @override
+  String get assetFieldInventoryHint => 'Например, КЛ-3-001';
 }

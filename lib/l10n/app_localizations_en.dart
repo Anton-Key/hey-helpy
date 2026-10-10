@@ -3144,4 +3144,282 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get geoEdit => 'Edit country, city, region';
+
+  @override
+  String equipSectionTitle(int count) {
+    return 'Equipment · $count';
+  }
+
+  @override
+  String get equipSearchHint => 'Name, number, model';
+
+  @override
+  String get equipEmpty => 'No equipment yet';
+
+  @override
+  String get equipAdd => 'Add equipment';
+
+  @override
+  String get equipImport => 'Import from Excel / CSV';
+
+  @override
+  String get equipNoSystem => 'No system';
+
+  @override
+  String get equipNothingFound => 'Nothing found';
+
+  @override
+  String equipGroupTitle(String system, int count) {
+    return '$system · $count';
+  }
+
+  @override
+  String get assetFormNewTitle => 'New equipment';
+
+  @override
+  String get assetFormEditTitle => 'Equipment';
+
+  @override
+  String get assetFieldName => 'Name';
+
+  @override
+  String get assetFieldNameHint => 'E.g. meeting room air conditioner';
+
+  @override
+  String get assetFieldSystem => 'System';
+
+  @override
+  String get assetFieldRoom => 'Room';
+
+  @override
+  String get assetChooseRoom => 'Choose a room';
+
+  @override
+  String get assetFieldInventory => 'Inventory number';
+
+  @override
+  String get assetFieldManufacturer => 'Manufacturer';
+
+  @override
+  String get assetFieldModel => 'Model';
+
+  @override
+  String get assetFieldSerial => 'Serial number';
+
+  @override
+  String get assetFieldInstalled => 'Installed on';
+
+  @override
+  String get assetNameRequired => 'Enter a name';
+
+  @override
+  String get assetRoomRequired => 'Choose a room';
+
+  @override
+  String get assetSaved => 'Equipment saved';
+
+  @override
+  String get assetSaveFailed =>
+      'Couldn\'t save. Check your connection and try again.';
+
+  @override
+  String get assetNoPlaces => 'Add a room to the property first';
+
+  @override
+  String get assetCardPassport => 'Details';
+
+  @override
+  String get assetCardWhere => 'Location';
+
+  @override
+  String get assetCardObject => 'Property';
+
+  @override
+  String get assetCardFloor => 'Floor';
+
+  @override
+  String get assetCardPlans => 'Maintenance plans';
+
+  @override
+  String get assetCardPlansEmpty => 'No maintenance plans';
+
+  @override
+  String assetCardOrders(int count) {
+    return 'Requests · $count';
+  }
+
+  @override
+  String get assetCardOrdersEmpty => 'No requests for this equipment';
+
+  @override
+  String get assetCreateOrder => 'Create request';
+
+  @override
+  String get assetLoadFailed => 'Couldn\'t load the equipment';
+
+  @override
+  String get assetEdit => 'Edit';
+
+  @override
+  String get assetPeriodMonth => 'every month';
+
+  @override
+  String get assetPeriodQuarter => 'every quarter';
+
+  @override
+  String get assetPeriodHalfYear => 'every six months';
+
+  @override
+  String get assetPeriodYear => 'every year';
+
+  @override
+  String assetPeriodDays(int days) {
+    return 'every $days days';
+  }
+
+  @override
+  String get assetPlanPaused => 'paused';
+
+  @override
+  String get importTitle => 'Import equipment';
+
+  @override
+  String get importTemplateXlsx => 'Download Excel template';
+
+  @override
+  String get importTemplateCsv => 'Download CSV template';
+
+  @override
+  String get importPickFile => 'Choose a file (.xlsx, .csv)';
+
+  @override
+  String get importFooter =>
+      'The first row holds the headers. “Name” and “Room” are required.';
+
+  @override
+  String get importTemplateSaved => 'Template saved';
+
+  @override
+  String get importTemplateFailed => 'Couldn\'t save the template';
+
+  @override
+  String get importReadFailed =>
+      'Couldn\'t read the file. Save it as .xlsx or .csv (UTF-8) and try again.';
+
+  @override
+  String get importEmpty => 'The file has no equipment rows';
+
+  @override
+  String importMissingColumns(String columns) {
+    return 'The file is missing columns: $columns. Download the template and copy your data into it.';
+  }
+
+  @override
+  String get importColName => 'Name';
+
+  @override
+  String get importColRoom => 'Room';
+
+  @override
+  String importSummary(int total, int ok, int bad) {
+    return 'Rows: $total · ready: $ok · with errors: $bad';
+  }
+
+  @override
+  String importCreateRooms(int count) {
+    return 'Create missing rooms ($count)';
+  }
+
+  @override
+  String get importErrorsTitle => 'With errors — won\'t be imported';
+
+  @override
+  String get importReadyTitle => 'Ready to import';
+
+  @override
+  String importRowTitle(int line, String name) {
+    return 'Row $line · $name';
+  }
+
+  @override
+  String get importNoRowName => 'no name';
+
+  @override
+  String importMore(int count) {
+    return 'And $count more';
+  }
+
+  @override
+  String get importIssueNoName => 'no name';
+
+  @override
+  String get importIssueNoRoom => 'no room';
+
+  @override
+  String importIssueRoomNotFound(String room) {
+    return 'no room “$room”';
+  }
+
+  @override
+  String importIssueUnknownSystem(String system) {
+    return 'no system “$system”';
+  }
+
+  @override
+  String get importIssueDupFile => 'inventory number repeats in the file';
+
+  @override
+  String get importIssueDupDb => 'this inventory number already exists';
+
+  @override
+  String get importIssueBadDate =>
+      'date not recognised (use YYYY-MM-DD or DD.MM.YYYY)';
+
+  @override
+  String get importIssueTooLong => 'value too long (over 120 characters)';
+
+  @override
+  String importButton(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Import $count rows',
+      one: 'Import $count row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importDone(int count) {
+    return 'Imported: $count';
+  }
+
+  @override
+  String get importFailed =>
+      'Import failed — nothing was added. Check your connection and try again.';
+
+  @override
+  String get importInfoTitle => 'Importing equipment';
+
+  @override
+  String get importInfo1 =>
+      'Download the Excel or CSV template: row 1 holds the headers, row 2 is an example (you can delete it).';
+
+  @override
+  String get importInfo2 =>
+      '“Name” and “Room” are required. Room — by number (“305”) or by name, as on the property card.';
+
+  @override
+  String get importInfo3 =>
+      '“System” — as in the work types (HVAC, Electrical…). Installed on — YYYY-MM-DD or DD.MM.YYYY.';
+
+  @override
+  String get importInfo4 =>
+      'Rows with errors are skipped: fix them in the file and choose it again. Missing rooms can be created during import.';
+
+  @override
+  String get importTemplateFileName => 'HeyHelpy_Equipment_template';
+
+  @override
+  String get assetFieldInventoryHint => 'E.g. AC-3-001';
 }

@@ -2732,4 +2732,10 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get importInfo4 =>
       'Строки с ошибками не загружаются: исправьте их в файле и выберите файл ещё раз. Недостающие помещения можно создать при импорте.';
+
+  @override
+  String get importTemplateFileName => 'HeyHelpy_Оборудование_шаблон';
+
+  @override
+  String get assetFieldInventoryHint => 'Например, КЛ-3-001';
 }

@@ -58,9 +58,7 @@ class _EquipmentImportScreenState extends State<EquipmentImportScreen> {
     final locale = context.localeCode;
     try {
       final bytes = xlsx ? buildTemplateXlsx(locale) : buildTemplateCsv(locale);
-      final name = locale == 'ru'
-          ? 'HeyHelpy_Оборудование_шаблон'
-          : 'HeyHelpy_Equipment_template';
+      final name = l.importTemplateFileName;
       final uri = await FilePicker.saveFile(
         fileName: '$name.${xlsx ? 'xlsx' : 'csv'}',
         bytes: bytes,

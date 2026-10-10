@@ -4622,6 +4622,18 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Строки с ошибками не загружаются: исправьте их в файле и выберите файл ещё раз. Недостающие помещения можно создать при импорте.'**
   String get importInfo4;
+
+  /// Имя файла шаблона импорта, без расширения (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'HeyHelpy_Оборудование_шаблон'**
+  String get importTemplateFileName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, КЛ-3-001'**
+  String get assetFieldInventoryHint;
 }
 
 class _AppLocalizationsDelegate

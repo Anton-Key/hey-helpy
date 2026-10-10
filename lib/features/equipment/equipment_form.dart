@@ -263,7 +263,7 @@ class _AssetFormState extends State<_AssetForm> {
                 ]),
                 const SizedBox(height: AppSpace.group),
                 AppGroup(header: l.assetFieldInventory, children: [
-                  _field(_inv, 'КЛ-3-001'),
+                  _field(_inv, l.assetFieldInventoryHint),
                 ]),
                 AppGroup(children: [
                   _field(_mf, l.assetFieldManufacturer),

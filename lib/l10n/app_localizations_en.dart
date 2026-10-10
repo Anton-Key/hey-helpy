@@ -2705,4 +2705,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get importInfo4 =>
       'Rows with errors are skipped: fix them in the file and choose it again. Missing rooms can be created during import.';
+
+  @override
+  String get importTemplateFileName => 'HeyHelpy_Equipment_template';
+
+  @override
+  String get assetFieldInventoryHint => 'E.g. AC-3-001';
 }

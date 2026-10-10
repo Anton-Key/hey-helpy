@@ -27,10 +27,15 @@ abstract class VoiceIntakeClient {
       {required String locale, required IntakeCatalog catalog});
 }
 
+/// Снимки для питча (`/screens --pitch`): речь — заготовленная фраза
+/// (VOICE_MOCK), разбор — настоящий ИИ на сервере. В рабочие сборки не
+/// добавлять.
+const voiceMockAi = bool.fromEnvironment('VOICE_MOCK_AI');
+
 /// Обычно — ИИ на сервере с откатом на словарь. В режиме VOICE_MOCK
-/// (скриншоты `/screens`, без сети) — только словарь.
+/// (скриншоты `/screens`, без сети) — только словарь, с VOICE_MOCK_AI — ИИ.
 VoiceIntakeClient createVoiceIntakeClient() =>
-    voiceMock ? const LocalVoiceIntake() : ServerVoiceIntake();
+    voiceMock && !voiceMockAi ? const LocalVoiceIntake() : ServerVoiceIntake();
 
 /// Разбор на устройстве по словарю ([TextIntake]).
 class LocalVoiceIntake implements VoiceIntakeClient {

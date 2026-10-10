@@ -338,10 +338,10 @@ void main() {
     });
 
     test('без подписи у кластера — не размещается', () {
-      final c = MapCluster<String>(
-          items: const [MapItem(id: 'a', point: GeoPoint(1, 1), value: 'a')],
+      const c = MapCluster<String>(
+          items: [MapItem(id: 'a', point: GeoPoint(1, 1), value: 'a')],
           key: 'grid:a',
-          center: const GeoPoint(1, 1));
+          center: GeoPoint(1, 1));
       expect(cityLabelPlacement([c], 5, text: (c) => ''), isEmpty);
     });
   });

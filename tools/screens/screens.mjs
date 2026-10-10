@@ -19,8 +19,12 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, wri
 import { extname, join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '../..');
+// --pitch — 12 кадров для питча в docs/screens/pitch/ (см. PITCH ниже):
+// без служебных пометок, разбор голосовой заявки — настоящий ИИ (VOICE_MOCK_AI).
+const PITCH_MODE = process.argv.includes('--pitch');
 // --out=<папка> — снимать в другую папку (для отладки, не трогая docs/screens/latest).
-const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? join(ROOT, 'docs/screens/latest'));
+const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6)
+  ?? join(ROOT, PITCH_MODE ? 'docs/screens/pitch' : 'docs/screens/latest'));
 const WEB = join(ROOT, 'build/web');
 const MAX_PNG = 300 * 1024;
 
@@ -318,6 +322,7 @@ async function openCity(page, city) {
   await settle(page, 1500);
   await waitTiles(page);
 }
+const PREVIEW = process.argv.includes('--preview');
 const PREVIEW_TEXT = 'ПРЕДПРОСМОТР: объекты, подрядчики и заявки шага 13d подставлены в ответы сервера из demo_history.sql — в базе появятся после Refresh demo';
 
 // ---------------------------------------------------------------------------
@@ -362,7 +367,7 @@ if (!process.argv.includes('--no-build')) {
   }
   console.log('Сборка веб-версии…');
   execFileSync('flutter', ['build', 'web', '--release', '--dart-define-from-file=env.json',
-    '--dart-define=VOICE_MOCK=true'],
+    '--dart-define=VOICE_MOCK=true', ...(PITCH_MODE ? ['--dart-define=VOICE_MOCK_AI=true'] : [])],
     { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] });
 }
 if (!existsSync(join(WEB, 'index.html'))) {
@@ -407,7 +412,11 @@ const see = (page, text) => page.getByRole('tab', { name: ci(text) })
   .or(page.getByRole('button', { name: ci(text) }))
   .or(page.getByText(ci(text)))
   .or(page.getByLabel(ci(text))).first();
-const profileTab = (page) => page.getByRole('tab', { name: 'Профиль' });
+// Пункт «Профиль»: вкладка нижней панели (телефон) или пункт бокового меню (ПК,
+// подпись с бейджем — «Профиль, 1»).
+const profileTab = (page) => page.getByRole('tab', { name: /^Профиль/ })
+  .or(page.getByRole('button', { name: /^Профиль/ }))
+  .or(page.getByLabel(/^Профиль(, \d+)?$/)).first();
 
 async function login(page, email, password) {
   await openApp(page);
@@ -471,7 +480,8 @@ async function homeWith(page, query) {
 async function openOrder(page, title) {
   const row = page.getByRole('button', { name: title }).first();
   if (!(await row.isVisible().catch(() => false))) {
-    const box = page.getByRole('textbox', { name: 'Поиск по заявкам' });
+    // На ширине < 400 подсказка поля — «Поиск».
+    const box = page.getByRole('textbox', { name: /^Поиск( по заявкам)?$/ }).first();
     await box.click();
     await page.waitForTimeout(400);
     await page.keyboard.type(title.split(' ').slice(0, 2).join(' '), { delay: 30 });
@@ -545,6 +555,64 @@ let messageShownAt = 0;
 const messageLocator = (page) =>
   page.getByRole('group', { name: 'Напишите, что случилось' }).first();
 
+// Песочница для сценария «загрузка плана»: этаж 601 без картинки в ответах
+// сервера, любые записи (не GET/HEAD) к базе и Storage — ответ «успех» без
+// отправки на сервер. Подписанные ссылки на загруженный «файл» — картинка
+// из assets/demo_plans.
+async function sandboxPlanUpload(page) {
+  page.sandboxWrites = [];
+  page.sandboxFile = null;
+  page.sandboxRest = async (route) => {
+    const req = route.request();
+    const url = new URL(req.url());
+    if (!['GET', 'HEAD'].includes(req.method())) {
+      page.sandboxWrites.push(`${req.method()} ${url.pathname}`);
+      const id = (url.searchParams.get('id') ?? '').replace(/^eq\./, '');
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id }]) });
+    }
+    if (url.pathname.endsWith('/rest/v1/floors') && req.method() === 'GET' && !page.sandboxFile) {
+      const res = await route.fetch();
+      const body = JSON.parse((await res.text()) || '[]');
+      const strip = (r) => (r.id === uuid(601) ? { ...r, plan_path: null, plan_w: null, plan_h: null } : r);
+      return route.fulfill({ response: res, body: JSON.stringify(Array.isArray(body) ? body.map(strip) : strip(body)) });
+    }
+    return route.fallback();
+  };
+  page.sandboxStorage = async (route) => {
+    const req = route.request();
+    const url = new URL(req.url());
+    if (!url.pathname.includes('/floor-plans/')) return route.fallback();
+    // Подписанная ссылка на файл, «загруженный» в песочнице.
+    if (url.pathname.includes('/object/sign/')) {
+      if (page.sandboxFile && url.pathname.endsWith(page.sandboxFile)) {
+        if (req.method() === 'POST') {
+          return route.fulfill({ status: 200, contentType: 'application/json',
+            body: JSON.stringify({ signedURL: `/object/sign/floor-plans/${page.sandboxFile}?token=sandbox` }) });
+        }
+        return route.fulfill({ status: 200, contentType: 'image/png', headers: { 'access-control-allow-origin': '*' },
+          body: readFileSync(join(ROOT, 'assets/demo_plans/bc-demo-floor-1.png')) });
+      }
+      return route.fallback();
+    }
+    if (!['GET', 'HEAD'].includes(req.method())) {
+      page.sandboxWrites.push(`${req.method()} ${url.pathname}`);
+      // POST /storage/v1/object/floor-plans/<путь> — «загрузка».
+      if (req.method() === 'POST') page.sandboxFile = url.pathname.split('/floor-plans/')[1];
+      return route.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify({ Key: `floor-plans/${page.sandboxFile}`, Id: 'sandbox' }) });
+    }
+    return route.fallback();
+  };
+  await page.route('**/rest/v1/**', page.sandboxRest);
+  await page.route('**/storage/v1/object/**', page.sandboxStorage);
+}
+
+async function unsandbox(page) {
+  if (page.sandboxRest) await page.unroute('**/rest/v1/**', page.sandboxRest);
+  if (page.sandboxStorage) await page.unroute('**/storage/v1/object/**', page.sandboxStorage);
+  page.sandboxRest = page.sandboxStorage = null;
+}
+
 const SCREENS = [
   { key: 'requests', title: 'Список заявок', run: async (p) => { await home(p); } },
   // Список, прокрученный до конца: последняя карточка не под плавающими кнопками.
@@ -571,6 +639,8 @@ const SCREENS = [
       await homeWith(p, 'pri=critical,high&st=overdue,new,assigned,in_progress&period=30d&sort=priority');
       // Таблетка «Срочность: Критический +1» — значит, ссылка применилась.
       await p.getByRole('button', { name: /^Срочность: Критический \+1/ }).first().waitFor({ timeout: 15000 });
+      // «Найдено N из M» — теперь подпись сегментов для диктора; на экране —
+      // «Все · N из M» у выбранного сегмента (на ширине < 400 — «N»).
       await see(p, /Найдено \d+ из \d+/).waitFor({ timeout: 15000 });
       await see(p, 'Сбросить всё').waitFor({ timeout: 5000 });
       return 'ссылка #/?pri=critical,high&st=overdue,new,assigned,in_progress&period=30d&sort=priority';
@@ -862,8 +932,9 @@ const SCREENS = [
       const wide = vp.width >= 900;
       // Рамка — внутри карты, мимо кнопок справа и подсказки слева сверху
       // (на телефоне — над панелью списка).
+      // ПК: слева боковое меню и список (~600 px), карта — правее.
       const [x0, y0, x1, y1] = wide
-        ? [560, 250, 1060, 620]
+        ? [Math.round(vp.width * 0.55), 300, vp.width - 140, 650]
         : [30, 240, 300, 520];
       // Протянуть рамку; если строка «сбросить» не появилась — ещё раз (бывает,
       // что первое нажатие приходит, пока карта перерисовывается).
@@ -957,13 +1028,22 @@ const SCREENS = [
       return p.role === 'manager' ? 'ссылка #/objects/…/floors/…; маркеры помещений и оборудования, фильтр, список'
         : 'только чтение: нет «Редактировать»';
     } },
-  { key: 'plan-marker', title: 'План — шторка маркера «Серверная, 3 этаж»', run: async (p) => {
+  // Шторка оборудования с просроченной заявкой (на телефоне при «вписать»
+  // маркер помещения «Серверная» закрыт маркером стойки — берём кондиционер).
+  { key: 'plan-marker', title: 'План — шторка маркера «Кондиционер серверной»', run: async (p) => {
       await openPlan(p, 10, 602);
-      await p.getByRole('button', { name: /^Серверная, 3 этаж, / }).first().click({ force: true });
+      await p.getByRole('button', { name: /^Кондиционер серверной, / }).first().click({ force: true });
       await see(p, 'Создать заявку здесь').waitFor({ timeout: 10000 });
       await settle(p, 1000);
-      return 'открытые заявки помещения (просроченная — первой), «Создать заявку здесь»';
+      return 'подзаголовок без повтора этажа («… · Серверная, 3 этаж»), открытая просроченная заявка, «Создать заявку здесь»';
     }, after: async (p) => { await p.keyboard.press('Escape'); await settle(p, 400); } },
+  // Шаг 15 (H): оборудование цвета статуса с бейджем, просроченное «дышит».
+  { key: 'plan-overdue', title: 'План — оборудование с просроченной заявкой (красное, «дышит»)', managerOnly: true, run: async (p) => {
+      await openPlan(p, 10, 602);
+      await p.mouse.move(5, 5);
+      await settle(p, 1200);
+      return 'план целиком: квадраты оборудования — цвет статуса и бейдж числа заявок, «Кондиционер серверной» (просрочено) — красный ореол «дышит»; подписи помещений скрыты (они на картинке)';
+    } },
   { key: 'plan-edit', title: 'План — режим расстановки', managerOnly: true, run: async (p) => {
       await openPlan(p, 10, 601);
       await p.getByRole('button', { name: 'Редактировать' }).first().click();
@@ -971,6 +1051,49 @@ const SCREENS = [
       await settle(p, 800);
       return 'плашка «Режим расстановки · Готово»; маркеры перетаскиваются (здесь ничего не меняется)';
     } },
+  // Загрузка плана с экрана плана (шаг 15): этаж «1 этаж» показывается без
+  // картинки (ответ сервера в браузере без plan_path), «Загрузить план» →
+  // файл assets/demo_plans/bc-demo-floor-1.png. ВСЕ записи (загрузка в
+  // Storage, этаж, перенос маркера) перехватываются в браузере и в базу НЕ
+  // уходят — сервер «отвечает» успехом.
+  { key: 'plan-upload-empty', title: 'План без картинки — «Загрузить план» (менеджер)', managerOnly: true, run: async (p) => {
+      await sandboxPlanUpload(p);
+      await openPlan(p, 10, 601);
+      await btn(p, 'Загрузить план').waitFor({ timeout: 10000 });
+      await settle(p, 800);
+      return 'ответ сервера в браузере — этаж без plan_path; база не меняется';
+    } },
+  { key: 'plan-upload-done', title: 'План сразу после загрузки (без перезахода)', managerOnly: true, run: async (p) => {
+      const chooser = p.waitForEvent('filechooser', { timeout: 15000 });
+      await btn(p, 'Загрузить план').click();
+      await (await chooser).setFiles(join(ROOT, 'assets/demo_plans/bc-demo-floor-1.png'));
+      await see(p, 'План загружен').waitFor({ timeout: 20000 });
+      await settle(p, 3000);
+      if (await btn(p, 'Загрузить план').isVisible().catch(() => false)) {
+        throw new Error('После загрузки осталась плашка «План не загружен»');
+      }
+      return 'файл подставлен Playwright; загрузка и запись этажа перехвачены в браузере';
+    } },
+  { key: 'plan-upload-edit', title: '«Редактировать» — режим расстановки и перетаскивание', managerOnly: true, run: async (p) => {
+      await p.getByRole('button', { name: 'Редактировать' }).first().click();
+      await see(p, 'Режим расстановки').waitFor({ timeout: 5000 });
+      await settle(p, 1200);
+      // Перетащить маркер помещения мышью на 60 px вправо и 40 px вниз.
+      // Маркер — не строка списка слева (на ПК у неё та же подпись): подпись
+      // маркера — «Кафе, 1 этаж, нет открытых заявок» одной строкой.
+      const marker = p.getByRole('button', { name: /^Кафе, 1 этаж, / }).first();
+      const box = await marker.boundingBox();
+      if (!box) throw new Error('Маркер «Кафе» не найден');
+      const x = box.x + box.width / 2, y = box.y + 22;
+      await p.mouse.move(x, y);
+      await p.mouse.down();
+      for (let i = 1; i <= 10; i++) await p.mouse.move(x + 6 * i, y + 4 * i);
+      await p.mouse.up();
+      await see(p, 'Сохранено').waitFor({ timeout: 10000 });
+      await settle(p, 800);
+      if (!p.sandboxWrites.some((w) => w.includes('/locations'))) throw new Error('Перенос маркера не дошёл до сохранения');
+      return `плашка режима, контур маркеров; перенос «Кафе» перехвачен (${p.sandboxWrites.length} записей не ушли в базу)`;
+    }, after: async (p) => { await unsandbox(p); } },
   { key: 'plan-unplaced', title: 'План — список «На плане / Не размещены»', managerOnly: true, run: async (p) => {
       await openPlan(p, 10, 601);
       const vp = p.viewportSize();
@@ -1002,8 +1125,10 @@ const SCREENS = [
       await openOrder(p, 'Течёт конденсат из кондиционера серверной');
       await btn(p, 'Показать на плане').click();
       await see(p, /Не размещены|На плане/).waitFor({ timeout: 20000 });
-      await settle(p, 2500);
-      return 'план центрирован на «Кондиционер серверной», подпись видна';
+      // Волны идут 4 с после открытия: кадр — пока они видны (после
+      // приближения ~0,6 с), затем — спокойный ореол.
+      await settle(p, 1400);
+      return 'план центрирован на «Кондиционер серверной»: красные волны (просрочено), маркер ×1,25, подпись полужирная';
     } },
   { key: 'profile', title: 'Профиль', run: async (p) => {
       await home(p);
@@ -1027,6 +1152,8 @@ const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '';
 const WIDTH = +(process.argv.find((a) => a.startsWith('--width='))?.slice(8) ?? 0);
 
 const RUNS = [
+  // ПК: широкое меню слева (≥ 1200) и служебные кнопки справа вверху.
+  { role: 'manager', label: 'Менеджер', width: 1920, height: 1080 },
   { role: 'manager', label: 'Менеджер', width: 1280, height: 800 },
   { role: 'manager', label: 'Менеджер', width: 412, height: 915 },
   // Недорогие Android (Galaxy A17, HONOR X6c, Xiaomi): 360 px.
@@ -1034,6 +1161,90 @@ const RUNS = [
   { role: 'executor', label: 'Исполнитель', width: 412, height: 915 },
   { role: 'requester', label: 'Заявитель', width: 412, height: 915 },
 ];
+
+// ---------------------------------------------------------------------------
+// Кадры для питча (--pitch): менеджер, 412 (телефон) и 1920 (ПК). Описания
+// и тезисы — docs/screens/pitch/README.md (пишется руками, не перезаписывается).
+// ---------------------------------------------------------------------------
+const PITCH = [
+  { file: '01-requests-phone', width: 412, key: 'requests' },
+  { file: '02-filters-phone', width: 412, key: 'filters-panel' },
+  { file: '03-voice-listening-phone', width: 412, key: 'voice' },
+  { file: '04-voice-ai-check-phone', width: 412, key: 'voice-ai', run: async (p) => {
+      await openVoice(p);
+      await btn(p, 'Готово').click();
+      await see(p, 'Проверьте заявку').waitFor({ timeout: 20000 });
+      // Настоящий разбор YandexGPT (Edge Function voice-intake); «Отправить» не нажимаем.
+      await see(p, 'Разобрано ИИ').waitFor({ timeout: 20000 })
+        .catch(() => { throw new Error('Нет пометки «Разобрано ИИ» — сервер не ответил, разбор по словарю'); });
+      await settle(p, 1500);
+    } },
+  { file: '05-order-show-on-plan-phone', width: 412, key: 'plan-order' },
+  // План целиком на 1920: из заявки, затем «Вписать план».
+  { file: '06-floor-plan-desktop', width: 1920, key: 'plan-from-order', run: async (p) => {
+      await home(p);
+      await openOrder(p, 'Течёт конденсат из кондиционера серверной');
+      await btn(p, 'Показать на плане').click();
+      await see(p, /Не размещены|На плане/).waitFor({ timeout: 20000 });
+      await settle(p, 200);
+      await btn(p, 'Вписать план').click();
+      await p.mouse.move(5, 5);
+      // Снимок 1920 в контейнере идёт ~3 с — дольше окна волн (4 с), на кадре —
+      // спокойный ореол; волны — в docs/screens/latest/*-plan-from-order.png.
+      await settle(p, 1200);
+    } },
+  { file: '07-floor-plan-marker-phone', width: 412, key: 'plan-marker' },
+  { file: '08-world-map-desktop', width: 1920, key: 'map' },
+  { file: '09-moscow-map-phone', width: 412, key: 'map-city' },
+  { file: '10-reports-desktop', width: 1920, key: 'reports' },
+  // Подрядчик в двух городах (Шэньчжэнь и Пекин) — видны секции по городам.
+  { file: '11-contractor-card-desktop', width: 1920, key: 'contractor-card', run: async (p) => {
+      await home(p);
+      await nav(p, 'Подрядчики').click();
+      await p.getByRole('button', { name: /Huaxin FM/ }).first().click();
+      await see(p, /Виды работ/).waitFor({ timeout: 15000 });
+      await settle(p, 1200);
+    } },
+  { file: '12-home-desktop', width: 1920, key: 'requests' },
+];
+
+if (PITCH_MODE) {
+  mkdirSync(OUT, { recursive: true });
+  const browser = await chromium.launch();
+  const failed = [];
+  try {
+    for (const width of [412, 1920].filter((w) => PITCH.some((x) => x.width === w && (!ONLY || x.file.startsWith(ONLY))))) {
+      const ctx = await browser.newContext({ viewport: { width, height: width > 600 ? 1080 : 915 },
+        locale: 'ru-RU', deviceScaleFactor: width > 600 ? 1 : 2 });
+      const page = await ctx.newPage();
+      trackTiles(page);
+      page.role = 'manager';
+      await login(page, env.DEMO_MANAGER_EMAIL, env.DEMO_MANAGER_PASSWORD);
+      for (const f of PITCH.filter((x) => x.width === width && (!ONLY || x.file.startsWith(ONLY)))) {
+        const s = SCREENS.find((x) => x.key === f.key);
+        const name = `${f.file}.png`;
+        try {
+          await (f.run ?? s.run)(page);
+          await page.screenshot({ path: join(OUT, name) });
+          console.log(`  ✅ ${name}`);
+        } catch (e) {
+          failed.push(`${name}: ${String(e.message).split('\n')[0]}`);
+          console.log(`  ❌ ${name}: ${String(e.message).split('\n')[0]}`);
+        }
+        if (s?.after) await s.after(page).catch(() => {});
+      }
+      await ctx.close();
+    }
+  } finally {
+    await browser.close();
+    server.close();
+  }
+  for (const f of readdirSync(OUT).filter((f) => f.endsWith('.png'))) {
+    try { execFileSync('pngquant', ['--force', '--skip-if-larger', '--quality=70-95', '--ext', '.png', join(OUT, f)]); } catch {}
+  }
+  console.log(`Питч: ${PITCH.length - failed.length} из ${PITCH.length} кадров — ${OUT}`);
+  process.exit(failed.length ? 1 : 0);
+}
 
 // ---------------------------------------------------------------------------
 // Съёмка
@@ -1064,8 +1275,9 @@ try {
       results.push({ ...r, key: 'login', title: 'Вход', ok: false, file: name,
         note: 'Не удалось войти: ' + String(e.message).split('\n')[0] });
     }
-    // Предпросмотр: объекты по миру — только у менеджера, планы этажей — у всех.
-    if (loggedIn) {
+    // Предпросмотр (шаги 13d, 14b) — только с флагом --preview: с шага 15
+    // объекты по миру, этажи, оборудование и картинки планов уже в базе.
+    if (loggedIn && PREVIEW) {
       await routeWorldPreview(page);
       if (r.role !== 'manager') page.worldPreview = 'off';
     }

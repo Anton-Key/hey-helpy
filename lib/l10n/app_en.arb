@@ -606,6 +606,7 @@
   "planTitle": "Floor plan",
   "planEdit": "Edit",
   "planEditMode": "Placement mode",
+  "planEditHint": "drag markers, tap an empty spot to add one",
   "planDone": "Done",
   "planFilterAll": "All",
   "planFilterPlaces": "Rooms",

@@ -876,6 +876,7 @@
   "planTitle": "План этажа",
   "planEdit": "Редактировать",
   "planEditMode": "Режим расстановки",
+  "planEditHint": "перетаскивайте маркеры, нажмите на пустое место, чтобы добавить",
   "planDone": "Готово",
   "planFilterAll": "Всё",
   "planFilterPlaces": "Помещения",

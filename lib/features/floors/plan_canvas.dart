@@ -291,11 +291,12 @@ class _PlanCanvasState extends State<PlanCanvas>
         stats: stats,
         highlighted: hi,
         showLabel: labels || hi,
+        movable: widget.editing && widget.onMoved != null,
         semanticLabel: widget.labelOf?.call(i) ?? i.name,
         onTap: () => widget.onMarkerTap(i),
       );
       if (widget.editing && widget.onMoved != null) {
-        marker = _draggable(i, px, marker);
+        marker = _draggable(i, px, _Hop(child: marker));
       }
       children.add(Positioned(
         left: p.dx - PlanMarker.boxWidth / 2,
@@ -349,6 +350,25 @@ class _PlanCanvasState extends State<PlanCanvas>
   }
 }
 
+/// Маркер «подпрыгивает» один раз при входе в режим расстановки — видно,
+/// что его можно двигать.
+class _Hop extends StatelessWidget {
+  const _Hop({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: AppMotion.normal * 3,
+        builder: (context, t, child) => Transform.translate(
+          // Два затухающих подскока по 6 px.
+          offset: Offset(0, -6 * (1 - t) * math.sin(t * math.pi * 2).abs()),
+          child: child,
+        ),
+        child: child,
+      );
+}
+
 /// Маркер плана: помещение — кружок с числом открытых заявок, оборудование
 /// — квадрат со значком. Цвет — по самой тревожной заявке (как на карте).
 /// Цель нажатия 44 px; подпись — под маркером.
@@ -360,8 +380,12 @@ class PlanMarker extends StatelessWidget {
     required this.onTap,
     this.highlighted = false,
     this.showLabel = false,
+    this.movable = false,
     this.semanticLabel,
   });
+
+  /// Режим расстановки: акцентный контур «можно двигать».
+  final bool movable;
 
   final PlanItem item;
   final ObjectStats stats;
@@ -400,6 +424,17 @@ class PlanMarker extends StatelessWidget {
                   color: fg, fontWeight: FontWeight.w700, fontSize: 13))
           : Icon(equipmentIcon(item), size: 15, color: AppColors.ink),
     );
+    final body = movable
+        ? Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: place ? BoxShape.circle : BoxShape.rectangle,
+              borderRadius: place ? null : BorderRadius.circular(10),
+              border: Border.all(color: AppColors.accent, width: 2),
+            ),
+            child: shape,
+          )
+        : shape;
     return Semantics(
       button: true,
       label: semanticLabel ?? item.name,
@@ -407,7 +442,7 @@ class PlanMarker extends StatelessWidget {
         Pressable(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadius.pill),
-          child: SizedBox(width: hit, height: hit, child: Center(child: shape)),
+          child: SizedBox(width: hit, height: hit, child: Center(child: body)),
         ),
         if (showLabel)
           IgnorePointer(

@@ -2182,6 +2182,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get planEditMode => 'Режим расстановки';
 
   @override
+  String get planEditHint =>
+      'перетаскивайте маркеры, нажмите на пустое место, чтобы добавить';
+
+  @override
   String get planDone => 'Готово';
 
   @override

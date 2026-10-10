@@ -2159,6 +2159,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get planEditMode => 'Placement mode';
 
   @override
+  String get planEditHint => 'drag markers, tap an empty spot to add one';
+
+  @override
   String get planDone => 'Done';
 
   @override

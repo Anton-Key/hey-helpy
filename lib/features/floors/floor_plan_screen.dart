@@ -242,6 +242,49 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
     _showMarker(i);
   }
 
+  bool _uploading = false;
+
+  /// «Загрузить / Заменить план» прямо с экрана плана: та же проверка файла
+  /// и тот же код загрузки, что в «⋯» карточки объекта. План появляется
+  /// сразу; превью в карточке обновится при возврате.
+  Future<void> _uploadPlan() async {
+    final floor = _floor;
+    if (floor == null || _uploading) return;
+    final l = context.l10n;
+    final p = await pickPlanFile(context);
+    if (p == null || !mounted) return;
+    setState(() => _uploading = true);
+    try {
+      final f = await _repo.uploadPlan(floor, p.bytes, p.info);
+      if (!mounted) return;
+      setState(() {
+        _floors = [for (final x in _floors) x.id == f.id ? f : x];
+      });
+      _msg(l.planUploaded, type: AppMessageType.success);
+    } catch (e) {
+      _fail(e);
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  /// «Не размещены · N» в режиме расстановки: выбрать — встанет в центр
+  /// видимой части плана, дальше перетащить.
+  Future<void> _pickUnplaced() async {
+    final l = context.l10n;
+    final unplaced = unplacedFor(_floorId, _items);
+    if (unplaced.isEmpty) {
+      _msg(l.planNothingUnplaced);
+      return;
+    }
+    final pick = await showActionSheet<PlanItem>(context,
+        title: l.planPickUnplaced,
+        actions: [
+          for (final i in unplaced) SheetAction(i, i.name, equipmentIcon(i)),
+        ]);
+    if (pick != null && mounted) _focus(pick);
+  }
+
   Future<void> _move(PlanItem i, double fx, double fy) async {
     final l = context.l10n;
     final before = i;
@@ -614,14 +657,26 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           onMoved: _move,
         ),
       ),
-      if (!floor.hasPlan)
+      if (!floor.hasPlan && !_editing)
         PositionedDirectional(
           top: 12,
           start: 12,
           end: 68,
           child: Align(
             alignment: AlignmentDirectional.centerStart,
-            child: _Pill(icon: AppIcons.imageOff, text: l.planNotLoaded),
+            child: _Pill(
+              icon: AppIcons.imageOff,
+              text: l.planNotLoaded,
+              // Загрузить может только менеджер; у остальных — без кнопки.
+              action: _isManager && !_editing
+                  ? AppButton.primary(
+                      label: l.floorUploadPlan,
+                      icon: AppIcons.imageAdd,
+                      small: true,
+                      loading: _uploading,
+                      onPressed: _uploadPlan)
+                  : null,
+            ),
           ),
         ),
       PositionedDirectional(
@@ -684,7 +739,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
     return Column(children: [
       _toolbar(l, floor),
-      if (_editing) _editBanner(l),
+      if (_editing) _editBanner(l, floor),
       Expanded(child: main),
     ]);
   }
@@ -724,35 +779,77 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
     );
   }
 
-  Widget _editBanner(AppLocalizations l) => Container(
+  /// Плашка режима расстановки: что делать и главные действия.
+  Widget _editBanner(AppLocalizations l, Floor floor) {
+    final unplaced = unplacedFor(_floorId, _items).length;
+    return Container(
+      key: const ValueKey('plan-edit-banner'),
+      decoration: const BoxDecoration(
         color: AppColors.accentTint,
-        padding: const EdgeInsetsDirectional.fromSTEB(
-            AppSpace.screen, 0, AppSpace.xs, 0),
-        child: Row(children: [
-          const Icon(AppIcons.move,
-              size: AppSizes.iconS, color: AppColors.accentText),
-          const SizedBox(width: AppSpace.s),
-          Expanded(
-            child: Text(l.planEditMode,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.callout.copyWith(
-                    color: AppColors.accentText, fontWeight: FontWeight.w600)),
+        border: Border(bottom: BorderSide(color: AppColors.accent, width: 2)),
+      ),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+          AppSpace.screen, AppSpace.s, AppSpace.xs, AppSpace.s),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Padding(
+              padding: EdgeInsetsDirectional.only(top: 2),
+              child: Icon(AppIcons.move,
+                  size: AppSizes.iconS, color: AppColors.accentText),
+            ),
+            const SizedBox(width: AppSpace.s),
+            Expanded(
+              child: Text.rich(
+                TextSpan(children: [
+                  TextSpan(
+                      text: l.planEditMode,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  TextSpan(text: ' — ${l.planEditHint}'),
+                ]),
+                style: AppText.callout.copyWith(color: AppColors.accentText),
+              ),
+            ),
+            AppInfoButton(
+              title: l.infoEditTitle,
+              lines: [l.infoEdit1, l.infoEdit2, l.infoEdit3],
+              closeLabel: l.commonGotIt,
+              color: AppColors.accentText,
+              semanticLabel: l.infoShowHint(l.infoEditTitle),
+            ),
+          ]),
+          const SizedBox(height: AppSpace.s),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: AppSpace.s),
+            child: Wrap(
+              spacing: AppSpace.s,
+              runSpacing: AppSpace.s,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                AppButton.secondary(
+                    label:
+                        floor.hasPlan ? l.floorReplacePlan : l.floorUploadPlan,
+                    icon: AppIcons.imageAdd,
+                    small: true,
+                    loading: _uploading,
+                    onPressed: _uploadPlan),
+                AppButton.secondary(
+                    label: l.planUnplaced(unplaced),
+                    icon: AppIcons.place,
+                    small: true,
+                    onPressed: _pickUnplaced),
+                AppButton.primary(
+                    label: l.planDone,
+                    small: true,
+                    onPressed: () => setState(() => _editing = false)),
+              ],
+            ),
           ),
-          AppInfoButton(
-            title: l.infoEditTitle,
-            lines: [l.infoEdit1, l.infoEdit2, l.infoEdit3],
-            closeLabel: l.commonGotIt,
-            color: AppColors.accentText,
-            semanticLabel: l.infoShowHint(l.infoEditTitle),
-          ),
-          AppBarTextButton(
-              label: l.planDone,
-              strong: true,
-              onPressed: () => setState(() => _editing = false)),
-          const SizedBox(width: AppSpace.s),
-        ]),
-      );
+        ],
+      ),
+    );
+  }
 
   Widget _list(AppLocalizations l, Map<String, ObjectStats> stats,
       ScrollController? scroll) {
@@ -839,9 +936,12 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
 /// Плашка поверх плана («План не загружен»).
 class _Pill extends StatelessWidget {
-  const _Pill({required this.icon, required this.text});
+  const _Pill({required this.icon, required this.text, this.action});
   final IconData icon;
   final String text;
+
+  /// Кнопка справа в плашке («Загрузить план» у менеджера).
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -858,6 +958,10 @@ class _Pill extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppText.footnote.copyWith(color: AppColors.ink))),
+          if (action != null) ...[
+            const SizedBox(width: AppSpace.m),
+            action!,
+          ],
         ]),
       );
 }

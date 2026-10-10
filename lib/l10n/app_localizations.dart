@@ -3705,6 +3705,12 @@ abstract class AppLocalizations {
   /// **'Режим расстановки'**
   String get planEditMode;
 
+  /// No description provided for @planEditHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'перетаскивайте маркеры, нажмите на пустое место, чтобы добавить'**
+  String get planEditHint;
+
   /// No description provided for @planDone.
   ///
   /// In ru, this message translates to:

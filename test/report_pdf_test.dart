@@ -106,7 +106,7 @@ void main() {
 
     test('страна: флаг и название, неизвестный код — как есть', () {
       expect(reportCountryLabel('rs', 'ru'), '🇷🇸 Сербия');
-      expect(reportCountryLabel('AE', 'en'), '🇦🇪 UAE');
+      expect(reportCountryLabel('AE', 'en'), '🇦🇪 United Arab Emirates');
       expect(reportCountryName('ZZ', 'ru'), 'ZZ');
     });
 

@@ -43,6 +43,8 @@ class AppIcons {
   static const camera = LucideIcons.camera300;
   static const signOut = LucideIcons.logOut300;
   static const check = LucideIcons.check300;
+  static const download = LucideIcons.download300;
+  static const fileSheet = LucideIcons.fileSpreadsheet300;
 
   // Состояния
   static const success = LucideIcons.circleCheck300;

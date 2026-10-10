@@ -7,6 +7,7 @@ import '../../core/location.dart';
 import '../../l10n/app_localizations.dart';
 import '../floors/floor_models.dart';
 import '../floors/floor_repository.dart';
+import '../equipment/equipment_section.dart';
 import '../floors/floors_section.dart';
 import '../requests/order_list.dart';
 import 'contractor_card.dart';
@@ -202,6 +203,14 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
         floors: _floors,
         items: _planItems,
         orders: _openOrders,
+        onChanged: _load,
+      ),
+
+      // Оборудование по системам, импорт (шаг 16)
+      EquipmentSection(
+        object: _obj,
+        places: _places,
+        isManager: ctx.isManager,
         onChanged: _load,
       ),
 

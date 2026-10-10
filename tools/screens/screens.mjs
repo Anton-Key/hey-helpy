@@ -80,6 +80,42 @@ const W_ORDERS = [...SEED.matchAll(
 if (W_OBJECTS.length !== 15 || W_ORDERS.length !== 31 || W_CONTRACTORS.length !== 10) {
   console.error(`Предпросмотр: из demo_history.sql разобрано объектов ${W_OBJECTS.length}, заявок ${W_ORDERS.length}, подрядчиков ${W_CONTRACTORS.length}`);
 }
+// ПРЕДПРОСМОТР планов этажей (шаг 14b): этажи, помещения на планах,
+// оборудование и заявки 254–257 — из tools/demo_plans/plans.json (тот же
+// источник, что у SQL-блока 5d), картинки — assets/demo_plans/*.png.
+const PLANS = JSON.parse(readFileSync(join(ROOT, 'tools/demo_plans/plans.json'), 'utf8'));
+const pfrac = (v, max) => Math.round((v / max) * 10000) / 10000;
+const P_FLOORS = PLANS.floors.map((f) => ({ id: uuid(f.id), object_id: uuid(f.object), company_id: COMPANY,
+  name: f.name, level: f.level, sort: f.sort, plan_path: `preview/${f.file}`, plan_w: PLANS.width, plan_h: PLANS.height }));
+const P_ROOM = Object.fromEntries(PLANS.floors.flatMap((f) => f.rooms.filter((r) => r.id).map((r) => [uuid(r.id), {
+  floor_id: uuid(f.id), plan_x: pfrac(r.rect[0] + r.rect[2] / 2, PLANS.width), plan_y: pfrac(r.rect[1] + r.rect[3] / 2, PLANS.height),
+  object_id: uuid(f.object), _name: r.name, _new: !!r.new }])));
+const P_ROOMS = Object.entries(P_ROOM).filter(([, r]) => r._new).map(([id, r]) => ({ id, object_id: r.object_id,
+  name: r._name, floor_id: r.floor_id, plan_x: r.plan_x, plan_y: r.plan_y, created_at: '2026-10-01T00:00:00Z' }));
+const P_ROOM_NAME = Object.fromEntries(Object.entries(P_ROOM).map(([id, r]) => [id, r._name]));
+for (const r of Object.values(P_ROOM)) { delete r._name; delete r._new; }
+const P_FLOOR = Object.fromEntries(P_FLOORS.map((f) => [f.id, { name: f.name, level: f.level }]));
+const P_ASSETS = PLANS.floors.flatMap((f) => f.assets.map((a) => ({ id: uuid(a.id), location_id: uuid(a.room), name: a.name,
+  category: a.category, inventory_no: a.inv, meta: { kind: a.kind, demo: true }, floor_id: uuid(f.id),
+  plan_x: pfrac(a.at[0], PLANS.width), plan_y: pfrac(a.at[1], PLANS.height), locations: { object_id: uuid(f.object) } })));
+async function planOrders(route, page) {
+  if (page.role !== 'manager') return [];
+  const today = new Date(); today.setUTCHours(0, 0, 0, 0);
+  const layerRes = await route.fetch({ url: `${new URL(route.request().url()).origin}/rest/v1/layers?select=id,name` }).catch(() => null);
+  const layers = layerRes ? Object.fromEntries((await layerRes.json()).map((l) => [l.name, l.id])) : {};
+  return PLANS.orders.map((o) => {
+    const created = today.getTime() - o.d * 864e5 + o.h * 36e5;
+    const room = P_ROOM[uuid(o.room)];
+    return { id: uuid(o.id), company_id: COMPANY, title: o.title, description: o.descr, priority: o.priority,
+      status: o.status, input_channel: o.channel, object_id: room.object_id, location_id: uuid(o.room),
+      asset_id: uuid(o.asset), locations: { name: P_ROOM_NAME[uuid(o.room)] ?? null },
+      layer_id: layers[LAYER_NAMES[o.layer]] ?? null, work_type: LAYER_NAMES[o.layer],
+      assigned_contractor_id: o.contractor ? uuid(o.contractor) : null, assigned_executor_id: null, created_by: null,
+      requires_photo: true, return_count: 0, recurrence: null, created_at: new Date(created).toISOString(),
+      due_at: new Date(created + o.due_h * 36e5).toISOString() };
+  });
+}
+
 const LAYER_NAMES = { hvac: 'Климат', elec: 'Электрика', plumb: 'Сантехника', clean: 'Клининг', other: 'Другое' };
 
 // Подходит ли строка под фильтры PostgREST из адреса; null — фильтр не разобрать.
@@ -136,29 +172,71 @@ async function routeWorldPreview(page) {
     }
     return null;
   };
+  // Отдать строки: массивом или одной записью (maybeSingle / single).
+  const fulfillRows = (route, res, rows, single) => {
+    if (single) {
+      if (!rows.length) return route.fulfill({ response: res });
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows[0]) });
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: res.headers(),
+      body: JSON.stringify(rows) });
+  };
   await page.route('**/rest/v1/**', async (route) => {
     const req = route.request();
     const url = new URL(req.url());
     const table = url.pathname.split('/rest/v1/')[1];
     const method = req.method();
-    if (!['objects', 'locations', 'contractors', 'contractor_layers', 'work_orders'].includes(table) ||
+    if (!['objects', 'locations', 'contractors', 'contractor_layers', 'work_orders', 'floors', 'assets'].includes(table) ||
         !['GET', 'HEAD'].includes(method)) {
       return route.fallback();
     }
     const res = await route.fetch();
+    const single = (req.headers()['accept'] ?? '').includes('vnd.pgrst.object');
     try {
-      // В базе уже есть объекты шага 13d — ничего не подставляем.
-      if (page.worldPreview === 'off') return route.fulfill({ response: res });
-      if (table === 'objects' && method === 'GET') {
-        const real = await res.json();
-        if (real.some((r) => r.id === uuid(401))) {
-          page.worldPreview = 'off';
-          return route.fulfill({ response: res, body: JSON.stringify(real) });
-        }
+      // Этажи и оборудование (шаг 14b): пока Refresh demo не запущен — из plans.json.
+      if (table === 'floors' || table === 'assets') {
+        const real = res.ok() ? JSON.parse((await res.text()) || '[]') : [];
+        const realRows = Array.isArray(real) ? real : [real];
+        if (table === 'floors' && realRows.some((r) => r.id === uuid(601) && r.plan_path)) page.planPreview = 'off';
+        if (page.planPreview === 'off' || method !== 'GET') return route.fulfill({ response: res });
+        let extra = table === 'floors' ? P_FLOORS : P_ASSETS;
+        const params = new URLSearchParams(url.searchParams);
+        // assets?locations.object_id=eq.<id> — фильтр по объекту помещения.
+        const byObj = params.get('locations.object_id');
+        params.delete('locations.object_id');
+        if (byObj) extra = extra.filter((a) => `eq.${a.locations.object_id}` === byObj);
+        extra = applyFilters(extra, params) ?? [];
+        if (!extra.length) return route.fulfill({ response: res });
+        page.previewUsed = true;
+        const have = new Set(extra.map((r) => r.id));
+        return fulfillRows(route, res, [...extra, ...realRows.filter((r) => !have.has(r.id))], single);
       }
-      const extra = applyFilters(await rowsFor(table, route), url.searchParams);
-      if (!extra || !extra.length) return route.fulfill({ response: res });
-      page.worldPreview = true;
+      let body = method === 'GET' && res.ok() ? JSON.parse(await res.text()) : null;
+      const rows = Array.isArray(body) ? body : (body ? [body] : []);
+      // Помещения на планах и заявки на оборудовании этажей (шаг 14b).
+      const planExtra = page.planPreview === 'off' ? [] : (applyFilters(
+        table === 'locations' ? P_ROOMS : table === 'work_orders' ? await planOrders(route, page) : [],
+        url.searchParams) ?? []);
+      const patchPlan = (list) => list.map((r) => {
+        if (page.planPreview === 'off') return r;
+        if (table === 'locations' && P_ROOM[r.id]) return { ...r, ...P_ROOM[r.id], name: r.name };
+        // Строка заявки: этаж помещения («Холл · 1 эт.»).
+        const room = table === 'work_orders' && P_ROOM[r.location_id];
+        if (room && r.locations) return { ...r, locations: { ...r.locations, floors: P_FLOOR[room.floor_id] } };
+        return r;
+      });
+      // Объекты по миру (шаг 13d).
+      if (page.worldPreview !== 'off' && table === 'objects' && method === 'GET' && rows.some((r) => r.id === uuid(401))) {
+        page.worldPreview = 'off';
+      }
+      const worldExtra = page.worldPreview === 'off' ? [] : (applyFilters(await rowsFor(table, route), url.searchParams) ?? []);
+      const extra = [...worldExtra, ...planExtra];
+      const patchable = page.planPreview !== 'off' &&
+        rows.some((r) => P_ROOM[table === 'locations' ? r.id : r.location_id]);
+      if (!extra.length && !patchable) {
+        return route.fulfill({ response: res });
+      }
+      if (worldExtra.length) page.worldPreview = true;
       page.previewUsed = true;
       if (method === 'HEAD') {
         // count(): «0-36/37» → итог с подставленными
@@ -166,15 +244,27 @@ async function routeWorldPreview(page) {
         const total = +(range.split('/')[1] ?? 0) + extra.length;
         return route.fulfill({ response: res, headers: { ...res.headers(), 'content-range': `0-${total - 1}/${total}` } });
       }
-      const body = JSON.parse(await res.text());
-      if (!Array.isArray(body)) return route.fulfill({ response: res });
-      // Одна запись (maybeSingle/single) — не трогаем.
-      if ((req.headers()['accept'] ?? '').includes('vnd.pgrst.object')) return route.fulfill({ response: res });
-      const have = new Set(body.map((r) => r.id));
-      return route.fulfill({ response: res, body: JSON.stringify([...body, ...extra.filter((r) => !have.has(r.id))]) });
+      if (body == null) return route.fulfill({ response: res });
+      const have = new Set(rows.map((r) => r.id));
+      return fulfillRows(route, res, patchPlan([...rows, ...extra.filter((r) => !have.has(r.id))]), single);
     } catch {
       return route.fulfill({ response: res });
     }
+  });
+  // Картинки планов в предпросмотре: подписанная ссылка и сам файл — PNG
+  // из assets/demo_plans (в Storage их нет, пока не загрузили через приложение).
+  await page.route('**/storage/v1/object/**', async (route) => {
+    const url = new URL(route.request().url());
+    const m = url.pathname.match(/floor-plans\/(preview\/[\w.-]+\.png)$/);
+    if (!m) return route.fallback();
+    if (url.pathname.includes('/object/sign/') && route.request().method() === 'POST') {
+      return route.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify({ signedURL: `/object/sign/floor-plans/${m[1]}?token=preview` }) });
+    }
+    page.previewUsed = true;
+    return route.fulfill({ status: 200, contentType: 'image/png',
+      headers: { 'access-control-allow-origin': '*' },
+      body: readFileSync(join(ROOT, 'assets/demo_plans', m[1].slice('preview/'.length))) });
   });
 }
 
@@ -400,6 +490,17 @@ async function closePicker(page) {
   await settle(page, 400);
   await page.keyboard.press('Escape').catch(() => {});
   await settle(page, 400);
+}
+
+// План этажа по ссылке: #/objects/<объект>/floors/<этаж> (номера demo-id).
+async function openPlan(page, objectN, floorN) {
+  await page.goto('about:blank');
+  await page.goto(`${BASE}#/objects/${uuid(objectN)}/floors/${uuid(floorN)}`, { waitUntil: 'load' });
+  const placeholder = page.locator('flt-semantics-placeholder');
+  await placeholder.waitFor({ state: 'attached', timeout: 60000 });
+  await placeholder.evaluate((el) => el.click());
+  await see(page, /На плане · \d/).waitFor({ timeout: 60000 });
+  await settle(page, 2500);
 }
 
 // Окно «Фильтры»: на телефоне — кнопка «Фильтры», на ПК — «Все фильтры».
@@ -830,6 +931,80 @@ const SCREENS = [
       await p.getByRole('button', { name: 'Список', exact: true }).first().click().catch(() => {});
       await settle(p, 500);
     } },
+  // ---- Планы этажей (шаг 14b). Пока Refresh demo и загрузка картинок не
+  // сделаны — ПРЕДПРОСМОТР из plans.json и assets/demo_plans/*.png.
+  // Карточка объекта «БЦ «Демо»»: раздел «Этажи · 2», помещения с этажами.
+  { key: 'plan-object', title: 'Карточка объекта — «Этажи · N» и помещения с этажами', run: async (p) => {
+      await home(p);
+      await nav(p, 'Локации').click();
+      await settle(p, 1500);
+      await p.getByRole('button', { name: 'Список', exact: true }).first().click().catch(() => {});
+      await settle(p, 800);
+      await p.getByRole('button', { name: /БЦ «Демо»/ }).first().click();
+      await see(p, /Этажи · \d/).waitFor({ timeout: 20000 });
+      await settle(p, 1500);
+      // До раздела «Этажи» (под адресом и координатами).
+      await see(p, /Этажи · \d/).scrollIntoViewIfNeeded().catch(() => {});
+      const vp = p.viewportSize();
+      await p.mouse.move(vp.width / 2, vp.height / 2);
+      await p.mouse.wheel(0, vp.width >= 900 ? 250 : 380);
+      await settle(p, 1500);
+      return p.role === 'manager' ? 'у менеджера — «+ Этаж», «+» и «⋯» у этажа' : 'только чтение: без «+» и «⋯»';
+    } },
+  // План по ссылке (как от коллеги): /objects/<объект>/floors/<этаж>.
+  { key: 'plan', title: 'План этажа «3 этаж» (открыт по ссылке)', run: async (p) => {
+      await openPlan(p, 10, 602);
+      return p.role === 'manager' ? 'ссылка #/objects/…/floors/…; маркеры помещений и оборудования, фильтр, список'
+        : 'только чтение: нет «Редактировать»';
+    } },
+  { key: 'plan-marker', title: 'План — шторка маркера «Серверная, 3 этаж»', run: async (p) => {
+      await openPlan(p, 10, 602);
+      await p.getByRole('button', { name: /^Серверная, 3 этаж, / }).first().click({ force: true });
+      await see(p, 'Создать заявку здесь').waitFor({ timeout: 10000 });
+      await settle(p, 1000);
+      return 'открытые заявки помещения (просроченная — первой), «Создать заявку здесь»';
+    }, after: async (p) => { await p.keyboard.press('Escape'); await settle(p, 400); } },
+  { key: 'plan-edit', title: 'План — режим расстановки', managerOnly: true, run: async (p) => {
+      await openPlan(p, 10, 601);
+      await p.getByRole('button', { name: 'Редактировать' }).first().click();
+      await see(p, 'Режим расстановки').waitFor({ timeout: 5000 });
+      await settle(p, 800);
+      return 'плашка «Режим расстановки · Готово»; маркеры перетаскиваются (здесь ничего не меняется)';
+    } },
+  { key: 'plan-unplaced', title: 'План — список «На плане / Не размещены»', managerOnly: true, run: async (p) => {
+      await openPlan(p, 10, 601);
+      const vp = p.viewportSize();
+      if (vp.width < 900) {
+        // Выдвижная панель: нажать на её заголовок — раскрывается.
+        await p.getByRole('button', { name: /^На плане · \d+, Не размещены/ }).first().click();
+        await settle(p, 1200);
+      }
+      await see(p, /Не размещены · \d/).waitFor({ timeout: 5000 });
+      return '«Open space, 2 этаж» — без этажа, в «Не размещены»';
+    } },
+  { key: 'plan-info', title: 'Подсказка ⓘ «Что значат маркеры»', managerOnly: true, run: async (p) => {
+      await openPlan(p, 10, 602);
+      await btn(p, 'Подсказка: Что значат маркеры').click();
+      await see(p, 'Понятно').waitFor({ timeout: 5000 });
+      await settle(p, 800);
+    }, after: async (p) => { await p.keyboard.press('Escape'); await settle(p, 400); } },
+  // Карточка заявки на оборудовании этажа: «Показать на плане».
+  { key: 'plan-order', title: 'Карточка заявки — «Показать на плане»', managerOnly: true, run: async (p) => {
+      await home(p);
+      await openOrder(p, 'Течёт конденсат из кондиционера серверной');
+      await see(p, 'Показать на плане').waitFor({ timeout: 20000 });
+      await see(p, 'Показать на плане').scrollIntoViewIfNeeded().catch(() => {});
+      await settle(p, 1500);
+      return 'превью плана, «3 этаж · N открытых заявок рядом»';
+    } },
+  { key: 'plan-from-order', title: 'План, открытый из заявки (маркер подсвечен)', managerOnly: true, run: async (p) => {
+      await home(p);
+      await openOrder(p, 'Течёт конденсат из кондиционера серверной');
+      await btn(p, 'Показать на плане').click();
+      await see(p, /Не размещены|На плане/).waitFor({ timeout: 20000 });
+      await settle(p, 2500);
+      return 'план центрирован на «Кондиционер серверной», подпись видна';
+    } },
   { key: 'profile', title: 'Профиль', run: async (p) => {
       await home(p);
       await nav(p, 'Профиль').click();
@@ -889,7 +1064,11 @@ try {
       results.push({ ...r, key: 'login', title: 'Вход', ok: false, file: name,
         note: 'Не удалось войти: ' + String(e.message).split('\n')[0] });
     }
-    if (loggedIn && r.role === 'manager') await routeWorldPreview(page);
+    // Предпросмотр: объекты по миру — только у менеджера, планы этажей — у всех.
+    if (loggedIn) {
+      await routeWorldPreview(page);
+      if (r.role !== 'manager') page.worldPreview = 'off';
+    }
     for (const s of SCREENS) {
       if (!loggedIn) break;
       page.previewUsed = false;

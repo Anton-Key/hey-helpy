@@ -2433,4 +2433,313 @@ class AppLocalizationsEn extends AppLocalizations {
   String migrationNeeded(String number) {
     return 'Migration $number is required: this section will work once it is applied to the database (Actions → “Apply migration”).';
   }
+
+  @override
+  String get tabPpr => 'PPM';
+
+  @override
+  String get pprTitle => 'Planned maintenance';
+
+  @override
+  String pprSummary(String month, int done, int total) {
+    return '$month: $done of $total done';
+  }
+
+  @override
+  String get pprEmpty =>
+      'No maintenance plans yet. A manager adds them with “+”.';
+
+  @override
+  String get pprEmptyFiltered => 'No plans match the filters';
+
+  @override
+  String get pprLoadFailed =>
+      'Couldn\'t load maintenance plans. Check your connection and try again.';
+
+  @override
+  String get pprStateDone => 'Done';
+
+  @override
+  String get pprStateInProgress => 'In progress';
+
+  @override
+  String get pprStateNotStarted => 'Not started';
+
+  @override
+  String get pprStateOverdue => 'Overdue';
+
+  @override
+  String get pprStatePaused => 'Paused';
+
+  @override
+  String get pprEveryMonth => 'every month';
+
+  @override
+  String get pprEveryQuarter => 'every quarter';
+
+  @override
+  String get pprEveryHalfYear => 'every six months';
+
+  @override
+  String get pprEveryYear => 'every year';
+
+  @override
+  String pprEveryDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'every $count days',
+      one: 'every day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprKindMonth => 'Month';
+
+  @override
+  String get pprKindQuarter => 'Quarter';
+
+  @override
+  String get pprKindHalfYear => 'Half-year';
+
+  @override
+  String get pprKindYear => 'Year';
+
+  @override
+  String get pprKindDays => 'N days';
+
+  @override
+  String pprQuarterLabel(String q, String year) {
+    return 'Q$q $year';
+  }
+
+  @override
+  String pprHalfLabel(String h, String year) {
+    return 'H$h $year';
+  }
+
+  @override
+  String pprYearLabel(String year) {
+    return '$year';
+  }
+
+  @override
+  String pprTaskLine(String period, String due) {
+    return 'PPM · $period · due $due';
+  }
+
+  @override
+  String get pprDoWithin => 'Complete within the period';
+
+  @override
+  String get pprPeriodRow => 'Maintenance period';
+
+  @override
+  String get pprTag => 'PPM';
+
+  @override
+  String get pprKindOrder => 'Planned maintenance';
+
+  @override
+  String get filterPpr => 'PPM';
+
+  @override
+  String get pprFilters => 'Filters';
+
+  @override
+  String pprFiltersCount(int count) {
+    return 'Filters · $count';
+  }
+
+  @override
+  String get pprFilterObject => 'Site';
+
+  @override
+  String get pprFilterSystem => 'System';
+
+  @override
+  String get pprFilterContractor => 'Contractor';
+
+  @override
+  String get pprFilterState => 'Period status';
+
+  @override
+  String pprFiltersShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count plans',
+      one: 'Show $count plan',
+      zero: 'No plans',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprCardPeriodicity => 'Frequency';
+
+  @override
+  String pprCardStarts(String date) {
+    return 'from $date';
+  }
+
+  @override
+  String get pprCardCurrent => 'Current period';
+
+  @override
+  String get pprCardChecklist => 'Checklist';
+
+  @override
+  String get pprCardHistory => 'Period history';
+
+  @override
+  String get pprCardHistoryEmpty => 'No tasks for this plan yet';
+
+  @override
+  String get pprCardNoTask => 'No task for this period yet';
+
+  @override
+  String pprAcceptedBy(String date, String name) {
+    return 'Accepted $date · $name';
+  }
+
+  @override
+  String pprAcceptedAt(String date) {
+    return 'Accepted $date';
+  }
+
+  @override
+  String get pprNoContractor =>
+      'No contractor bound to this system on the site';
+
+  @override
+  String get pprAsset => 'Equipment';
+
+  @override
+  String get pprEdit => 'Edit';
+
+  @override
+  String get pprPause => 'Pause';
+
+  @override
+  String get pprResume => 'Resume';
+
+  @override
+  String get pprDelete => 'Delete plan';
+
+  @override
+  String pprDeleteConfirm(String title) {
+    return 'Delete the plan “$title”? This can\'t be undone.';
+  }
+
+  @override
+  String get pprDeleteHasTasks =>
+      'The plan already has tasks — it can only be paused.';
+
+  @override
+  String get pprPaused => 'Plan paused';
+
+  @override
+  String get pprResumed => 'Plan resumed';
+
+  @override
+  String get pprDeleted => 'Plan deleted';
+
+  @override
+  String get pprSaved => 'Plan saved';
+
+  @override
+  String pprGenerated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count maintenance tasks created',
+      one: '$count maintenance task created',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprFormNew => 'New maintenance plan';
+
+  @override
+  String get pprFormEdit => 'Maintenance plan';
+
+  @override
+  String get pprFormTitle => 'Title';
+
+  @override
+  String get pprFormTitleHint => 'E.g. HVAC service';
+
+  @override
+  String get pprFormDescription => 'Description';
+
+  @override
+  String get pprFormDescriptionHint => 'What the work includes';
+
+  @override
+  String get pprFormObject => 'Site';
+
+  @override
+  String get pprFormPlace => 'Room';
+
+  @override
+  String get pprFormAsset => 'Equipment';
+
+  @override
+  String get pprFormNone => 'Not selected';
+
+  @override
+  String get pprFormSystem => 'System';
+
+  @override
+  String get pprFormPeriod => 'Frequency';
+
+  @override
+  String get pprFormDays => 'Days per period';
+
+  @override
+  String get pprFormStarts => 'Start';
+
+  @override
+  String get pprFormChecklist => 'Checklist';
+
+  @override
+  String get pprFormChecklistHint => 'One item per line';
+
+  @override
+  String get pprFormPhoto => '“After” photo required';
+
+  @override
+  String get pprFormRequired => 'Fill in the title, site and system';
+
+  @override
+  String get pprFormDaysInvalid => 'Days must be from 1 to 3660';
+
+  @override
+  String get pprDuplicate =>
+      'A plan with this title already exists on this site';
+
+  @override
+  String get pprChooseObject => 'Choose a site';
+
+  @override
+  String get pprInfoTitle => 'Planned maintenance';
+
+  @override
+  String get pprInfo1 =>
+      'A plan is regular work on a site: service, inspection, cleaning. The period is a month, quarter, half-year, year or N days.';
+
+  @override
+  String get pprInfo2 =>
+      'The task for the current period is created automatically when a manager opens the app (at most once every 10 minutes) or taps “Refresh”. The contractor is assigned by system and site.';
+
+  @override
+  String get pprInfo3 =>
+      'The task is due on the last day of the period. Not accepted by then — overdue.';
+
+  @override
+  String get pprInfo4 =>
+      'A plan with tasks can\'t be deleted — pause it instead.';
 }

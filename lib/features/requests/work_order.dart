@@ -28,6 +28,14 @@ class WorkOrder {
   final bool requiresPhoto;
   final int returnCount;
 
+  /// ППР (0015): вид повторения (recurrence.kind: 'regular' / 'ppr'),
+  /// план и границы периода ('2026-10-01'). До 0015 — null.
+  final String? recurrenceKind;
+  final Object? recurrence;
+  final String? planId;
+  final String? periodStart;
+  final String? periodEnd;
+
   WorkOrder(
       {required this.id,
       required this.title,
@@ -48,7 +56,15 @@ class WorkOrder {
       this.createdBy,
       this.inputChannel,
       this.requiresPhoto = false,
-      this.returnCount = 0});
+      this.returnCount = 0,
+      this.recurrenceKind,
+      this.recurrence,
+      this.planId,
+      this.periodStart,
+      this.periodEnd});
+
+  /// Задача периода ППР.
+  bool get isPpr => planId != null || recurrenceKind == 'ppr';
 
   /// Колонки для [WorkOrder.fromMap] в запросе списка.
   static const listColumns =
@@ -56,6 +72,10 @@ class WorkOrder {
       'location_id,assigned_contractor_id,assigned_executor_id,created_by,'
       'input_channel,requires_photo,return_count,due_at,created_at,'
       'locations(name,floors(name,level))';
+
+  /// То же + поля ППР (нужна миграция 0015).
+  static const listColumns0015 =
+      '$listColumns,plan_id,period_start,period_end';
 
   factory WorkOrder.fromMap(Map<String, dynamic> m) {
     return WorkOrder(
@@ -79,6 +99,13 @@ class WorkOrder {
       inputChannel: m['input_channel'] as String?,
       requiresPhoto: m['requires_photo'] == true,
       returnCount: (m['return_count'] as num?)?.toInt() ?? 0,
+      recurrence: m['recurrence'],
+      recurrenceKind: (m['recurrence'] is Map)
+          ? (m['recurrence'] as Map)['kind'] as String?
+          : null,
+      planId: m['plan_id'] as String?,
+      periodStart: m['period_start'] as String?,
+      periodEnd: m['period_end'] as String?,
     );
   }
 

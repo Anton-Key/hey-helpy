@@ -4160,6 +4160,516 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Нужна миграция {number}: раздел заработает, когда её применят в базе (Actions → «Apply migration»).'**
   String migrationNeeded(String number);
+
+  /// Вкладка и пункт меню «ППР» — планово-предупредительные (регламентные) работы (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get tabPpr;
+
+  /// No description provided for @pprTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регламентные работы'**
+  String get pprTitle;
+
+  /// No description provided for @pprSummary.
+  ///
+  /// In ru, this message translates to:
+  /// **'{month}: выполнено {done} из {total}'**
+  String pprSummary(String month, int done, int total);
+
+  /// No description provided for @pprEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Планов ППР пока нет. Менеджер добавляет их кнопкой «+».'**
+  String get pprEmpty;
+
+  /// No description provided for @pprEmptyFiltered.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет планов по выбранным фильтрам'**
+  String get pprEmptyFiltered;
+
+  /// No description provided for @pprLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить планы ППР. Проверьте интернет и попробуйте ещё раз.'**
+  String get pprLoadFailed;
+
+  /// No description provided for @pprStateDone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнено'**
+  String get pprStateDone;
+
+  /// No description provided for @pprStateInProgress.
+  ///
+  /// In ru, this message translates to:
+  /// **'В работе'**
+  String get pprStateInProgress;
+
+  /// No description provided for @pprStateNotStarted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не начато'**
+  String get pprStateNotStarted;
+
+  /// No description provided for @pprStateOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просрочено'**
+  String get pprStateOverdue;
+
+  /// No description provided for @pprStatePaused.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приостановлен'**
+  String get pprStatePaused;
+
+  /// No description provided for @pprEveryMonth.
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый месяц'**
+  String get pprEveryMonth;
+
+  /// No description provided for @pprEveryQuarter.
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый квартал'**
+  String get pprEveryQuarter;
+
+  /// No description provided for @pprEveryHalfYear.
+  ///
+  /// In ru, this message translates to:
+  /// **'каждые полгода'**
+  String get pprEveryHalfYear;
+
+  /// No description provided for @pprEveryYear.
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый год'**
+  String get pprEveryYear;
+
+  /// No description provided for @pprEveryDays.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{каждый {count} день} few{каждые {count} дня} other{каждые {count} дней}}'**
+  String pprEveryDays(int count);
+
+  /// No description provided for @pprKindMonth.
+  ///
+  /// In ru, this message translates to:
+  /// **'Месяц'**
+  String get pprKindMonth;
+
+  /// No description provided for @pprKindQuarter.
+  ///
+  /// In ru, this message translates to:
+  /// **'Квартал'**
+  String get pprKindQuarter;
+
+  /// No description provided for @pprKindHalfYear.
+  ///
+  /// In ru, this message translates to:
+  /// **'Полгода'**
+  String get pprKindHalfYear;
+
+  /// No description provided for @pprKindYear.
+  ///
+  /// In ru, this message translates to:
+  /// **'Год'**
+  String get pprKindYear;
+
+  /// No description provided for @pprKindDays.
+  ///
+  /// In ru, this message translates to:
+  /// **'N дней'**
+  String get pprKindDays;
+
+  /// Квартал: по-русски q — римская цифра (IV), по-английски — число (4)
+  ///
+  /// In ru, this message translates to:
+  /// **'{q} кв. {year}'**
+  String pprQuarterLabel(String q, String year);
+
+  /// Полугодие: по-русски h — римская цифра (II), по-английски — число (2)
+  ///
+  /// In ru, this message translates to:
+  /// **'{h} полугодие {year}'**
+  String pprHalfLabel(String h, String year);
+
+  /// No description provided for @pprYearLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'{year} год'**
+  String pprYearLabel(String year);
+
+  /// No description provided for @pprTaskLine.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР · {period} · до {due}'**
+  String pprTaskLine(String period, String due);
+
+  /// No description provided for @pprDoWithin.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнить в течение периода'**
+  String get pprDoWithin;
+
+  /// No description provided for @pprPeriodRow.
+  ///
+  /// In ru, this message translates to:
+  /// **'Период ППР'**
+  String get pprPeriodRow;
+
+  /// No description provided for @pprTag.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get pprTag;
+
+  /// No description provided for @pprKindOrder.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР (регламент по плану)'**
+  String get pprKindOrder;
+
+  /// No description provided for @filterPpr.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get filterPpr;
+
+  /// No description provided for @pprFilters.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры'**
+  String get pprFilters;
+
+  /// No description provided for @pprFiltersCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры · {count}'**
+  String pprFiltersCount(int count);
+
+  /// No description provided for @pprFilterObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get pprFilterObject;
+
+  /// No description provided for @pprFilterSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get pprFilterSystem;
+
+  /// No description provided for @pprFilterContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get pprFilterContractor;
+
+  /// No description provided for @pprFilterState.
+  ///
+  /// In ru, this message translates to:
+  /// **'Статус периода'**
+  String get pprFilterState;
+
+  /// No description provided for @pprFiltersShow.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =0{Нет планов} one{Показать {count} план} few{Показать {count} плана} other{Показать {count} планов}}'**
+  String pprFiltersShow(int count);
+
+  /// No description provided for @pprCardPeriodicity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Периодичность'**
+  String get pprCardPeriodicity;
+
+  /// No description provided for @pprCardStarts.
+  ///
+  /// In ru, this message translates to:
+  /// **'с {date}'**
+  String pprCardStarts(String date);
+
+  /// No description provided for @pprCardCurrent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Текущий период'**
+  String get pprCardCurrent;
+
+  /// No description provided for @pprCardChecklist.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чек-лист'**
+  String get pprCardChecklist;
+
+  /// No description provided for @pprCardHistory.
+  ///
+  /// In ru, this message translates to:
+  /// **'История периодов'**
+  String get pprCardHistory;
+
+  /// No description provided for @pprCardHistoryEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задач по плану ещё не было'**
+  String get pprCardHistoryEmpty;
+
+  /// No description provided for @pprCardNoTask.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задача периода ещё не создана'**
+  String get pprCardNoTask;
+
+  /// No description provided for @pprAcceptedBy.
+  ///
+  /// In ru, this message translates to:
+  /// **'Принято {date} · {name}'**
+  String pprAcceptedBy(String date, String name);
+
+  /// No description provided for @pprAcceptedAt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Принято {date}'**
+  String pprAcceptedAt(String date);
+
+  /// No description provided for @pprNoContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не закреплён за системой на этом объекте'**
+  String get pprNoContractor;
+
+  /// No description provided for @pprAsset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get pprAsset;
+
+  /// No description provided for @pprEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get pprEdit;
+
+  /// No description provided for @pprPause.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приостановить'**
+  String get pprPause;
+
+  /// No description provided for @pprResume.
+  ///
+  /// In ru, this message translates to:
+  /// **'Возобновить'**
+  String get pprResume;
+
+  /// No description provided for @pprDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить план'**
+  String get pprDelete;
+
+  /// No description provided for @pprDeleteConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить план «{title}»? Это нельзя отменить.'**
+  String pprDeleteConfirm(String title);
+
+  /// No description provided for @pprDeleteHasTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'У плана уже есть задачи — его можно только приостановить.'**
+  String get pprDeleteHasTasks;
+
+  /// No description provided for @pprPaused.
+  ///
+  /// In ru, this message translates to:
+  /// **'План приостановлен'**
+  String get pprPaused;
+
+  /// No description provided for @pprResumed.
+  ///
+  /// In ru, this message translates to:
+  /// **'План возобновлён'**
+  String get pprResumed;
+
+  /// No description provided for @pprDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'План удалён'**
+  String get pprDeleted;
+
+  /// No description provided for @pprSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'План сохранён'**
+  String get pprSaved;
+
+  /// No description provided for @pprGenerated.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{Создана {count} задача ППР} few{Созданы {count} задачи ППР} other{Создано {count} задач ППР}}'**
+  String pprGenerated(int count);
+
+  /// No description provided for @pprFormNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый план ППР'**
+  String get pprFormNew;
+
+  /// No description provided for @pprFormEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'План ППР'**
+  String get pprFormEdit;
+
+  /// No description provided for @pprFormTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get pprFormTitle;
+
+  /// No description provided for @pprFormTitleHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например: ТО кондиционеров'**
+  String get pprFormTitleHint;
+
+  /// No description provided for @pprFormDescription.
+  ///
+  /// In ru, this message translates to:
+  /// **'Описание'**
+  String get pprFormDescription;
+
+  /// No description provided for @pprFormDescriptionHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что входит в работу'**
+  String get pprFormDescriptionHint;
+
+  /// No description provided for @pprFormObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get pprFormObject;
+
+  /// No description provided for @pprFormPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get pprFormPlace;
+
+  /// No description provided for @pprFormAsset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get pprFormAsset;
+
+  /// No description provided for @pprFormNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не выбрано'**
+  String get pprFormNone;
+
+  /// No description provided for @pprFormSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get pprFormSystem;
+
+  /// No description provided for @pprFormPeriod.
+  ///
+  /// In ru, this message translates to:
+  /// **'Периодичность'**
+  String get pprFormPeriod;
+
+  /// No description provided for @pprFormDays.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дней в периоде'**
+  String get pprFormDays;
+
+  /// No description provided for @pprFormStarts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начало'**
+  String get pprFormStarts;
+
+  /// No description provided for @pprFormChecklist.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чек-лист'**
+  String get pprFormChecklist;
+
+  /// No description provided for @pprFormChecklistHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'По пункту в строке'**
+  String get pprFormChecklistHint;
+
+  /// No description provided for @pprFormPhoto.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото «после» обязательно'**
+  String get pprFormPhoto;
+
+  /// No description provided for @pprFormRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заполните название, объект и систему'**
+  String get pprFormRequired;
+
+  /// No description provided for @pprFormDaysInvalid.
+  ///
+  /// In ru, this message translates to:
+  /// **'Число дней — от 1 до 3660'**
+  String get pprFormDaysInvalid;
+
+  /// No description provided for @pprDuplicate.
+  ///
+  /// In ru, this message translates to:
+  /// **'План с таким названием на этом объекте уже есть'**
+  String get pprDuplicate;
+
+  /// No description provided for @pprChooseObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите объект'**
+  String get pprChooseObject;
+
+  /// No description provided for @pprInfoTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР — регламентные работы'**
+  String get pprInfoTitle;
+
+  /// No description provided for @pprInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'План — регулярная работа на объекте: ТО, осмотр, уборка. Период — месяц, квартал, полгода, год или N дней.'**
+  String get pprInfo1;
+
+  /// No description provided for @pprInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задача текущего периода создаётся сама, когда менеджер открывает приложение (не чаще раза в 10 минут) или нажимает «Обновить». Подрядчик назначается по системе и объекту.'**
+  String get pprInfo2;
+
+  /// No description provided for @pprInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок задачи — последний день периода. Не принята к концу периода — просрочена.'**
+  String get pprInfo3;
+
+  /// No description provided for @pprInfo4.
+  ///
+  /// In ru, this message translates to:
+  /// **'План с задачами нельзя удалить — его можно приостановить.'**
+  String get pprInfo4;
 }
 
 class _AppLocalizationsDelegate

@@ -2458,4 +2458,314 @@ class AppLocalizationsRu extends AppLocalizations {
   String migrationNeeded(String number) {
     return 'Нужна миграция $number: раздел заработает, когда её применят в базе (Actions → «Apply migration»).';
   }
+
+  @override
+  String get tabPpr => 'ППР';
+
+  @override
+  String get pprTitle => 'Регламентные работы';
+
+  @override
+  String pprSummary(String month, int done, int total) {
+    return '$month: выполнено $done из $total';
+  }
+
+  @override
+  String get pprEmpty =>
+      'Планов ППР пока нет. Менеджер добавляет их кнопкой «+».';
+
+  @override
+  String get pprEmptyFiltered => 'Нет планов по выбранным фильтрам';
+
+  @override
+  String get pprLoadFailed =>
+      'Не удалось загрузить планы ППР. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get pprStateDone => 'Выполнено';
+
+  @override
+  String get pprStateInProgress => 'В работе';
+
+  @override
+  String get pprStateNotStarted => 'Не начато';
+
+  @override
+  String get pprStateOverdue => 'Просрочено';
+
+  @override
+  String get pprStatePaused => 'Приостановлен';
+
+  @override
+  String get pprEveryMonth => 'каждый месяц';
+
+  @override
+  String get pprEveryQuarter => 'каждый квартал';
+
+  @override
+  String get pprEveryHalfYear => 'каждые полгода';
+
+  @override
+  String get pprEveryYear => 'каждый год';
+
+  @override
+  String pprEveryDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'каждые $count дней',
+      few: 'каждые $count дня',
+      one: 'каждый $count день',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprKindMonth => 'Месяц';
+
+  @override
+  String get pprKindQuarter => 'Квартал';
+
+  @override
+  String get pprKindHalfYear => 'Полгода';
+
+  @override
+  String get pprKindYear => 'Год';
+
+  @override
+  String get pprKindDays => 'N дней';
+
+  @override
+  String pprQuarterLabel(String q, String year) {
+    return '$q кв. $year';
+  }
+
+  @override
+  String pprHalfLabel(String h, String year) {
+    return '$h полугодие $year';
+  }
+
+  @override
+  String pprYearLabel(String year) {
+    return '$year год';
+  }
+
+  @override
+  String pprTaskLine(String period, String due) {
+    return 'ППР · $period · до $due';
+  }
+
+  @override
+  String get pprDoWithin => 'Выполнить в течение периода';
+
+  @override
+  String get pprPeriodRow => 'Период ППР';
+
+  @override
+  String get pprTag => 'ППР';
+
+  @override
+  String get pprKindOrder => 'ППР (регламент по плану)';
+
+  @override
+  String get filterPpr => 'ППР';
+
+  @override
+  String get pprFilters => 'Фильтры';
+
+  @override
+  String pprFiltersCount(int count) {
+    return 'Фильтры · $count';
+  }
+
+  @override
+  String get pprFilterObject => 'Объект';
+
+  @override
+  String get pprFilterSystem => 'Система';
+
+  @override
+  String get pprFilterContractor => 'Подрядчик';
+
+  @override
+  String get pprFilterState => 'Статус периода';
+
+  @override
+  String pprFiltersShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Показать $count планов',
+      few: 'Показать $count плана',
+      one: 'Показать $count план',
+      zero: 'Нет планов',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprCardPeriodicity => 'Периодичность';
+
+  @override
+  String pprCardStarts(String date) {
+    return 'с $date';
+  }
+
+  @override
+  String get pprCardCurrent => 'Текущий период';
+
+  @override
+  String get pprCardChecklist => 'Чек-лист';
+
+  @override
+  String get pprCardHistory => 'История периодов';
+
+  @override
+  String get pprCardHistoryEmpty => 'Задач по плану ещё не было';
+
+  @override
+  String get pprCardNoTask => 'Задача периода ещё не создана';
+
+  @override
+  String pprAcceptedBy(String date, String name) {
+    return 'Принято $date · $name';
+  }
+
+  @override
+  String pprAcceptedAt(String date) {
+    return 'Принято $date';
+  }
+
+  @override
+  String get pprNoContractor => 'Не закреплён за системой на этом объекте';
+
+  @override
+  String get pprAsset => 'Оборудование';
+
+  @override
+  String get pprEdit => 'Изменить';
+
+  @override
+  String get pprPause => 'Приостановить';
+
+  @override
+  String get pprResume => 'Возобновить';
+
+  @override
+  String get pprDelete => 'Удалить план';
+
+  @override
+  String pprDeleteConfirm(String title) {
+    return 'Удалить план «$title»? Это нельзя отменить.';
+  }
+
+  @override
+  String get pprDeleteHasTasks =>
+      'У плана уже есть задачи — его можно только приостановить.';
+
+  @override
+  String get pprPaused => 'План приостановлен';
+
+  @override
+  String get pprResumed => 'План возобновлён';
+
+  @override
+  String get pprDeleted => 'План удалён';
+
+  @override
+  String get pprSaved => 'План сохранён';
+
+  @override
+  String pprGenerated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Создано $count задач ППР',
+      few: 'Созданы $count задачи ППР',
+      one: 'Создана $count задача ППР',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprFormNew => 'Новый план ППР';
+
+  @override
+  String get pprFormEdit => 'План ППР';
+
+  @override
+  String get pprFormTitle => 'Название';
+
+  @override
+  String get pprFormTitleHint => 'Например: ТО кондиционеров';
+
+  @override
+  String get pprFormDescription => 'Описание';
+
+  @override
+  String get pprFormDescriptionHint => 'Что входит в работу';
+
+  @override
+  String get pprFormObject => 'Объект';
+
+  @override
+  String get pprFormPlace => 'Помещение';
+
+  @override
+  String get pprFormAsset => 'Оборудование';
+
+  @override
+  String get pprFormNone => 'Не выбрано';
+
+  @override
+  String get pprFormSystem => 'Система';
+
+  @override
+  String get pprFormPeriod => 'Периодичность';
+
+  @override
+  String get pprFormDays => 'Дней в периоде';
+
+  @override
+  String get pprFormStarts => 'Начало';
+
+  @override
+  String get pprFormChecklist => 'Чек-лист';
+
+  @override
+  String get pprFormChecklistHint => 'По пункту в строке';
+
+  @override
+  String get pprFormPhoto => 'Фото «после» обязательно';
+
+  @override
+  String get pprFormRequired => 'Заполните название, объект и систему';
+
+  @override
+  String get pprFormDaysInvalid => 'Число дней — от 1 до 3660';
+
+  @override
+  String get pprDuplicate => 'План с таким названием на этом объекте уже есть';
+
+  @override
+  String get pprChooseObject => 'Выберите объект';
+
+  @override
+  String get pprInfoTitle => 'ППР — регламентные работы';
+
+  @override
+  String get pprInfo1 =>
+      'План — регулярная работа на объекте: ТО, осмотр, уборка. Период — месяц, квартал, полгода, год или N дней.';
+
+  @override
+  String get pprInfo2 =>
+      'Задача текущего периода создаётся сама, когда менеджер открывает приложение (не чаще раза в 10 минут) или нажимает «Обновить». Подрядчик назначается по системе и объекту.';
+
+  @override
+  String get pprInfo3 =>
+      'Срок задачи — последний день периода. Не принята к концу периода — просрочена.';
+
+  @override
+  String get pprInfo4 =>
+      'План с задачами нельзя удалить — его можно приостановить.';
 }

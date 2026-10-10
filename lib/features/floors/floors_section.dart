@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/app_message.dart';
+import '../../core/content_navigator.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
 import 'floor_models.dart';
+import 'floor_plan_screen.dart';
 import 'floor_repository.dart';
 import 'plan_image.dart';
 import 'plan_logic.dart';
@@ -28,10 +30,23 @@ String floorPlanLocation(String objectId, String floorId,
 
 /// Открыть план этажа (поверх текущего экрана, адрес страницы меняется).
 Future<void> openFloorPlan(
-        BuildContext context, String objectId, String floorId,
-        {String? focus, bool edit = false}) =>
-    GoRouter.of(context).push<void>(
-        floorPlanLocation(objectId, floorId, focus: focus, edit: edit));
+    BuildContext context, String objectId, String floorId,
+    {String? focus, bool edit = false}) {
+  // ПК: справа от бокового меню (меню остаётся видно), адрес не меняем.
+  final nav = ContentNavigator.maybeOf(context);
+  if (nav != null) {
+    return nav.push<void>(appRoute(
+        (_) => FloorPlanScreen(
+            objectId: objectId,
+            floorId: floorId,
+            focus: focus,
+            startEditing: edit,
+            updateUrl: false),
+        title: context.l10n.planTitle));
+  }
+  return GoRouter.of(context).push<void>(
+      floorPlanLocation(objectId, floorId, focus: focus, edit: edit));
+}
 
 /// Подпись «12 помещений · 3 открытые заявки» для строки этажа.
 String floorSummary(
@@ -163,9 +178,9 @@ class FloorsSection extends StatelessWidget {
         try {
           await repo.uploadPlan(f, r.plan!.bytes, r.plan!.info);
         } catch (e) {
-          debugPrint('FloorsSection upload: ${e.runtimeType}');
+          logPlanError('FloorsSection upload', e);
           if (context.mounted) {
-            showAppMessage(context, planErrorText(l, e),
+            showAppMessage(context, planErrorText(l, e, isManager: isManager),
                 type: AppMessageType.error);
           }
         }
@@ -174,9 +189,9 @@ class FloorsSection extends StatelessWidget {
         showAppMessage(context, l.toastSaved, type: AppMessageType.success);
       }
     } catch (e) {
-      debugPrint('FloorsSection create: ${e.runtimeType}');
+      logPlanError('FloorsSection create', e);
       if (context.mounted) {
-        showAppMessage(context, planErrorText(l, e),
+        showAppMessage(context, planErrorText(l, e, isManager: isManager),
             type: AppMessageType.error);
       }
     }
@@ -240,9 +255,9 @@ class FloorsSection extends StatelessWidget {
           if (context.mounted) showAppMessage(context, l.floorDeleted);
       }
     } catch (e) {
-      debugPrint('FloorsSection ${a.name}: ${e.runtimeType}');
+      logPlanError('FloorsSection ${a.name}', e);
       if (context.mounted) {
-        showAppMessage(context, planErrorText(l, e),
+        showAppMessage(context, planErrorText(l, e, isManager: isManager),
             type: AppMessageType.error);
       }
     }

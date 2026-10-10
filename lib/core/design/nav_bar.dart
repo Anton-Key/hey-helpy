@@ -151,17 +151,25 @@ class AppSliverHeader extends StatelessWidget {
     this.showBack = true,
     this.backLabel,
     this.maxWidth = AppSpace.contentMax,
+    this.inline = false,
   });
 
   final String title;
   final Widget? leading;
   final List<Widget> actions;
+
+  /// Маленькая акцентная подпись («Эй, Helpy»): в одной строке с [actions]
+  /// над крупным заголовком (без лишней строки сверху).
   final String? eyebrow;
   final Widget? bottom;
   final double bottomHeight;
   final bool large;
   final bool showBack;
   final String? backLabel;
+
+  /// ПК: крупный заголовок в одной строке с [actions] (служебные кнопки
+  /// справа), шапка не сворачивается.
+  final bool inline;
 
   /// Ширина колонки шапки на широком окне — как у содержимого (720),
   /// чтобы заголовок и кнопки стояли над списком. Экраны во всю ширину
@@ -185,6 +193,7 @@ class AppSliverHeader extends StatelessWidget {
         large: large,
         topPadding: top,
         maxWidth: maxWidth,
+        inline: inline,
       ),
     );
   }
@@ -201,6 +210,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.large,
     required this.topPadding,
     required this.maxWidth,
+    required this.inline,
   });
 
   final String title;
@@ -212,18 +222,77 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   final bool large;
   final double topPadding;
   final double maxWidth;
+  final bool inline;
 
-  double get _eyebrowHeight => eyebrow == null ? 0 : 18;
+  /// Высота строки ПК: крупный заголовок и служебные кнопки (44).
+  static const inlineRow = 64.0;
+
+  /// Подпись [eyebrow] стоит в строке кнопок (если нет «Назад»): строка
+  /// чуть ниже — над подписью 8–12 px.
+  bool get _eyebrowInBar => eyebrow != null && leading == null;
+  double get _barHeight => _eyebrowInBar ? 40 : AppSizes.navBar;
+  double get _eyebrowHeight => eyebrow == null || _eyebrowInBar ? 0 : 18;
   double get _largeHeight => large ? AppSizes.largeTitle + _eyebrowHeight : 0;
 
   @override
-  double get minExtent => topPadding + AppSizes.navBar + bottomHeight;
+  double get minExtent =>
+      topPadding + (inline ? inlineRow : _barHeight) + bottomHeight;
 
   @override
-  double get maxExtent => minExtent + _largeHeight;
+  double get maxExtent => inline ? minExtent : minExtent + _largeHeight;
+
+  Widget _actionsRow() => Row(mainAxisSize: MainAxisSize.min, children: [
+        for (var i = 0; i < actions.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpace.s),
+          actions[i],
+        ]
+      ]);
+
+  Widget _inline(BuildContext context, bool overlaps) => FrostedBar(
+        borderBottom: true,
+        borderOpacity: overlaps ? 1 : 0,
+        child: Padding(
+          padding: EdgeInsetsDirectional.only(top: topPadding),
+          child: ContentWidth(
+            maxWidth: maxWidth,
+            child: Column(children: [
+              SizedBox(
+                height: inlineRow,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AppSpace.screen),
+                  child: Row(children: [
+                    if (leading != null) ...[
+                      ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 140),
+                          child: leading),
+                      const SizedBox(width: AppSpace.s),
+                    ],
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: Text(title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.largeTitle),
+                      ),
+                    ),
+                    if (actions.isNotEmpty) ...[
+                      const SizedBox(width: AppSpace.m),
+                      _actionsRow(),
+                    ],
+                  ]),
+                ),
+              ),
+              if (bottom != null) SizedBox(height: bottomHeight, child: bottom),
+            ]),
+          ),
+        ),
+      );
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
+    if (inline) return _inline(context, overlaps);
     final range = maxExtent - minExtent;
     final t = range == 0 ? 1.0 : (shrinkOffset / range).clamp(0.0, 1.0);
     // Маленький заголовок по центру появляется, когда крупный почти ушёл.
@@ -239,10 +308,24 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
           maxWidth: maxWidth,
           child: Column(children: [
             SizedBox(
-              height: AppSizes.navBar,
+              height: _barHeight,
               child: NavigationToolbar(
                 leading: leading == null
-                    ? null
+                    ? (_eyebrowInBar
+                        ? Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                                start: AppSpace.screen),
+                            child: Opacity(
+                              opacity: 1 - smallOpacity,
+                              child: Text(eyebrow!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppText.footnote.copyWith(
+                                      color: AppColors.accentText,
+                                      fontWeight: FontWeight.w600)),
+                            ),
+                          )
+                        : null)
                     : Padding(
                         padding: const EdgeInsetsDirectional.only(start: 6),
                         child: ConstrainedBox(
@@ -264,12 +347,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
                     : Padding(
                         padding: const EdgeInsetsDirectional.only(
                             end: AppSpace.screen),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          for (var i = 0; i < actions.length; i++) ...[
-                            if (i > 0) const SizedBox(width: AppSpace.s),
-                            actions[i],
-                          ]
-                        ]),
+                        child: _actionsRow(),
                       ),
                 middleSpacing: AppSpace.s,
               ),
@@ -293,7 +371,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (eyebrow != null)
+                                if (eyebrow != null && !_eyebrowInBar)
                                   Text(eyebrow!,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -331,7 +409,8 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
       old.bottomHeight != bottomHeight ||
       old.large != large ||
       old.topPadding != topPadding ||
-      old.maxWidth != maxWidth;
+      old.maxWidth != maxWidth ||
+      old.inline != inline;
 }
 
 /// Компактная шапка без прокрутки (над картой, на экранах без списка):

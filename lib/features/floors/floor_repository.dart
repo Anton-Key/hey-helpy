@@ -173,8 +173,15 @@ class FloorRepo {
   /// удаление старого файла (если что-то упало — старый план остаётся).
   Future<Floor> uploadPlan(Floor f, Uint8List bytes, PlanImageInfo info) async {
     final path = planStoragePath(f, info.ext, DateTime.now());
-    await _c.storage.from(bucket).uploadBinary(path, bytes,
-        fileOptions: FileOptions(contentType: info.mime, upsert: false));
+    try {
+      await _c.storage.from(bucket).uploadBinary(path, bytes,
+          fileOptions: FileOptions(contentType: info.mime, upsert: false));
+    } on StorageException catch (e) {
+      // Код и путь — в журнал (без подписанных ссылок и токенов).
+      debugPrint('FloorRepo.uploadPlan: storage code=${e.statusCode} '
+          'message=${e.message} path=$path');
+      rethrow;
+    }
     try {
       await updateFloor(f.id,
           {'plan_path': path, 'plan_w': info.width, 'plan_h': info.height});

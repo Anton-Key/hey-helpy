@@ -80,7 +80,8 @@ class ClusterMarker extends StatelessWidget {
       required this.tone,
       required this.onTap,
       this.city,
-      this.moreCities = 0});
+      this.moreCities = 0,
+      this.labelPos = CityLabelPos.below});
   final int objects;
   final int open;
   final MarkerTone tone;
@@ -91,6 +92,10 @@ class ClusterMarker extends StatelessWidget {
 
   /// Ещё городов в кружке (слились на мелком масштабе): «Белград +2».
   final int moreCities;
+
+  /// Подпись под кружком, над ним или скрыта — чтобы не наезжать на
+  /// соседей ([cityLabelPlacement]).
+  final CityLabelPos labelPos;
 
   static const size = 50.0;
 
@@ -103,24 +108,30 @@ class ClusterMarker extends StatelessWidget {
   Widget build(BuildContext context) {
     final circle = _circle(context);
     if (city == null) return circle;
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      const SizedBox(height: labelHeight),
-      circle,
-      Container(
-        height: labelHeight - 4,
-        margin: const EdgeInsetsDirectional.only(top: 4),
-        padding: const EdgeInsetsDirectional.fromSTEB(8, 2, 8, 0),
-        decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            boxShadow: AppShadows.floating),
-        child: Text(_cityLabel(context)!,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppText.caption
-                .copyWith(color: AppColors.ink, fontWeight: FontWeight.w600)),
-      ),
-    ]);
+    const gap = SizedBox(height: labelHeight);
+    if (labelPos == CityLabelPos.hidden) {
+      return Column(
+          mainAxisSize: MainAxisSize.min, children: [gap, circle, gap]);
+    }
+    final above = labelPos == CityLabelPos.above;
+    final label = Container(
+      height: labelHeight - 4,
+      margin:
+          EdgeInsetsDirectional.only(top: above ? 0 : 4, bottom: above ? 4 : 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(8, 2, 8, 0),
+      decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          boxShadow: AppShadows.floating),
+      child: Text(_cityLabel(context)!,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppText.caption
+              .copyWith(color: AppColors.ink, fontWeight: FontWeight.w600)),
+    );
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: above ? [label, circle, gap] : [gap, circle, label]);
   }
 
   /// «Белград» или «Белград +2» (слитые города).

@@ -320,8 +320,12 @@ Future<T?> showAppPopover<T>({
   double maxHeight = 560,
 }) {
   final box = context.findRenderObject() as RenderBox?;
-  final overlay =
-      Navigator.of(context).overlay?.context.findRenderObject() as RenderBox?;
+  // Окно открывается в корневом навигаторе (showGeneralDialog) — и
+  // координаты считаем от него (на ПК содержимое — справа от меню).
+  final overlay = Navigator.of(context, rootNavigator: true)
+      .overlay
+      ?.context
+      .findRenderObject() as RenderBox?;
   if (box == null || overlay == null) {
     return showAppSheet<T>(context: context, builder: builder);
   }

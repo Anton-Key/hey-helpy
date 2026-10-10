@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
+import 'home_actions.dart';
 
 /// Общая шапка вкладок главного экрана: колокольчик с числом новых
 /// уведомлений и (в разделе «Главная») переключатель
@@ -16,7 +17,26 @@ class HomeChrome extends InheritedWidget {
     required this.tab,
     required this.onTab,
     required this.showTabs,
+    required this.layout,
+    required this.actions,
+    this.utilityLead,
+    this.utilityTail = const [],
   });
+
+  /// Раскладка меню: на ПК ([AppNavLayout.rail], [AppNavLayout.sidebar])
+  /// шапка — крупный заголовок в одной строке со служебными кнопками.
+  final AppNavLayout layout;
+
+  /// Связь с вкладкой «Заявки» (кнопки бокового меню, горячие клавиши).
+  final HomeActions actions;
+
+  /// ПК: таблетка «Компания · роль» (перед «Обновить»).
+  final Widget? utilityLead;
+
+  /// ПК: язык, уведомления, справка, аватар (после «Обновить»).
+  final List<Widget> utilityTail;
+
+  bool get desktop => layout != AppNavLayout.bottom;
 
   final int unread;
   final VoidCallback? onBell;
@@ -36,7 +56,10 @@ class HomeChrome extends InheritedWidget {
       old.unread != unread ||
       old.onBell != onBell ||
       old.tab != tab ||
-      old.showTabs != showTabs;
+      old.showTabs != showTabs ||
+      old.layout != layout ||
+      old.utilityLead != utilityLead ||
+      old.utilityTail != utilityTail;
 }
 
 /// Высота ряда с переключателем вкладок под заголовком.
@@ -84,20 +107,49 @@ class _MainTabs extends StatelessWidget {
   }
 }
 
-/// Шапка вкладки главного экрана — первый sliver её списка: крупный
-/// заголовок [title] (сжимается при прокрутке), над ним маленькая
-/// акцентная подпись [eyebrow], справа [actions] и колокольчик, снизу —
-/// переключатель вкладок (в разделе «Главная»).
+/// Кнопки справа в шапке вкладки. Телефон: действия вкладки, «Обновить»,
+/// колокольчик. ПК: действия вкладки, «Компания · роль», «Обновить», язык,
+/// уведомления, справка, аватар.
+List<Widget> _headerActions(BuildContext context, HomeChrome? chrome,
+    List<Widget> actions, VoidCallback? onRefresh) {
+  final l = context.l10n;
+  final desktop = chrome?.desktop ?? false;
+  final refresh = onRefresh == null
+      ? null
+      : AppIconButton(
+          icon: AppIcons.refresh,
+          label: l.commonRefresh,
+          tooltip: desktop,
+          size: desktop ? 40 : 36,
+          onPressed: onRefresh);
+  if (!desktop) {
+    return [...actions, if (refresh != null) refresh, _Bell(chrome)];
+  }
+  return [
+    ...actions,
+    if (chrome?.utilityLead != null) chrome!.utilityLead!,
+    if (refresh != null) refresh,
+    ...?chrome?.utilityTail,
+  ];
+}
+
+/// Шапка вкладки главного экрана — первый sliver её списка. Одинаковая на
+/// всех вкладках. Телефон: строка «Эй, Helpy» + «Обновить» + колокольчик,
+/// под ней крупный заголовок [title] (сжимается при прокрутке), снизу —
+/// переключатель вкладок (в разделе «Главная»). ПК: крупный заголовок в
+/// одной строке со служебными кнопками.
 class HomeHeader extends StatelessWidget {
   const HomeHeader(
       {super.key,
       required this.title,
-      this.eyebrow,
       this.actions = const [],
+      this.onRefresh,
       this.maxWidth = AppSpace.contentMax});
   final String title;
-  final String? eyebrow;
   final List<Widget> actions;
+
+  /// «Обновить» (null — без кнопки).
+  final VoidCallback? onRefresh;
 
   /// Как у содержимого вкладки: 720 у списков, во всю ширину — у отчётов.
   final double maxWidth;
@@ -106,49 +158,77 @@ class HomeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final chrome = HomeChrome.maybeOf(context);
     final tabs = chrome != null && chrome.showTabs;
+    final desktop = chrome?.desktop ?? false;
     return AppSliverHeader(
       title: title,
-      eyebrow: eyebrow,
+      eyebrow: desktop ? null : context.l10n.appName,
       showBack: false,
-      actions: [...actions, _Bell(chrome)],
+      inline: desktop,
+      actions: _headerActions(context, chrome, actions, onRefresh),
       bottom: tabs ? _MainTabs(chrome) : null,
       bottomHeight: tabs ? _tabsHeight : 0,
-      maxWidth: maxWidth,
+      // ПК: служебные кнопки — у правого края окна, не над колонкой списка.
+      maxWidth: desktop ? double.infinity : maxWidth,
     );
   }
 }
 
 /// То же, что свёрнутая [HomeHeader], — для вкладок без прокрутки (карта):
-/// заголовок по центру, колокольчик, переключатель вкладок.
+/// заголовок, кнопки, переключатель вкладок.
 class HomeTopBar extends StatelessWidget {
-  const HomeTopBar({super.key, required this.title, this.actions = const []});
+  const HomeTopBar(
+      {super.key,
+      required this.title,
+      this.actions = const [],
+      this.onRefresh});
   final String title;
   final List<Widget> actions;
+  final VoidCallback? onRefresh;
 
   @override
   Widget build(BuildContext context) {
     final chrome = HomeChrome.maybeOf(context);
     final tabs = chrome != null && chrome.showTabs;
+    final desktop = chrome?.desktop ?? false;
+    final buttons = _headerActions(context, chrome, actions, onRefresh);
+    final row = Row(mainAxisSize: MainAxisSize.min, children: [
+      for (var i = 0; i < buttons.length; i++) ...[
+        if (i > 0) const SizedBox(width: AppSpace.s),
+        buttons[i],
+      ],
+    ]);
     return FrostedBar(
       borderBottom: true,
       child: SafeArea(
         bottom: false,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           SizedBox(
-            height: AppSizes.navBar,
-            child: NavigationToolbar(
-              middle: Text(title, style: AppText.headline),
-              trailing: Padding(
-                padding: const EdgeInsetsDirectional.only(end: AppSpace.screen),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  for (final a in actions) ...[
-                    a,
-                    const SizedBox(width: AppSpace.s),
-                  ],
-                  _Bell(chrome),
-                ]),
-              ),
-            ),
+            height: desktop ? 64 : AppSizes.navBar,
+            child: desktop
+                ? Padding(
+                    padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: AppSpace.screen),
+                    child: Row(children: [
+                      Expanded(
+                        child: Semantics(
+                          header: true,
+                          child: Text(title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.largeTitle),
+                        ),
+                      ),
+                      row,
+                    ]),
+                  )
+                : NavigationToolbar(
+                    middle: Text(title, style: AppText.headline),
+                    trailing: Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                          end: AppSpace.screen),
+                      child: row,
+                    ),
+                  ),
           ),
           if (tabs) SizedBox(height: _tabsHeight, child: _MainTabs(chrome)),
         ]),

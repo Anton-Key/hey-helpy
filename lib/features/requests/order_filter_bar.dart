@@ -46,6 +46,23 @@ class FilterChoices {
 // ---------------------------------------------------------------------
 
 /// Подписи фильтра на языке интерфейса — чистые функции (тесты).
+/// Ширина, с которой у выбранного сегмента — «12 из 72» (уже — «12»).
+const kSegmentOfFrom = 400.0;
+
+/// Число у сегмента «Все / Открытые / Просрочено». У выбранного, когда
+/// фильтры или поиск сужают список ([narrowed]), — «12 из 72» (на ширине
+/// < [kSegmentOfFrom] — «12»). [total] — все заявки, тот же источник, что у
+/// подписи для диктора «Найдено 12 из 72».
+String segmentCountText(AppLocalizations l,
+        {required int count,
+        required int total,
+        required bool selected,
+        required bool narrowed,
+        required double width}) =>
+    selected && narrowed && width >= kSegmentOfFrom
+        ? l.reqSegOf(count, total)
+        : '$count';
+
 class OrderFilterLabels {
   const OrderFilterLabels(this.l);
   final AppLocalizations l;

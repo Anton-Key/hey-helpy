@@ -296,4 +296,53 @@ void main() {
       expect(mapFitPadding(wide: true, height: 800).bottom, 64);
     });
   });
+
+  group('cityLabelPlacement — подписи городов не наезжают', () {
+    MapCluster<String> city(String name, double lat, double lng, int n) =>
+        MapCluster(
+          items: [
+            for (var i = 0; i < n; i++)
+              MapItem(id: '$name$i', point: GeoPoint(lat, lng), value: name)
+          ],
+          key: 'city:$name',
+          label: name,
+          center: GeoPoint(lat, lng),
+        );
+
+    test('далёкие города — подписи под кружками', () {
+      final cs = [city('Москва', 55.75, 37.6, 5), city('Дубай', 25.2, 55.3, 2)];
+      final p = cityLabelPlacement(cs, 2, text: (c) => c.label!);
+      expect(p['city:Москва'], CityLabelPos.below);
+      expect(p['city:Дубай'], CityLabelPos.below);
+    });
+
+    test('360 px, весь мир: подпись «Белград +1» не под кружком «Москвы»', () {
+      // Зум «весь мир» на телефоне ~1,8–2: Москва выше и правее Белграда.
+      final cs = [
+        city('Москва', 55.75, 37.6, 5),
+        city('Белград', 44.8, 20.45, 7),
+      ];
+      for (final z in [1.8, 2.0]) {
+        final p = cityLabelPlacement(cs, z,
+            text: (c) => c.label == 'Белград' ? 'Белград +1' : c.label!);
+        // Подпись Москвы снизу задела бы кружок Белграда — сверху или скрыта.
+        final moscow = p['city:Москва'];
+        final belgrade = p['city:Белград'];
+        expect(moscow == CityLabelPos.below && belgrade == CityLabelPos.below,
+            isFalse,
+            reason: 'зум $z');
+      }
+      // Чуть крупнее — места хватает: обе подписи снизу.
+      final p = cityLabelPlacement(cs, 2.6, text: (c) => c.label!);
+      expect(p.values, everyElement(CityLabelPos.below));
+    });
+
+    test('без подписи у кластера — не размещается', () {
+      const c = MapCluster<String>(
+          items: [MapItem(id: 'a', point: GeoPoint(1, 1), value: 'a')],
+          key: 'grid:a',
+          center: GeoPoint(1, 1));
+      expect(cityLabelPlacement([c], 5, text: (c) => ''), isEmpty);
+    });
+  });
 }

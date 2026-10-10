@@ -2833,19 +2833,31 @@ abstract class AppLocalizations {
   ///
   /// In ru, this message translates to:
   /// **'Все · {count}'**
-  String reqSegAll(int count);
+  String reqSegAll(String count);
 
   /// No description provided for @reqSegOpen.
   ///
   /// In ru, this message translates to:
   /// **'Открытые · {count}'**
-  String reqSegOpen(int count);
+  String reqSegOpen(String count);
 
   /// No description provided for @reqSegOverdue.
   ///
   /// In ru, this message translates to:
   /// **'Просрочено · {count}'**
-  String reqSegOverdue(int count);
+  String reqSegOverdue(String count);
+
+  /// No description provided for @reqSegOf.
+  ///
+  /// In ru, this message translates to:
+  /// **'{shown} из {total}'**
+  String reqSegOf(int shown, int total);
+
+  /// No description provided for @reqSearchShort.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск'**
+  String get reqSearchShort;
 
   /// No description provided for @reqGroupToday.
   ///
@@ -3609,6 +3621,18 @@ abstract class AppLocalizations {
   /// **'Не удалось загрузить план. Проверьте интернет и попробуйте ещё раз.'**
   String get planUploadFailed;
 
+  /// No description provided for @planStorageDenied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Хранилище отклонило загрузку (код {code}). Попробуйте ещё раз или сообщите администратору.'**
+  String planStorageDenied(String code);
+
+  /// No description provided for @planDbDenied.
+  ///
+  /// In ru, this message translates to:
+  /// **'База отклонила изменение (код {code}). Попробуйте ещё раз или сообщите администратору.'**
+  String planDbDenied(String code);
+
   /// No description provided for @planUploaded.
   ///
   /// In ru, this message translates to:
@@ -3692,6 +3716,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Режим расстановки'**
   String get planEditMode;
+
+  /// No description provided for @planEditHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'перетаскивайте маркеры, нажмите на пустое место, чтобы добавить'**
+  String get planEditHint;
 
   /// No description provided for @planDone.
   ///
@@ -3957,6 +3987,12 @@ abstract class AppLocalizations {
   /// **'Бирюзовый — есть открытые заявки, серый — открытых нет.'**
   String get infoPlan3;
 
+  /// No description provided for @infoPlan4.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мигает — у оборудования просроченная заявка. Волны и ореол — выбранный маркер, нажмите на пустое место, чтобы снять выбор.'**
+  String get infoPlan4;
+
   /// No description provided for @infoEditTitle.
   ///
   /// In ru, this message translates to:
@@ -4016,6 +4052,108 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Оборудование'**
   String get formAsset;
+
+  /// No description provided for @navAddOrder.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка'**
+  String get navAddOrder;
+
+  /// No description provided for @navCollapse.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свернуть меню'**
+  String get navCollapse;
+
+  /// No description provided for @navExpand.
+  ///
+  /// In ru, this message translates to:
+  /// **'Развернуть меню'**
+  String get navExpand;
+
+  /// No description provided for @navLanguage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Язык интерфейса: {lang}'**
+  String navLanguage(String lang);
+
+  /// No description provided for @navHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Справка и горячие клавиши'**
+  String get navHelp;
+
+  /// No description provided for @navAccount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Меню профиля'**
+  String get navAccount;
+
+  /// No description provided for @navCompanyRole.
+  ///
+  /// In ru, this message translates to:
+  /// **'{company} · {role}'**
+  String navCompanyRole(String company, String role);
+
+  /// No description provided for @helpTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Справка'**
+  String get helpTitle;
+
+  /// No description provided for @helpTip1.
+  ///
+  /// In ru, this message translates to:
+  /// **'«Эй, Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.'**
+  String get helpTip1;
+
+  /// No description provided for @helpTip2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявку нельзя закрыть без фото «после» и подтверждения автора или менеджера.'**
+  String get helpTip2;
+
+  /// No description provided for @helpTip3.
+  ///
+  /// In ru, this message translates to:
+  /// **'«Локации» — объекты на карте и планы этажей с маркерами помещений и оборудования.'**
+  String get helpTip3;
+
+  /// No description provided for @helpHotkeys.
+  ///
+  /// In ru, this message translates to:
+  /// **'Горячие клавиши'**
+  String get helpHotkeys;
+
+  /// No description provided for @hotkeyNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая заявка'**
+  String get hotkeyNew;
+
+  /// No description provided for @hotkeyVoice.
+  ///
+  /// In ru, this message translates to:
+  /// **'Голосовая заявка'**
+  String get hotkeyVoice;
+
+  /// No description provided for @hotkeySearch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск по заявкам'**
+  String get hotkeySearch;
+
+  /// No description provided for @hotkeyHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Эта справка'**
+  String get hotkeyHelp;
+
+  /// No description provided for @hotkeyNote.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не срабатывают, когда курсор в поле ввода.'**
+  String get hotkeyNote;
 }
 
 class _AppLocalizationsDelegate

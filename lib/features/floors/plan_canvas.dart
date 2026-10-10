@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
@@ -42,6 +43,7 @@ class PlanCanvas extends StatefulWidget {
     this.highlight,
     this.editing = false,
     this.onEmptyTap,
+    this.onClear,
     this.onMoved,
     this.labelOf,
     this.initialFocus,
@@ -67,6 +69,9 @@ class PlanCanvas extends StatefulWidget {
   final String? highlight;
   final bool editing;
   final void Function(double fx, double fy)? onEmptyTap;
+
+  /// Нажатие на пустое место вне режима расстановки — снять выбор.
+  final VoidCallback? onClear;
   final void Function(PlanItem item, double fx, double fy)? onMoved;
 
   /// Подпись маркера для диктора (название и заявки).
@@ -76,8 +81,7 @@ class PlanCanvas extends StatefulWidget {
   State<PlanCanvas> createState() => _PlanCanvasState();
 }
 
-class _PlanCanvasState extends State<PlanCanvas>
-    with SingleTickerProviderStateMixin {
+class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
   final _tc = TransformationController();
   late final _anim =
       AnimationController(vsync: this, duration: AppMotion.normal * 2);
@@ -85,6 +89,18 @@ class _PlanCanvasState extends State<PlanCanvas>
   Size _viewport = Size.zero;
   bool _fitted = false;
   late String? _pendingCenter = widget.initialFocus;
+
+  /// Один тикер на весь экран: волны выбранного и «дыхание» просроченного
+  /// оборудования. Работает, только пока есть что анимировать.
+  late final _clock =
+      AnimationController(vsync: this, duration: kPlanClockPeriod);
+
+  /// Волны у выбранного маркера — [kPlanPulseWindow] после выбора.
+  bool _pulsing = false;
+  Timer? _pulseTimer;
+
+  /// Маркер под мышью (ПК): подпись видна.
+  String? _hover;
 
   /// План двигали (жестом, кнопками, центрированием): при смене размера
   /// окна больше не «вписываем» заново.
@@ -95,6 +111,7 @@ class _PlanCanvasState extends State<PlanCanvas>
   Offset? _dragPos;
 
   Size get _plan => planSize(widget.floor);
+
   /// Видимая часть холста (без панели снизу).
   Size get _visible => Size(
       _viewport.width, math.max(1.0, _viewport.height - widget.bottomInset));
@@ -111,6 +128,25 @@ class _PlanCanvasState extends State<PlanCanvas>
       final t = _tween;
       if (t != null) _tc.value = t.value;
     });
+    if (widget.highlight != null) _startPulse();
+  }
+
+  void _startPulse() {
+    _pulseTimer?.cancel();
+    _pulsing = true;
+    _pulseTimer = Timer(kPlanPulseWindow, () {
+      if (mounted) setState(() => _pulsing = false);
+    });
+  }
+
+  /// Тикер — только когда нужен (после кадра: не из build).
+  void _syncClock(bool need) {
+    if (need == _clock.isAnimating) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (need && !_clock.isAnimating) _clock.repeat();
+      if (!need && _clock.isAnimating) _clock.stop();
+    });
   }
 
   @override
@@ -123,11 +159,21 @@ class _PlanCanvasState extends State<PlanCanvas>
       _fitted = false;
       _touched = false;
     }
+    if (old.highlight != widget.highlight) {
+      if (widget.highlight != null) {
+        _startPulse();
+      } else {
+        _pulseTimer?.cancel();
+        _pulsing = false;
+      }
+    }
   }
 
   @override
   void dispose() {
     if (widget.controller._s == this) widget.controller._s = null;
+    _pulseTimer?.cancel();
+    _clock.dispose();
     _anim.dispose();
     _tc.dispose();
     super.dispose();
@@ -237,7 +283,9 @@ class _PlanCanvasState extends State<PlanCanvas>
                               pixelsToFraction(d.localPosition, plan);
                           widget.onEmptyTap!(fx, fy);
                         }
-                      : null,
+                      : (!widget.editing && widget.onClear != null
+                          ? (_) => widget.onClear!()
+                          : null),
                   child: SizedBox(
                     width: plan.width,
                     height: plan.height,
@@ -251,9 +299,11 @@ class _PlanCanvasState extends State<PlanCanvas>
               ),
             ),
             Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _tc,
-                builder: (context, _) => _markers(plan),
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _tc,
+                  builder: (context, _) => _markers(plan),
+                ),
               ),
             ),
           ]),
@@ -263,14 +313,16 @@ class _PlanCanvasState extends State<PlanCanvas>
   }
 
   Widget _markers(Size plan) {
-    final labels = labelsVisible(_scale, _fitScale);
-    final children = <Widget>[];
-    // Подсвеченный и перетаскиваемый — последними (поверх соседей).
-    final ordered = [...widget.items]..sort((a, b) {
-        int r(PlanItem i) =>
-            i.key == _dragKey ? 2 : (i.key == widget.highlight ? 1 : 0);
-        return r(a) - r(b);
-      });
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final fit = _fitScale, scale = _scale;
+    // Подсвеченный, наведённый и перетаскиваемый — последними (поверх).
+    int rank(PlanItem i) => i.key == _dragKey
+        ? 3
+        : i.key == widget.highlight
+            ? 2
+            : (i.key == _hover ? 1 : 0);
+    final ordered = [...widget.items]..sort((a, b) => rank(a) - rank(b));
+    final shown = <(PlanItem, Offset, Offset, MarkerFx, bool)>[];
     for (final i in ordered) {
       if (!i.placed) continue;
       final px = i.key == _dragKey && _dragPos != null
@@ -284,17 +336,54 @@ class _PlanCanvasState extends State<PlanCanvas>
         continue;
       }
       final hi = i.key == widget.highlight || i.key == _dragKey;
+      final fx = markerFx(
+          selected: i.key == widget.highlight && _dragKey == null,
+          pulsing: _pulsing,
+          isPlace: i.isPlace,
+          overdue: widget.stats[i.key]?.overdue ?? 0,
+          reduceMotion: reduceMotion);
+      shown.add((i, px, p, fx, hi));
+    }
+    _syncClock(planNeedsTicker(shown.map((e) => e.$4)));
+    // Подписи: выбранная / наведённая — всегда, остальные — без наездов на
+    // соседние маркеры и подписи (по порядку: сначала оборудование).
+    final labels = planLabelLayout([
+      for (final (i, _, p, _, hi) in shown.reversed)
+        PlanLabelBox(i.key, p, i.name,
+            priority: hi || i.key == _hover,
+            wanted: planLabelWanted(
+                isPlace: i.isPlace,
+                selected: hi,
+                hovered: i.key == _hover,
+                scale: scale,
+                fitScale: fit)),
+    ]);
+    final canHover = !widget.editing;
+    final children = <Widget>[];
+    for (final (i, px, p, fx, hi) in shown) {
       final stats = widget.stats[i.key] ?? ObjectStats.empty;
       Widget marker = PlanMarker(
         item: i,
         stats: stats,
         highlighted: hi,
-        showLabel: labels || hi,
+        showLabel: labels.contains(i.key),
+        movable: widget.editing && widget.onMoved != null,
         semanticLabel: widget.labelOf?.call(i) ?? i.name,
+        fx: fx,
+        clock: _clock,
+        onHover: canHover
+            ? (on) {
+                if (on && _hover != i.key) {
+                  setState(() => _hover = i.key);
+                } else if (!on && _hover == i.key) {
+                  setState(() => _hover = null);
+                }
+              }
+            : null,
         onTap: () => widget.onMarkerTap(i),
       );
       if (widget.editing && widget.onMoved != null) {
-        marker = _draggable(i, px, marker);
+        marker = _draggable(i, px, _Hop(child: marker));
       }
       children.add(Positioned(
         left: p.dx - PlanMarker.boxWidth / 2,
@@ -348,8 +437,62 @@ class _PlanCanvasState extends State<PlanCanvas>
   }
 }
 
+/// Маркер «подпрыгивает» один раз при входе в режим расстановки — видно,
+/// что его можно двигать.
+class _Hop extends StatelessWidget {
+  const _Hop({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: AppMotion.normal * 3,
+        builder: (context, t, child) => Transform.translate(
+          // Два затухающих подскока по 6 px.
+          offset: Offset(0, -6 * (1 - t) * math.sin(t * math.pi * 2).abs()),
+          child: child,
+        ),
+        child: child,
+      );
+}
+
+/// Цвет подсветки, ореола и волн маркера — цвет его статуса (не чёрный):
+/// просрочено — красный, срочно — оранжевый, остальное — акцент.
+Color markerGlowColor(MarkerTone t) => switch (t) {
+      MarkerTone.alert => StatusColors.overdue.foreground,
+      MarkerTone.warning => AppColors.priorityHigh,
+      MarkerTone.open || MarkerTone.idle => AppColors.accent,
+    };
+
+/// Квадрат оборудования: (фон, рамка, значок) — светлый оттенок статуса,
+/// рамка и значок цвета статуса; без заявок — серый.
+(Color, Color, Color) assetColors(MarkerTone t) => switch (t) {
+      MarkerTone.alert => (
+          StatusColors.overdue.background,
+          StatusColors.overdue.foreground,
+          StatusColors.overdue.foreground
+        ),
+      MarkerTone.warning => (
+          StatusColors.returned.background,
+          AppColors.priorityHigh,
+          StatusColors.returned.foreground
+        ),
+      MarkerTone.open => (
+          AppColors.accentTint,
+          AppColors.accent,
+          AppColors.accentText
+        ),
+      MarkerTone.idle => (
+          StatusColors.cancelled.background,
+          AppColors.tertiary,
+          AppColors.secondary
+        ),
+    };
+
 /// Маркер плана: помещение — кружок с числом открытых заявок, оборудование
-/// — квадрат со значком. Цвет — по самой тревожной заявке (как на карте).
+/// — квадрат со значком цвета статуса и бейджем числа заявок. Цвет — по
+/// самой тревожной заявке (как на карте). Выбранный — крупнее в 1,25 раза,
+/// с волнами / ореолом цвета статуса ([fx], общий тикер [clock]).
 /// Цель нажатия 44 px; подпись — под маркером.
 class PlanMarker extends StatelessWidget {
   const PlanMarker({
@@ -359,8 +502,15 @@ class PlanMarker extends StatelessWidget {
     required this.onTap,
     this.highlighted = false,
     this.showLabel = false,
+    this.movable = false,
     this.semanticLabel,
+    this.fx = MarkerFx.none,
+    this.clock,
+    this.onHover,
   });
+
+  /// Режим расстановки: акцентный контур «можно двигать».
+  final bool movable;
 
   final PlanItem item;
   final ObjectStats stats;
@@ -368,6 +518,13 @@ class PlanMarker extends StatelessWidget {
   final bool highlighted;
   final bool showLabel;
   final String? semanticLabel;
+  final MarkerFx fx;
+
+  /// Общий тикер экрана (0..1 за [kPlanClockPeriod]); один на все маркеры.
+  final Animation<double>? clock;
+
+  /// Наведение мыши (ПК): показать подпись.
+  final ValueChanged<bool>? onHover;
 
   /// Цель нажатия и ширина области маркера с подписью.
   static const hit = 44.0;
@@ -377,56 +534,203 @@ class PlanMarker extends StatelessWidget {
   Widget build(BuildContext context) {
     final tone = markerTone(stats);
     final (bg, fg) = toneColors(tone);
+    final glow = markerGlowColor(tone);
     final place = item.isPlace;
-    final d = place ? (highlighted ? 34.0 : 30.0) : (highlighted ? 30.0 : 26.0);
-    final shape = Container(
-      width: d,
-      height: d,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: place ? bg : AppColors.surface,
-        shape: place ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: place ? null : BorderRadius.circular(7),
-        border: Border.all(
-            color:
-                highlighted ? AppColors.ink : (place ? AppColors.surface : bg),
-            width: highlighted ? 3 : 2),
-        boxShadow: AppShadows.floating,
-      ),
-      child: place
-          ? Text('${stats.open}',
-              style: AppText.caption.copyWith(
-                  color: fg, fontWeight: FontWeight.w700, fontSize: 13))
-          : Icon(equipmentIcon(item), size: 15, color: AppColors.ink),
+    final d = place ? 30.0 : 26.0;
+    final Widget shape;
+    if (place) {
+      shape = Container(
+        width: d,
+        height: d,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: bg,
+          shape: BoxShape.circle,
+          border: Border.all(
+              color: highlighted ? glow : AppColors.surface,
+              width: highlighted ? 3 : 2),
+          boxShadow: AppShadows.floating,
+        ),
+        child: Text('${stats.open}',
+            style: AppText.caption.copyWith(
+                color: fg, fontWeight: FontWeight.w700, fontSize: 13)),
+      );
+    } else {
+      final (fill, border, icon) = assetColors(tone);
+      shape = Stack(clipBehavior: Clip.none, children: [
+        Container(
+          width: d,
+          height: d,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: BorderRadius.circular(7),
+            border: Border.all(color: border, width: highlighted ? 3 : 2),
+            boxShadow: AppShadows.floating,
+          ),
+          child: Icon(equipmentIcon(item), size: 15, color: icon),
+        ),
+        if (stats.open > 0)
+          PositionedDirectional(
+            top: -7,
+            end: -7,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 16),
+              height: 16,
+              padding: const EdgeInsetsDirectional.symmetric(horizontal: 4),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                border: Border.all(color: AppColors.surface, width: 1.5),
+              ),
+              child: Text('${stats.open}',
+                  style: AppText.caption.copyWith(
+                      color: fg,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                      height: 1)),
+            ),
+          ),
+      ]);
+    }
+    Widget body = movable
+        ? Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: place ? BoxShape.circle : BoxShape.rectangle,
+              borderRadius: place ? null : BorderRadius.circular(10),
+              border: Border.all(color: AppColors.accent, width: 2),
+            ),
+            child: shape,
+          )
+        : shape;
+    if (fx != MarkerFx.none) {
+      body = CustomPaint(
+        painter: _GlowPainter(
+            clock: clock, fx: fx, color: glow, circle: place, side: d),
+        child: body,
+      );
+    }
+    if (highlighted) body = Transform.scale(scale: 1.25, child: body);
+    Widget target = Pressable(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.pill),
+      child: SizedBox(width: hit, height: hit, child: Center(child: body)),
     );
+    if (onHover != null) {
+      target = MouseRegion(
+          onEnter: (_) => onHover!(true),
+          onExit: (_) => onHover!(false),
+          child: target);
+    }
     return Semantics(
       button: true,
+      selected: highlighted,
       label: semanticLabel ?? item.name,
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Pressable(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          child: SizedBox(width: hit, height: hit, child: Center(child: shape)),
-        ),
+        target,
         if (showLabel)
           IgnorePointer(
             child: Container(
               constraints: const BoxConstraints(maxWidth: boxWidth),
               padding: const EdgeInsetsDirectional.fromSTEB(6, 1, 6, 1),
               decoration: BoxDecoration(
-                  color: AppColors.surface.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(AppRadius.pill)),
+                  color: AppColors.surface
+                      .withValues(alpha: highlighted ? 0.97 : 0.92),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  boxShadow: highlighted ? AppShadows.floating : null),
               child: Text(item.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: AppText.caption.copyWith(
-                      color: AppColors.ink, fontWeight: FontWeight.w600)),
+                      color: AppColors.ink,
+                      fontWeight:
+                          highlighted ? FontWeight.w700 : FontWeight.w600)),
             ),
           ),
       ]),
     );
   }
+}
+
+/// Период общего тикера: кратен периоду волн (1,2 с) и «дыхания» (2 с).
+const kPlanClockPeriod = Duration(seconds: 12);
+const _ripplePeriod = 1.2;
+const _breathePeriod = 2.0;
+
+/// Ореол, волны и «дыхание» вокруг маркера. Перерисовывается от общего
+/// тикера (repaint), без перестройки виджетов — план не тормозит и при
+/// десятках маркеров.
+class _GlowPainter extends CustomPainter {
+  _GlowPainter({
+    required this.clock,
+    required this.fx,
+    required this.color,
+    required this.circle,
+    required this.side,
+  }) : super(
+            repaint:
+                fx == MarkerFx.ripple || fx == MarkerFx.breathe ? clock : null);
+
+  final Animation<double>? clock;
+  final MarkerFx fx;
+  final Color color;
+  final bool circle;
+  final double side;
+
+  double get _seconds =>
+      (clock?.value ?? 0) * kPlanClockPeriod.inMilliseconds / 1000;
+
+  void _ring(Canvas c, Offset center, double grow, double alpha, double width) {
+    final p = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..color = color.withValues(alpha: alpha.clamp(0, 1).toDouble());
+    if (circle) {
+      c.drawCircle(center, side / 2 + grow, p);
+    } else {
+      c.drawRRect(
+          RRect.fromRectAndRadius(
+              Rect.fromCenter(
+                  center: center,
+                  width: side + grow * 2,
+                  height: side + grow * 2),
+              Radius.circular(7 + grow)),
+          p);
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    switch (fx) {
+      case MarkerFx.none:
+        return;
+      case MarkerFx.halo:
+        // Спокойный ореол: кольцо 30 % непрозрачности.
+        _ring(canvas, center, 5, 0.3, 6);
+      case MarkerFx.ripple:
+        _ring(canvas, center, 5, 0.3, 6);
+        final phase = (_seconds / _ripplePeriod) % 1;
+        for (var i = 0; i < 3; i++) {
+          final p = (phase + i / 3) % 1;
+          _ring(canvas, center, 4 + p * 22, 0.65 * (1 - p), 2.5);
+        }
+      case MarkerFx.breathe:
+        final s = (1 - math.cos(2 * math.pi * (_seconds / _breathePeriod))) / 2;
+        _ring(canvas, center, 3 + 3 * s, 0.18 + 0.27 * s, 5);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_GlowPainter old) =>
+      old.fx != fx ||
+      old.color != color ||
+      old.circle != circle ||
+      old.side != side ||
+      old.clock != clock;
 }
 
 /// Значок оборудования: по виду (assets.meta.kind), иначе по категории.

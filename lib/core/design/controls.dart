@@ -198,12 +198,16 @@ class AppSearchField extends StatefulWidget {
     required this.onChanged,
     this.controller,
     this.autofocus = false,
+    this.focusNode,
   });
 
   final String hint;
   final ValueChanged<String> onChanged;
   final TextEditingController? controller;
   final bool autofocus;
+
+  /// Фокус снаружи (горячая клавиша «/» на ПК).
+  final FocusNode? focusNode;
 
   @override
   State<AppSearchField> createState() => _AppSearchFieldState();
@@ -225,6 +229,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
       height: AppSizes.searchHeight,
       child: TextField(
         controller: _c,
+        focusNode: widget.focusNode,
         autofocus: widget.autofocus,
         onChanged: (v) {
           setState(() {});

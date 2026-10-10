@@ -125,7 +125,11 @@ class OrderControlBar extends StatelessWidget {
     required this.onChanged,
     required this.onOpenAll,
     this.loadPlaces,
+    this.searchFocus,
   });
+
+  /// Фокус поиска снаружи (горячая клавиша «/»).
+  final FocusNode? searchFocus;
 
   final OrderFilter filter;
   final FilterChoices choices;
@@ -144,8 +148,14 @@ class OrderControlBar extends StatelessWidget {
     final n = f.activeCount;
     final now = DateTime.now();
 
+    // На узком телефоне — короткая подсказка «Поиск».
     final searchField = AppSearchField(
-        controller: search, hint: l.reqSearchHint, onChanged: onSearch);
+        controller: search,
+        focusNode: searchFocus,
+        hint: MediaQuery.sizeOf(context).width < kSegmentOfFrom
+            ? l.reqSearchShort
+            : l.reqSearchHint,
+        onChanged: onSearch);
 
     Widget allButton(String label, String countLabel) => AppFilterChip(
           icon: AppIcons.filter,

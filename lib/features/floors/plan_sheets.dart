@@ -28,20 +28,43 @@ AppInfoButton uploadInfo(AppLocalizations l) => AppInfoButton(
     );
 
 /// Понятный текст ошибки планов (без технических деталей).
-String planErrorText(AppLocalizations l, Object e) {
-  if (e is FloorDenied) return l.planNoRights;
-  if (e is PostgrestException && (e.code == '42501' || e.code == '403')) {
-    return l.planNoRights;
+///
+/// «Только менеджер» — только если роль в профиле действительно не менеджер.
+/// Отказ у менеджера — честно «хранилище / база отклонили (код …)»: так
+/// ошибка в правилах базы (как в 0013) не выглядит как нехватка прав.
+String planErrorText(AppLocalizations l, Object e, {required bool isManager}) {
+  final denied = e is FloorDenied ||
+      (e is PostgrestException && (e.code == '42501' || e.code == '403'));
+  if (denied) {
+    if (!isManager) return l.planNoRights;
+    return l.planDbDenied(e is PostgrestException ? (e.code ?? '42501') : '0');
   }
   if (e is StorageException) {
-    final code = '${e.statusCode}';
+    final code = e.statusCode ?? '?';
     if (code == '413') return l.planTooBig;
     if (code == '415') return l.planBadType;
-    if (code == '403' || code == '401') return l.planNoRights;
+    final rls = code == '403' ||
+        code == '401' ||
+        e.message.toLowerCase().contains('row-level security');
+    if (rls) return isManager ? l.planStorageDenied(code) : l.planNoRights;
     return l.planUploadFailed;
   }
   if (e is PostgrestException && e.code == '23505') return l.floorNameTaken;
   return l.saveFailed;
+}
+
+/// Ошибка плана в журнал: тип, код и путь файла. Без ссылок и токенов.
+void logPlanError(String where, Object e, {String? path}) {
+  final at = path == null ? '' : ' path=$path';
+  if (e is StorageException) {
+    debugPrint('$where: StorageException code=${e.statusCode} '
+        'message=${e.message}$at');
+  } else if (e is PostgrestException) {
+    debugPrint('$where: PostgrestException code=${e.code} '
+        'message=${e.message}$at');
+  } else {
+    debugPrint('$where: ${e.runtimeType}$at');
+  }
 }
 
 String planFileProblemText(AppLocalizations l, PlanFileProblem p) =>

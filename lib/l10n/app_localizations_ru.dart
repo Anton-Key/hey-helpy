@@ -1644,19 +1644,27 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reqSearchHint => 'Поиск по заявкам';
 
   @override
-  String reqSegAll(int count) {
+  String reqSegAll(String count) {
     return 'Все · $count';
   }
 
   @override
-  String reqSegOpen(int count) {
+  String reqSegOpen(String count) {
     return 'Открытые · $count';
   }
 
   @override
-  String reqSegOverdue(int count) {
+  String reqSegOverdue(String count) {
     return 'Просрочено · $count';
   }
+
+  @override
+  String reqSegOf(int shown, int total) {
+    return '$shown из $total';
+  }
+
+  @override
+  String get reqSearchShort => 'Поиск';
 
   @override
   String get reqGroupToday => 'Сегодня';
@@ -2126,6 +2134,16 @@ class AppLocalizationsRu extends AppLocalizations {
       'Не удалось загрузить план. Проверьте интернет и попробуйте ещё раз.';
 
   @override
+  String planStorageDenied(String code) {
+    return 'Хранилище отклонило загрузку (код $code). Попробуйте ещё раз или сообщите администратору.';
+  }
+
+  @override
+  String planDbDenied(String code) {
+    return 'База отклонила изменение (код $code). Попробуйте ещё раз или сообщите администратору.';
+  }
+
+  @override
   String get planUploaded => 'План загружен';
 
   @override
@@ -2170,6 +2188,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get planEditMode => 'Режим расстановки';
+
+  @override
+  String get planEditHint =>
+      'перетаскивайте маркеры, нажмите на пустое место, чтобы добавить';
 
   @override
   String get planDone => 'Готово';
@@ -2326,6 +2348,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Бирюзовый — есть открытые заявки, серый — открытых нет.';
 
   @override
+  String get infoPlan4 =>
+      'Мигает — у оборудования просроченная заявка. Волны и ореол — выбранный маркер, нажмите на пустое место, чтобы снять выбор.';
+
+  @override
   String get infoEditTitle => 'Режим расстановки';
 
   @override
@@ -2369,4 +2395,62 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get formAsset => 'Оборудование';
+
+  @override
+  String get navAddOrder => 'Заявка';
+
+  @override
+  String get navCollapse => 'Свернуть меню';
+
+  @override
+  String get navExpand => 'Развернуть меню';
+
+  @override
+  String navLanguage(String lang) {
+    return 'Язык интерфейса: $lang';
+  }
+
+  @override
+  String get navHelp => 'Справка и горячие клавиши';
+
+  @override
+  String get navAccount => 'Меню профиля';
+
+  @override
+  String navCompanyRole(String company, String role) {
+    return '$company · $role';
+  }
+
+  @override
+  String get helpTitle => 'Справка';
+
+  @override
+  String get helpTip1 =>
+      '«Эй, Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.';
+
+  @override
+  String get helpTip2 =>
+      'Заявку нельзя закрыть без фото «после» и подтверждения автора или менеджера.';
+
+  @override
+  String get helpTip3 =>
+      '«Локации» — объекты на карте и планы этажей с маркерами помещений и оборудования.';
+
+  @override
+  String get helpHotkeys => 'Горячие клавиши';
+
+  @override
+  String get hotkeyNew => 'Новая заявка';
+
+  @override
+  String get hotkeyVoice => 'Голосовая заявка';
+
+  @override
+  String get hotkeySearch => 'Поиск по заявкам';
+
+  @override
+  String get hotkeyHelp => 'Эта справка';
+
+  @override
+  String get hotkeyNote => 'Не срабатывают, когда курсор в поле ввода.';
 }

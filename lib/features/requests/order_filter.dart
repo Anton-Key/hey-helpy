@@ -688,6 +688,10 @@ class OrderGroup {
 }
 
 /// Делит уже отсортированный список на группы по смыслу сортировки.
+/// Подписи групп нужны, только если групп больше одной («Ранее» над
+/// единственной группой ничего не объясняет и съедает строку).
+bool showGroupHeaders(List<OrderGroup> groups) => groups.length > 1;
+
 List<OrderGroup> groupOrders(List<WorkOrder> sorted, OrderSort sort,
     {required DateTime now}) {
   final today = DateTime(now.year, now.month, now.day);

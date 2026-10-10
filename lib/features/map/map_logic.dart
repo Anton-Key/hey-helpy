@@ -419,6 +419,84 @@ List<MapCluster<T>> _mergeClose<T>(List<MapCluster<T>> list, double zoom) {
   return out;
 }
 
+/// Где подпись города у кластера: под кружком, над ним или скрыта
+/// (места нет ни снизу, ни сверху — город остаётся в подсказке и для
+/// диктора).
+enum CityLabelPos { below, above, hidden }
+
+/// Размеры для [cityLabelPlacement] (как у ClusterMarker в map_parts.dart).
+const _circlePx = 50.0;
+const _labelH = 18.0;
+const _labelGap = 4.0;
+const _labelMaxW = 150.0;
+
+/// Ширина подписи на экране — оценка по числу букв (шрифт 12, жирный).
+double cityLabelWidth(String text) =>
+    math.min(_labelMaxW, text.length * 7.2 + 16);
+
+/// Подписи городов не должны наезжать на соседние кружки и подписи (на
+/// телефоне 360 px «Москва» закрывала «Белград +1»). Сначала размещаются
+/// большие кластеры; подпись — под кружком, если там занято — над ним,
+/// если и там — скрыта. [text] — текст подписи кластера (с «+N»).
+Map<String, CityLabelPos> cityLabelPlacement<T>(
+    List<MapCluster<T>> clusters, double zoom,
+    {required String Function(MapCluster<T> c) text}) {
+  final px = {
+    for (final c in clusters) c.key: mercatorPixels(c.center, zoom),
+  };
+  // Занятые прямоугольники: все кружки сразу, подписи — по мере размещения.
+  final taken = <(String, double, double, double, double)>[
+    for (final c in clusters)
+      (
+        c.key,
+        px[c.key]!.$1 - _circlePx / 2,
+        px[c.key]!.$2 - _circlePx / 2,
+        px[c.key]!.$1 + _circlePx / 2,
+        px[c.key]!.$2 + _circlePx / 2,
+      ),
+  ];
+  bool free(String own, (double, double, double, double) r) {
+    for (final t in taken) {
+      if (t.$1 == own) continue;
+      if (r.$1 < t.$4 && r.$3 > t.$2 && r.$2 < t.$5 && r.$4 > t.$3) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  final order = [
+    for (final c in clusters)
+      if (c.label != null) c
+  ]..sort((a, b) => b.items.length.compareTo(a.items.length));
+  final out = <String, CityLabelPos>{};
+  for (final c in order) {
+    final (x, y) = px[c.key]!;
+    final w = cityLabelWidth(text(c));
+    final top = y + _circlePx / 2 + _labelGap;
+    final below = (x - w / 2, top, x + w / 2, top + _labelH);
+    final bottom = y - _circlePx / 2 - _labelGap;
+    final above = (x - w / 2, bottom - _labelH, x + w / 2, bottom);
+    final CityLabelPos pos;
+    final (double, double, double, double)? rect;
+    if (free(c.key, below)) {
+      pos = CityLabelPos.below;
+      rect = below;
+    } else if (free(c.key, above)) {
+      pos = CityLabelPos.above;
+      rect = above;
+    } else {
+      pos = CityLabelPos.hidden;
+      rect = null;
+    }
+    out[c.key] = pos;
+    if (rect != null) {
+      taken.add(('${c.key}#label', rect.$1, rect.$2, rect.$3, rect.$4));
+    }
+  }
+  return out;
+}
+
 /// Отступы «показать всё» на карте (лево, верх, право, низ), px — до
 /// центра крайнего маркера: сверху — чипы городов (до 56 px), справа —
 /// кнопки зума (до 56 px), снизу на телефоне — выдвижная панель списка

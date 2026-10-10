@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Tooltip;
 
 import 'pressable.dart';
 import 'tokens.dart';
@@ -166,7 +167,11 @@ class AppIconButton extends StatelessWidget {
     this.shadow = false,
     this.badge = 0,
     this.color,
+    this.tooltip = false,
   });
+
+  /// Подсказка [label] при наведении мышью (служебные кнопки на ПК).
+  final bool tooltip;
 
   final IconData icon;
   final String label;
@@ -197,7 +202,7 @@ class AppIconButton extends StatelessWidget {
         : (filled ? AppColors.fill : AppColors.surface);
     final fg = color ?? (accent ? AppColors.onAccent : AppColors.ink);
     final iconSize = size >= 48 ? AppSizes.iconL : (size <= 32 ? 18.0 : 20.0);
-    return Opacity(
+    final button = Opacity(
       opacity: onPressed == null ? 0.45 : 1,
       child: Pressable(
         onTap: onPressed,
@@ -227,6 +232,9 @@ class AppIconButton extends StatelessWidget {
         ),
       ),
     );
+    return tooltip
+        ? Tooltip(message: label, excludeFromSemantics: true, child: button)
+        : button;
   }
 }
 

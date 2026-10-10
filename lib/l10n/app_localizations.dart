@@ -4332,7 +4332,7 @@ abstract class AppLocalizations {
   /// No description provided for @pprKindOrder.
   ///
   /// In ru, this message translates to:
-  /// **'ППР (регламент по плану)'**
+  /// **'ППР'**
   String get pprKindOrder;
 
   /// No description provided for @filterPpr.

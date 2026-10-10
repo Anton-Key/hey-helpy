@@ -1001,7 +1001,7 @@
   "pprDoWithin": "Выполнить в течение периода",
   "pprPeriodRow": "Период ППР",
   "pprTag": "ППР",
-  "pprKindOrder": "ППР (регламент по плану)",
+  "pprKindOrder": "ППР",
   "filterPpr": "ППР",
   "pprFilters": "Фильтры",
   "pprFiltersCount": "Фильтры · {count}",

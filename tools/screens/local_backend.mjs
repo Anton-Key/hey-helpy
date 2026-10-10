@@ -138,7 +138,13 @@ export async function startLocalBackend({ port = 54321, postgrest = process.env.
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://x');
     const path = url.pathname;
-    if (req.method === 'OPTIONS') return send(res, 204, null);
+    // Предзапрос CORS: «*» в allow-headers не покрывает Authorization —
+    // разрешаем ровно те заголовки, что просит браузер.
+    if (req.method === 'OPTIONS') {
+      return send(res, 204, null, {
+        'access-control-allow-headers': req.headers['access-control-request-headers'] ?? '*',
+      });
+    }
 
     if (path.startsWith('/rest/v1/')) {
       const body = await readBody(req);

@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../home/home_chrome.dart';
+import '../requests/order_filter_bar.dart' show kSegmentOfFrom;
 import 'ppr_card.dart';
 import 'ppr_form.dart';
 import 'ppr_logic.dart';
@@ -273,6 +274,7 @@ class _PprTabState extends State<PprTab> {
   }
 
   Widget _row(AppLocalizations l, PlanView v) {
+    final narrow = MediaQuery.sizeOf(context).width < kSegmentOfFrom;
     final layer = v.layer?.label(l.localeName);
     final period = pprPeriodText(l, v.plan.kind, v.period);
     return AppRow(
@@ -287,8 +289,19 @@ class _PprTabState extends State<PprTab> {
         ].join(' · '),
       ].join('\n'),
       subtitleMaxLines: 3,
-      trailing: StatusPill(periodStateStatus(v.state),
-          label: pprStateLabel(l, v.state)),
+      // Узкий телефон: статус — под названием, название во всю ширину
+      // (как в списке заявок).
+      extra: narrow
+          ? Padding(
+              padding: const EdgeInsetsDirectional.only(top: AppSpace.xxs),
+              child: StatusPill(periodStateStatus(v.state),
+                  label: pprStateLabel(l, v.state)),
+            )
+          : null,
+      trailing: narrow
+          ? null
+          : StatusPill(periodStateStatus(v.state),
+              label: pprStateLabel(l, v.state)),
       onTap: () => _openCard(v),
     );
   }

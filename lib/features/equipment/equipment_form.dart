@@ -58,8 +58,7 @@ String assetPeriodLabel(AppLocalizations l, String kind, int? days) =>
     };
 
 /// Дата ввода: «1 мая 2024 г.» — по языку интерфейса.
-String assetDate(BuildContext context, DateTime d) =>
-    MaterialLocalizations.of(context).formatMediumDate(d);
+String assetDate(BuildContext context, DateTime d) => context.l10n.date(d);
 
 /// Форма «Новое оборудование» / правка. Нужна миграция 0015 (паспортные
 /// поля) — без неё сообщение «Нужна миграция 0015». true — сохранено.
@@ -276,8 +275,7 @@ class _AssetFormState extends State<_AssetForm> {
                     title: l.assetFieldInstalled,
                     value: _installed == null
                         ? l.commonNotSpecified
-                        : MaterialLocalizations.of(context)
-                            .formatMediumDate(_installed!),
+                        : assetDate(context, _installed!),
                     onTap: _pickDate,
                   ),
                 ]),

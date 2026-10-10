@@ -2565,7 +2565,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pprTag => 'ППР';
 
   @override
-  String get pprKindOrder => 'ППР (регламент по плану)';
+  String get pprKindOrder => 'ППР';
 
   @override
   String get filterPpr => 'ППР';

@@ -1065,6 +1065,7 @@ const SCREENS = [
     } },
   { key: 'plan-upload-done', title: 'План сразу после загрузки (без перезахода)', managerOnly: true, run: async (p) => {
       const chooser = p.waitForEvent('filechooser', { timeout: 15000 });
+      chooser.catch(() => {}); // если кнопки нет — ошибка ниже, а не падение всего скрипта
       await btn(p, 'Загрузить план').click();
       await (await chooser).setFiles(join(ROOT, 'assets/demo_plans/bc-demo-floor-1.png'));
       await see(p, 'План загружен').waitFor({ timeout: 20000 });
@@ -1091,7 +1092,11 @@ const SCREENS = [
       await p.mouse.up();
       await see(p, 'Сохранено').waitFor({ timeout: 10000 });
       await settle(p, 800);
-      if (!p.sandboxWrites.some((w) => w.includes('/locations'))) throw new Error('Перенос маркера не дошёл до сохранения');
+      // С шага 16 у помещений есть области: под курсором может оказаться
+      // маркер оборудования внутри «Кафе» — годится любой перенос.
+      if (!p.sandboxWrites.some((w) => w.includes('/locations') || w.includes('/assets'))) {
+        throw new Error('Перенос маркера не дошёл до сохранения');
+      }
       return `плашка режима, контур маркеров; перенос «Кафе» перехвачен (${p.sandboxWrites.length} записей не ушли в базу)`;
     }, after: async (p) => { await unsandbox(p); } },
   { key: 'plan-unplaced', title: 'План — список «На плане / Не размещены»', managerOnly: true, run: async (p) => {

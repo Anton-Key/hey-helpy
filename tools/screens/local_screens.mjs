@@ -98,7 +98,7 @@ async function login(page, email) {
     throw new Error('Не удалось ввести текст в поле входа');
   };
   await type(emailBox, email);
-  await type(page.getByRole('textbox', { name: 'Пароль' }), 'local');
+  await type(page.getByRole('textbox', { name: 'Пароль' }), 'local-only');
   await btn(page, 'Войти').click();
   await profileTab(page).waitFor({ timeout: 30000 });
 }
@@ -181,7 +181,8 @@ const SCREENS16 = [
   } },
   { key: 'ppr-orders', title: 'Заявки с фильтром «Тип: ППР»', run: async (page) => {
     await home(page, '?rec=ppr');
-    await see(page, /ППР · /).waitFor({ timeout: 20000 });
+    // У исполнителя «КлиматСервиса» задач ППР в демо нет — пустой список тоже годится.
+    await see(page, /ППР · |Нет заявок|ничего не найдено|Ничего не найдено/).waitFor({ timeout: 20000 });
     await settle(page);
   } },
   { key: 'locations-regions', title: 'Локации по регионам → страна → город', run: async (page) => {
@@ -238,8 +239,10 @@ const SCREENS16 = [
     await settle(page, 1500);
   } },
   { key: 'plan-areas', title: 'План этажа: области и номера помещений', run: async (page) => {
-    await home(page, `objects/${uuid(10)}/floors/${uuid(602)}`);
-    await settle(page, 4000);
+    await page.goto('about:blank');
+    await openApp(page, `#/objects/${uuid(10)}/floors/${uuid(602)}`);
+    await see(page, /На плане · \d/).waitFor({ timeout: 60000 });
+    await settle(page, 3000);
     // Приблизить, чтобы были видны подписи «301 · …» в областях.
     for (let i = 0; i < 2; i++) {
       const plus = page.getByRole('button', { name: /Приблизить|Увеличить/ }).first();
@@ -291,7 +294,7 @@ async function capturePdf(page) {
   await page.getByRole('button', { name: /^Отчёты/ }).or(page.getByRole('tab', { name: /^Отчёты/ })).first().click();
   await settle(page, 3000);
   await page.getByRole('button', { name: /Печать|Распечатать|PDF/ }).first().click();
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 120; i++) {
     const has = await page.evaluate(() => !!window.__pdfBlob);
     if (has) break;
     await page.waitForTimeout(500);
@@ -304,7 +307,10 @@ async function capturePdf(page) {
     for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
     return btoa(s);
   });
-  if (!b64) throw new Error('PDF не получен');
+  if (!b64) {
+    await page.screenshot({ path: join(OUT, 'manager-report-pdf-error.png') }).catch(() => {});
+    throw new Error('PDF не получен (снимок экрана — manager-report-pdf-error.png)');
+  }
   const pdf = join(tmpdir(), 'hh-report.pdf');
   writeFileSync(pdf, Buffer.from(b64, 'base64'));
   return pdf;

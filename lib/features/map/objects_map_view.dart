@@ -237,8 +237,9 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
 
   /// Отступы при «показать всё»: снизу на телефоне — выдвижная панель.
   EdgeInsets get _fitPadding {
-    final h = MediaQuery.sizeOf(context).height;
-    return EdgeInsets.fromLTRB(60, 80, 80, _wide ? 60 : h * 0.35);
+    final p =
+        mapFitPadding(wide: _wide, height: MediaQuery.sizeOf(context).height);
+    return EdgeInsets.fromLTRB(p.left, p.top, p.right, p.bottom);
   }
 
   void _fitPoints(List<GeoPoint> points, {double maxZoom = 16}) {
@@ -687,7 +688,8 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
           : CameraFit.bounds(
               bounds: LatLngBounds(LatLng(bounds.south, bounds.west),
                   LatLng(bounds.north, bounds.east)),
-              padding: const EdgeInsets.fromLTRB(60, 80, 80, 80),
+              // Как у «Все» и «показать всё»: под чипами, кнопками и панелью.
+              padding: _fitPadding,
               maxZoom: 15),
       minZoom: mapMinZoom,
       maxZoom: mapMaxZoom,
@@ -1036,6 +1038,7 @@ class _ClusteredMarkers extends StatelessWidget {
                 (c.label == null ? 0 : 2 * ClusterMarker.labelHeight),
             child: ClusterMarker(
               city: c.label,
+              moreCities: c.moreCities,
               objects: c.items.length,
               open: c.items.fold(
                   0, (sum, i) => sum + (stats[i.id] ?? ObjectStats.empty).open),

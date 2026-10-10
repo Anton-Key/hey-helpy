@@ -259,11 +259,16 @@ class MapCluster<T> {
       {required this.items,
       required this.center,
       required this.key,
-      this.label});
+      this.label,
+      this.moreCities = 0});
   final List<MapItem<T>> items;
 
   /// Город — у кластера «весь город» на мелком масштабе ([clusterMap]).
+  /// У слитых городов — главный (больше объектов), остальные — [moreCities].
   final String? label;
+
+  /// Сколько ещё городов в кластере: подпись «Белград +2».
+  final int moreCities;
 
   /// Средняя точка группы.
   final GeoPoint center;
@@ -363,42 +368,80 @@ GeoPoint _mean(List<GeoPoint> p) => GeoPoint(
     p.map((x) => x.lat).reduce((a, b) => a + b) / p.length,
     p.map((x) => x.lng).reduce((a, b) => a + b) / p.length);
 
-/// Кластеры городов ближе [cityMergePx] (ширина кружка) на экране (весь мир на телефоне:
-/// Белград, Стамбул, Москва) — в один: подпись «Белград, Москва, Стамбул».
-const cityMergePx = 56.0;
+/// Кластеры городов, чьи кружки на экране почти совпадают (центры ближе
+/// [cityMergePx]), — в один: подпись «Белград +1». Порог меньше кружка
+/// (50 px): на телефоне при показе всего мира Белград, Москва, Дубай и
+/// Стамбул не сливаются в один кружок — сливаются только соседи вплотную.
+const cityMergePx = 40.0;
 
 List<MapCluster<T>> _mergeClose<T>(List<MapCluster<T>> list, double zoom) {
-  final z = zoom.floorToDouble();
+  // Дробный зум: «весь мир» на телефоне — 1,8–2,0, округление вниз до 1
+  // слило бы полмира.
+  final px = [for (final c in list) mercatorPixels(c.center, zoom)];
+  bool near(int a, int b) {
+    final dx = px[a].$1 - px[b].$1, dy = px[a].$2 - px[b].$2;
+    return dx * dx + dy * dy < cityMergePx * cityMergePx;
+  }
+
   final out = <MapCluster<T>>[];
   final used = List.filled(list.length, false);
   for (var i = 0; i < list.length; i++) {
     if (used[i]) continue;
     used[i] = true;
-    final group = [list[i]];
+    final group = [i];
     // Цепочкой: город рядом с любым уже собранным — в ту же группу.
     for (var k = 0; k < group.length; k++) {
-      final (ax, ay) = mercatorPixels(group[k].center, z);
       for (var j = 0; j < list.length; j++) {
-        if (used[j]) continue;
-        final (bx, by) = mercatorPixels(list[j].center, z);
-        if ((ax - bx).abs() < cityMergePx && (ay - by).abs() < cityMergePx) {
-          used[j] = true;
-          group.add(list[j]);
-        }
+        if (used[j] || !near(group[k], j)) continue;
+        used[j] = true;
+        group.add(j);
       }
     }
     if (group.length == 1) {
-      out.add(group.single);
+      out.add(list[i]);
       continue;
     }
-    final labels = [for (final c in group) c.label!]..sort();
-    final items = [for (final c in group) ...c.items];
+    final cs = [for (final g in group) list[g]]
+      // Главный город — где больше объектов, при равенстве — по алфавиту.
+      ..sort((a, b) {
+        final c = b.items.length.compareTo(a.items.length);
+        return c != 0 ? c : a.label!.compareTo(b.label!);
+      });
+    final items = [for (final c in cs) ...c.items];
     out.add(MapCluster(
       items: items,
-      key: 'cities:${labels.join('|')}',
-      label: labels.join(', '),
+      key: 'cities:${([for (final c in cs) c.label!]..sort()).join('|')}',
+      label: cs.first.label,
+      moreCities: cs.length - 1,
       center: _mean([for (final i in items) i.point]),
     ));
   }
   return out;
+}
+
+/// Отступы «показать всё» на карте (лево, верх, право, низ), px — до
+/// центра крайнего маркера: сверху — чипы городов (до 56 px), справа —
+/// кнопки зума (до 56 px), снизу на телефоне — выдвижная панель списка
+/// (~⅓ высоты); плюс радиус кружка (25) и подпись города под ним. На ПК
+/// список слева — отдельной колонкой.
+({double left, double top, double right, double bottom}) mapFitPadding(
+        {required bool wide, required double height}) =>
+    wide
+        ? (left: 56, top: 88, right: 100, bottom: 64)
+        : (left: 40, top: 88, right: 92, bottom: height * 0.34 + 44);
+
+/// Зум, при котором [bounds] целиком помещается в окно [width]×[height]
+/// с отступами [pad] (как CameraFit.bounds у flutter_map), от [mapMinZoom]
+/// до [maxZoom].
+double fitZoom(GeoRect bounds, double width, double height,
+    ({double left, double top, double right, double bottom}) pad,
+    {double maxZoom = 15}) {
+  final (x0, y0) = mercatorPixels(GeoPoint(bounds.north, bounds.west), 0);
+  final (x1, y1) = mercatorPixels(GeoPoint(bounds.south, bounds.east), 0);
+  final w = math.max(1.0, width - pad.left - pad.right);
+  final h = math.max(1.0, height - pad.top - pad.bottom);
+  final sx = w / math.max(1e-9, (x1 - x0).abs());
+  final sy = h / math.max(1e-9, (y1 - y0).abs());
+  final z = math.log(math.min(sx, sy)) / math.ln2;
+  return z.clamp(mapMinZoom, maxZoom).toDouble();
 }

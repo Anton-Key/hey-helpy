@@ -235,19 +235,65 @@ void main() {
     });
   });
 
-  test('clusterMap: близкие города на мелком масштабе — один кластер', () {
+  test('clusterMap: города вплотную — один кластер «Белград +1»', () {
     const bg =
         MapItem(id: 'b', point: GeoPoint(44.80, 20.45), value: 'Белград');
+    const bg2 =
+        MapItem(id: 'b2', point: GeoPoint(44.81, 20.46), value: 'Белград');
     const ist =
         MapItem(id: 'i', point: GeoPoint(41.08, 29.01), value: 'Стамбул');
     const bj = MapItem(id: 'p', point: GeoPoint(39.90, 116.46), value: 'Пекин');
     String city(String v) => v;
-    final far = clusterMap([bg, ist, bj], 1, cityOf: city);
-    final merged = far.firstWhere((c) => c.items.length == 2);
-    expect(merged.label, 'Белград, Стамбул');
+    final far = clusterMap([ist, bg, bg2, bj], 1, cityOf: city);
+    final merged = far.firstWhere((c) => c.items.length == 3);
+    // Главный — где больше объектов.
+    expect(merged.label, 'Белград');
+    expect(merged.moreCities, 1);
     expect(far.firstWhere((c) => c.label == 'Пекин').items.single.id, 'p');
     // Ближе — города отдельно.
     final near = clusterMap([bg, ist, bj], 5, cityOf: city);
     expect(near.map((c) => c.label).toSet(), {'Белград', 'Стамбул', 'Пекин'});
+    expect(near.every((c) => c.moreCities == 0), isTrue);
+  });
+
+  group('Весь мир на телефоне (шаг 13e)', () {
+    // Города демо-объектов (demo_history.sql), по одному объекту.
+    const cities = {
+      'Белград': GeoPoint(44.80, 20.45),
+      'Москва': GeoPoint(55.73, 37.50),
+      'Стамбул': GeoPoint(41.05, 29.00),
+      'Дубай': GeoPoint(25.18, 55.26),
+      'Абиджан': GeoPoint(5.32, -4.02),
+      'Шэньчжэнь': GeoPoint(22.54, 114.05),
+      'Пекин': GeoPoint(39.90, 116.46),
+    };
+    final items = [
+      for (final e in cities.entries)
+        MapItem(id: e.key, point: e.value, value: e.key),
+    ];
+    final bounds = boundsOf(cities.values)!;
+
+    // Высота карты: окно минус шапка (~135) и нижнее меню (56).
+    for (final (w, h) in [(360.0, 590.0), (412.0, 725.0)]) {
+      test('$w px: масштаб «показать всё» и не меньше 5 отдельных городов', () {
+        final pad = mapFitPadding(wide: false, height: h);
+        final z = fitZoom(bounds, w, h, pad);
+        expect(z, greaterThan(1.3), reason: 'мир виден крупнее минимального');
+        final c = clusterMap(items, z, cityOf: (String v) => v);
+        expect(c.length, greaterThanOrEqualTo(5),
+            reason: 'зум ${z.toStringAsFixed(2)}: ${c.map((x) => x.label)}');
+        // Все точки — внутри окна с отступами.
+        final (x0, y0) = mercatorPixels(GeoPoint(bounds.north, bounds.west), z);
+        final (x1, y1) = mercatorPixels(GeoPoint(bounds.south, bounds.east), z);
+        expect(x1 - x0, lessThanOrEqualTo(w - pad.left - pad.right + 0.5));
+        expect(y1 - y0, lessThanOrEqualTo(h - pad.top - pad.bottom + 0.5));
+      });
+    }
+
+    test('отступы: на телефоне снизу — место под панель списка', () {
+      final p = mapFitPadding(wide: false, height: 800);
+      expect(p.bottom, closeTo(272 + 44, 0.1));
+      expect(mapFitPadding(wide: true, height: 800).bottom, 64);
+    });
   });
 }

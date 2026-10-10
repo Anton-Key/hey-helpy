@@ -29,6 +29,8 @@
 --     регион у всех 20 объектов, паспорт оборудования 701–720 и ещё 15 единиц
 --     721–735, номера и области помещений на схемах (5d), планы ППР 801–808,
 --     задачи периодов 258–276 (266 и 270 просрочены), 234 и 241 — задачи планов.
+--   • шаг 17 (блок 5f, если применена 0016): бригады «Пекин» и «Шэньчжэнь»
+--     подрядчика Huaxin FM (950–951) с зонами по городу (970–971).
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
 -- и миграций 0001–0015. Подробно: docs/DEMO_SETUP.md, шаг 4.
@@ -1131,6 +1133,31 @@ begin
     cross join lateral jsonb_array_elements(p.checklist) with ordinality as e(item, ord)
    where w.company_id = c_company and w.plan_id is not null
      and w.id::text ~ '^de300000-0000-4000-8000-000000000[12][0-9]{2}$';
+
+  -- 5f. Шаг 17 (миграция 0016, если применена): бригады подрядчика
+  --     «Huaxin FM» (509) — «Пекин» (950) и «Шэньчжэнь» (951) с зонами
+  --     «город Пекин» (970) и «город Шэньчжэнь» (971). Исполнителей у
+  --     региональных подрядчиков в демо нет — состав бригад пустой (его
+  --     можно задать в карточке подрядчика). Зоны менеджеров демо НЕ задаются:
+  --     демо-менеджер видит всю компанию (на нём идёт показ).
+  if to_regclass('public.crews') is not null then
+    delete from public.crews
+     where contractor_id = 'de300000-0000-4000-8000-000000000509'
+       and id not in ('de300000-0000-4000-8000-000000000950', 'de300000-0000-4000-8000-000000000951')
+       and public.norm_name(name) in ('пекин', 'шэньчжэнь');
+    insert into public.crews (id, company_id, contractor_id, name) values
+      ('de300000-0000-4000-8000-000000000950', c_company, 'de300000-0000-4000-8000-000000000509', 'Пекин'),
+      ('de300000-0000-4000-8000-000000000951', c_company, 'de300000-0000-4000-8000-000000000509', 'Шэньчжэнь')
+    on conflict (id) do update set company_id = excluded.company_id,
+      contractor_id = excluded.contractor_id, name = excluded.name;
+    insert into public.crew_zones (id, company_id, crew_id, layer_ids, scope_kind, scope_ref) values
+      ('de300000-0000-4000-8000-000000000970', c_company, 'de300000-0000-4000-8000-000000000950', '{}', 'city', 'Пекин'),
+      ('de300000-0000-4000-8000-000000000971', c_company, 'de300000-0000-4000-8000-000000000951', '{}', 'city', 'Шэньчжэнь')
+    on conflict (id) do update set company_id = excluded.company_id, crew_id = excluded.crew_id,
+      layer_ids = excluded.layer_ids, scope_kind = excluded.scope_kind, scope_ref = excluded.scope_ref;
+  else
+    raise notice 'Миграция 0016 не применена — бригады шага 17 пропущены.';
+  end if;
 
   -- 6. Визиты
   -- Колонки: vn — номер (часть id); n — заявка; off — минут от начала работы

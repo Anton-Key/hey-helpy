@@ -132,3 +132,61 @@ end $$;
 
 select t.make_company(1);
 select t.make_company(2);
+
+-- ---------------------------------------------------------------------
+-- Шаг 17 (0016): зоны менеджеров и бригады — для access_zones.sql и
+-- tenant_isolation.sql (у компании 2 те же строки).
+--   104 — менеджер с зоной «Климат + Сантехника · объект 010 (Москва)»;
+--   105 — менеджер с зоной «регион Азия» (Пекин 011, Шэньчжэнь 012);
+--   106 — исполнитель «ЭлектроПро» (032) в бригаде «Пекин» (зона — город Пекин);
+--   107 — исполнитель «ЭлектроПро» без бригады.
+-- ---------------------------------------------------------------------
+create or replace function t.make_company17(k int) returns void
+language plpgsql as $$
+declare
+  c uuid := t.id(k, 1);
+  climate uuid := (select id from public.layers where company_id = t.id(k, 1) and name = 'Климат');
+  elec    uuid := (select id from public.layers where company_id = t.id(k, 1) and name = 'Электрика');
+  plumb   uuid := (select id from public.layers where company_id = t.id(k, 1) and name = 'Сантехника');
+  sec     uuid := (select id from public.layers where company_id = t.id(k, 1) and name = 'Системы безопасности');
+  u record;
+begin
+  for u in select * from (values (104, 'manager'), (105, 'manager'), (106, 'executor'), (107, 'executor'))
+           as v(n, role) loop
+    insert into auth.users(id, email) values (t.id(k, u.n), format('u%s_%s@example.com', k, u.n));
+    update public.profiles set company_id = c, role = u.role where id = t.id(k, u.n);
+  end loop;
+
+  insert into public.contractors(id, company_id, org_name) values
+    (t.id(k, 33), c, 'СантехСервис'), (t.id(k, 34), c, 'Охрана-Сервис');
+  insert into public.contractor_layers(id, contractor_id, layer_id, object_id) values
+    (t.id(k, 43), t.id(k, 33), plumb, t.id(k, 10)),
+    (t.id(k, 44), t.id(k, 34), sec, t.id(k, 10));
+  insert into public.executors(id, profile_id, contractor_id) values
+    (t.id(k, 52), t.id(k, 106), t.id(k, 32)),
+    (t.id(k, 53), t.id(k, 107), t.id(k, 32));
+
+  insert into public.assets(id, location_id, name, layer_id) values
+    (t.id(k, 704), t.id(k, 21), 'Щит переговорной', elec),
+    (t.id(k, 705), t.id(k, 21), 'Датчик дыма', sec);
+
+  insert into public.work_orders(id, company_id, object_id, location_id, asset_id, layer_id, title, status,
+                                 created_by, assigned_contractor_id) values
+    (t.id(k, 103), c, t.id(k, 10), t.id(k, 21), t.id(k, 704), elec,  'Искрит щит',        'assigned', t.id(k, 100), t.id(k, 32)),
+    (t.id(k, 104), c, t.id(k, 10), t.id(k, 21), t.id(k, 705), sec,   'Сработал датчик',   'assigned', t.id(k, 100), t.id(k, 34)),
+    (t.id(k, 105), c, t.id(k, 10), t.id(k, 21), null,         plumb, 'Течёт кран',        'assigned', t.id(k, 100), t.id(k, 33)),
+    (t.id(k, 106), c, t.id(k, 11), t.id(k, 22), null,         elec,  'Нет света (Пекин)', 'assigned', t.id(k, 100), t.id(k, 32)),
+    (t.id(k, 107), c, t.id(k, 12), t.id(k, 23), null,         elec,  'Нет света (Шэньчжэнь)', 'assigned', t.id(k, 100), t.id(k, 32));
+
+  insert into public.crews(id, company_id, contractor_id, name) values (t.id(k, 951), c, t.id(k, 32), 'Пекин');
+  insert into public.crew_members(crew_id, executor_id, company_id) values (t.id(k, 951), t.id(k, 52), c);
+  insert into public.crew_zones(id, company_id, crew_id, scope_kind, scope_ref)
+  values (t.id(k, 961), c, t.id(k, 951), 'city', 'Пекин');
+
+  insert into public.access_zones(id, company_id, profile_id, layer_ids, scope_kind, scope_ref) values
+    (t.id(k, 971), c, t.id(k, 104), array[climate, plumb], 'object', t.id(k, 10)::text),
+    (t.id(k, 972), c, t.id(k, 105), '{}', 'region', t.id(k, 902)::text);
+end $$;
+
+select t.make_company17(1);
+select t.make_company17(2);

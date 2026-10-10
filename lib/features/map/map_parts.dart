@@ -203,8 +203,14 @@ class ObjectInfoCard extends StatelessWidget {
       required this.onOrders,
       required this.onCreate,
       required this.onMove,
-      required this.onClose});
+      required this.onClose,
+      this.floors = 0,
+      this.onFloors});
   final Obj object;
+
+  /// Этажей у объекта; > 0 — строка «Этажи · N» ([onFloors]).
+  final int floors;
+  final VoidCallback? onFloors;
   final ObjectStats stats;
   final bool isManager;
   final VoidCallback onOpen;
@@ -313,6 +319,13 @@ class ObjectInfoCard extends StatelessWidget {
         const SizedBox(height: AppSpace.s),
         AppButton.tinted(
             label: l.mapCreateHere, icon: AppIcons.add, onPressed: onCreate),
+        if (floors > 0 && onFloors != null) ...[
+          const SizedBox(height: AppSpace.s),
+          AppButton.tinted(
+              label: l.floorsTitle(floors),
+              icon: AppIcons.floors,
+              onPressed: onFloors),
+        ],
         if (isManager)
           Padding(
             padding: const EdgeInsetsDirectional.only(top: AppSpace.xs),

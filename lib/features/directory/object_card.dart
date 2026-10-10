@@ -5,6 +5,9 @@ import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
 import '../../l10n/app_localizations.dart';
+import '../floors/floor_models.dart';
+import '../floors/floor_repository.dart';
+import '../floors/floors_section.dart';
 import '../requests/order_list.dart';
 import 'contractor_card.dart';
 import 'city.dart';
@@ -29,6 +32,9 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
   List<Place> _places = const [];
   List<Binding> _bindings = const [];
   List<Map<String, dynamic>> _recent = const [];
+  List<Floor> _floors = const [];
+  List<PlanItem> _planItems = const [];
+  List<PlanOrder> _openOrders = const [];
   bool _loading = true;
   bool _failed = false;
 
@@ -46,11 +52,16 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
     try {
       final id = widget.object.id;
       final ctx = _ctx ?? await OrderContext.load();
+      final floors = FloorRepo();
       final results = await Future.wait<Object?>([
         _dir.object(id),
         _dir.placesOf(id),
         _dir.bindingsOfObject(id),
         ctx.repo.listBy(objectId: id, limit: 5),
+        // Этажи (0013): если что-то не так — карточка всё равно открывается.
+        floors.floorsOf(id).catchError((_) => const <Floor>[]),
+        floors.itemsOf(id).catchError((_) => const <PlanItem>[]),
+        floors.openOrdersOf(id).catchError((_) => const <PlanOrder>[]),
       ]);
       if (!mounted) return;
       setState(() {
@@ -59,6 +70,9 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
         _places = results[1] as List<Place>;
         _bindings = results[2] as List<Binding>;
         _recent = results[3] as List<Map<String, dynamic>>;
+        _floors = results[4] as List<Floor>;
+        _planItems = results[5] as List<PlanItem>;
+        _openOrders = results[6] as List<PlanOrder>;
         _loading = false;
       });
     } catch (e) {
@@ -119,6 +133,25 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
     );
   }
 
+  /// «3 этаж», «3 этаж · не на плане» или «не на плане».
+  String _placeFloorTag(AppLocalizations l, String placeId) {
+    PlanItem? item;
+    for (final i in _planItems) {
+      if (i.isPlace && i.id == placeId) item = i;
+    }
+    String? floor;
+    for (final f in _floors) {
+      if (f.id == item?.floorId) floor = f.name;
+    }
+    // Этаж уже в названии («Холл, 1 этаж») — не повторяем.
+    final named = floor != null &&
+        (item?.name ?? '').toLowerCase().contains(floor.toLowerCase());
+    return [
+      if (floor != null && !named) floor,
+      if (item == null || !item.placed) l.placeNotOnPlan,
+    ].join(' · ');
+  }
+
   List<Widget> _content(AppLocalizations l) {
     final ctx = _ctx!;
     final locale = context.localeCode;
@@ -161,7 +194,18 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
               icon: AppIcons.placeEdit, label: l.cardEditGeo, onPressed: _edit),
         ),
 
-      // Помещения
+      // Этажи и планы (шаг 14b)
+      FloorsSection(
+        objectId: _obj.id,
+        companyId: ctx.companyId,
+        isManager: ctx.isManager,
+        floors: _floors,
+        items: _planItems,
+        orders: _openOrders,
+        onChanged: _load,
+      ),
+
+      // Помещения: у каждого — этаж («3 этаж») или «не на плане».
       AppGroup(header: l.cardPlacesTitle, children: [
         if (_places.isEmpty)
           AppRow(title: l.cardPlacesEmpty, titleStyle: AppText.callout)
@@ -170,6 +214,7 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
             AppRow(
               leading: const LeadingIcon.neutral(AppIcons.room),
               title: p.name,
+              subtitle: _placeFloorTag(l, p.id),
               onTap: () => Navigator.push(
                   context,
                   appRoute(

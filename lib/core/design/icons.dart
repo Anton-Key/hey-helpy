@@ -89,6 +89,32 @@ class AppIcons {
   static const zoomOut = LucideIcons.zoomOut300;
   static const fit = LucideIcons.maximize300;
 
+  // Планы этажей
+  static const floors = LucideIcons.layers300;
+  static const plan = LucideIcons.map300;
+  static const imageAdd = LucideIcons.imagePlus300;
+  static const image = LucideIcons.image300;
+  static const imageOff = LucideIcons.imageOff300;
+  static const moveUp = LucideIcons.arrowUp300;
+  static const moveDown = LucideIcons.arrowDown300;
+  static const move = LucideIcons.move300;
+  static const list2 = LucideIcons.listFilter300;
+
+  // Оборудование на плане (assets.meta.kind, иначе — по категории)
+  static const eqAirCon = LucideIcons.airVent300;
+  static const eqFan = LucideIcons.fan300;
+  static const eqPanel = LucideIcons.zap300;
+  static const eqLight = LucideIcons.lightbulb300;
+  static const eqSmoke = LucideIcons.alarmSmoke300;
+  static const eqUps = LucideIcons.batteryCharging300;
+  static const eqSensor = LucideIcons.thermometer300;
+  static const eqCamera = LucideIcons.cctv300;
+  static const eqServer = LucideIcons.server300;
+  static const eqWater = LucideIcons.droplets300;
+  static const eqFurniture = LucideIcons.armchair300;
+  static const eqInfra = LucideIcons.cable300;
+  static const eqOther = LucideIcons.box300;
+
   // Активная вкладка нижнего меню — те же значки с линией толще (штрих 2):
   // Lucide не делает залитых значков, поэтому активную вкладку выделяют
   // толщина линии и цвет.

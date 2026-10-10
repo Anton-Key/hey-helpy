@@ -13,6 +13,10 @@ import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
 import '../../core/scrolling.dart';
 import '../../l10n/app_localizations.dart';
+import '../floors/floor_models.dart';
+import '../floors/floor_repository.dart';
+import '../floors/floors_section.dart';
+import '../floors/plan_image.dart';
 import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../directory/object_card.dart';
@@ -91,6 +95,9 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
   bool _wide = true;
 
   Map<String, ObjectStats> _stats = const {};
+
+  /// Этажи по объектам (строка «Этажи · N» в карточке).
+  Map<String, List<Floor>> _floors = const {};
   bool _ordersFailed = false;
 
   String? _selectedId;
@@ -149,7 +156,51 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
     return false;
   }
 
+  Future<void> _loadFloors() async {
+    try {
+      final all = await FloorRepo().allFloors();
+      if (!mounted) return;
+      final by = <String, List<Floor>>{};
+      for (final f in all) {
+        by.putIfAbsent(f.objectId, () => []).add(f);
+      }
+      setState(() => _floors = by);
+    } catch (e) {
+      debugPrint('floors: ${e.runtimeType}');
+    }
+  }
+
+  /// «Этажи · N»: один этаж — сразу план, несколько — выбор этажа.
+  Future<void> _openFloors(Obj o) async {
+    final floors = _floors[o.id] ?? const <Floor>[];
+    if (floors.isEmpty) return;
+    var floor = floors.first;
+    if (floors.length > 1) {
+      final picked = await showAppSheet<Floor>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpace.screen, 0, AppSpace.screen, AppSpace.l),
+            child: AppGroup(header: objectDisplayName(o), children: [
+              for (final f in floors)
+                AppRow(
+                    leading: PlanThumb(floor: f, width: 48),
+                    title: f.name,
+                    onTap: () => Navigator.pop(ctx, f)),
+            ]),
+          ),
+        ),
+      );
+      if (picked == null || !mounted) return;
+      floor = picked;
+    }
+    await openFloorPlan(context, o.id, floor.id);
+  }
+
   Future<void> _loadStats() async {
+    _loadFloors();
     try {
       final rows = await _requests.mapOrders();
       if (!mounted) return;
@@ -665,6 +716,8 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
         onCreate: () => _createHere(o),
         onMove: () => _startPlacing(o),
         onClose: _clearSelection,
+        floors: _floors[o.id]?.length ?? 0,
+        onFloors: () => _openFloors(o),
       );
 
   Widget _mapStack(BuildContext context) {

@@ -9,6 +9,9 @@ import '../../core/location.dart';
 import '../../core/paging.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import '../floors/floor_models.dart';
+import '../floors/floor_repository.dart';
+import '../floors/order_plan_link.dart';
 import '../photos/photo_capture.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
@@ -117,6 +120,7 @@ class RequestsRepo {
       String? objectId,
       required bool recurring,
       String? locationId,
+      String? assetId,
       String inputChannel = 'button'}) async {
     // Слой передаём явно: тогда назначение подрядчика не зависит от языка интерфейса.
     await _c.from('work_orders').insert({
@@ -130,6 +134,7 @@ class RequestsRepo {
       'input_channel': inputChannel,
       'object_id': objectId,
       'location_id': locationId,
+      if (assetId != null) 'asset_id': assetId,
       'recurrence': recurring ? {'kind': 'regular'} : null,
       'created_by': uid,
     });
@@ -141,9 +146,12 @@ class RequestsRepo {
       Layer? layer,
       required String priority,
       String? objectId,
-      required bool recurring}) async {
+      required bool recurring,
+      bool setLocation = false,
+      String? locationId}) async {
     await _c.from('work_orders').update({
       'title': title,
+      if (setLocation) 'location_id': locationId,
       'description': description,
       'work_type': layer?.name,
       'layer_id': layer?.id,
@@ -686,6 +694,12 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
                     fontWeight: overdue ? FontWeight.w600 : null)),
           ),
       ]),
+      // «Показать на плане» — если у помещения или оборудования есть точка.
+      OrderPlanLink(
+          orderId: widget.order.id,
+          objectId: objId,
+          locationId: d['location_id'] as String?,
+          assetId: d['asset_id'] as String?),
       AppGroup(children: [
         AppRow(
             title: l.fieldKind,
@@ -918,6 +932,11 @@ Future<bool?> showOrderForm({
 
   /// Объект новой заявки заранее (кнопка «Создать заявку здесь» на карте).
   String? initialObjectId,
+
+  /// Помещение и оборудование заранее («Создать заявку здесь» на плане).
+  String? initialLocationId,
+  String? initialAssetId,
+  String? initialAssetName,
 }) async {
   // Виды работ = слои компании из базы; ничего не зашито в приложение.
   List<Layer> layers = const [];
@@ -947,6 +966,12 @@ Future<bool?> showOrderForm({
           ? initialObjectId
           : null;
   bool recurring = isEdit ? existing['recurrence'] != null : false;
+  String? locationId = isEdit
+      ? existing['location_id'] as String?
+      : (objectId == null ? null : initialLocationId);
+  final initialLocation = locationId;
+  // Оборудование — только если не сменили объект и помещение.
+  final assetId = isEdit ? null : initialAssetId;
 
   const priorities = ['low', 'normal', 'high', 'critical'];
   final l = context.l10n;
@@ -966,7 +991,9 @@ Future<bool?> showOrderForm({
             layer: layer,
             priority: priority,
             objectId: objectId,
-            recurring: recurring);
+            recurring: recurring,
+            setLocation: locationId != initialLocation,
+            locationId: locationId);
       } else {
         await repo.create(
             companyId: companyId,
@@ -975,7 +1002,9 @@ Future<bool?> showOrderForm({
             layer: layer,
             priority: priority,
             objectId: objectId,
-            recurring: recurring);
+            recurring: recurring,
+            locationId: locationId,
+            assetId: locationId == initialLocation ? assetId : null);
       }
       if (ctx.mounted) Navigator.pop(ctx, true);
     } catch (_) {
@@ -1025,8 +1054,28 @@ Future<bool?> showOrderForm({
                                   child: Text(objectDisplayName(o),
                                       style: AppText.body))
                         ],
-                        onChanged: (v) => setSt(() => objectId = v)),
+                        onChanged: (v) => setSt(() {
+                              if (v != objectId) locationId = null;
+                              objectId = v;
+                            })),
                   ]),
+                  // Помещение выбранного объекта — с этажом («Лобби · 1 этаж»).
+                  if (objectId != null)
+                    AppGroup(header: l.formPlace, children: [
+                      PlaceField(
+                          key: ValueKey(objectId),
+                          objectId: objectId!,
+                          value: locationId,
+                          onChanged: (v) => setSt(() => locationId = v)),
+                    ]),
+                  if (assetId != null &&
+                      initialAssetName != null &&
+                      locationId == initialLocation)
+                    AppGroup(header: l.formAsset, children: [
+                      AppRow(
+                          leading: const LeadingIcon(AppIcons.wrench),
+                          title: initialAssetName),
+                    ]),
                   SectionHeader(l.fieldWorkType),
                   if (layersFailed)
                     Padding(
@@ -1087,6 +1136,74 @@ Widget _inp(TextEditingController c, String hint, {int lines = 1}) => TextField(
       enabledBorder: InputBorder.none,
       focusedBorder: InputBorder.none,
     ));
+
+/// Выбор помещения объекта в форме заявки: «Без помещения» и помещения
+/// с этажом («Переговорная · 3 этаж»), этаж — из планов этажей (0013).
+class PlaceField extends StatefulWidget {
+  const PlaceField(
+      {super.key,
+      required this.objectId,
+      required this.value,
+      required this.onChanged});
+  final String objectId;
+  final String? value;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  State<PlaceField> createState() => _PlaceFieldState();
+}
+
+class _PlaceFieldState extends State<PlaceField> {
+  List<(String, String)>? _places;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final repo = FloorRepo();
+      final r = await Future.wait<Object>([
+        repo.itemsOf(widget.objectId),
+        repo.floorsOf(widget.objectId),
+      ]);
+      final floors = {for (final f in r[1] as List<Floor>) f.id: f.name};
+      final items = [
+        for (final i in r[0] as List<PlanItem>)
+          if (i.isPlace)
+            (i.id, [i.name, if (floors[i.floorId] case final f?) f].join(' · '))
+      ];
+      if (mounted) setState(() => _places = items);
+    } catch (e) {
+      debugPrint('PlaceField: ${e.runtimeType}');
+      if (mounted) setState(() => _places = const []);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final places = _places;
+    if (places == null) {
+      return const Padding(
+          padding: EdgeInsets.all(AppSpace.m), child: AppLoader());
+    }
+    final value = places.any((p) => p.$1 == widget.value) ? widget.value : null;
+    return _Dropdown(
+      value: value ?? '',
+      hint: l.formChoosePlace,
+      items: [
+        DropdownMenuItem(
+            value: '', child: Text(l.formChoosePlace, style: AppText.body)),
+        for (final (id, label) in places)
+          DropdownMenuItem(value: id, child: Text(label, style: AppText.body)),
+      ],
+      onChanged: (v) => widget.onChanged(v == null || v.isEmpty ? null : v),
+    );
+  }
+}
 
 class _Dropdown extends StatelessWidget {
   const _Dropdown(

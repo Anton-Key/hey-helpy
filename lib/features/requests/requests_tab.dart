@@ -455,7 +455,11 @@ class _RequestsTabState extends State<RequestsTab> {
       // «Москва · Офис 3 · Лобби · Климат» — объект всегда с городом.
       final place = [
         _objName(l, w.objectId),
-        if (w.placeName != null && w.placeName!.isNotEmpty) w.placeName!,
+        if (w.placeName != null && w.placeName!.isNotEmpty)
+          placeWithFloor(
+              w.placeName!,
+              w.floorName,
+              w.floorLevel == null ? null : l.floorShort(w.floorLevel!)),
       ].join(' · ');
       final overdue = w.isOverdue(now);
       final due = _filter.sort == OrderSort.due && w.dueAt != null

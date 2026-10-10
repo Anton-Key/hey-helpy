@@ -1969,4 +1969,404 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get sortShortObject => 'Объект';
+
+  @override
+  String get floorsHeader => 'Этажи';
+
+  @override
+  String floorsTitle(int count) {
+    return 'Этажи · $count';
+  }
+
+  @override
+  String get floorsEmpty => 'Этажей пока нет';
+
+  @override
+  String get floorsEmptyManager =>
+      'Добавьте этаж и загрузите план — на нём можно будет отметить помещения и оборудование.';
+
+  @override
+  String get floorAdd => 'Этаж';
+
+  @override
+  String get floorAddLong => 'Добавить этаж';
+
+  @override
+  String floorPlacesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count помещений',
+      few: '$count помещения',
+      one: '$count помещение',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String floorOpenOrders(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count открытых заявок',
+      few: '$count открытые заявки',
+      one: '$count открытая заявка',
+      zero: 'нет открытых заявок',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get floorNoPlan => 'Без плана';
+
+  @override
+  String get floorFormNew => 'Новый этаж';
+
+  @override
+  String get floorFormEdit => 'Этаж';
+
+  @override
+  String get floorName => 'Название';
+
+  @override
+  String get floorNameHint => 'Например, 3 этаж или Парковка';
+
+  @override
+  String get floorLevel => 'Номер этажа';
+
+  @override
+  String get floorLevelHint => '−1, −2 — подземные этажи';
+
+  @override
+  String get floorPlanImage => 'Картинка плана';
+
+  @override
+  String get floorPlanPick => 'Выбрать файл';
+
+  @override
+  String get floorPlanOptional => 'Необязательно — план можно загрузить позже.';
+
+  @override
+  String get floorNameEmpty => 'Введите название этажа';
+
+  @override
+  String get floorNameTooLong => 'Название — не длиннее 60 символов';
+
+  @override
+  String get floorNameTaken => 'Этаж с таким названием уже есть';
+
+  @override
+  String get floorLevelInvalid =>
+      'Номер этажа — целое число, например 3 или −1';
+
+  @override
+  String get floorRename => 'Переименовать';
+
+  @override
+  String get floorUploadPlan => 'Загрузить план';
+
+  @override
+  String get floorReplacePlan => 'Заменить план';
+
+  @override
+  String get floorRemovePlan => 'Убрать план';
+
+  @override
+  String get floorMoveUp => 'Выше';
+
+  @override
+  String get floorMoveDown => 'Ниже';
+
+  @override
+  String get floorDelete => 'Удалить этаж';
+
+  @override
+  String floorDeleteConfirm(String name) {
+    return 'Удалить этаж «$name»?';
+  }
+
+  @override
+  String get floorDeleteHint =>
+      'Помещения и оборудование останутся, но уйдут с плана.';
+
+  @override
+  String get floorDeleted => 'Этаж удалён';
+
+  @override
+  String floorAddPlace(String name) {
+    return 'Добавить помещение на этаж «$name»';
+  }
+
+  @override
+  String floorMenu(String name) {
+    return 'Действия с этажом «$name»';
+  }
+
+  @override
+  String get planTooBig =>
+      'Файл больше 15 МБ. Уменьшите картинку или сохраните её в JPEG.';
+
+  @override
+  String get planPdf =>
+      'PDF не подходит: сохраните нужную страницу как PNG или сделайте снимок экрана.';
+
+  @override
+  String get planBadType => 'Нужна картинка PNG, JPEG или WebP.';
+
+  @override
+  String get planUnreadable =>
+      'Не удалось прочитать картинку. Попробуйте другой файл.';
+
+  @override
+  String get planNoRights =>
+      'Менять этажи, планы и маркеры может только менеджер.';
+
+  @override
+  String get planUploadFailed =>
+      'Не удалось загрузить план. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get planUploaded => 'План загружен';
+
+  @override
+  String get planRemoved => 'План убран';
+
+  @override
+  String get placeNotOnPlan => 'не на плане';
+
+  @override
+  String get infoFloorsTitle => 'Этажи и планы';
+
+  @override
+  String get infoFloors1 =>
+      'Этаж — часть объекта. У этажа может быть картинка плана.';
+
+  @override
+  String get infoFloors2 =>
+      'На плане отмечают помещения и оборудование — исполнитель быстрее найдёт место.';
+
+  @override
+  String get infoFloors3 =>
+      'Добавлять этажи, загружать планы и расставлять маркеры может менеджер. Остальные видят план только для чтения.';
+
+  @override
+  String get infoUploadTitle => 'Загрузка плана';
+
+  @override
+  String get infoUpload1 => 'Подходят картинки PNG, JPEG и WebP до 15 МБ.';
+
+  @override
+  String get infoUpload2 =>
+      'PDF: сохраните нужную страницу как PNG или сделайте снимок экрана.';
+
+  @override
+  String get infoUpload3 => 'План видят только сотрудники вашей компании.';
+
+  @override
+  String get planTitle => 'План этажа';
+
+  @override
+  String get planEdit => 'Редактировать';
+
+  @override
+  String get planEditMode => 'Режим расстановки';
+
+  @override
+  String get planDone => 'Готово';
+
+  @override
+  String get planFilterAll => 'Всё';
+
+  @override
+  String get planFilterPlaces => 'Помещения';
+
+  @override
+  String get planFilterAssets => 'Оборудование';
+
+  @override
+  String get planFilterWithOrders => 'С заявками';
+
+  @override
+  String planOnPlan(int count) {
+    return 'На плане · $count';
+  }
+
+  @override
+  String planUnplaced(int count) {
+    return 'Не размещены · $count';
+  }
+
+  @override
+  String get planSearch => 'Поиск по помещениям и оборудованию';
+
+  @override
+  String get planNotLoaded => 'План не загружен';
+
+  @override
+  String get planFit => 'Вписать план';
+
+  @override
+  String get planList => 'Список';
+
+  @override
+  String get planOpenOrders => 'Открытые заявки';
+
+  @override
+  String get planNoOpenOrders => 'Открытых заявок нет';
+
+  @override
+  String get planCreateHere => 'Создать заявку здесь';
+
+  @override
+  String get planAllPlaceOrders => 'Все заявки помещения';
+
+  @override
+  String get planAssetInventory => 'Инвентарный номер';
+
+  @override
+  String get planAssetCategory => 'Категория';
+
+  @override
+  String get planAssetPlace => 'Помещение';
+
+  @override
+  String assetCategory(String code) {
+    String _temp0 = intl.Intl.selectLogic(
+      code,
+      {
+        'equipment': 'Оборудование',
+        'furniture': 'Мебель',
+        'infra': 'Инженерные сети',
+        'other': 'Другое',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get planNewPlaceHere => 'Новое помещение здесь';
+
+  @override
+  String get planNewAssetHere => 'Новое оборудование здесь';
+
+  @override
+  String get planPutHere => 'Поставить сюда…';
+
+  @override
+  String get planRename => 'Переименовать';
+
+  @override
+  String get planRemoveFromPlan => 'Убрать с плана';
+
+  @override
+  String get planDelete => 'Удалить';
+
+  @override
+  String planDeleteConfirm(String name) {
+    return 'Удалить «$name»?';
+  }
+
+  @override
+  String planDeleteHasOrders(String name) {
+    return 'У «$name» есть заявки — удалить нельзя. Можно убрать с плана.';
+  }
+
+  @override
+  String get planSaved => 'Сохранено';
+
+  @override
+  String get planUndo => 'Отменить';
+
+  @override
+  String get planNewPlace => 'Новое помещение';
+
+  @override
+  String get planNewAsset => 'Новое оборудование';
+
+  @override
+  String get planNameLabel => 'Название';
+
+  @override
+  String get planNameRequired => 'Введите название';
+
+  @override
+  String get planInventoryLabel => 'Инвентарный номер (необязательно)';
+
+  @override
+  String get planPickUnplaced => 'Что поставить сюда';
+
+  @override
+  String get planNothingUnplaced => 'Всё уже на плане';
+
+  @override
+  String get planNotFound => 'Этаж не найден или нет доступа.';
+
+  @override
+  String get planNoPlaces => 'Сначала добавьте помещение на этот этаж';
+
+  @override
+  String get planFloorPicker => 'Этаж';
+
+  @override
+  String get planMarkerHint => 'Нажмите на маркер — заявки и действия';
+
+  @override
+  String get infoPlanTitle => 'Что значат маркеры';
+
+  @override
+  String get infoPlan1 =>
+      'Кружок — помещение, число — его открытые заявки. Квадрат — оборудование.';
+
+  @override
+  String get infoPlan2 =>
+      'Красный — есть просроченные или критические заявки, оранжевый — срочные или в работе.';
+
+  @override
+  String get infoPlan3 =>
+      'Бирюзовый — есть открытые заявки, серый — открытых нет.';
+
+  @override
+  String get infoEditTitle => 'Режим расстановки';
+
+  @override
+  String get infoEdit1 =>
+      'Перетащите маркер, чтобы передвинуть (на телефоне — долгое нажатие). Сохраняется сразу, можно «Отменить».';
+
+  @override
+  String get infoEdit2 =>
+      'Нажмите на пустое место — добавьте помещение или оборудование или поставьте то, что ещё не размещено.';
+
+  @override
+  String get infoEdit3 =>
+      'Нажмите на маркер — переименовать, убрать с плана или удалить.';
+
+  @override
+  String get orderShowOnPlan => 'Показать на плане';
+
+  @override
+  String planNearby(String floor, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count открытых заявок рядом',
+      few: '$count открытые заявки рядом',
+      one: '$count открытая заявка рядом',
+      zero: 'открытых заявок рядом нет',
+    );
+    return '$floor · $_temp0';
+  }
+
+  @override
+  String floorShort(int level) {
+    return '$level эт.';
+  }
+
+  @override
+  String get formPlace => 'Помещение';
+
+  @override
+  String get formChoosePlace => 'Без помещения';
+
+  @override
+  String get formAsset => 'Оборудование';
 }

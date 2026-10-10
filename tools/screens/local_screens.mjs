@@ -20,12 +20,14 @@ import { tmpdir } from 'node:os';
 import { startLocalBackend } from './local_backend.mjs';
 
 const ROOT = resolve(import.meta.dirname, '../..');
-const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? join(ROOT, 'docs/screens/preview'));
+const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6)
+  ?? join(ROOT, process.argv.includes('--step=17') ? 'docs/screens/preview17' : 'docs/screens/preview'));
 const WEB = join(ROOT, 'build/web_local');
 const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
 const STEP = process.argv.find((a) => a.startsWith('--step='))?.slice(7) ?? '16';
 const PREVIEW_NOTE = `ПРЕДПРОСМОТР: локальная база с миграциями 0001–${STEP === '17' ? '0016' : '0015'} и демо-данными (demo.sql + demo_history.sql), не рабочая база`;
-const USERS = { manager: 'manager@example.com', executor: 'executor@example.com', requester: 'requester@example.com' };
+const USERS = { manager: 'manager@example.com', admin: 'manager@example.com', manager2: 'manager2@example.com',
+  executor: 'executor@example.com', requester: 'requester@example.com' };
 const uuid = (n) => 'de300000-0000-4000-8000-' + String(n).padStart(12, '0');
 
 const backend = await startLocalBackend({ port: 54321 });
@@ -288,6 +290,75 @@ const SCREENS16 = [
   } },
 ];
 
+// ---------------------------------------------------------------------------
+// Экраны шага 17 (--step=17): зона доступа, шаблоны, бригады, вид менеджера
+// с зоной. В локальной базе hh_test17 перед съёмкой — второй менеджер
+// «Менеджер Москва» (manager2@example.com) с зоной «Климат + Сантехника ·
+// город Москва» (только локально; в рабочей базе его заводит владелец).
+// ---------------------------------------------------------------------------
+const PREP17 = `
+insert into auth.users(id, email) values ('d0000000-0000-4000-8000-000000000004', 'manager2@example.com')
+  on conflict do nothing;
+update public.profiles set company_id = '${uuid(1)}', role = 'manager', full_name = 'Менеджер Москва'
+ where id = 'd0000000-0000-4000-8000-000000000004';
+delete from public.access_zones where profile_id = 'd0000000-0000-4000-8000-000000000004';
+insert into public.access_zones(company_id, profile_id, layer_ids, scope_kind, scope_ref)
+select '${uuid(1)}', 'd0000000-0000-4000-8000-000000000004',
+       array(select id from public.layers where company_id = '${uuid(1)}' and name in ('Климат', 'Сантехника') order by sort),
+       'city', 'Москва';
+`;
+
+async function openMembers(page) {
+  await home(page);
+  await profileTab(page).click();
+  await settle(page, 1000);
+  await btn(page, /^Моя компания/).click();
+  await see(page, /Менеджер Москва/).waitFor({ timeout: 20000 });
+  await scrollTo(page, /Менеджер Москва/);
+  await settle(page, 800);
+}
+
+async function openZone(page) {
+  await openMembers(page);
+  await btn(page, /Менеджер Москва/).click();
+  await settle(page, 800);
+  await btn(page, /^Зона доступа/).click();
+  await see(page, /Вся компания/).waitFor({ timeout: 20000 });
+  await settle(page, 1500);
+}
+
+const SCREENS17 = [
+  { key: 'zone', title: 'Сотрудник → «Зона доступа»: правила (системы × места)', role: 'admin', run: openZone },
+  { key: 'zone-templates', title: 'Зона доступа — «Шаблоны»', role: 'admin', run: async (page) => {
+    await openZone(page);
+    await btn(page, /Шаблоны/).click();
+    await settle(page, 1200);
+  } },
+  { key: 'crews', title: 'Карточка подрядчика Huaxin FM → «Бригады»', role: 'admin', run: async (page) => {
+    await home(page);
+    await page.getByRole('button', { name: /^Подрядчики/ }).or(page.getByRole('tab', { name: /^Подрядчики/ }))
+      .or(page.getByText(/^Подрядчики$/)).first().click();
+    await settle(page, 2000);
+    await scrollTo(page, /Huaxin FM/);
+    await btn(page, /^Huaxin FM/).click();
+    await settle(page, 2000);
+    await scrollTo(page, /Бригады|БРИГАДЫ/);
+    await page.mouse.wheel(0, 300);
+    await settle(page, 1000);
+  } },
+  { key: 'restricted-requests', title: 'Менеджер с зоной «Климат, Сантехника · Москва» — заявки', role: 'manager2', run: async (page) => {
+    await home(page);
+    await settle(page, 1500);
+  } },
+  { key: 'restricted-locations', title: 'Менеджер с зоной — «Локации» (только Москва)', role: 'manager2', run: openLocations },
+  { key: 'restricted-contractors', title: 'Менеджер с зоной — подрядчики (только с закреплениями в зоне)', role: 'manager2', run: async (page) => {
+    await home(page);
+    await page.getByRole('button', { name: /^Подрядчики/ }).or(page.getByRole('tab', { name: /^Подрядчики/ }))
+      .or(page.getByText(/^Подрядчики$/)).first().click();
+    await settle(page, 2500);
+  } },
+];
+
 /** PDF отчёта: перехватываем Blob, который веб-версия отдаёт в окно печати. */
 async function capturePdf(page) {
   await home(page);
@@ -316,12 +387,23 @@ async function capturePdf(page) {
   return pdf;
 }
 
-const RUNS = [
+const RUNS = STEP === '17' ? [
+  // После 0016 демо-менеджер — администратор «Демо БЦ» (в компании не было администратора).
+  { role: 'admin', label: 'Администратор', width: 1280, height: 800 },
+  { role: 'admin', label: 'Администратор', width: 412, height: 915 },
+  { role: 'manager2', label: 'Менеджер с зоной', width: 1280, height: 800 },
+  { role: 'manager2', label: 'Менеджер с зоной', width: 412, height: 915 },
+] : [
   { role: 'manager', label: 'Менеджер', width: 1280, height: 800 },
   { role: 'manager', label: 'Менеджер', width: 412, height: 915 },
   { role: 'manager', label: 'Менеджер', width: 360, height: 780, only: ['ppr-list', 'locations-regions'] },
   { role: 'executor', label: 'Исполнитель', width: 412, height: 915, only: ['ppr-list', 'ppr-orders'] },
 ];
+const SCREENS = STEP === '17' ? SCREENS17 : SCREENS16;
+if (STEP === '17') {
+  execFileSync('sudo', ['-u', 'postgres', 'psql', '-X', '-q', '-v', 'ON_ERROR_STOP=1', '-d',
+    process.env.HH_TEST_DB ?? 'hh_test', '-c', PREP17], { stdio: 'inherit' });
+}
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
@@ -348,9 +430,10 @@ try {
       await ctx.close();
       continue;
     }
-    for (const s of SCREENS16) {
+    for (const s of SCREENS) {
       if (ONLY && !s.key.startsWith(ONLY)) continue;
       if (r.only && !r.only.includes(s.key)) continue;
+      if (s.role && s.role !== r.role) continue;
       const name = `${r.role}-${r.width}-${s.key}.png`;
       try {
         await s.run(page);
@@ -364,7 +447,7 @@ try {
       await page.keyboard.press('Escape').catch(() => {});
     }
     // PDF — один раз, у менеджера на ПК.
-    if (r.role === 'manager' && r.width === 1280 && (!ONLY || 'report-pdf'.startsWith(ONLY))) {
+    if (STEP !== '17' && r.role === 'manager' && r.width === 1280 && (!ONLY || 'report-pdf'.startsWith(ONLY))) {
       const name = 'manager-report-pdf-page1.png';
       try {
         const pdf = await capturePdf(page);

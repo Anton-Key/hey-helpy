@@ -297,6 +297,11 @@ const SCREENS16 = [
 // город Москва» (только локально; в рабочей базе его заводит владелец).
 // ---------------------------------------------------------------------------
 const PREP17 = `
+-- Как в рабочей базе после 0016: в «Демо БЦ» без администратора им становится
+-- демо-менеджер (локально демо-данные заливаются уже после миграций).
+update public.profiles set role = 'admin'
+ where id = (select id from auth.users where email = 'manager@example.com')
+   and not exists (select 1 from public.profiles a where a.company_id = '${uuid(1)}' and a.role = 'admin');
 insert into auth.users(id, email) values ('d0000000-0000-4000-8000-000000000004', 'manager2@example.com')
   on conflict do nothing;
 update public.profiles set company_id = '${uuid(1)}', role = 'manager', full_name = 'Менеджер Москва'
@@ -340,7 +345,7 @@ const SCREENS17 = [
       .or(page.getByText(/^Подрядчики$/)).first().click();
     await settle(page, 2000);
     await scrollTo(page, /Huaxin FM/);
-    await btn(page, /^Huaxin FM/).click();
+    await btn(page, /Huaxin FM/).click();
     await settle(page, 2000);
     await scrollTo(page, /Бригады|БРИГАДЫ/);
     await page.mouse.wheel(0, 300);

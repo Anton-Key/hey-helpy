@@ -15,6 +15,32 @@ enum OrderSegment { all, open, overdue }
 /// Тип заявки: разовая или повторяющаяся (work_orders.recurrence).
 enum RecurrenceFilter { once, recurring }
 
+/// Один выбранный фильтр — одна таблетка в строке применённых фильтров и
+/// одна единица в счётчике «Фильтры · N» ([OrderFilter.activeKeys]).
+enum FilterKey {
+  period,
+  status,
+  object,
+  room,
+  contractor,
+  layer,
+  priority,
+  recurrence,
+  channel,
+  photo,
+  returned,
+  mine,
+  toMe,
+}
+
+/// Главные фильтры: на широком экране — таблетками рядом с поиском.
+const kMainFilterKeys = [
+  FilterKey.period,
+  FilterKey.status,
+  FilterKey.object,
+  FilterKey.contractor,
+];
+
 /// Пункт «Без подрядчика» в фильтре подрядчиков.
 const kNoContractor = 'none';
 
@@ -197,6 +223,44 @@ class OrderFilter {
       layerIds.isNotEmpty ||
       moreCount > 0;
 
+  /// Выбранные фильтры по порядку (порядок таблеток и окна «Фильтры»).
+  List<FilterKey> get activeKeys => [
+        if (hasPeriod) FilterKey.period,
+        if (statuses.isNotEmpty) FilterKey.status,
+        if (objectIds.isNotEmpty) FilterKey.object,
+        if (effectiveLocationIds.isNotEmpty) FilterKey.room,
+        if (contractorIds.isNotEmpty) FilterKey.contractor,
+        if (layerIds.isNotEmpty) FilterKey.layer,
+        if (priorities.isNotEmpty) FilterKey.priority,
+        if (recurrence != null) FilterKey.recurrence,
+        if (channels.isNotEmpty) FilterKey.channel,
+        if (needsPhoto) FilterKey.photo,
+        if (returned) FilterKey.returned,
+        if (createdByMe) FilterKey.mine,
+        if (assignedToMe) FilterKey.toMe,
+      ];
+
+  /// Число на кнопке «Фильтры · N».
+  int get activeCount => activeKeys.length;
+
+  /// Снять один фильтр (крестик на таблетке).
+  OrderFilter without(FilterKey k) => switch (k) {
+        FilterKey.period =>
+          copyWith(clearPeriod: true, dateField: DateField.created),
+        FilterKey.status => copyWith(statuses: const {}),
+        FilterKey.object => copyWith(objectIds: const {}),
+        FilterKey.room => copyWith(locationIds: const {}),
+        FilterKey.contractor => copyWith(contractorIds: const {}),
+        FilterKey.layer => copyWith(layerIds: const {}),
+        FilterKey.priority => copyWith(priorities: const {}),
+        FilterKey.recurrence => copyWith(clearRecurrence: true),
+        FilterKey.channel => copyWith(channels: const {}),
+        FilterKey.photo => copyWith(needsPhoto: false),
+        FilterKey.returned => copyWith(returned: false),
+        FilterKey.mine => copyWith(createdByMe: false),
+        FilterKey.toMe => copyWith(assignedToMe: false),
+      };
+
   /// «Сбросить всё»: фильтры и сегмент — к начальным, сортировка остаётся.
   OrderFilter cleared() => OrderFilter(sort: sort);
 
@@ -332,6 +396,19 @@ class OrderFilter {
     }
     return out;
   }
+
+  /// Условия сегмента «Открытые» / «Просрочено» — для запроса только
+  /// количества («Показать N заявок»); список считает сегмент в памяти.
+  List<ServerCond> segmentConditions(DateTime now) => switch (segment) {
+        OrderSegment.all => const [],
+        OrderSegment.open => const [
+            ServerCond('status', 'not.in', '(done,cancelled)')
+          ],
+        OrderSegment.overdue => [
+            const ServerCond('status', 'not.in', '(done,cancelled)'),
+            ServerCond('due_at', 'lt', now.toUtc().toIso8601String()),
+          ],
+      };
 
   // -------------------------------------------------------------------
   // Память

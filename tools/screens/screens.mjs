@@ -19,7 +19,8 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, wri
 import { extname, join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '../..');
-const OUT = join(ROOT, 'docs/screens/latest');
+// --out=<папка> — снимать в другую папку (для отладки, не трогая docs/screens/latest).
+const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? join(ROOT, 'docs/screens/latest'));
 const WEB = join(ROOT, 'build/web');
 const MAX_PNG = 300 * 1024;
 
@@ -401,6 +402,24 @@ async function closePicker(page) {
   await settle(page, 400);
 }
 
+// Окно «Фильтры»: на телефоне — кнопка «Фильтры», на ПК — «Все фильтры».
+async function openAllFilters(page) {
+  await page.getByRole('button', { name: /^(Все фильтры|Фильтры)(:| ·|$)/ }).first().click();
+  await see(page, /^Показать/).waitFor({ timeout: 10000 });
+  await settle(page, 400);
+}
+
+// Окно одного фильтра: на ПК — таблетка рядом с поиском (если она там есть),
+// на телефоне — строка в окне «Фильтры».
+async function openFilterKind(page, label) {
+  if (page.viewportSize().width >= 900 && await chip(page, label).isVisible().catch(() => false)) {
+    await chip(page, label).click();
+    return;
+  }
+  await openAllFilters(page);
+  await page.getByRole('button', { name: new RegExp(`^${label}(\\s|$)`) }).last().click();
+}
+
 const nav = (page, label) => page.getByRole('tab', { name: label })
   .or(page.getByRole('button', { name: label, exact: true })).first();
 
@@ -435,20 +454,40 @@ const SCREENS = [
       for (let i = 0; i < 15; i++) { await p.mouse.wheel(0, 2000); await p.waitForTimeout(150); }
       await settle(p);
     } },
-  // Строка фильтров с активными таблетками — открыта по ссылке с параметрами
+  // Свёрнутая шапка: крупный заголовок ушёл, поиск и «Фильтры» закреплены,
+  // сегменты спрятались (прокрутка вниз).
+  { key: 'requests-collapsed', title: 'Заявки — свёрнутая шапка при прокрутке', run: async (p) => {
+      await home(p);
+      const vp = p.viewportSize();
+      await p.mouse.move(vp.width / 3, vp.height / 2);
+      for (let i = 0; i < 4; i++) { await p.mouse.wheel(0, 250); await p.waitForTimeout(120); }
+      await settle(p, 1000);
+      return 'поиск и фильтры закреплены сверху, сегменты спрятаны';
+    } },
+  // Строка применённых фильтров — открыта по ссылке с параметрами
   // (заодно проверка, что ссылка применяет фильтр). Фильтр потом убирается.
-  { key: 'filters-active', title: 'Заявки — фильтры по ссылке: срочность, статус «Просрочено» и др., сортировка по срочности', run: async (p) => {
-      await homeWith(p, 'pri=critical,high&st=overdue,new,assigned,in_progress&sort=priority');
-      // Активная таблетка: «Срочность: Критический +1» — значит, ссылка применилась.
+  { key: 'filters-active', title: 'Заявки — применённые фильтры по ссылке (таблетки «×», «Сбросить всё»)', run: async (p) => {
+      await homeWith(p, 'pri=critical,high&st=overdue,new,assigned,in_progress&period=30d&sort=priority');
+      // Таблетка «Срочность: Критический +1» — значит, ссылка применилась.
       await p.getByRole('button', { name: /^Срочность: Критический \+1/ }).first().waitFor({ timeout: 15000 });
       await see(p, /Найдено \d+ из \d+/).waitFor({ timeout: 15000 });
-      return 'ссылка #/?pri=critical,high&st=overdue,new,assigned,in_progress&sort=priority; группы по срочности';
+      await see(p, 'Сбросить всё').waitFor({ timeout: 5000 });
+      return 'ссылка #/?pri=critical,high&st=overdue,new,assigned,in_progress&period=30d&sort=priority';
     }, after: async (p) => { await resetOrderFilter(p); } },
-  // Окно фильтра «Статус»: на 412 — шторка, на 1280 — выпадающее окно под таблеткой.
-  // Отмечаются 2 пункта, окно закрывается без «Применить».
-  { key: 'filter-picker', title: 'Окно фильтра «Статус» (412 — шторка, 1280 — выпадающее окно)', managerOnly: true, run: async (p) => {
+  // Окно «Фильтры»: 360/412 — шторка на весь экран, 1280 — панель справа.
+  { key: 'filters-panel', title: 'Окно «Фильтры» с «Показать N заявок»', managerOnly: true, run: async (p) => {
+      await homeWith(p, 'period=30d&st=overdue');
+      await openAllFilters(p);
+      const label = await see(p, /Показать \d+ заяв/).textContent({ timeout: 10000 }).catch(() => null);
+      await see(p, /Показать \d+ заяв/).waitFor({ timeout: 10000 });
+      await settle(p, 600);
+      return `${p.viewportSize().width >= 900 ? 'панель справа' : 'шторка на весь экран'}; число считает сервер${label ? '' : ''}`;
+    }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
+  // Окно фильтра «Статус»: 1280 — выпадающее окно под таблеткой, на телефоне —
+  // из окна «Фильтры». Отмечаются 2 пункта, окно закрывается без «Применить».
+  { key: 'filter-picker', title: 'Окно фильтра «Статус»', managerOnly: true, run: async (p) => {
       await home(p);
-      await chip(p, 'Статус').click();
+      await openFilterKind(p, 'Статус');
       await see(p, 'Применить').waitFor({ timeout: 10000 });
       await settle(p, 600);
       await p.getByRole('button', { name: 'Просрочено', exact: true }).last().click();
@@ -457,25 +496,25 @@ const SCREENS = [
       await settle(p, 800);
       return p.viewportSize().width >= 900
         ? 'выпадающее окно под таблеткой; отмечены «Просрочено» и «Новая», закрыто без применения'
-        : 'шторка; отмечены «Просрочено» и «Новая», закрыто без применения';
+        : 'шторка поверх окна «Фильтры»; отмечены «Просрочено» и «Новая», закрыто без применения';
     }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
   // «Период» → «Свой период…»: календарь выбора дат.
   { key: 'filter-period', title: 'Фильтр «Период» → «Свой период…» (календарь)', managerOnly: true, run: async (p) => {
       await home(p);
-      await chip(p, 'Период').click();
+      await openFilterKind(p, 'Период');
       await see(p, 'По сроку').waitFor({ timeout: 10000 });
       await settle(p, 600);
       await p.getByRole('button', { name: /Свой период/ }).last().click();
       await settle(p, 1500);
       return 'окно «Период» (по дате создания / по сроку, пресеты) и календарь «с — по»; закрыто без выбора';
     }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
-  // Окно сортировки (справа в строке фильтров).
+  // Сортировка — отдельная кнопка справа от «Фильтры».
   { key: 'filter-sort', title: 'Сортировка списка заявок', managerOnly: true, run: async (p) => {
       await home(p);
-      await chip(p, 'Сначала новые').click();
+      await p.getByRole('button', { name: /^(Сначала новые|Новые)$/ }).first().click();
       await see(p, 'По срочности').waitFor({ timeout: 10000 });
       await settle(p, 800);
-      return '6 вариантов; выбор сразу применяется (здесь закрыто без выбора)';
+      return '6 вариантов, галочка у текущей; выбор сразу применяется (здесь закрыто без выбора)';
     }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
   // Ничего не найдено: повторяющиеся критические (таких в демо нет).
   { key: 'filter-empty', title: 'Заявки — «Ничего не найдено» и «Сбросить фильтры»', run: async (p) => {
@@ -488,7 +527,7 @@ const SCREENS = [
   // Окно закрывается без «Применить»; затем тот же выбор — по ссылке.
   { key: 'filter-object', title: 'Фильтр «Объект»: секции по городам, «Весь город» (Москва)', managerOnly: true, run: async (p) => {
       await home(p);
-      await chip(p, 'Объект').click();
+      await openFilterKind(p, 'Объект');
       await see(p, 'Применить').waitFor({ timeout: 10000 });
       await settle(p, 600);
       await p.getByRole('button', { name: 'Весь город: Москва' }).first().click();
@@ -809,9 +848,14 @@ const SCREENS = [
 // README тогда содержит только их).
 const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '';
 
+// --width=360 — снять только одну ширину (для отладки).
+const WIDTH = +(process.argv.find((a) => a.startsWith('--width='))?.slice(8) ?? 0);
+
 const RUNS = [
   { role: 'manager', label: 'Менеджер', width: 1280, height: 800 },
   { role: 'manager', label: 'Менеджер', width: 412, height: 915 },
+  // Недорогие Android (Galaxy A17, HONOR X6c, Xiaomi): 360 px.
+  { role: 'manager', label: 'Менеджер', width: 360, height: 780 },
   { role: 'executor', label: 'Исполнитель', width: 412, height: 915 },
   { role: 'requester', label: 'Заявитель', width: 412, height: 915 },
 ];
@@ -825,6 +869,7 @@ const results = [];
 const browser = await chromium.launch();
 try {
   for (const r of RUNS) {
+    if (WIDTH && r.width !== WIDTH) continue;
     const up = r.role.toUpperCase();
     const ctx = await browser.newContext({
       viewport: { width: r.width, height: r.height }, locale: 'ru-RU', deviceScaleFactor: 1 });

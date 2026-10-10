@@ -13,6 +13,8 @@ import 'tokens.dart';
 /// Обычная — белая капсула: [label] и стрелка вниз. Активная (задан
 /// [activeLabel]) — тонированная акцентом, краткая подпись выбора и ✕
 /// ([onClear]). Нажатие на таблетку — [onTap] (открыть выбор).
+/// Видимая капсула — 34 px, цель нажатия — 44 px по высоте ([AppSizes.minTap]).
+/// [strong] — акцентная заливка (кнопка «Фильтры · 3» при активных фильтрах).
 /// Названо не `FilterChip`, чтобы не путать с Material.
 class AppFilterChip extends StatelessWidget {
   const AppFilterChip({
@@ -24,11 +26,13 @@ class AppFilterChip extends StatelessWidget {
     this.clearLabel,
     this.icon,
     this.compact = false,
+    this.chevron = true,
+    this.strong = false,
   });
 
   final String label;
 
-  /// Только значок [icon] и стрелка (подпись — для диктора): узкая строка.
+  /// Только значок [icon] (подпись — для диктора): узкая строка.
   final bool compact;
   final VoidCallback? onTap;
 
@@ -40,11 +44,23 @@ class AppFilterChip extends StatelessWidget {
   final String? clearLabel;
   final IconData? icon;
 
+  /// Стрелка вниз у невыбранной таблетки (у кнопок-действий — нет).
+  final bool chevron;
+
+  /// Акцентная заливка вместо тонированной.
+  final bool strong;
+
   bool get active => activeLabel != null;
 
   @override
   Widget build(BuildContext context) {
-    final fg = active ? AppColors.accentText : AppColors.ink;
+    final fg = strong
+        ? AppColors.onAccent
+        : (active ? AppColors.accentText : AppColors.ink);
+    final bg = strong
+        ? AppColors.accent
+        : (active ? AppColors.accentTint : AppColors.surface);
+    final hasClear = active && onClear != null;
     final text = Text(activeLabel ?? label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -52,49 +68,71 @@ class AppFilterChip extends StatelessWidget {
             fontSize: 14,
             color: fg,
             fontWeight: active ? FontWeight.w600 : FontWeight.w500));
+    final iconOnly = compact && icon != null;
     final body = Pressable(
       onTap: onTap,
       selected: active,
       semanticLabel: active ? '$label: $activeLabel' : label,
       // Имя узла — только semanticLabel, без повтора текста таблетки.
       child: ExcludeSemantics(
-          child: Padding(
-        padding: EdgeInsetsDirectional.only(
-            start: icon != null ? 10 : 14, end: active ? 2 : 10),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          if (icon != null) ...[
-            Icon(icon, size: 16, color: fg),
-            if (!compact) const SizedBox(width: 5),
-          ],
-          if (!(compact && icon != null))
-            ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 200), child: text),
-          if (!active) ...[
-            const SizedBox(width: 3),
-            const Icon(AppIcons.chevronDown,
-                size: 15, color: AppColors.secondary),
-          ],
-        ]),
+          child: ConstrainedBox(
+        constraints: BoxConstraints(
+            minHeight: AppSizes.minTap,
+            minWidth: iconOnly ? AppSizes.minTap : 0),
+        child: Padding(
+          padding: iconOnly
+              ? EdgeInsets.zero
+              : EdgeInsetsDirectional.only(
+                  start: icon != null ? 10 : 14,
+                  end: hasClear ? 2 : (chevron && !active ? 10 : 14)),
+          child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 16, color: fg),
+                  if (!iconOnly) const SizedBox(width: 5),
+                ],
+                if (!iconOnly)
+                  ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 200),
+                      child: text),
+                if (!active && chevron && !iconOnly) ...[
+                  const SizedBox(width: 3),
+                  const Icon(AppIcons.chevronDown,
+                      size: 15, color: AppColors.secondary),
+                ],
+              ]),
+        ),
       )),
     );
-    return Container(
-      height: AppSizes.filterChip,
-      decoration: BoxDecoration(
-          color: active ? AppColors.accentTint : AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.pill)),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        body,
-        if (active && onClear != null)
-          Pressable(
-            onTap: onClear,
-            semanticLabel: clearLabel,
-            child: const SizedBox(
-              width: 30,
+    return SizedBox(
+      height: AppSizes.minTap,
+      child: Stack(alignment: Alignment.center, children: [
+        // Капсула 34 px по центру; нажимается вся высота 44.
+        Positioned.fill(
+          child: Center(
+            child: Container(
               height: AppSizes.filterChip,
-              child:
-                  Icon(AppIcons.close, size: 15, color: AppColors.accentText),
+              decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(AppRadius.pill)),
             ),
           ),
+        ),
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          body,
+          if (hasClear)
+            Pressable(
+              onTap: onClear,
+              semanticLabel: clearLabel,
+              child: SizedBox(
+                width: 34,
+                height: AppSizes.minTap,
+                child: Icon(AppIcons.close, size: 15, color: fg),
+              ),
+            ),
+        ]),
       ]),
     );
   }
@@ -137,8 +175,8 @@ class AppCheckRow extends StatelessWidget {
         child: Pressable(
           onTap: onTap,
           effect: PressEffect.highlight,
-          semanticLabel: semanticLabel ??
-              (subtitle == null ? title : '$title, $subtitle'),
+          semanticLabel:
+              semanticLabel ?? (subtitle == null ? title : '$title, $subtitle'),
           child: ExcludeSemantics(
               child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppSpace.rowMinHeight),
@@ -341,6 +379,59 @@ Future<T?> showFilterPicker<T>({
   return wide
       ? showAppPopover<T>(context: context, builder: builder)
       : showAppSheet<T>(context: context, builder: builder);
+}
+
+/// Окно с длинным содержимым (все фильтры): на широком экране
+/// (≥ [AppSpace.wideFrom]) — панель справа шириной [AppSizes.sidePanel] на
+/// всю высоту, на узком — шторка на весь экран. Закрывается нажатием мимо,
+/// Esc и жестом вниз (шторка).
+Future<T?> showAppSidePanel<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  double width = AppSizes.sidePanel,
+}) {
+  final wide = MediaQuery.sizeOf(context).width >= AppSpace.wideFrom;
+  if (!wide) {
+    return showAppSheet<T>(
+      context: context,
+      builder: (ctx) => SizedBox(
+          // Шторка на весь экран: Flexible внутри showAppSheet ограничит
+          // высоту до доступной.
+          height: MediaQuery.sizeOf(ctx).height,
+          child: builder(ctx)),
+    );
+  }
+  return showGeneralDialog<T>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    barrierColor: AppColors.scrim,
+    transitionDuration: AppMotion.normal,
+    pageBuilder: (ctx, _, __) => Align(
+      alignment: AlignmentDirectional.centerEnd,
+      child: SizedBox(
+        width: width.clamp(0.0, MediaQuery.sizeOf(ctx).width),
+        height: double.infinity,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+              color: AppColors.bg, boxShadow: AppShadows.floating),
+          child: SafeArea(
+            child:
+                Material(type: MaterialType.transparency, child: builder(ctx)),
+          ),
+        ),
+      ),
+    ),
+    transitionBuilder: (ctx, a, _, child) {
+      final rtl = Directionality.of(ctx) == TextDirection.rtl;
+      final curve = CurvedAnimation(parent: a, curve: Curves.easeOutCubic);
+      return SlideTransition(
+        position: Tween(begin: Offset(rtl ? -1 : 1, 0), end: Offset.zero)
+            .animate(curve),
+        child: child,
+      );
+    },
+  );
 }
 
 /// Группа-обёртка без отступа снизу — для списков внутри [AppFilterPanel].

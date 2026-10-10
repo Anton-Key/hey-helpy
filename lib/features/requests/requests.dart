@@ -84,6 +84,11 @@ class RequestsRepo {
     return rows.map(WorkOrder.fromMap).toList();
   }
 
+  /// Сколько заявок подходит под условия — только число, без строк
+  /// («Показать N заявок» в окне «Фильтры»).
+  Future<int> countFiltered(List<ServerCond> conds) =>
+      applyServerConds(_c.from('work_orders').count(CountOption.exact), conds);
+
   /// Сколько всего заявок видно пользователю (без фильтров) — «из M».
   Future<int> countAll() => _c.from('work_orders').count(CountOption.exact);
 

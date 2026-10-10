@@ -332,8 +332,15 @@ class AppSizes {
   static const segmentHeight = 34.0;
   static const pillHeight = 24.0;
 
-  /// «Таблетка» фильтра над списком.
+  /// «Таблетка» фильтра над списком (видимая капсула; цель нажатия —
+  /// [minTap]).
   static const filterChip = 34.0;
+
+  /// Наименьшая цель нажатия (рекомендация iOS / Android).
+  static const minTap = 44.0;
+
+  /// Боковая панель на широком экране («Фильтры»).
+  static const sidePanel = 400.0;
 
   /// Голосовая кнопка.
   static const voiceHeight = 56.0;

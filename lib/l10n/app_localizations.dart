@@ -3248,6 +3248,126 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Показать город {city}'**
   String mapCityZoom(String city);
+
+  /// No description provided for @filterAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры'**
+  String get filterAll;
+
+  /// No description provided for @filterAllCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры · {count}'**
+  String filterAllCount(int count);
+
+  /// No description provided for @filterAllWide.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все фильтры'**
+  String get filterAllWide;
+
+  /// No description provided for @filterAllWideCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все фильтры · {count}'**
+  String filterAllWideCount(int count);
+
+  /// No description provided for @filterAny.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все'**
+  String get filterAny;
+
+  /// No description provided for @filterShow.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать'**
+  String get filterShow;
+
+  /// No description provided for @filterShowCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =0{Нет заявок} one{Показать {count} заявку} few{Показать {count} заявки} other{Показать {count} заявок}}'**
+  String filterShowCount(int count);
+
+  /// No description provided for @commonClose.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закрыть'**
+  String get commonClose;
+
+  /// No description provided for @commonGotIt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Понятно'**
+  String get commonGotIt;
+
+  /// No description provided for @infoFiltersTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Как работают фильтры'**
+  String get infoFiltersTitle;
+
+  /// No description provided for @infoFilters1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите условия — на кнопке внизу сразу видно, сколько заявок подойдёт.'**
+  String get infoFilters1;
+
+  /// No description provided for @infoFilters2.
+  ///
+  /// In ru, this message translates to:
+  /// **'«Показать» применяет фильтры, «×» на таблетке над списком снимает один фильтр.'**
+  String get infoFilters2;
+
+  /// No description provided for @infoFilters3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры запоминаются на этом устройстве, а в браузере — ещё и в адресе страницы: ссылку можно отправить коллеге.'**
+  String get infoFilters3;
+
+  /// No description provided for @infoShowHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подсказка: {title}'**
+  String infoShowHint(String title);
+
+  /// No description provided for @sortShortNewest.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новые'**
+  String get sortShortNewest;
+
+  /// No description provided for @sortShortOldest.
+  ///
+  /// In ru, this message translates to:
+  /// **'Старые'**
+  String get sortShortOldest;
+
+  /// No description provided for @sortShortDue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок'**
+  String get sortShortDue;
+
+  /// No description provided for @sortShortPriority.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срочность'**
+  String get sortShortPriority;
+
+  /// No description provided for @sortShortStatus.
+  ///
+  /// In ru, this message translates to:
+  /// **'Статус'**
+  String get sortShortStatus;
+
+  /// No description provided for @sortShortObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get sortShortObject;
 }
 
 class _AppLocalizationsDelegate

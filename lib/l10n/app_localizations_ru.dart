@@ -1890,4 +1890,83 @@ class AppLocalizationsRu extends AppLocalizations {
   String mapCityZoom(String city) {
     return 'Показать город $city';
   }
+
+  @override
+  String get filterAll => 'Фильтры';
+
+  @override
+  String filterAllCount(int count) {
+    return 'Фильтры · $count';
+  }
+
+  @override
+  String get filterAllWide => 'Все фильтры';
+
+  @override
+  String filterAllWideCount(int count) {
+    return 'Все фильтры · $count';
+  }
+
+  @override
+  String get filterAny => 'Все';
+
+  @override
+  String get filterShow => 'Показать';
+
+  @override
+  String filterShowCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Показать $count заявок',
+      few: 'Показать $count заявки',
+      one: 'Показать $count заявку',
+      zero: 'Нет заявок',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commonClose => 'Закрыть';
+
+  @override
+  String get commonGotIt => 'Понятно';
+
+  @override
+  String get infoFiltersTitle => 'Как работают фильтры';
+
+  @override
+  String get infoFilters1 =>
+      'Выберите условия — на кнопке внизу сразу видно, сколько заявок подойдёт.';
+
+  @override
+  String get infoFilters2 =>
+      '«Показать» применяет фильтры, «×» на таблетке над списком снимает один фильтр.';
+
+  @override
+  String get infoFilters3 =>
+      'Фильтры запоминаются на этом устройстве, а в браузере — ещё и в адресе страницы: ссылку можно отправить коллеге.';
+
+  @override
+  String infoShowHint(String title) {
+    return 'Подсказка: $title';
+  }
+
+  @override
+  String get sortShortNewest => 'Новые';
+
+  @override
+  String get sortShortOldest => 'Старые';
+
+  @override
+  String get sortShortDue => 'Срок';
+
+  @override
+  String get sortShortPriority => 'Срочность';
+
+  @override
+  String get sortShortStatus => 'Статус';
+
+  @override
+  String get sortShortObject => 'Объект';
 }

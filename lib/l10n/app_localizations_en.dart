@@ -1871,4 +1871,82 @@ class AppLocalizationsEn extends AppLocalizations {
   String mapCityZoom(String city) {
     return 'Show $city';
   }
+
+  @override
+  String get filterAll => 'Filters';
+
+  @override
+  String filterAllCount(int count) {
+    return 'Filters · $count';
+  }
+
+  @override
+  String get filterAllWide => 'All filters';
+
+  @override
+  String filterAllWideCount(int count) {
+    return 'All filters · $count';
+  }
+
+  @override
+  String get filterAny => 'Any';
+
+  @override
+  String get filterShow => 'Show';
+
+  @override
+  String filterShowCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count requests',
+      one: 'Show $count request',
+      zero: 'No requests',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
+  String get commonGotIt => 'Got it';
+
+  @override
+  String get infoFiltersTitle => 'How filters work';
+
+  @override
+  String get infoFilters1 =>
+      'Pick conditions — the button below shows right away how many requests match.';
+
+  @override
+  String get infoFilters2 =>
+      '“Show” applies the filters; the “×” on a chip above the list removes one filter.';
+
+  @override
+  String get infoFilters3 =>
+      'Filters are remembered on this device, and in the browser also in the page address — you can send the link to a colleague.';
+
+  @override
+  String infoShowHint(String title) {
+    return 'Tip: $title';
+  }
+
+  @override
+  String get sortShortNewest => 'Newest';
+
+  @override
+  String get sortShortOldest => 'Oldest';
+
+  @override
+  String get sortShortDue => 'Due';
+
+  @override
+  String get sortShortPriority => 'Priority';
+
+  @override
+  String get sortShortStatus => 'Status';
+
+  @override
+  String get sortShortObject => 'Site';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:hey_helpy/features/directory/directory.dart';
 import 'package:hey_helpy/features/requests/order_filter.dart';
 import 'package:hey_helpy/features/requests/order_filter_bar.dart';
 import 'package:hey_helpy/features/requests/work_order.dart';
@@ -543,6 +544,132 @@ void main() {
       expect([for (final o in lb.statusOptions()) o.id], kStatusOrder);
       expect(lb.statusOptions().first.label, 'Просрочено');
       expect(lb.contractorOptions(const []).single.id, kNoContractor);
+    });
+  });
+
+  group('Компактные фильтры (шаг 13e)', () {
+    setUpAll(() => initializeDateFormatting('ru'));
+    final l = lookupAppLocalizations(const Locale('ru'));
+    final lb = OrderFilterLabels(l);
+    final moscow = [
+      for (var i = 1; i <= 5; i++)
+        Obj(
+            id: 'm$i',
+            name: 'Офис $i',
+            address: 'Москва, ул. $i',
+            type: 'office'),
+    ];
+    final choices = FilterChoices(
+        objects: moscow,
+        contractors: const [FilterOption('c1', 'МосКлимат')],
+        layers: const [],
+        isExecutor: false);
+
+    test('число активных фильтров: одна единица на фильтр', () {
+      expect(OrderFilter.empty.activeCount, 0);
+      // Сортировка и сегмент — не фильтры.
+      expect(
+          const OrderFilter(
+                  sort: OrderSort.priority, segment: OrderSegment.overdue)
+              .activeCount,
+          0);
+      const f = OrderFilter(
+        period: PeriodPreset.days30,
+        statuses: {'new', kOverdue},
+        objectIds: {'m1', 'm2'},
+        channels: {'voice', 'text'},
+        needsPhoto: true,
+      );
+      expect(f.activeCount, 5);
+      expect(f.activeKeys, [
+        FilterKey.period,
+        FilterKey.status,
+        FilterKey.object,
+        FilterKey.channel,
+        FilterKey.photo,
+      ]);
+      // «Свой период» без дат и помещения без одного объекта — не считаются.
+      expect(const OrderFilter(period: PeriodPreset.custom).activeCount, 0);
+      expect(
+          const OrderFilter(objectIds: {'a', 'b'}, locationIds: {'x'})
+              .activeCount,
+          1);
+    });
+
+    test('таблетки применённых фильтров: «Москва (5)», «Просрочено», «30 дней»',
+        () {
+      final f = OrderFilter(
+          objectIds: {for (final o in moscow) o.id},
+          statuses: const {kOverdue},
+          period: PeriodPreset.days30);
+      final chips = lb.applied(f, choices, now);
+      expect(chips, [
+        (FilterKey.period, '30 дней'),
+        (FilterKey.status, 'Просрочено'),
+        (FilterKey.object, 'Москва (5)'),
+      ]);
+      // На ПК главные фильтры стоят рядом с поиском — в строке их нет.
+      expect(
+          lb.applied(f, choices, now, skip: kMainFilterKeys.toSet()), isEmpty);
+      expect(lb.applied(const OrderFilter(returned: true), choices, now),
+          [(FilterKey.returned, 'Возвращались на доработку')]);
+    });
+
+    test('снятие одного фильтра не трогает остальные и сортировку', () {
+      const f = OrderFilter(
+        period: PeriodPreset.days7,
+        dateField: DateField.due,
+        statuses: {'new'},
+        contractorIds: {'c1'},
+        recurrence: RecurrenceFilter.recurring,
+        sort: OrderSort.due,
+        segment: OrderSegment.open,
+      );
+      final a = f.without(FilterKey.period);
+      expect(a.hasPeriod, isFalse);
+      expect(a.dateField, DateField.created);
+      expect(a.statuses, {'new'});
+      expect(a.sort, OrderSort.due);
+      expect(a.segment, OrderSegment.open);
+      expect(f.without(FilterKey.recurrence).recurrence, isNull);
+      expect(f.without(FilterKey.contractor).activeKeys,
+          [FilterKey.period, FilterKey.status, FilterKey.recurrence]);
+      for (final k in FilterKey.values) {
+        // Снятие невыбранного фильтра ничего не меняет.
+        expect(OrderFilter.empty.without(k), OrderFilter.empty);
+      }
+    });
+
+    test('адрес: старые ссылки шага 13c открываются как раньше', () {
+      // Ссылка из 13c (формат не менялся): объект, статусы, «Ещё», сортировка.
+      final f = OrderFilter.fromQuery(Uri.splitQueryString(
+          'period=30d&obj=o1&loc=r1&st=new,overdue&rec=recurring&src=voice'
+          '&photo=1&sort=priority&seg=open'));
+      expect(f.activeKeys, [
+        FilterKey.period,
+        FilterKey.status,
+        FilterKey.object,
+        FilterKey.room,
+        FilterKey.recurrence,
+        FilterKey.channel,
+        FilterKey.photo,
+      ]);
+      expect(f.sort, OrderSort.priority);
+      expect(f.segment, OrderSegment.open);
+      // Туда и обратно — без потерь.
+      expect(OrderFilter.fromQuery(f.toQuery()), f);
+    });
+
+    test('количество для «Показать N»: условия сегмента', () {
+      expect(OrderFilter.empty.segmentConditions(now), isEmpty);
+      expect([
+        for (final c in const OrderFilter(segment: OrderSegment.overdue)
+            .segmentConditions(now))
+          '$c'
+      ], [
+        'status=not.in.(done,cancelled)',
+        'due_at=lt.${utc(now)}'
+      ]);
     });
   });
 }

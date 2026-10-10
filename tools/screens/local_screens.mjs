@@ -369,7 +369,9 @@ async function capturePdf(page) {
   await home(page);
   await page.getByRole('button', { name: /^Отчёты/ }).or(page.getByRole('tab', { name: /^Отчёты/ })).first().click();
   await settle(page, 3000);
-  await page.getByRole('button', { name: /Печать|Распечатать|PDF/ }).first().click();
+  // Первая кнопка с этим словом — ⓘ «Печать отчёта», вторая — сам принтер.
+  const print = page.getByRole('button', { name: /Печать|Распечатать|PDF/ });
+  await ((await print.count()) > 1 ? print.nth(1) : print.first()).click();
   for (let i = 0; i < 120; i++) {
     const has = await page.evaluate(() => !!window.__pdfBlob);
     if (has) break;

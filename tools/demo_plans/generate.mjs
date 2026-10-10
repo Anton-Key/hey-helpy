@@ -37,6 +37,15 @@ export function roomPoint(room) {
   return [frac(x + w / 2, W), frac(y + h / 2, H)];
 }
 
+/** Область помещения на плане — прямоугольник комнаты, доли 0..1 (plan_shape, шаг 16). */
+export function roomShape(room) {
+  const [x, y, w, h] = room.rect;
+  return {
+    type: 'polygon',
+    points: [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].map(([px, py]) => [frac(px, W), frac(py, H)]),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // SVG
 // ---------------------------------------------------------------------------
@@ -155,15 +164,25 @@ function sqlBlock() {
   L.push('  insert into public.locations (id, object_id, name) values');
   L.push(fresh.map(({ f, r }) => `    (${uuid(r.id)}, ${uuid(f.object)}, ${q(r.name)})`).join(',\n'));
   L.push('  on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;');
-  L.push('  -- Этаж и точка помещений (центр комнаты на схеме, доли 0..1).');
-  L.push('  update public.locations l set floor_id = v.f, plan_x = v.x, plan_y = v.y');
-  L.push('    from (values');
   const placed = floors.flatMap((f) => f.rooms.filter((r) => r.id).map((r) => ({ f, r })));
+  // Номер помещения уникален в объекте (0015): тот же номер у помещения,
+  // созданного руками, снимаем, чтобы не мешал.
+  L.push('  -- Номера помещений (шаг 16): тот же номер у помещения, созданного руками, снимается.');
+  L.push('  update public.locations l set code = null');
+  L.push('    from (values');
+  L.push(placed.map(({ f, r }) => `      (${uuid(r.id)}, ${uuid(f.object)}, ${q(r.code)})`).join(',\n'));
+  L.push('    ) as v(id, o, code)');
+  L.push('   where l.object_id = v.o and lower(btrim(l.code)) = lower(v.code) and l.id <> v.id');
+  L.push(`     and l.id not in (${placed.map(({ r }) => uuid(r.id)).join(', ')});`);
+  L.push('  -- Этаж, точка (центр комнаты на схеме, доли 0..1), номер и область помещения');
+  L.push('  -- (прямоугольник комнаты — многоугольник из 4 точек, шаг 16).');
+  L.push('  update public.locations l set floor_id = v.f, plan_x = v.x, plan_y = v.y, code = v.code, plan_shape = v.shape');
+  L.push('    from (values');
   L.push(placed.map(({ f, r }) => {
     const [x, y] = roomPoint(r);
-    return `      (${uuid(r.id)}, ${uuid(f.id)}, ${x}::real, ${y}::real)`;
+    return `      (${uuid(r.id)}, ${uuid(f.id)}, ${x}::real, ${y}::real, ${q(r.code)}, '${JSON.stringify(roomShape(r))}'::jsonb)`;
   }).join(',\n'));
-  L.push('    ) as v(id, f, x, y)');
+  L.push('    ) as v(id, f, x, y, code, shape)');
   L.push('   where l.id = v.id;');
   L.push('');
   L.push('  -- Оборудование: вид (meta.kind) — для значка на плане.');

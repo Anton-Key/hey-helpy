@@ -10,6 +10,7 @@ import '../../models/user_role.dart';
 import '../directory/directory.dart';
 import '../onboarding/onboarding_repository.dart';
 import '../onboarding/onboarding_screen.dart';
+import '../regions/regions_screen.dart';
 import 'profile_repository.dart';
 import '../../core/app_message.dart';
 
@@ -430,6 +431,18 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                   leading: const LeadingIcon(AppIcons.building),
                   title: l.tabLocations,
                   onTap: () => Navigator.pop(context, companyTabObjects),
+                ),
+                // Регионы компании (шаг 16): общий список, без дублей.
+                AppRow(
+                  leading: const LeadingIcon(AppIcons.map),
+                  title: l.regionManage,
+                  onTap: () => Navigator.push(
+                      context,
+                      appRoute(
+                          (_) => RegionsScreen(
+                              isManager: _canManage,
+                              companyId: _me.companyId),
+                          title: l.profileMyCompany)),
                 ),
               ]),
             ],

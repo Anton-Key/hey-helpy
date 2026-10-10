@@ -1,18 +1,23 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/app_message.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/period.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import '../regions/countries.dart';
 import '../home/home_chrome.dart';
 import '../requests/requests.dart';
 import 'report_repository.dart';
 import '../directory/city.dart';
 import '../directory/object_picker.dart';
+import 'report_pdf.dart';
 
 /// Вкладка «Отчёты» (только менеджер и администратор): период, фильтры,
 /// четыре главные цифры по компании и показатели по каждому подрядчику.
@@ -41,6 +46,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Set<String> _objectIds = const {};
   late String? _contractorId = widget.initialContractorId;
   String? _layerId;
+
+  /// Регион («r:<id>») или страна («c:<код ISO>»); null — все.
+  String? _area;
+
+  /// Тип задачи; null — все.
+  ReportKind? _kind;
+
+  /// Регионы компании (0015); пусто — до миграции или регионов не завели.
+  List<ReportRegion> _regions = const [];
+
+  /// Идёт сборка PDF.
+  bool _printing = false;
 
   Report? _report;
   bool _loading = true;
@@ -72,11 +89,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final objects = await _dir.objects();
       final contractors = await _dir.contractors();
       final layers = await _dir.layers();
+      final regions = await _repo.regions();
       if (!mounted) return;
       setState(() {
         _objects = objects;
         _contractors = contractors;
         _layers = layers;
+        _regions = regions;
       });
       await _load();
     } catch (e) {
@@ -102,9 +121,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ReportQuery(
             from: r.from,
             to: r.to,
-            objectIds: _objectIds,
+            objectIds: _effectiveObjectIds(),
             contractorId: _contractorId,
-            layerId: _layerId),
+            layerId: _layerId,
+            kind: _kind),
         contractorOrder: [for (final c in _contractors) c.id],
       );
       if (!mounted || seq != _seq) return;
@@ -193,6 +213,243 @@ class _ReportsScreenState extends State<ReportsScreen> {
     await _load();
   }
 
+  /// Объекты выбранного региона / страны.
+  Set<String>? _areaObjectIds() {
+    final a = _area;
+    if (a == null) return null;
+    final value = a.substring(2);
+    return {
+      for (final o in _objects)
+        if (a.startsWith('r:') ? o.regionId == value : o.countryCode == value)
+          o.id
+    };
+  }
+
+  /// Фильтр «Объект» ∩ «Регион». Регион без объектов — несуществующий id,
+  /// чтобы отчёт был пустым, а не «все объекты».
+  Set<String> _effectiveObjectIds() {
+    final area = _areaObjectIds();
+    if (area == null) return _objectIds;
+    final ids = _objectIds.isEmpty ? area : _objectIds.intersection(area);
+    return ids.isEmpty ? const {'00000000-0000-0000-0000-000000000000'} : ids;
+  }
+
+  /// Страны объектов компании (коды ISO), по названию.
+  List<String> _countries(String locale) {
+    final codes = {
+      for (final o in _objects)
+        if ((o.countryCode ?? '').isNotEmpty) o.countryCode!
+    }.toList()
+      ..sort((a, b) =>
+          reportCountryName(a, locale).compareTo(reportCountryName(b, locale)));
+    return codes;
+  }
+
+  String? _areaLabel(String locale) {
+    final a = _area;
+    if (a == null) return null;
+    final value = a.substring(2);
+    if (a.startsWith('c:')) return reportCountryLabel(value, locale);
+    for (final r in _regions) {
+      if (r.id == value) return r.name;
+    }
+    return null;
+  }
+
+  String? _kindLabel(AppLocalizations l, ReportKind? k) => switch (k) {
+        null => null,
+        ReportKind.once => l.reportKindOnce,
+        ReportKind.recurring => l.reportKindRecurring,
+        ReportKind.ppr => l.reportKindPpr,
+      };
+
+  /// Регион объекта; город объекта — для группировки без регионов.
+  String? _regionOf(String objectId) {
+    for (final o in _objects) {
+      if (o.id == objectId) return o.regionId;
+    }
+    return null;
+  }
+
+  String _cityOf(String objectId) {
+    for (final o in _objects) {
+      if (o.id == objectId) return o.cityName;
+    }
+    return '';
+  }
+
+  List<RegionReport> _regionRows(Report report) => buildRegionReports(
+      orders: report.orders,
+      regions: _regions,
+      regionOf: _regionOf,
+      cityOf: _cityOf);
+
+  /// Фильтры словами — для шапки PDF.
+  List<String> _filterWords(AppLocalizations l) {
+    final locale = context.localeCode;
+    final objects = objectsSelectionLabel(l, _objectIds, _objects);
+    final contractor = _labelOf<Contractor>(
+        _contractors, _contractorId, (c) => c.id, (c) => c.orgName);
+    final layer =
+        _labelOf<Layer>(_layers, _layerId, (x) => x.id, (x) => x.label(locale));
+    return [
+      if (objects != null) '${l.reportsFilterObject}: $objects',
+      if (_areaLabel(locale) != null)
+        '${l.reportFilterRegion}: ${_areaLabel(locale)}',
+      if (contractor != null) '${l.reportsFilterContractor}: $contractor',
+      if (layer != null) '${l.reportsFilterLayer}: $layer',
+      if (_kind != null) '${l.reportFilterKind}: ${_kindLabel(l, _kind)}',
+    ];
+  }
+
+  /// PDF по текущим фильтрам: в браузере — окно печати (там же «Сохранить
+  /// как PDF»), на Android — «Поделиться».
+  Future<void> _print() async {
+    final report = _report;
+    if (report == null || _printing) return;
+    final l = context.l10n;
+    final locale = context.localeCode;
+    final periodLabel = _period.label(context);
+    final filters = _filterWords(l);
+    final range = _period.range();
+    setState(() => _printing = true);
+    showAppMessage(context, l.reportPrintPreparing);
+    try {
+      final header = await _repo.header();
+      final places = await _dir.places();
+      final placeNames = {for (final p in places) p.id: p.label};
+      final fonts = await loadReportFonts();
+      final out = await buildReportPdf(
+        ReportPdfData(
+          l: l,
+          report: report,
+          company: header.company,
+          author: header.me,
+          generatedAt: DateTime.now(),
+          periodLabel: periodLabel,
+          filters: filters,
+          regions: _regionRows(report),
+          byRegion: _regions.isNotEmpty,
+          contractorName: (id) => _contractorName(l, id),
+          objectName: (id) {
+            if (id == null) return l.objectNone;
+            for (final o in _objects) {
+              if (o.id == id) return objectDisplayName(o);
+            }
+            return l.objectUnknown;
+          },
+          placeName: (id) => id == null
+              ? l.reportsNoValue
+              : (placeNames[id] ?? l.reportsNoValue),
+          layerName: (o) =>
+              Layer.find(_layers, id: o.layerId, name: o.workType)
+                  ?.label(locale) ??
+              o.workType ??
+              l.reportsNoValue,
+        ),
+        fonts,
+      );
+      final name = reportPdfFileName(l, range.from, range.to);
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        await Printing.sharePdf(bytes: out.bytes, filename: name);
+      } else {
+        await Printing.layoutPdf(onLayout: (_) async => out.bytes, name: name);
+      }
+    } catch (e) {
+      debugPrint('Report PDF: $e');
+      if (mounted) {
+        showAppMessage(context, l.reportPrintFailed,
+            type: AppMessageType.error);
+      }
+    } finally {
+      if (mounted) setState(() => _printing = false);
+    }
+  }
+
+  List<Widget> _headerActions(AppLocalizations l) => [
+        if (_isManager)
+          AppInfoButton(
+              title: l.reportPrint,
+              lines: [
+                l.reportPrintInfo1,
+                l.reportPrintInfo2,
+                l.reportPrintInfo3,
+                l.reportPrintInfo4
+              ],
+              closeLabel: l.commonGotIt),
+        if (_isManager)
+          AppIconButton(
+              icon: AppIcons.print,
+              label: l.reportPrint,
+              tooltip: true,
+              onPressed:
+                  _report == null || _loading || _printing ? null : _print),
+      ];
+
+  Future<void> _pickArea() async {
+    final l = context.l10n;
+    final locale = context.localeCode;
+    final chosen = await showAppSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        top: false,
+        child: ConstrainedBox(
+          constraints:
+              BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.7),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            SheetHeader(title: l.reportFilterRegion),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.l),
+                children: [
+                  AppGroup(margin: EdgeInsets.zero, children: [
+                    AppCheckRow(
+                        title: l.reportsFilterAll,
+                        selected: _area == null,
+                        onTap: () => Navigator.pop(ctx, '')),
+                  ]),
+                  if (_regions.isNotEmpty)
+                    AppGroup(header: l.reportRegionsGroup, children: [
+                      for (final r in _regions)
+                        AppCheckRow(
+                            title: r.name,
+                            selected: _area == 'r:${r.id}',
+                            onTap: () => Navigator.pop(ctx, 'r:${r.id}')),
+                    ]),
+                  AppGroup(header: l.reportCountriesGroup, children: [
+                    for (final c in _countries(locale))
+                      AppCheckRow(
+                          title: reportCountryLabel(c, locale),
+                          selected: _area == 'c:$c',
+                          onTap: () => Navigator.pop(ctx, 'c:$c')),
+                  ]),
+                ],
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+    if (chosen == null || !mounted) return;
+    final value = chosen.isEmpty ? null : chosen;
+    if (value == _area) return;
+    setState(() => _area = value);
+    await _load();
+  }
+
+  Future<void> _pickKind() async {
+    final l = context.l10n;
+    await _pickFilter(
+        title: l.reportFilterKind,
+        items: [
+          for (final k in ReportKind.values) (k.name, _kindLabel(l, k)!),
+        ],
+        current: _kind?.name,
+        apply: (v) => _kind = v == null ? null : ReportKind.values.byName(v));
+  }
+
   String _contractorName(AppLocalizations l, String? id) {
     if (id == null) return l.reportsNoContractor;
     for (final c in _contractors) {
@@ -243,9 +500,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
           HomeHeader(
               title: l.navReports,
               maxWidth: double.infinity,
+              actions: _headerActions(l),
               onRefresh: _isManager ? _load : null)
         else
-          AppSliverHeader(title: l.navReports, maxWidth: double.infinity),
+          AppSliverHeader(
+              title: l.navReports,
+              maxWidth: double.infinity,
+              actions: _headerActions(l)),
         if (_isManager) CupertinoSliverRefreshControl(onRefresh: _load),
         SliverContent(
             maxWidth: double.infinity, sliver: SliverList.list(children: body)),
@@ -289,6 +550,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
               items: [for (final x in _layers) (x.id, x.label(locale))],
               current: _layerId,
               apply: (v) => _layerId = v)),
+      // Регион или страна (0015). До миграции стран и регионов нет — без чипа.
+      if (_regions.isNotEmpty || _countries(locale).isNotEmpty)
+        chip(l.reportFilterRegion, _areaLabel(locale), _pickArea),
+      chip(l.reportFilterKind, _kindLabel(l, _kind), _pickKind),
     ]);
   }
 
@@ -325,9 +590,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
               value: f.pct(c.geofenceShare),
               label: l.reportsKpiGeofence,
               hint: c.visits == 0 ? null : l.reportsKpiOf(c.visits)),
+          KpiTile(
+              value: report.pprAvailable && c.pprTotal > 0
+                  ? l.reportPprOf(f.count(c.pprDone), f.count(c.pprTotal))
+                  : l.reportsNoValue,
+              label: l.reportPprDone),
         ];
         // Плитки в ряду — одной высоты.
-        final perRow = box.maxWidth >= 600 ? 4 : 2;
+        final perRow = box.maxWidth >= 760 ? 5 : (box.maxWidth >= 600 ? 3 : 2);
         return Column(children: [
           for (var i = 0; i < kpis.length; i += perRow) ...[
             if (i > 0) const SizedBox(height: AppSpace.group),
@@ -344,6 +614,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ],
         ]);
       }),
+      ..._regionBlock(l, f, report),
       SectionHeader(l.reportsByContractor),
       if (report.contractors.isEmpty)
         AppEmptyState(text: l.reportsEmpty, icon: AppIcons.reports)
@@ -377,6 +648,42 @@ class _ReportsScreenState extends State<ReportsScreen> {
             AppSpace.rowH, AppSpace.s, AppSpace.rowH, 0),
         child: Text(l.reportsHelp, style: AppText.footnote),
       ),
+    ];
+  }
+
+  /// «По регионам» (или по городам, если регионов нет): заявки, в срок,
+  /// просрочено, ППР. Одна группа «без региона» — блок не показываем.
+  List<Widget> _regionBlock(AppLocalizations l, _Fmt f, Report report) {
+    final rows = _regionRows(report);
+    if (rows.isEmpty || (rows.length == 1 && rows.single.key == null)) {
+      return const [];
+    }
+    final byRegion = _regions.isNotEmpty;
+    return [
+      SectionHeader(byRegion ? l.reportByRegion : l.reportByCity),
+      AppGroup(children: [
+        for (final r in rows)
+          AppRow(
+            leading: const LeadingIcon(AppIcons.place),
+            title: r.label ?? (byRegion ? l.reportNoRegion : l.reportNoCity),
+            chevron: false,
+            subtitle: [
+              '${l.reportsOrders} ${f.count(r.stats.total)}',
+              '${l.reportsOverdue} ${f.count(r.stats.overdue)}',
+              if (report.pprAvailable && r.stats.pprTotal > 0)
+                '${l.reportPprDone} ${l.reportPprOf(f.count(r.stats.pprDone), f.count(r.stats.pprTotal))}',
+            ].join(' · '),
+            trailing: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(f.pct(r.stats.onTimeShare),
+                      style: AppText.headline
+                          .copyWith(color: _onTimeColor(r.stats.onTimeShare))),
+                  Text(l.reportsOnTime, style: AppText.caption),
+                ]),
+          ),
+      ]),
     ];
   }
 
@@ -866,3 +1173,12 @@ class ContractorOrdersScreen extends StatelessWidget {
     );
   }
 }
+
+/// Название страны на языке интерфейса (общий справочник ISO, шаг 16 D);
+/// неизвестный код — сам код.
+String reportCountryName(String code, String locale) =>
+    countryLabel(code, locale, flag: false);
+
+/// «🇷🇸 Сербия»: флаг и название.
+String reportCountryLabel(String code, String locale) =>
+    countryLabel(code, locale);

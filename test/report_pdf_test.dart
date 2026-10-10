@@ -123,7 +123,7 @@ void main() {
 
     test('номер заявки и имя файла', () {
       expect(
-          reportOrderNumber('de300000-0000-4000-8000-000000000101'), '#DE3000');
+          reportOrderNumber('de300000-0000-4000-8000-000000000101'), '#000101');
       expect(
           reportPdfFileName(ru, DateTime(2026, 9, 10), DateTime(2026, 10, 10)),
           'HeyHelpy_Отчёт_2026-09-10_2026-10-09.pdf');

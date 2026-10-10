@@ -11,6 +11,7 @@ import '../../core/l10n_ext.dart';
 import '../../core/period.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import '../regions/countries.dart';
 import '../home/home_chrome.dart';
 import '../requests/requests.dart';
 import 'report_repository.dart';
@@ -1173,44 +1174,11 @@ class ContractorOrdersScreen extends StatelessWidget {
   }
 }
 
-/// Названия стран для фильтра «Регион» отчёта (коды ISO 3166-1). Полный
-/// справочник стран — у раздела регионов (блок D); здесь — запасной вариант:
-/// неизвестный код показывается как есть.
-const _countryNames = <String, (String, String)>{
-  'RS': ('Сербия', 'Serbia'),
-  'RU': ('Россия', 'Russia'),
-  'AE': ('ОАЭ', 'UAE'),
-  'TR': ('Турция', 'Türkiye'),
-  'CI': ('Кот-д’Ивуар', 'Côte d’Ivoire'),
-  'CN': ('Китай', 'China'),
-  'KZ': ('Казахстан', 'Kazakhstan'),
-  'BY': ('Беларусь', 'Belarus'),
-  'AM': ('Армения', 'Armenia'),
-  'GE': ('Грузия', 'Georgia'),
-  'UZ': ('Узбекистан', 'Uzbekistan'),
-  'DE': ('Германия', 'Germany'),
-  'GB': ('Великобритания', 'United Kingdom'),
-  'US': ('США', 'United States'),
-  'SA': ('Саудовская Аравия', 'Saudi Arabia'),
-  'QA': ('Катар', 'Qatar'),
-  'EG': ('Египет', 'Egypt'),
-  'IN': ('Индия', 'India'),
-};
+/// Название страны на языке интерфейса (общий справочник ISO, шаг 16 D);
+/// неизвестный код — сам код.
+String reportCountryName(String code, String locale) =>
+    countryLabel(code, locale, flag: false);
 
-/// Название страны на языке интерфейса; неизвестный код — сам код.
-String reportCountryName(String code, String locale) {
-  final n = _countryNames[code.toUpperCase()];
-  if (n == null) return code.toUpperCase();
-  return locale == 'en' ? n.$2 : n.$1;
-}
-
-/// «🇷🇸 Сербия»: флаг из кода (региональные символы Юникода) и название.
-String reportCountryLabel(String code, String locale) {
-  final c = code.toUpperCase();
-  final valid = RegExp(r'^[A-Z]{2}$').hasMatch(c);
-  final flag = valid
-      ? String.fromCharCodes(c.codeUnits.map((u) => 0x1F1E6 + u - 65))
-      : '';
-  final name = reportCountryName(c, locale);
-  return flag.isEmpty ? name : '$flag $name';
-}
+/// «🇷🇸 Сербия»: флаг и название.
+String reportCountryLabel(String code, String locale) =>
+    countryLabel(code, locale);

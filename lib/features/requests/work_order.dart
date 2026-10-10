@@ -15,6 +15,9 @@ class WorkOrder {
   final DateTime? createdAt;
   final String? placeName;
 
+  /// Номер помещения («305», 0015).
+  final String? placeCode;
+
   /// Этаж помещения (планы этажей, 0013): название и номер.
   final String? floorName;
   final int? floorLevel;
@@ -48,6 +51,7 @@ class WorkOrder {
       this.dueAt,
       this.createdAt,
       this.placeName,
+      this.placeCode,
       this.floorName,
       this.floorLevel,
       this.locationId,
@@ -73,9 +77,13 @@ class WorkOrder {
       'input_channel,requires_photo,return_count,due_at,created_at,'
       'locations(name,floors(name,level))';
 
-  /// То же + поля ППР (нужна миграция 0015).
+  /// То же + поля ППР и номер помещения (нужна миграция 0015).
   static const listColumns0015 =
-      '$listColumns,plan_id,period_start,period_end';
+      'id,title,work_type,layer_id,priority,status,recurrence,object_id,'
+      'location_id,assigned_contractor_id,assigned_executor_id,created_by,'
+      'input_channel,requires_photo,return_count,due_at,created_at,'
+      'plan_id,period_start,period_end,'
+      'locations(name,code,floors(name,level))';
 
   factory WorkOrder.fromMap(Map<String, dynamic> m) {
     return WorkOrder(
@@ -90,6 +98,7 @@ class WorkOrder {
       dueAt: DateTime.tryParse('${m['due_at'] ?? ''}')?.toLocal(),
       createdAt: DateTime.tryParse('${m['created_at'] ?? ''}')?.toLocal(),
       placeName: (m['locations'] as Map<String, dynamic>?)?['name'] as String?,
+      placeCode: (m['locations'] as Map<String, dynamic>?)?['code'] as String?,
       floorName: _floor(m)?['name'] as String?,
       floorLevel: (_floor(m)?['level'] as num?)?.toInt(),
       locationId: m['location_id'] as String?,

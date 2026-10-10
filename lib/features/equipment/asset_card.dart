@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_message.dart';
 import '../../core/design/design.dart';
+import '../ppr/ppr_card.dart';
+import '../ppr/ppr_tab.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
@@ -134,6 +136,25 @@ class _AssetCardScreenState extends State<AssetCardScreen> {
     }
   }
 
+  /// Карточка плана ППР (раздел «ППР», блок C).
+  Future<void> _openPlan(String planId) async {
+    try {
+      final data = await PprData.load();
+      if (!mounted) return;
+      await Navigator.push(
+          context,
+          appRoute((_) => PprPlanCardScreen(planId: planId, data: data),
+              title: widget.asset.name));
+      if (mounted) await _load();
+    } catch (e) {
+      debugPrint('Asset plan: $e');
+      if (mounted) {
+        showAppMessage(context, context.l10n.cardLoadFailed,
+            type: AppMessageType.error);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -239,7 +260,7 @@ class _AssetCardScreenState extends State<AssetCardScreen> {
                   assetPeriodLabel(l, p.periodKind, p.periodDays),
                   if (!p.active) l.assetPlanPaused,
                 ].join(' · '),
-                chevron: false,
+                onTap: () => _openPlan(p.id),
               ),
         ]),
       AppGroup(header: l.assetCardOrders(_orders.length), children: [

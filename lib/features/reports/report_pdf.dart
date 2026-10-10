@@ -88,10 +88,13 @@ class ReportPdfData {
   final DateTime? now;
 }
 
-/// Короткий номер заявки для таблицы: первые 6 знаков id («#A1B2C3»).
+/// Короткий номер заявки для таблицы: последние 6 знаков id («#00A1B2»).
+/// Последние, а не первые: у случайных id они так же различаются, а у
+/// заявок с постоянными id (демо: de300000-…-000000000101) первые совпадают.
 String reportOrderNumber(String id) {
   final hex = id.replaceAll('-', '');
-  return '#${hex.substring(0, hex.length < 6 ? hex.length : 6).toUpperCase()}';
+  final n = hex.length < 6 ? hex.length : 6;
+  return '#${hex.substring(hex.length - n).toUpperCase()}';
 }
 
 /// Имя файла: «HeyHelpy_Отчёт_2026-09-10_2026-10-09.pdf».

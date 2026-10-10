@@ -505,7 +505,7 @@ class _RequestsTabState extends State<RequestsTab> {
       final place = [
         _objName(l, w.objectId),
         if (w.placeName != null && w.placeName!.isNotEmpty)
-          placeWithFloor(w.placeName!, w.floorName,
+          placeWithFloor(placeLabel(w.placeName!, w.placeCode), w.floorName,
               w.floorLevel == null ? null : l.floorShort(w.floorLevel!)),
       ].join(' · ');
       final overdue = w.isOverdue(now);

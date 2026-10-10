@@ -110,13 +110,18 @@ class RequestsRepo {
     return [for (final r in rows) r['id'] as String];
   }
 
-  Future<Map<String, dynamic>?> detail(String id) async {
-    return await _c
-        .from('work_orders')
-        .select('*,locations(name)')
-        .eq('id', id)
-        .maybeSingle();
-  }
+  Future<Map<String, dynamic>?> detail(String id) => SchemaCompat.run(
+      '0015',
+      () => _c
+          .from('work_orders')
+          .select('*,locations(name,code)')
+          .eq('id', id)
+          .maybeSingle(),
+      legacy: () => _c
+          .from('work_orders')
+          .select('*,locations(name)')
+          .eq('id', id)
+          .maybeSingle());
 
   Future<void> create(
       {required String companyId,
@@ -631,7 +636,10 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final workType = _workTypeLabel(widget.layers, context.localeCode,
         layerId: d['layer_id'] as String?, workType: d['work_type'] as String?);
     final objId = d['object_id'] as String?;
-    final place = (d['locations'] as Map<String, dynamic>?)?['name'] as String?;
+    final loc = d['locations'] as Map<String, dynamic>?;
+    final place = loc?['name'] == null
+        ? null
+        : placeLabel(loc!['name'] as String, loc['code'] as String?);
     final contractorId = d['assigned_contractor_id'] as String?;
     final created = DateTime.tryParse('${d['created_at']}');
     final createdText = created == null ? '—' : l.dateTime(created);

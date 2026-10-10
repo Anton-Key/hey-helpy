@@ -4160,6 +4160,342 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Нужна миграция {number}: раздел заработает, когда её применят в базе (Actions → «Apply migration»).'**
   String migrationNeeded(String number);
+
+  /// No description provided for @regionNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без региона'**
+  String get regionNone;
+
+  /// No description provided for @regionWhole.
+  ///
+  /// In ru, this message translates to:
+  /// **'Весь регион'**
+  String get regionWhole;
+
+  /// No description provided for @countryNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна не указана'**
+  String get countryNone;
+
+  /// No description provided for @geoWholeCity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Весь город: {city}'**
+  String geoWholeCity(String city);
+
+  /// No description provided for @geoWholeCountry.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вся страна: {country}'**
+  String geoWholeCountry(String country);
+
+  /// No description provided for @regionsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы'**
+  String get regionsTitle;
+
+  /// No description provided for @regionsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионов пока нет. Добавьте первый — например, «Европа».'**
+  String get regionsEmpty;
+
+  /// No description provided for @regionsLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить регионы'**
+  String get regionsLoadFailed;
+
+  /// No description provided for @regionAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый регион'**
+  String get regionAdd;
+
+  /// No description provided for @regionAddRow.
+  ///
+  /// In ru, this message translates to:
+  /// **'+ Новый регион'**
+  String get regionAddRow;
+
+  /// No description provided for @regionNameLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название региона'**
+  String get regionNameLabel;
+
+  /// No description provided for @regionNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, Европа'**
+  String get regionNameHint;
+
+  /// No description provided for @regionNameRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите название региона'**
+  String get regionNameRequired;
+
+  /// No description provided for @regionNameTooLong.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не больше 60 символов'**
+  String get regionNameTooLong;
+
+  /// No description provided for @regionRename.
+  ///
+  /// In ru, this message translates to:
+  /// **'Переименовать'**
+  String get regionRename;
+
+  /// No description provided for @regionMoveUp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выше'**
+  String get regionMoveUp;
+
+  /// No description provided for @regionMoveDown.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ниже'**
+  String get regionMoveDown;
+
+  /// No description provided for @regionMerge.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить с…'**
+  String get regionMerge;
+
+  /// No description provided for @regionDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить'**
+  String get regionDelete;
+
+  /// No description provided for @regionActions.
+  ///
+  /// In ru, this message translates to:
+  /// **'Действия с регионом «{name}»'**
+  String regionActions(String name);
+
+  /// No description provided for @regionSimilarTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожий регион уже есть'**
+  String get regionSimilarTitle;
+
+  /// No description provided for @regionSimilarText.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похоже, такой регион уже есть: «{name}» ({objects}). Использовать его?'**
+  String regionSimilarText(String name, String objects);
+
+  /// No description provided for @regionUseExisting.
+  ///
+  /// In ru, this message translates to:
+  /// **'Использовать «{name}»'**
+  String regionUseExisting(String name);
+
+  /// No description provided for @regionCreateAnyway.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё равно создать'**
+  String get regionCreateAnyway;
+
+  /// No description provided for @regionRenameAnyway.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё равно переименовать'**
+  String get regionRenameAnyway;
+
+  /// No description provided for @regionDuplicate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион с таким названием уже есть — выберите его из списка'**
+  String get regionDuplicate;
+
+  /// No description provided for @regionCreated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион добавлен'**
+  String get regionCreated;
+
+  /// No description provided for @regionRenamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион переименован'**
+  String get regionRenamed;
+
+  /// No description provided for @regionDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион удалён'**
+  String get regionDeleted;
+
+  /// No description provided for @regionMerged.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы объединены'**
+  String get regionMerged;
+
+  /// No description provided for @regionMergePick.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить «{name}» с…'**
+  String regionMergePick(String name);
+
+  /// No description provided for @regionMergeConfirmTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить регионы?'**
+  String get regionMergeConfirmTitle;
+
+  /// No description provided for @regionMergeConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'{objects} перейдут в «{into}», регион «{from}» будет удалён.'**
+  String regionMergeConfirm(String objects, String into, String from);
+
+  /// No description provided for @regionMergeAction.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить'**
+  String get regionMergeAction;
+
+  /// No description provided for @regionMergeNoOther.
+  ///
+  /// In ru, this message translates to:
+  /// **'Других регионов нет — объединять не с чем'**
+  String get regionMergeNoOther;
+
+  /// No description provided for @regionDeleteConfirmTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить регион «{name}»?'**
+  String regionDeleteConfirmTitle(String name);
+
+  /// No description provided for @regionDeleteConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'У объектов ({objects}) регион станет пустым.'**
+  String regionDeleteConfirm(String objects);
+
+  /// No description provided for @regionOnlyManager.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы меняет менеджер компании'**
+  String get regionOnlyManager;
+
+  /// No description provided for @regionInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Один общий список регионов компании: в объекте регион выбирается из списка, а не вводится текстом.'**
+  String get regionInfo1;
+
+  /// No description provided for @regionInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожие названия («Европа» и «Европпа») приложение замечает и предлагает выбрать уже существующий регион.'**
+  String get regionInfo2;
+
+  /// No description provided for @regionInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Лишний регион можно объединить с нужным: его объекты перейдут, а он сам удалится.'**
+  String get regionInfo3;
+
+  /// No description provided for @regionInfo4.
+  ///
+  /// In ru, this message translates to:
+  /// **'Переименование сразу видно во всех объектах, фильтрах и отчётах.'**
+  String get regionInfo4;
+
+  /// No description provided for @regionPickTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион'**
+  String get regionPickTitle;
+
+  /// No description provided for @regionNotSet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не указан'**
+  String get regionNotSet;
+
+  /// No description provided for @regionManage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы компании'**
+  String get regionManage;
+
+  /// No description provided for @countryTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна'**
+  String get countryTitle;
+
+  /// No description provided for @countrySearchHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название или код страны'**
+  String get countrySearchHint;
+
+  /// No description provided for @countryNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна не найдена'**
+  String get countryNotFound;
+
+  /// No description provided for @geoCity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Город'**
+  String get geoCity;
+
+  /// No description provided for @geoCityHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, Белград'**
+  String get geoCityHint;
+
+  /// No description provided for @geoCitySimilarTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожий город уже есть'**
+  String get geoCitySimilarTitle;
+
+  /// No description provided for @geoCitySimilar.
+  ///
+  /// In ru, this message translates to:
+  /// **'В компании уже есть город «{name}». Использовать его?'**
+  String geoCitySimilar(String name);
+
+  /// No description provided for @geoCityKeep.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставить «{name}»'**
+  String geoCityKeep(String name);
+
+  /// No description provided for @geoCitySuggestions.
+  ///
+  /// In ru, this message translates to:
+  /// **'Города компании в этой стране'**
+  String get geoCitySuggestions;
+
+  /// No description provided for @geoEditTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна, город, регион'**
+  String get geoEditTitle;
+
+  /// No description provided for @geoEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить страну, город, регион'**
+  String get geoEdit;
 }
 
 class _AppLocalizationsDelegate

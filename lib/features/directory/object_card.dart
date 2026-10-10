@@ -8,6 +8,10 @@ import '../../l10n/app_localizations.dart';
 import '../floors/floor_models.dart';
 import '../floors/floor_repository.dart';
 import '../floors/floors_section.dart';
+import '../regions/countries.dart';
+import '../regions/geo_pickers.dart';
+import '../regions/region.dart';
+import '../../core/schema_compat.dart';
 import '../requests/order_list.dart';
 import 'contractor_card.dart';
 import 'city.dart';
@@ -38,10 +42,44 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
   bool _loading = true;
   bool _failed = false;
 
+  /// Регионы компании и все объекты — для строк «Страна / Город / Регион»
+  /// и подсказок городов (шаг 16, 0015).
+  List<Region> _regions = const [];
+  List<Obj> _allObjects = const [];
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadGeo();
+  }
+
+  Future<void> _loadGeo() async {
+    final regions = await RegionRepository().listOrEmpty();
+    List<Obj> objects = const [];
+    try {
+      objects = await _dir.objects();
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _regions = regions;
+        _allObjects = objects;
+      });
+    }
+  }
+
+  Future<void> _editGeo() async {
+    final l = context.l10n;
+    final saved = await showObjectGeoSheet(context,
+        object: _obj,
+        allObjects: _allObjects.isEmpty ? [_obj] : _allObjects,
+        regions: _regions,
+        companyId: _ctx?.companyId);
+    if (saved == true) {
+      await _load();
+      await _loadGeo();
+      _snack(l.toastSaved, type: AppMessageType.success);
+    }
   }
 
   Future<void> _load() async {
@@ -175,6 +213,35 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
               value: _obj.address?.isNotEmpty == true
                   ? _obj.address!
                   : l.commonNotSpecified),
+          // Страна, город, регион (0015). До миграции — не показываем.
+          if (SchemaCompat.has('0015') == true) ...[
+            AppRow(
+                leading: const LeadingIcon(AppIcons.language),
+                title: l.countryTitle,
+                value: _obj.countryCode == null
+                    ? l.commonNotSpecified
+                    : countryLabel(_obj.countryCode, locale),
+                chevron: ctx.isManager,
+                onTap: ctx.isManager ? _editGeo : null),
+            AppRow(
+                leading: const LeadingIcon(AppIcons.building),
+                title: l.geoCity,
+                value: _obj.cityName.isEmpty
+                    ? l.commonNotSpecified
+                    : _obj.cityName,
+                chevron: ctx.isManager,
+                onTap: ctx.isManager ? _editGeo : null),
+            AppRow(
+                leading: const LeadingIcon(AppIcons.map),
+                title: l.regionPickTitle,
+                value: _regions
+                        .where((r) => r.id == _obj.regionId)
+                        .firstOrNull
+                        ?.name ??
+                    l.regionNotSet,
+                chevron: ctx.isManager,
+                onTap: ctx.isManager ? _editGeo : null),
+          ],
           AppRow(
               leading: const LeadingIcon(AppIcons.locate),
               title: l.cardCoordinates,

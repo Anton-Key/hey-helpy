@@ -2433,4 +2433,200 @@ class AppLocalizationsEn extends AppLocalizations {
   String migrationNeeded(String number) {
     return 'Migration $number is required: this section will work once it is applied to the database (Actions → “Apply migration”).';
   }
+
+  @override
+  String get regionNone => 'No region';
+
+  @override
+  String get regionWhole => 'Whole region';
+
+  @override
+  String get countryNone => 'Country not set';
+
+  @override
+  String geoWholeCity(String city) {
+    return 'Whole city: $city';
+  }
+
+  @override
+  String geoWholeCountry(String country) {
+    return 'Whole country: $country';
+  }
+
+  @override
+  String get regionsTitle => 'Regions';
+
+  @override
+  String get regionsEmpty =>
+      'No regions yet. Add the first one — for example, “Europe”.';
+
+  @override
+  String get regionsLoadFailed => 'Couldn’t load regions';
+
+  @override
+  String get regionAdd => 'New region';
+
+  @override
+  String get regionAddRow => '+ New region';
+
+  @override
+  String get regionNameLabel => 'Region name';
+
+  @override
+  String get regionNameHint => 'For example, Europe';
+
+  @override
+  String get regionNameRequired => 'Enter the region name';
+
+  @override
+  String get regionNameTooLong => '60 characters at most';
+
+  @override
+  String get regionRename => 'Rename';
+
+  @override
+  String get regionMoveUp => 'Move up';
+
+  @override
+  String get regionMoveDown => 'Move down';
+
+  @override
+  String get regionMerge => 'Merge with…';
+
+  @override
+  String get regionDelete => 'Delete';
+
+  @override
+  String regionActions(String name) {
+    return 'Actions for region “$name”';
+  }
+
+  @override
+  String get regionSimilarTitle => 'A similar region already exists';
+
+  @override
+  String regionSimilarText(String name, String objects) {
+    return 'Looks like this region already exists: “$name” ($objects). Use it?';
+  }
+
+  @override
+  String regionUseExisting(String name) {
+    return 'Use “$name”';
+  }
+
+  @override
+  String get regionCreateAnyway => 'Create anyway';
+
+  @override
+  String get regionRenameAnyway => 'Rename anyway';
+
+  @override
+  String get regionDuplicate =>
+      'A region with this name already exists — pick it from the list';
+
+  @override
+  String get regionCreated => 'Region added';
+
+  @override
+  String get regionRenamed => 'Region renamed';
+
+  @override
+  String get regionDeleted => 'Region deleted';
+
+  @override
+  String get regionMerged => 'Regions merged';
+
+  @override
+  String regionMergePick(String name) {
+    return 'Merge “$name” with…';
+  }
+
+  @override
+  String get regionMergeConfirmTitle => 'Merge regions?';
+
+  @override
+  String regionMergeConfirm(String objects, String into, String from) {
+    return '$objects will move to “$into”, region “$from” will be deleted.';
+  }
+
+  @override
+  String get regionMergeAction => 'Merge';
+
+  @override
+  String get regionMergeNoOther => 'There are no other regions to merge with';
+
+  @override
+  String regionDeleteConfirmTitle(String name) {
+    return 'Delete region “$name”?';
+  }
+
+  @override
+  String regionDeleteConfirm(String objects) {
+    return 'Objects ($objects) will have no region.';
+  }
+
+  @override
+  String get regionOnlyManager => 'Regions are edited by a company manager';
+
+  @override
+  String get regionInfo1 =>
+      'One shared list of company regions: an object’s region is picked from the list, not typed.';
+
+  @override
+  String get regionInfo2 =>
+      'Similar names (“Europe” and “Eurpe”) are detected, and the app offers the existing region.';
+
+  @override
+  String get regionInfo3 =>
+      'An extra region can be merged into the right one: its objects move over and it is deleted.';
+
+  @override
+  String get regionInfo4 =>
+      'A rename shows up at once in all objects, filters and reports.';
+
+  @override
+  String get regionPickTitle => 'Region';
+
+  @override
+  String get regionNotSet => 'Not set';
+
+  @override
+  String get regionManage => 'Company regions';
+
+  @override
+  String get countryTitle => 'Country';
+
+  @override
+  String get countrySearchHint => 'Country name or code';
+
+  @override
+  String get countryNotFound => 'No such country';
+
+  @override
+  String get geoCity => 'City';
+
+  @override
+  String get geoCityHint => 'For example, Belgrade';
+
+  @override
+  String get geoCitySimilarTitle => 'A similar city already exists';
+
+  @override
+  String geoCitySimilar(String name) {
+    return 'The company already has the city “$name”. Use it?';
+  }
+
+  @override
+  String geoCityKeep(String name) {
+    return 'Keep “$name”';
+  }
+
+  @override
+  String get geoCitySuggestions => 'Company cities in this country';
+
+  @override
+  String get geoEditTitle => 'Country, city, region';
+
+  @override
+  String get geoEdit => 'Edit country, city, region';
 }

@@ -450,19 +450,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onToggle: () => _toggleRail(layout),
           ),
           Expanded(
-            child: ContentNavigator(
-              navKey: _contentNav,
-              child: ClipRect(
-                child: Navigator(
-                  key: _contentNav,
-                  pages: [
-                    MaterialPage<void>(
-                        key: const ValueKey('home-section'), child: body),
-                  ],
-                  onDidRemovePage: (_) {},
-                ),
-              ),
-            ),
+            child: ContentNavigatorView(navKey: _contentNav, home: body),
           ),
         ])),
       );

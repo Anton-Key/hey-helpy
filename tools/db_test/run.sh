@@ -5,7 +5,8 @@
 #    транзакцией, как workflow «Apply migration»), затем каждая новая
 #    миграция ещё раз — проверка повторного запуска;
 # 3) тестовые данные двух компаний (10_fixture.sql);
-# 4) тесты tools/db_test/*.sql (кроме 0*_ и 1*_), итоги — таблица t.results.
+# 4) тесты tools/db_test/*.sql (кроме 0*_ и 1*_), итоги — таблица t.results;
+# 5) демо-данные (20_demo_seed.sh): demo.sql и demo_history.sql дважды.
 # Нужен локальный PostgreSQL (sudo apt-get install -y postgresql); скрипт сам
 # запускает кластер, если он остановлен. Рабочую базу не трогает.
 # Запуск: bash tools/db_test/run.sh
@@ -58,6 +59,10 @@ for f in tools/db_test/[a-z]*.sql; do
   echo "== Тест $(basename "$f")"
   run -f "$f"
 done
+
+echo "== Демо-данные (demo.sql + demo_history.sql дважды)"
+bash tools/db_test/20_demo_seed.sh >/dev/null 2>&1 || { echo "Демо-данные: ОШИБКА"; bash tools/db_test/20_demo_seed.sh; exit 1; }
+echo "   без ошибок"
 
 echo "== Итоги"
 run -c "select suite, count(*) filter (where ok) as passed, count(*) filter (where not ok) as failed

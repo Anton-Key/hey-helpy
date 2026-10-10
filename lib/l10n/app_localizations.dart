@@ -4160,6 +4160,126 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Нужна миграция {number}: раздел заработает, когда её применят в базе (Actions → «Apply migration»).'**
   String migrationNeeded(String number);
+
+  /// No description provided for @roomCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер помещения'**
+  String get roomCode;
+
+  /// No description provided for @roomCodeHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, 305 или 12А'**
+  String get roomCodeHint;
+
+  /// No description provided for @roomCodeTaken.
+  ///
+  /// In ru, this message translates to:
+  /// **'Такой номер уже есть в этом объекте'**
+  String get roomCodeTaken;
+
+  /// No description provided for @roomCodeNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без номера'**
+  String get roomCodeNone;
+
+  /// No description provided for @areaDraw.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обвести область'**
+  String get areaDraw;
+
+  /// No description provided for @areaEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить область'**
+  String get areaEdit;
+
+  /// No description provided for @areaDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить область'**
+  String get areaDelete;
+
+  /// No description provided for @areaDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Область удалена'**
+  String get areaDeleted;
+
+  /// Шапка режима рисования области помещения (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Область: {name}'**
+  String areaTitle(String name);
+
+  /// No description provided for @areaHintPolygon.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажимайте по углам помещения. Точки можно двигать.'**
+  String get areaHintPolygon;
+
+  /// No description provided for @areaHintRect.
+  ///
+  /// In ru, this message translates to:
+  /// **'Протяните прямоугольник по помещению. Точки можно двигать.'**
+  String get areaHintRect;
+
+  /// No description provided for @areaModePolygon.
+  ///
+  /// In ru, this message translates to:
+  /// **'По углам'**
+  String get areaModePolygon;
+
+  /// No description provided for @areaModeRect.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прямоугольник'**
+  String get areaModeRect;
+
+  /// No description provided for @areaUndoPoint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменить точку'**
+  String get areaUndoPoint;
+
+  /// No description provided for @areaNeedPoints.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужно хотя бы 3 точки'**
+  String get areaNeedPoints;
+
+  /// No description provided for @roomInfoTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер и область помещения'**
+  String get roomInfoTitle;
+
+  /// No description provided for @roomInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер помещения («305») виден в списках и на плане, по нему ищут и его понимает голосовая заявка: «течёт кран в 305-й».'**
+  String get roomInfo1;
+
+  /// No description provided for @roomInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер уникален внутри объекта. Пустой номер — без номера.'**
+  String get roomInfo2;
+
+  /// No description provided for @roomInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Область — контур помещения на плане. Режим расстановки → помещение → «Обвести область»: нажимайте по углам или протяните прямоугольник, потом «Готово».'**
+  String get roomInfo3;
+
+  /// No description provided for @roomInfo4.
+  ///
+  /// In ru, this message translates to:
+  /// **'Область закрашена цветом заявок помещения; нажатие в любом месте области открывает помещение.'**
+  String get roomInfo4;
 }
 
 class _AppLocalizationsDelegate

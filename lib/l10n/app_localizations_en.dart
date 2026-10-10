@@ -2433,4 +2433,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String migrationNeeded(String number) {
     return 'Migration $number is required: this section will work once it is applied to the database (Actions → “Apply migration”).';
   }
+
+  @override
+  String get roomCode => 'Room number';
+
+  @override
+  String get roomCodeHint => 'For example, 305 or 12A';
+
+  @override
+  String get roomCodeTaken => 'This number is already used in this building';
+
+  @override
+  String get roomCodeNone => 'No number';
+
+  @override
+  String get areaDraw => 'Outline area';
+
+  @override
+  String get areaEdit => 'Edit area';
+
+  @override
+  String get areaDelete => 'Delete area';
+
+  @override
+  String get areaDeleted => 'Area deleted';
+
+  @override
+  String areaTitle(String name) {
+    return 'Area: $name';
+  }
+
+  @override
+  String get areaHintPolygon =>
+      'Tap the corners of the room. Points can be dragged.';
+
+  @override
+  String get areaHintRect =>
+      'Drag a rectangle over the room. Points can be dragged.';
+
+  @override
+  String get areaModePolygon => 'Corners';
+
+  @override
+  String get areaModeRect => 'Rectangle';
+
+  @override
+  String get areaUndoPoint => 'Undo point';
+
+  @override
+  String get areaNeedPoints => 'At least 3 points are needed';
+
+  @override
+  String get roomInfoTitle => 'Room number and area';
+
+  @override
+  String get roomInfo1 =>
+      'The room number (“305”) shows in lists and on the plan, can be searched, and voice requests understand it: “tap leaking in room 305”.';
+
+  @override
+  String get roomInfo2 =>
+      'The number is unique within a building. Leave it empty for no number.';
+
+  @override
+  String get roomInfo3 =>
+      'The area is the room outline on the plan. Edit mode → room → “Outline area”: tap the corners or drag a rectangle, then “Done”.';
+
+  @override
+  String get roomInfo4 =>
+      'The area is tinted with the colour of the room’s requests; tapping anywhere inside opens the room.';
 }

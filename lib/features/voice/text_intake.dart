@@ -382,6 +382,38 @@ class TextIntake {
     return null;
   }
 
+  /// Номер помещения в тексте (шаг 16, locations.code): «кабинет 305»,
+  /// «комната 12а», «аудитория 101», «помещение № 7», «номер 214»,
+  /// «room 305», «#305»; с предлогом — «в 305-й», «в 305 кабинете»,
+  /// «в 305», «in 305» (без слова «кабинет» — от трёх цифр или с
+  /// окончанием «-й/-м»). Номер этажа («на 3-м этаже», «этаж номер 3») и
+  /// время («в 10:00») — не номер помещения.
+  static final _roomWordPattern = RegExp(
+      r'(?<![\p{L}\p{N}])(?<!этаж\p{L}{0,3}\s)'
+      r'(?:кабинет\p{L}*|каб\.?|комнат\p{L}*|помещени\p{L}*|аудитори\p{L}*|'
+      r'номер\p{L}*|room|suite|№|#)'
+      r'\s*(?:№\s*)?(\d{1,5}[a-zа-я]?)(?![\p{L}\p{N}])',
+      unicode: true);
+  static final _roomPrepPattern = RegExp(
+      r'(?<![\p{L}\p{N}])(?:в|во|in|at)\s+'
+      r'(?:(\d{3,5}[a-zа-я]?)(?![\p{N}]|[:.,]\d)(?:\s*-?\s*(?:й|м|ом|ой|ую|ий|th))?'
+      r'|(\d{1,2}[a-zа-я]?)\s*-\s*(?:й|м|ом|ой|ую|ий))'
+      r'(?![\p{L}\p{N}])'
+      r'(?!\s*-?\s*(?:\p{L}+\s+)?(?:этаж|floor|level|час|минут|раз|year|hour))',
+      unicode: true);
+
+  static ({String code, String phrase})? roomNumberOf(String text) {
+    final low = text.toLowerCase().replaceAll('ё', 'е');
+    for (final re in [_roomWordPattern, _roomPrepPattern]) {
+      for (final m in re.allMatches(low)) {
+        final code = m.group(1) ?? m.group(2);
+        if (code == null) continue;
+        return (code: code, phrase: text.substring(m.start, m.end).trim());
+      }
+    }
+    return null;
+  }
+
   /// Основа слова для сравнения с названием помещения: без окончания,
   /// но не короче 4 букв («переговорная» → «переговор», «холл» → «холл»).
   static String _stem(String w) =>
@@ -464,6 +496,37 @@ class TextIntake {
   ({Place? place, Obj? object, String? hint}) _where(
       String text, List<String> tokens) {
     final floor = floorOf(text);
+
+    // Номер помещения («в 305-й»): если такой номер есть в справочнике —
+    // это и есть помещение. Номер повторяется в разных объектах — уточняют
+    // слова названия; не уточнили — пусть выберет пользователь.
+    final number = roomNumberOf(text);
+    if (number != null) {
+      final same = [
+        for (final p in places)
+          if (p.code != null &&
+              p.code!.toLowerCase().replaceAll('ё', 'е') == number.code)
+            p
+      ];
+      Place? byNumber;
+      if (same.length == 1) {
+        byNumber = same.single;
+      } else if (same.length > 1) {
+        final scored = [
+          for (final p in same) (p, _matched(p.name, tokens).length)
+        ]..sort((a, b) => b.$2 - a.$2);
+        if (scored.first.$2 > 0 && scored.first.$2 > scored[1].$2) {
+          byNumber = scored.first.$1;
+        }
+      }
+      if (byNumber != null) {
+        return (
+          place: byNumber,
+          object: null,
+          hint: [number.phrase, if (floor != null) floor.phrase].join(', ')
+        );
+      }
+    }
 
     // Помещение: больше совпавших слов названия; этаж — уточняет.
     Place? place;

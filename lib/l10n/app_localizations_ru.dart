@@ -2458,4 +2458,72 @@ class AppLocalizationsRu extends AppLocalizations {
   String migrationNeeded(String number) {
     return 'Нужна миграция $number: раздел заработает, когда её применят в базе (Actions → «Apply migration»).';
   }
+
+  @override
+  String get roomCode => 'Номер помещения';
+
+  @override
+  String get roomCodeHint => 'Например, 305 или 12А';
+
+  @override
+  String get roomCodeTaken => 'Такой номер уже есть в этом объекте';
+
+  @override
+  String get roomCodeNone => 'Без номера';
+
+  @override
+  String get areaDraw => 'Обвести область';
+
+  @override
+  String get areaEdit => 'Изменить область';
+
+  @override
+  String get areaDelete => 'Удалить область';
+
+  @override
+  String get areaDeleted => 'Область удалена';
+
+  @override
+  String areaTitle(String name) {
+    return 'Область: $name';
+  }
+
+  @override
+  String get areaHintPolygon =>
+      'Нажимайте по углам помещения. Точки можно двигать.';
+
+  @override
+  String get areaHintRect =>
+      'Протяните прямоугольник по помещению. Точки можно двигать.';
+
+  @override
+  String get areaModePolygon => 'По углам';
+
+  @override
+  String get areaModeRect => 'Прямоугольник';
+
+  @override
+  String get areaUndoPoint => 'Отменить точку';
+
+  @override
+  String get areaNeedPoints => 'Нужно хотя бы 3 точки';
+
+  @override
+  String get roomInfoTitle => 'Номер и область помещения';
+
+  @override
+  String get roomInfo1 =>
+      'Номер помещения («305») виден в списках и на плане, по нему ищут и его понимает голосовая заявка: «течёт кран в 305-й».';
+
+  @override
+  String get roomInfo2 =>
+      'Номер уникален внутри объекта. Пустой номер — без номера.';
+
+  @override
+  String get roomInfo3 =>
+      'Область — контур помещения на плане. Режим расстановки → помещение → «Обвести область»: нажимайте по углам или протяните прямоугольник, потом «Готово».';
+
+  @override
+  String get roomInfo4 =>
+      'Область закрашена цветом заявок помещения; нажатие в любом месте области открывает помещение.';
 }

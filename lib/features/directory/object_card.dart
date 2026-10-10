@@ -213,7 +213,7 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
           for (final p in _places)
             AppRow(
               leading: const LeadingIcon.neutral(AppIcons.room),
-              title: p.name,
+              title: p.label,
               subtitle: _placeFloorTag(l, p.id),
               onTap: () => Navigator.push(
                   context,

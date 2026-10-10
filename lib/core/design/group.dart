@@ -62,7 +62,11 @@ class AppGroup extends StatelessWidget {
     this.separatorInset,
     this.margin = const EdgeInsetsDirectional.only(bottom: AppSpace.group),
     this.padding = EdgeInsets.zero,
+    this.compactHeader = false,
   });
+
+  /// Подпись секции ближе к блоку (сверху 8, снизу 4) — длинные списки.
+  final bool compactHeader;
 
   final List<Widget> children;
   final String? header;
@@ -97,7 +101,12 @@ class AppGroup extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (header != null)
-              SectionHeader(header!, trailing: headerTrailing),
+              SectionHeader(header!,
+                  trailing: headerTrailing,
+                  padding: compactHeader
+                      ? const EdgeInsetsDirectional.fromSTEB(
+                          AppSpace.rowH, AppSpace.s, AppSpace.rowH, AppSpace.xs)
+                      : null),
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.group),
               child: ColoredBox(

@@ -441,7 +441,8 @@ class _ObjectsTabState extends State<ObjectsTab> {
     if (_mapMode) {
       // Карта — во всю ширину, шапка компактная.
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        HomeTopBar(title: l.tabLocations, actions: _actions(l)),
+        HomeTopBar(
+            title: l.tabLocations, actions: _actions(l), onRefresh: _reload),
         Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(
               AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.s),
@@ -533,7 +534,8 @@ class _ObjectsTabState extends State<ObjectsTab> {
           );
         }
         return CustomScrollView(slivers: [
-          HomeHeader(title: l.tabLocations, actions: _actions(l)),
+          HomeHeader(
+              title: l.tabLocations, actions: _actions(l), onRefresh: _reload),
           SliverContent(
             top: AppSpace.s,
             sliver: SliverToBoxAdapter(
@@ -743,7 +745,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
           );
         }
         return CustomScrollView(slivers: [
-          HomeHeader(title: l.tabContractors, actions: [
+          HomeHeader(title: l.tabContractors, onRefresh: _reload, actions: [
             if (_isManager)
               AppIconButton(
                   icon: AppIcons.add,

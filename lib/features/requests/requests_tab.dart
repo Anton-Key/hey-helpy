@@ -8,6 +8,7 @@ import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/city.dart';
 import '../directory/directory.dart';
+import '../home/home_actions.dart';
 import '../home/home_chrome.dart';
 import '../voice/voice_record_screen.dart';
 import '../voice/wake_word_service.dart';
@@ -22,7 +23,8 @@ import 'requests.dart';
 const kRequestsMaxWidth = 960.0;
 
 /// Вкладка «Заявки»: поиск, строка фильтров, сегменты «Все / Открытые /
-/// Просрочено», «Найдено N из M» и список (группы — по смыслу сортировки).
+/// Просрочено» (у выбранного при фильтрах — «12 из 72») и список (группы —
+/// по смыслу сортировки, подписи — если групп больше одной).
 class RequestsTab extends StatefulWidget {
   const RequestsTab({super.key, this.objectFilter, this.onClearObjectFilter});
 
@@ -75,6 +77,35 @@ class _RequestsTabState extends State<RequestsTab> {
     _wake.start();
   }
 
+  HomeActions? _homeActions;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final a = HomeChrome.maybeOf(context)?.actions;
+    if (a != _homeActions) {
+      _homeActions?.removeListener(_onHomeAction);
+      _homeActions = a?..addListener(_onHomeAction);
+    }
+  }
+
+  /// Кнопки бокового меню ПК и горячие клавиши: выполнить, когда
+  /// справочники загружены (иначе — после загрузки, см. [_load]).
+  void _onHomeAction() {
+    final a = _homeActions;
+    if (a == null || !mounted || !_refsLoaded) return;
+    switch (a.take()) {
+      case HomeAction.create:
+        _openCreate();
+      case HomeAction.voice:
+        _wake.trigger();
+      case HomeAction.search:
+        a.searchFocus.requestFocus();
+      case null:
+        break;
+    }
+  }
+
   @override
   void didUpdateWidget(RequestsTab old) {
     super.didUpdateWidget(old);
@@ -86,6 +117,7 @@ class _RequestsTabState extends State<RequestsTab> {
 
   @override
   void dispose() {
+    _homeActions?.removeListener(_onHomeAction);
     _wakeSub?.cancel();
     _wake.dispose();
     _search.dispose();
@@ -147,6 +179,12 @@ class _RequestsTabState extends State<RequestsTab> {
         _total = r[1] as int;
         _loading = false;
       });
+      // Бейдж «Главная» в боковом меню — просроченные без фильтров.
+      if (!_filter.hasFilters) {
+        _homeActions?.setOverdue(
+            _items.where((w) => w.isOverdue(DateTime.now())).length);
+      }
+      _onHomeAction();
     } catch (e) {
       debugPrint('RequestsTab: $e');
       if (!mounted || req != _req) return;
@@ -289,8 +327,18 @@ class _RequestsTabState extends State<RequestsTab> {
         myExecutorIds: _execIds,
         search: _matches,
         objectName: (id) => _objName(l, id));
-    final ready = !_loading && _error == null;
-    final wide = MediaQuery.sizeOf(context).width >= AppSpace.wideFrom;
+    final width = MediaQuery.sizeOf(context).width;
+    final wide = width >= AppSpace.wideFrom;
+    final desktop = HomeChrome.maybeOf(context)?.desktop ?? wide;
+    // Фильтры или поиск сужают список: у выбранного сегмента — «12 из 72».
+    final narrowed =
+        _filterReady && (_filter.hasFilters || _query.trim().isNotEmpty);
+    String seg(OrderSegment s, int n) => segmentCountText(l,
+        count: n,
+        total: _total,
+        selected: _filter.segment == s,
+        narrowed: narrowed && !_loading,
+        width: width);
     final choices = _choices();
     final skip = wide ? kMainFilterKeys.toSet() : const <FilterKey>{};
     final applied = _filterReady &&
@@ -304,14 +352,8 @@ class _RequestsTabState extends State<RequestsTab> {
         child: CustomScrollView(slivers: [
           HomeHeader(
             title: l.tabRequests,
-            eyebrow: l.appName,
             maxWidth: kRequestsMaxWidth,
-            actions: [
-              AppIconButton(
-                  icon: AppIcons.refresh,
-                  label: l.commonRefresh,
-                  onPressed: _loading ? null : _load),
-            ],
+            onRefresh: _loading ? null : _load,
           ),
           AppSliverBar(
             height: barHeight,
@@ -331,6 +373,7 @@ class _RequestsTabState extends State<RequestsTab> {
                         onChanged: _setFilter,
                         onOpenAll: _openFilters,
                         loadPlaces: _loadPlaces,
+                        searchFocus: _homeActions?.searchFocus,
                       )
                     else
                       SizedBox(
@@ -360,46 +403,50 @@ class _RequestsTabState extends State<RequestsTab> {
             height: AppSizes.segmentHeight + AppSpace.s * 2,
             maxWidth: kRequestsMaxWidth,
             child: Center(
-              child: SegmentedControl<OrderSegment>(
-                segments: [
-                  Segment(OrderSegment.all, l.reqSegAll(view.all)),
-                  Segment(OrderSegment.open, l.reqSegOpen(view.open)),
-                  Segment(OrderSegment.overdue, l.reqSegOverdue(view.overdue)),
-                ],
-                selected: _filter.segment,
-                onChanged: (s) => _setFilter(_filter.copyWith(segment: s)),
-              ),
-            ),
-          ),
-          if (ready && _total > 0)
-            SliverContent(
-              top: 0,
-              maxWidth: kRequestsMaxWidth,
-              sliver: SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                      horizontal: AppSpace.rowH),
-                  child: Text(l.filterFound(view.items.length, _total),
-                      style: AppText.footnote),
+              // Диктору — полный текст «Найдено 12 из 72» (строки «Найдено»
+              // на экране больше нет: числа — в сегментах).
+              child: Semantics(
+                container: true,
+                label: narrowed && !_loading
+                    ? l.filterFound(view.items.length, _total)
+                    : null,
+                child: SegmentedControl<OrderSegment>(
+                  segments: [
+                    Segment(OrderSegment.all,
+                        l.reqSegAll(seg(OrderSegment.all, view.all))),
+                    Segment(OrderSegment.open,
+                        l.reqSegOpen(seg(OrderSegment.open, view.open))),
+                    Segment(
+                        OrderSegment.overdue,
+                        l.reqSegOverdue(
+                            seg(OrderSegment.overdue, view.overdue))),
+                  ],
+                  selected: _filter.segment,
+                  onChanged: (s) => _setFilter(_filter.copyWith(segment: s)),
                 ),
               ),
             ),
+          ),
           ..._body(view, now),
-          const SliverBottomInset(extra: AppSizes.fabClearance),
+          // Телефон: под последней заявкой — место для плавающих кнопок.
+          SliverBottomInset(
+              extra: desktop ? AppSpace.xl : AppSizes.fabClearance),
         ]),
       ),
-      // Голосовая кнопка и «+» — над нижним меню (оно поверх содержимого).
-      PositionedDirectional(
-        end: AppSpace.screen,
-        bottom: MediaQuery.paddingOf(context).bottom + AppSpace.l,
-        child: VoiceButton(
-          label: l.appName,
-          semanticLabel: l.requestsVoice,
-          onVoice: _wake.trigger,
-          addLabel: l.requestsCreate,
-          onAdd: _openCreate,
+      // Телефон: голосовая кнопка и «+» — над нижним меню (оно поверх
+      // содержимого). ПК: эти кнопки — в боковом меню слева.
+      if (!desktop)
+        PositionedDirectional(
+          end: AppSpace.screen,
+          bottom: MediaQuery.paddingOf(context).bottom + AppSpace.l,
+          child: VoiceButton(
+            label: l.appName,
+            semanticLabel: l.requestsVoice,
+            onVoice: _wake.trigger,
+            addLabel: l.requestsCreate,
+            onAdd: _openCreate,
+          ),
         ),
-      ),
     ]);
   }
 
@@ -450,18 +497,20 @@ class _RequestsTabState extends State<RequestsTab> {
       ];
     }
 
+    final narrowRow = MediaQuery.sizeOf(context).width < kSegmentOfFrom;
     Widget row(WorkOrder w) {
       final workType = _workType(w);
       // «Москва · Офис 3 · Лобби · Климат» — объект всегда с городом.
       final place = [
         _objName(l, w.objectId),
         if (w.placeName != null && w.placeName!.isNotEmpty)
-          placeWithFloor(
-              w.placeName!,
-              w.floorName,
+          placeWithFloor(w.placeName!, w.floorName,
               w.floorLevel == null ? null : l.floorShort(w.floorLevel!)),
       ].join(' · ');
       final overdue = w.isOverdue(now);
+      final overdueText = Text(l.statusOverdue,
+          style: AppText.footnote
+              .copyWith(color: AppColors.danger, fontWeight: FontWeight.w600));
       final due = _filter.sort == OrderSort.due && w.dueAt != null
           ? '${l.reqFieldDue}: ${l.dateTime(w.dueAt!)}'
           : null;
@@ -475,25 +524,33 @@ class _RequestsTabState extends State<RequestsTab> {
         subtitleMaxLines: due == null ? 2 : 3,
         // Капсула — всегда настоящий статус; просрочка — красной подписью
         // под строкой (иначе не видно, новая заявка или уже в работе).
-        extra: overdue
-            ? Text(l.statusOverdue,
-                style: AppText.footnote.copyWith(
-                    color: AppColors.danger, fontWeight: FontWeight.w600))
-            : null,
-        trailing: StatusPill(w.status),
+        extra: narrowRow
+            ? Padding(
+                padding: const EdgeInsetsDirectional.only(top: AppSpace.xxs),
+                child: Wrap(
+                    spacing: AppSpace.s,
+                    runSpacing: AppSpace.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [StatusPill(w.status), if (overdue) overdueText]),
+              )
+            : (overdue ? overdueText : null),
+        // Узкий телефон: статус — под названием, название во всю ширину.
+        trailing: narrowRow ? null : StatusPill(w.status),
         onTap: () => _openDetail(w),
       );
     }
 
     final groups = groupOrders(view.items, _filter.sort, now: now);
+    final headers = showGroupHeaders(groups);
     return [
       SliverContent(
-        top: AppSpace.s,
+        top: headers ? 0 : AppSpace.xs,
         maxWidth: kRequestsMaxWidth,
         sliver: SliverList.list(children: [
           for (final g in groups)
             AppGroup(
-                header: _groupLabel(l, g.key),
+                header: headers ? _groupLabel(l, g.key) : null,
+                compactHeader: true,
                 children: [for (final w in g.items) row(w)]),
         ]),
       ),

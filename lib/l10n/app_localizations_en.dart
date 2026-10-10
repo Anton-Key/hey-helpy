@@ -1627,19 +1627,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reqSearchHint => 'Search requests';
 
   @override
-  String reqSegAll(int count) {
+  String reqSegAll(String count) {
     return 'All · $count';
   }
 
   @override
-  String reqSegOpen(int count) {
+  String reqSegOpen(String count) {
     return 'Open · $count';
   }
 
   @override
-  String reqSegOverdue(int count) {
+  String reqSegOverdue(String count) {
     return 'Overdue · $count';
   }
+
+  @override
+  String reqSegOf(int shown, int total) {
+    return '$shown of $total';
+  }
+
+  @override
+  String get reqSearchShort => 'Search';
 
   @override
   String get reqGroupToday => 'Today';
@@ -2357,4 +2365,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get formAsset => 'Equipment';
+
+  @override
+  String get navAddOrder => 'Request';
+
+  @override
+  String get navCollapse => 'Collapse menu';
+
+  @override
+  String get navExpand => 'Expand menu';
+
+  @override
+  String navLanguage(String lang) {
+    return 'Interface language: $lang';
+  }
+
+  @override
+  String get navHelp => 'Help and keyboard shortcuts';
+
+  @override
+  String get navAccount => 'Account menu';
+
+  @override
+  String navCompanyRole(String company, String role) {
+    return '$company · $role';
+  }
+
+  @override
+  String get helpTitle => 'Help';
+
+  @override
+  String get helpTip1 =>
+      '“Hey Helpy” — say what happened and where: the request fills itself in, you just check and send it.';
+
+  @override
+  String get helpTip2 =>
+      'A request can\'t be closed without an “after” photo and approval by its author or a manager.';
+
+  @override
+  String get helpTip3 =>
+      '“Locations” — sites on the map and floor plans with room and equipment markers.';
+
+  @override
+  String get helpHotkeys => 'Keyboard shortcuts';
+
+  @override
+  String get hotkeyNew => 'New request';
+
+  @override
+  String get hotkeyVoice => 'Voice request';
+
+  @override
+  String get hotkeySearch => 'Search requests';
+
+  @override
+  String get hotkeyHelp => 'This help';
+
+  @override
+  String get hotkeyNote =>
+      'They don\'t work while the cursor is in a text field.';
 }

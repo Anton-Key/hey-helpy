@@ -153,7 +153,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       physics:
           const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
-        HomeHeader(title: l.navHistory),
+        HomeHeader(title: l.navHistory, onRefresh: _load),
         CupertinoSliverRefreshControl(onRefresh: _load),
         SliverContent(
           sliver: SliverList.list(children: [

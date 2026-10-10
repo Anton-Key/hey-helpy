@@ -240,7 +240,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       slivers: [
         // Из карточки подрядчика — своя шапка с «назад» (без колокольчика).
         if (widget.initialContractorId == null)
-          HomeHeader(title: l.navReports, maxWidth: double.infinity)
+          HomeHeader(
+              title: l.navReports,
+              maxWidth: double.infinity,
+              onRefresh: _isManager ? _load : null)
         else
           AppSliverHeader(title: l.navReports, maxWidth: double.infinity),
         if (_isManager) CupertinoSliverRefreshControl(onRefresh: _load),

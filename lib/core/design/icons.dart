@@ -18,6 +18,9 @@ class AppIcons {
   static const chevronDown = LucideIcons.chevronDown300;
   static const close = LucideIcons.x300;
   static const more = LucideIcons.ellipsis300;
+  static const panelOpen = LucideIcons.panelLeftOpen300;
+  static const panelClose = LucideIcons.panelLeftClose300;
+  static const help = LucideIcons.circleQuestionMark300;
 
   // Действия
   static const add = LucideIcons.plus300;

@@ -31,7 +31,12 @@ class FloorPlanScreen extends StatefulWidget {
     required this.floorId,
     this.focus,
     this.startEditing = false,
+    this.updateUrl = true,
   });
+
+  /// false — открыт внутри области справа от бокового меню (ПК): адрес
+  /// страницы при смене этажа не меняется.
+  final bool updateUrl;
 
   final String objectId;
   final String floorId;
@@ -160,6 +165,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
       _highlight = null;
     });
     // Адрес страницы — новый этаж (ссылкой можно поделиться).
+    if (!widget.updateUrl) return;
     SystemNavigator.routeInformationUpdated(
         uri: Uri.parse(floorPlanLocation(widget.objectId, id)), replace: true);
   }

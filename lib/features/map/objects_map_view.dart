@@ -1056,6 +1056,12 @@ class _ClusteredMarkers extends StatelessWidget {
     // Мелкий масштаб — один кружок на город с подписью; крупнее — по сетке.
     final clusters =
         clusterMap(items, zoom, cityOf: (Obj o) => cityOf(o.address));
+    // Подписи городов не наезжают на соседние кружки и подписи.
+    final l = context.l10n;
+    final labels = cityLabelPlacement(clusters, zoom,
+        text: (c) => c.moreCities == 0
+            ? c.label!
+            : l.filterPlus(c.label!, c.moreCities));
     // Выбранный — последним, чтобы был поверх соседей.
     clusters.sort((a, b) {
       int rank(MapCluster<Obj> c) =>
@@ -1092,6 +1098,7 @@ class _ClusteredMarkers extends StatelessWidget {
             child: ClusterMarker(
               city: c.label,
               moreCities: c.moreCities,
+              labelPos: labels[c.key] ?? CityLabelPos.below,
               objects: c.items.length,
               open: c.items.fold(
                   0, (sum, i) => sum + (stats[i.id] ?? ObjectStats.empty).open),

@@ -3451,4 +3451,204 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get assetFieldInventoryHint => 'Например, КЛ-3-001';
+
+  @override
+  String get zoneTitle => 'Зона доступа';
+
+  @override
+  String get zoneMenuRole => 'Сменить роль';
+
+  @override
+  String get zoneWholeCompany => 'Вся компания';
+
+  @override
+  String get zoneWholeCompanyHint =>
+      'Видит все объекты и системы компании — как раньше.';
+
+  @override
+  String get zoneAllSystems => 'Все системы';
+
+  @override
+  String get zoneRules => 'Правила';
+
+  @override
+  String get zoneRulesFooter =>
+      'Правила складываются: видно всё, что подходит хотя бы под одно.';
+
+  @override
+  String get zoneRuleAdd => 'Добавить правило';
+
+  @override
+  String get zoneRuleTitle => 'Правило';
+
+  @override
+  String get zoneRuleSystems => 'Системы';
+
+  @override
+  String get zoneRulePlaces => 'Места';
+
+  @override
+  String get zoneRuleAddPlace => 'Выбрать места';
+
+  @override
+  String get zoneRuleRefine => 'Этаж или оборудование';
+
+  @override
+  String get zoneRuleRefineTitle => 'Уточнить место';
+
+  @override
+  String get zoneRuleWholeObject => 'Весь объект';
+
+  @override
+  String get zoneRuleFloors => 'Этажи';
+
+  @override
+  String get zoneRuleAssets => 'Оборудование';
+
+  @override
+  String get zoneRuleDelete => 'Удалить правило';
+
+  @override
+  String get zoneRuleEmpty => 'Выберите хотя бы одно место';
+
+  @override
+  String get zoneRulesEmpty => 'Добавьте правило или выберите шаблон';
+
+  @override
+  String get zoneTemplates => 'Шаблоны';
+
+  @override
+  String get zoneTemplateCompany => 'Вся компания';
+
+  @override
+  String get zoneTemplateSystem => 'Одна система во всех объектах';
+
+  @override
+  String get zoneTemplateRegion => 'Регион целиком';
+
+  @override
+  String get zoneTemplatePickSystem => 'Какая система?';
+
+  @override
+  String get zoneTemplatePickRegion => 'Какой регион?';
+
+  @override
+  String get zoneNoRegions => 'У компании нет регионов';
+
+  @override
+  String get zoneSaved => 'Зона доступа сохранена';
+
+  @override
+  String get zoneSaveDenied => 'Зону доступа меняет только администратор';
+
+  @override
+  String get zoneLoadFailed =>
+      'Не удалось загрузить зону доступа. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String zonePill(String company, String role, String zone) {
+    return '$company · $role · $zone';
+  }
+
+  @override
+  String get zoneInfoTitle => 'Зона доступа';
+
+  @override
+  String get zoneInfo1 =>
+      'По умолчанию менеджер видит всю компанию — ничего настраивать не нужно.';
+
+  @override
+  String get zoneInfo2 =>
+      'Правило — системы × места: например, «Климат, Сантехника · Москва». Правила складываются.';
+
+  @override
+  String get zoneInfo3 =>
+      'Вне зоны менеджер не видит ни заявок, ни оборудования, ни подрядчиков, ни отчётов — это проверяет база.';
+
+  @override
+  String get zoneInfo4 =>
+      'Менять зоны может только администратор; все изменения записываются в журнал.';
+
+  @override
+  String get zoneRefused =>
+      'Нет доступа: это вне вашей зоны или нужен администратор';
+
+  @override
+  String get crewSection => 'Бригады';
+
+  @override
+  String get crewEmpty =>
+      'Бригад нет — все исполнители видят объекты подрядчика по закреплениям.';
+
+  @override
+  String get crewAdd => 'Новая бригада';
+
+  @override
+  String get crewTitle => 'Бригада';
+
+  @override
+  String get crewName => 'Название';
+
+  @override
+  String get crewNameHint => 'Например: Пекин';
+
+  @override
+  String get crewNameRequired => 'Укажите название бригады (до 60 символов)';
+
+  @override
+  String get crewDuplicate => 'Бригада с таким названием уже есть';
+
+  @override
+  String get crewMembers => 'Исполнители';
+
+  @override
+  String get crewNoExecutors => 'У подрядчика пока нет исполнителей';
+
+  @override
+  String get crewZone => 'Зона бригады';
+
+  @override
+  String get crewZoneHint =>
+      'Исполнители бригады видят только эти места и системы.';
+
+  @override
+  String crewMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count исполнителя',
+      many: '$count исполнителей',
+      few: '$count исполнителя',
+      one: '$count исполнитель',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get crewSaved => 'Бригада сохранена';
+
+  @override
+  String get crewDeleted => 'Бригада удалена';
+
+  @override
+  String get crewDelete => 'Удалить бригаду';
+
+  @override
+  String crewDeleteConfirm(String name) {
+    return 'Удалить бригаду «$name»? Её исполнители снова увидят все объекты подрядчика.';
+  }
+
+  @override
+  String get crewInfoTitle => 'Бригады';
+
+  @override
+  String get crewInfo1 =>
+      'Нужны, только если разные бригады одного подрядчика не должны видеть объекты друг друга.';
+
+  @override
+  String get crewInfo2 =>
+      'Исполнитель в бригаде видит только зону своей бригады; без бригады — всё по закреплениям подрядчика.';
+
+  @override
+  String get crewInfo3 => 'Бригады заводит менеджер, которому виден подрядчик.';
 }

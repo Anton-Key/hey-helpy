@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/schema_compat.dart';
 import 'floor_models.dart';
 import 'plan_logic.dart';
 
@@ -13,6 +14,11 @@ class FloorDenied implements Exception {
 /// Нельзя удалить: на помещении или оборудовании есть заявки.
 class HasOrders implements Exception {
   const HasOrders();
+}
+
+/// Такой номер помещения в объекте уже есть (уникальность, 0015).
+class RoomCodeTaken implements Exception {
+  const RoomCodeTaken();
 }
 
 /// Этажи, помещения и оборудование на плане, файлы планов (0013).
@@ -53,11 +59,18 @@ class FloorRepo {
   /// Помещения и оборудование объекта (с этажом и точкой на плане).
   Future<List<PlanItem>> itemsOf(String objectId) async {
     final r = await Future.wait([
-      _c
-          .from('locations')
-          .select(PlanItem.placeColumns)
-          .eq('object_id', objectId)
-          .order('name'),
+      SchemaCompat.run(
+          '0015',
+          () => _c
+              .from('locations')
+              .select(PlanItem.placeColumns)
+              .eq('object_id', objectId)
+              .order('name'),
+          legacy: () => _c
+              .from('locations')
+              .select(PlanItem.placeColumnsLegacy)
+              .eq('object_id', objectId)
+              .order('name')),
       _c
           .from('assets')
           .select(PlanItem.assetColumns)
@@ -84,11 +97,18 @@ class FloorRepo {
   /// Этаж и точка одного помещения и оборудования (для «Показать на плане»
   /// в карточке заявки).
   Future<PlanItem?> placeById(String id) async {
-    final r = await _c
-        .from('locations')
-        .select(PlanItem.placeColumns)
-        .eq('id', id)
-        .maybeSingle();
+    final r = await SchemaCompat.run(
+        '0015',
+        () => _c
+            .from('locations')
+            .select(PlanItem.placeColumns)
+            .eq('id', id)
+            .maybeSingle(),
+        legacy: () => _c
+            .from('locations')
+            .select(PlanItem.placeColumnsLegacy)
+            .eq('id', id)
+            .maybeSingle());
     return r == null ? null : PlanItem.placeFromMap(r);
   }
 
@@ -258,6 +278,37 @@ class FloorRepo {
   Future<void> rename(PlanItem i, String name) =>
       _update(i.isPlace ? 'locations' : 'assets', i.id, {'name': name.trim()});
 
+  /// Номер помещения (0015); пустая строка — убрать номер. Номер уникален
+  /// в объекте без учёта регистра — повтор: [RoomCodeTaken].
+  Future<void> setCode(PlanItem place, String code) async {
+    final c = code.trim();
+    try {
+      await SchemaCompat.run('0015',
+          () => _update('locations', place.id, {'code': c.isEmpty ? null : c}));
+    } on PostgrestException catch (e) {
+      if (e.code == '23505') throw const RoomCodeTaken();
+      rethrow;
+    }
+  }
+
+  /// Область помещения на плане этажа [floorId] (null — удалить область).
+  /// Помещению без точки ставится точка в центре области.
+  Future<void> setShape(
+      PlanItem place, String floorId, List<(double, double)>? points) {
+    final v = <String, dynamic>{
+      'plan_shape': points == null ? null : planShapeJson(points),
+    };
+    if (points != null) {
+      v['floor_id'] = floorId;
+      if (!place.placed || place.floorId != floorId) {
+        final (cx, cy) = polygonCentroid(points);
+        v['plan_x'] = cx;
+        v['plan_y'] = cy;
+      }
+    }
+    return _update('locations', place.id, v);
+  }
+
   Future<PlanItem> createPlace(
       {required String objectId,
       required String name,
@@ -273,7 +324,7 @@ class FloorRepo {
           'plan_x': x,
           'plan_y': y,
         })
-        .select(PlanItem.placeColumns)
+        .select(PlanItem.placeColumnsLegacy)
         .single();
     return PlanItem.placeFromMap(r);
   }

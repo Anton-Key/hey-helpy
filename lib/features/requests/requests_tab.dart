@@ -248,7 +248,7 @@ class _RequestsTabState extends State<RequestsTab> {
     try {
       final list = await _dir.placesOf(objectId);
       return _places[objectId] = [
-        for (final p in list) FilterOption(p.id, p.name),
+        for (final p in list) FilterOption(p.id, p.label),
       ];
     } catch (e) {
       debugPrint('RequestsTab places: $e');

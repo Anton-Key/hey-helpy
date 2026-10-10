@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/app_message.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
+import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/city.dart';
 import '../directory/directory.dart';
@@ -49,7 +50,16 @@ class FloorPlanScreen extends StatefulWidget {
   State<FloorPlanScreen> createState() => _FloorPlanScreenState();
 }
 
-enum _MarkerAction { create, allOrders, rename, unplace, delete }
+enum _MarkerAction {
+  create,
+  allOrders,
+  rename,
+  code,
+  area,
+  clearArea,
+  unplace,
+  delete
+}
 
 enum _EmptyAction { newPlace, newAsset, putHere }
 
@@ -70,6 +80,13 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   PlanFilter _filter = PlanFilter.all;
   late bool _editing = widget.startEditing;
   late String? _highlight = widget.focus;
+
+  /// Режим «Обвести область» (шаг 16): помещение, вершины (доли 0..1),
+  /// прямоугольником или по углам.
+  PlanItem? _areaFor;
+  List<(double, double)> _draft = const [];
+  bool _draftRect = false;
+  bool _savingArea = false;
   String _query = '';
 
   bool get _isManager => _ctx?.isManager ?? false;
@@ -206,7 +223,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
   String _itemLabel(AppLocalizations l, PlanItem i) {
     final n = planStats(_orders, DateTime.now())[i.key]?.open ?? 0;
-    return '${i.name}, ${l.floorOpenOrders(n)}';
+    return '${i.label}, ${l.floorOpenOrders(n)}';
   }
 
   PlanItem? _placeOf(PlanItem asset) {
@@ -354,7 +371,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                       children: [
                         Semantics(
                             header: true,
-                            child: Text(i.name, style: AppText.title2)),
+                            child: Text(i.label, style: AppText.title2)),
                         if (details.isNotEmpty)
                           Text(details, style: AppText.footnote),
                       ]),
@@ -406,6 +423,27 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                       title: l.planRename,
                       chevron: false,
                       onTap: () => Navigator.pop(ctx, _MarkerAction.rename)),
+                  if (i.isPlace && SchemaCompat.has('0015') != false)
+                    AppRow(
+                        leading: const LeadingIcon(AppIcons.key),
+                        title: l.roomCode,
+                        value: i.code ?? l.roomCodeNone,
+                        chevron: false,
+                        onTap: () => Navigator.pop(ctx, _MarkerAction.code)),
+                  if (i.isPlace)
+                    AppRow(
+                        leading: const LeadingIcon(AppIcons.area),
+                        title: i.hasAreaOn(_floorId) ? l.areaEdit : l.areaDraw,
+                        chevron: false,
+                        onTap: () => Navigator.pop(ctx, _MarkerAction.area)),
+                  if (i.isPlace && i.hasAreaOn(_floorId))
+                    AppRow(
+                        leading: const LeadingIcon.danger(AppIcons.delete),
+                        title: l.areaDelete,
+                        destructive: true,
+                        chevron: false,
+                        onTap: () =>
+                            Navigator.pop(ctx, _MarkerAction.clearArea)),
                   if (i.placed)
                     AppRow(
                         leading: const LeadingIcon(AppIcons.placeOff),
@@ -463,11 +501,76 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           _fail(e);
         }
         await _reloadItems();
+      case _MarkerAction.code:
+        await _editCode(i);
+      case _MarkerAction.area:
+        _startArea(i);
+      case _MarkerAction.clearArea:
+        await _saveArea(i, null);
       case _MarkerAction.unplace:
         await _unplace(i);
       case _MarkerAction.delete:
         await _delete(i);
     }
+  }
+
+  // ------------------------------------------- номер и область помещения
+
+  Future<void> _editCode(PlanItem i) async {
+    final l = context.l10n;
+    final code = await askText(context,
+        title: l.roomCode,
+        initial: i.code ?? '',
+        label: l.roomCode,
+        hint: l.roomCodeHint,
+        allowEmpty: true,
+        maxLength: 20);
+    if (code == null || !mounted) return;
+    try {
+      await _repo.setCode(i, code);
+      _msg(l.planSaved, type: AppMessageType.success);
+    } on RoomCodeTaken {
+      _msg(l.roomCodeTaken, type: AppMessageType.error);
+    } on MigrationMissing {
+      _msg(l.migrationNeeded('0015'), type: AppMessageType.error);
+    } catch (e) {
+      _fail(e);
+    }
+    await _reloadItems();
+  }
+
+  void _startArea(PlanItem i) {
+    setState(() {
+      _areaFor = i;
+      _highlight = i.key;
+      _draft = i.hasAreaOn(_floorId) ? [...i.shape!] : const [];
+      _draftRect = !i.hasAreaOn(_floorId);
+    });
+  }
+
+  void _stopArea() => setState(() {
+        _areaFor = null;
+        _draft = const [];
+      });
+
+  Future<void> _saveArea(PlanItem i, List<(double, double)>? points) async {
+    final l = context.l10n;
+    if (points != null && points.length < 3) {
+      _msg(l.areaNeedPoints);
+      return;
+    }
+    setState(() => _savingArea = true);
+    try {
+      await _repo.setShape(i, _floorId, points);
+      _msg(points == null ? l.areaDeleted : l.planSaved,
+          type: AppMessageType.success);
+      if (_areaFor?.id == i.id) _stopArea();
+    } catch (e) {
+      _fail(e);
+    } finally {
+      if (mounted) setState(() => _savingArea = false);
+    }
+    await _reloadItems();
   }
 
   Future<void> _unplace(PlanItem i) async {
@@ -646,6 +749,13 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
       for (final i in _items)
         if (i.isOn(_floorId) && planFilterShows(_filter, i, stats)) i
     ];
+    final areas = [
+      for (final i in _items)
+        if (i.hasAreaOn(_floorId) &&
+            i.key != _areaFor?.key &&
+            planFilterShows(_filter, i, stats))
+          i
+    ];
     final canvas = Stack(children: [
       Positioned.fill(
         child: PlanCanvas(
@@ -665,6 +775,20 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           onEmptyTap: _emptyTap,
           onClear: () => setState(() => _highlight = null),
           onMoved: _move,
+          areas: areas,
+          draft: _areaFor == null ? null : _draft,
+          draftRect: _draftRect && _draft.isEmpty,
+          onDraftTap: (fx, fy) =>
+              setState(() => _draft = [..._draft, (fx, fy)]),
+          onDraftRect: (a, b) => setState(() {
+            _draft = rectShape(a, b);
+            _draftRect = false;
+          }),
+          onDraftMove: (k, fx, fy) => setState(() {
+            final d = [..._draft];
+            d[k] = (fx, fy);
+            _draft = d;
+          }),
         ),
       ),
       if (!floor.hasPlan && !_editing)
@@ -749,7 +873,10 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
     return Column(children: [
       _toolbar(l, floor),
-      if (_editing) _editBanner(l, floor),
+      if (_areaFor != null)
+        _areaBanner(l, _areaFor!)
+      else if (_editing)
+        _editBanner(l, floor),
       Expanded(child: main),
     ]);
   }
@@ -786,6 +913,97 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           ),
         ),
       ]),
+    );
+  }
+
+  /// Плашка режима «Обвести область»: подсказка, способ, «Отменить точку»,
+  /// «Готово», «Отмена».
+  Widget _areaBanner(AppLocalizations l, PlanItem place) {
+    final rect = _draftRect && _draft.isEmpty;
+    return Container(
+      key: const ValueKey('plan-area-banner'),
+      decoration: const BoxDecoration(
+        color: AppColors.accentTint,
+        border: Border(bottom: BorderSide(color: AppColors.accent, width: 2)),
+      ),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+          AppSpace.screen, AppSpace.s, AppSpace.xs, AppSpace.s),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Padding(
+              padding: EdgeInsetsDirectional.only(top: 2),
+              child: Icon(AppIcons.area,
+                  size: AppSizes.iconS, color: AppColors.accentText),
+            ),
+            const SizedBox(width: AppSpace.s),
+            Expanded(
+              child: Text.rich(
+                TextSpan(children: [
+                  TextSpan(
+                      text: l.areaTitle(place.label),
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  TextSpan(
+                      text: ' — ${rect ? l.areaHintRect : l.areaHintPolygon}'),
+                ]),
+                style: AppText.callout.copyWith(color: AppColors.accentText),
+              ),
+            ),
+            AppInfoButton(
+              title: l.roomInfoTitle,
+              lines: [l.roomInfo1, l.roomInfo2, l.roomInfo3, l.roomInfo4],
+              closeLabel: l.commonGotIt,
+              color: AppColors.accentText,
+              semanticLabel: l.infoShowHint(l.roomInfoTitle),
+            ),
+          ]),
+          const SizedBox(height: AppSpace.s),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: AppSpace.s),
+            child: Wrap(
+              spacing: AppSpace.s,
+              runSpacing: AppSpace.s,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (_draft.isEmpty)
+                  SizedBox(
+                    width: 260,
+                    child: SegmentedControl<bool>(
+                      segments: [
+                        Segment(true, l.areaModeRect),
+                        Segment(false, l.areaModePolygon),
+                      ],
+                      selected: _draftRect,
+                      onChanged: (v) => setState(() => _draftRect = v),
+                    ),
+                  ),
+                if (_draft.isNotEmpty)
+                  AppButton.secondary(
+                      label: l.areaUndoPoint,
+                      icon: AppIcons.undo,
+                      small: true,
+                      expand: false,
+                      onPressed: () => setState(
+                          () => _draft = _draft.sublist(0, _draft.length - 1))),
+                AppButton.secondary(
+                    label: l.commonCancel,
+                    small: true,
+                    expand: false,
+                    onPressed: _stopArea),
+                AppButton.primary(
+                    label: l.planDone,
+                    small: true,
+                    expand: false,
+                    loading: _savingArea,
+                    onPressed: _draft.length >= 3
+                        ? () => _saveArea(place, _draft)
+                        : null),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -867,7 +1085,10 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   Widget _list(AppLocalizations l, Map<String, ObjectStats> stats,
       ScrollController? scroll) {
     final q = _query.trim().toLowerCase();
-    bool match(PlanItem i) => q.isEmpty || i.name.toLowerCase().contains(q);
+    bool match(PlanItem i) =>
+        q.isEmpty ||
+        i.name.toLowerCase().contains(q) ||
+        (i.code?.toLowerCase().contains(q) ?? false);
     final on = [
       for (final i in _items)
         if (i.isOn(_floorId) && match(i)) i
@@ -883,9 +1104,9 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
         leading: i.isPlace
             ? LeadingIcon(equipmentIcon(i))
             : LeadingIcon.neutral(equipmentIcon(i)),
-        title: i.name,
+        title: i.label,
         subtitle: [
-          if (place != null) place.name,
+          if (place != null) place.label,
           l.floorOpenOrders(n),
         ].join(' · '),
         chevron: false,
@@ -1069,7 +1290,7 @@ class _AssetFormState extends State<_AssetForm> {
                   AppGroup(children: [
                     for (final p in widget.places)
                       AppCheckRow(
-                        title: p.name,
+                        title: p.label,
                         selected: p.id == _placeId,
                         onTap: () => setState(() => _placeId = p.id),
                       ),

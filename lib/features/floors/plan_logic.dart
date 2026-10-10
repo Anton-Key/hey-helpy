@@ -416,3 +416,131 @@ String? floorPartIfNew(String? floor, Iterable<String?> names) {
   }
   return floor;
 }
+
+// ---------------------------------------------------------------------------
+// Области помещений на плане (шаг 16): locations.plan_shape —
+// {"type": "polygon", "points": [[x, y], …]}, точки долями 0..1.
+// ---------------------------------------------------------------------------
+
+/// Самое большое число вершин области (защита от «мусора» в базе).
+const kMaxAreaPoints = 64;
+
+/// Область из jsonb plan_shape: многоугольник из 3+ точек в пределах 0..1.
+/// Всё неправильное (другой тип, мало точек, не числа, за краем плана) —
+/// null: такую область не рисуем.
+List<(double, double)>? parsePlanShape(Object? json) {
+  if (json is! Map) return null;
+  if (json['type'] != 'polygon') return null;
+  final pts = json['points'];
+  if (pts is! List || pts.length < 3 || pts.length > kMaxAreaPoints) {
+    return null;
+  }
+  final out = <(double, double)>[];
+  for (final p in pts) {
+    if (p is! List || p.length != 2) return null;
+    final x = p[0], y = p[1];
+    if (x is! num || y is! num) return null;
+    final fx = x.toDouble(), fy = y.toDouble();
+    if (!fx.isFinite || !fy.isFinite) return null;
+    if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return null;
+    out.add((fx, fy));
+  }
+  return out;
+}
+
+/// jsonb для plan_shape: точки округлены до 4 знаков (как точки маркеров).
+Map<String, Object> planShapeJson(List<(double, double)> points) {
+  double r(double v) => (v.clamp(0.0, 1.0) * 10000).roundToDouble() / 10000;
+  return {
+    'type': 'polygon',
+    'points': [
+      for (final (x, y) in points) [r(x), r(y)]
+    ],
+  };
+}
+
+/// Прямоугольник по двум углам (доли) — 4 точки по часовой стрелке.
+List<(double, double)> rectShape((double, double) a, (double, double) b) {
+  final x0 = math.min(a.$1, b.$1), x1 = math.max(a.$1, b.$1);
+  final y0 = math.min(a.$2, b.$2), y1 = math.max(a.$2, b.$2);
+  return [(x0, y0), (x1, y0), (x1, y1), (x0, y1)];
+}
+
+/// Точка внутри многоугольника (луч вправо, чётность пересечений).
+/// Точки — в одной системе (доли или пиксели).
+bool pointInPolygon(double x, double y, List<(double, double)> poly) {
+  if (poly.length < 3) return false;
+  var inside = false;
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    final (xi, yi) = poly[i];
+    final (xj, yj) = poly[j];
+    if ((yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/// Площадь многоугольника в пикселях плана [plan] (по модулю).
+double polygonArea(List<(double, double)> poly, Size plan) {
+  var a = 0.0;
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    final (xi, yi) = poly[i];
+    final (xj, yj) = poly[j];
+    a += (xj * plan.width) * (yi * plan.height) -
+        (xi * plan.width) * (yj * plan.height);
+  }
+  return a.abs() / 2;
+}
+
+/// Центр области (центр тяжести; у вырожденной — среднее вершин), доли.
+(double, double) polygonCentroid(List<(double, double)> poly) {
+  var a = 0.0, cx = 0.0, cy = 0.0;
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    final (xi, yi) = poly[i];
+    final (xj, yj) = poly[j];
+    final f = xj * yi - xi * yj;
+    a += f;
+    cx += (xj + xi) * f;
+    cy += (yj + yi) * f;
+  }
+  if (a.abs() < 1e-12) {
+    final n = poly.length;
+    return (
+      poly.fold(0.0, (s, p) => s + p.$1) / n,
+      poly.fold(0.0, (s, p) => s + p.$2) / n
+    );
+  }
+  return (cx / (3 * a), cy / (3 * a));
+}
+
+/// Помещение, в область которого попала точка ([fx], [fy] — доли) на
+/// этаже [floorId]. Если области вложены — самая маленькая (кабинет внутри
+/// open space). null — точка ни в одной области.
+PlanItem? areaAt(
+    Iterable<PlanItem> items, String floorId, double fx, double fy, Size plan) {
+  PlanItem? best;
+  var bestArea = double.infinity;
+  for (final i in items) {
+    if (!i.hasAreaOn(floorId)) continue;
+    if (!pointInPolygon(fx, fy, i.shape!)) continue;
+    final a = polygonArea(i.shape!, plan);
+    if (a < bestArea) {
+      best = i;
+      bestArea = a;
+    }
+  }
+  return best;
+}
+
+/// Подпись области видна, когда план приближен ([labelsVisible]) и область
+/// на экране не меньше [minSide] px по ширине и высоте.
+bool areaLabelVisible(
+    List<(double, double)> poly, Size plan, double scale, double fitScale,
+    {double minSide = 64}) {
+  if (!labelsVisible(scale, fitScale)) return false;
+  final xs = poly.map((p) => p.$1), ys = poly.map((p) => p.$2);
+  final w = (xs.reduce(math.max) - xs.reduce(math.min)) * plan.width * scale;
+  final h = (ys.reduce(math.max) - ys.reduce(math.min)) * plan.height * scale;
+  return w >= minSide && h >= minSide;
+}

@@ -1209,7 +1209,10 @@ class _PlaceFieldState extends State<PlaceField> {
       final items = [
         for (final i in r[0] as List<PlanItem>)
           if (i.isPlace)
-            (i.id, [i.name, if (floors[i.floorId] case final f?) f].join(' · '))
+            (
+              i.id,
+              [i.label, if (floors[i.floorId] case final f?) f].join(' · ')
+            )
       ];
       if (mounted) setState(() => _places = items);
     } catch (e) {

@@ -1,0 +1,93 @@
+{
+  "_comment": "ДЕМО-СХЕМЫ этажей (шаг 14b) — единый источник: generate.mjs рисует по нему PNG (assets/demo_plans/) и SQL-блок в supabase/seed/demo_history.sql, /screens — предпросмотр. Схемы выдуманы, не повторяют реальные планы. Координаты — пиксели картинки 2400×1600; rect = [x, y, ширина, высота]; id — номер в de300000-0000-4000-8000-000000000NNN. room без id — подпись на схеме, не помещение в базе. new: true — помещение создаётся этим скриптом (у остальных обновляются только этаж и точка).",
+  "width": 2400,
+  "height": 1600,
+  "floors": [
+    {
+      "id": 601,
+      "object": 10,
+      "objectName": "БЦ «Демо»",
+      "name": "1 этаж",
+      "level": 1,
+      "sort": 0,
+      "file": "bc-demo-floor-1.png",
+      "rooms": [
+        { "id": 22, "name": "Электрощитовая, 1 этаж", "rect": [120, 120, 480, 420], "door": ["bottom", 0.5] },
+        { "name": "Лестница и лифты", "rect": [600, 120, 960, 420], "door": ["bottom", 0.5] },
+        { "id": 53, "name": "Кафе, 1 этаж", "new": true, "rect": [1560, 120, 720, 620], "door": ["left", 0.75] },
+        { "id": 52, "name": "Ресепшен, 1 этаж", "new": true, "rect": [120, 540, 480, 560], "door": ["right", 0.5] },
+        { "id": 24, "name": "Холл, 1 этаж", "rect": [600, 540, 960, 560], "door": ["bottom", 0.5] },
+        { "name": "Санузлы", "rect": [1560, 740, 720, 360], "door": ["left", 0.5] },
+        { "name": "Тамбур · вход", "rect": [600, 1100, 960, 380], "door": ["bottom", 0.5] },
+        { "name": "Гардероб", "rect": [120, 1100, 480, 380], "door": ["right", 0.5] },
+        { "name": "Склад", "rect": [1560, 1100, 720, 380], "door": ["left", 0.5] }
+      ],
+      "assets": [
+        { "id": 701, "name": "Электрощит ЩР-1", "kind": "panel", "category": "equipment", "inv": "ЭЛ-1-001", "room": 22, "at": [260, 260] },
+        { "id": 702, "name": "ИБП щитовой 3 кВА", "kind": "ups", "category": "equipment", "inv": "ЭЛ-1-002", "room": 22, "at": [460, 400] },
+        { "id": 703, "name": "Кондиционер холла", "kind": "ac", "category": "equipment", "inv": "КЛ-1-001", "room": 24, "at": [760, 640] },
+        { "id": 704, "name": "Светильник холла у лифтов", "kind": "light", "category": "equipment", "inv": "ЭЛ-1-010", "room": 24, "at": [1400, 640] },
+        { "id": 705, "name": "Датчик дыма холла", "kind": "smoke", "category": "infra", "inv": "ПБ-1-001", "room": 24, "at": [1080, 1000] },
+        { "id": 706, "name": "Фанкойл ресепшена", "kind": "fancoil", "category": "equipment", "inv": "КЛ-1-002", "room": 52, "at": [240, 680] },
+        { "id": 707, "name": "Кондиционер кафе", "kind": "ac", "category": "equipment", "inv": "КЛ-1-003", "room": 53, "at": [2140, 240] }
+      ]
+    },
+    {
+      "id": 602,
+      "object": 10,
+      "objectName": "БЦ «Демо»",
+      "name": "3 этаж",
+      "level": 3,
+      "sort": 1,
+      "file": "bc-demo-floor-3.png",
+      "rooms": [
+        { "id": 21, "name": "Переговорная, 3 этаж", "rect": [120, 120, 640, 560], "door": ["bottom", 0.7] },
+        { "name": "Лестница и лифты", "rect": [760, 120, 880, 560], "door": ["bottom", 0.5] },
+        { "id": 54, "name": "Кабинет директора, 3 этаж", "new": true, "rect": [1640, 120, 640, 560], "door": ["bottom", 0.3] },
+        { "name": "Коридор", "rect": [120, 680, 2160, 240] },
+        { "id": 55, "name": "Серверная, 3 этаж", "new": true, "rect": [120, 920, 520, 560], "door": ["top", 0.5] },
+        { "name": "Рабочая зона", "rect": [640, 920, 1120, 560], "door": ["top", 0.5] },
+        { "id": 56, "name": "Кухня, 3 этаж", "new": true, "rect": [1760, 920, 520, 560], "door": ["top", 0.5] }
+      ],
+      "assets": [
+        { "id": 708, "name": "Кондиционер переговорной", "kind": "ac", "category": "equipment", "inv": "КЛ-3-001", "room": 21, "at": [260, 230] },
+        { "id": 709, "name": "Датчик дыма переговорной", "kind": "smoke", "category": "infra", "inv": "ПБ-3-001", "room": 21, "at": [640, 560] },
+        { "id": 710, "name": "Фанкойл кабинета директора", "kind": "fancoil", "category": "equipment", "inv": "КЛ-3-002", "room": 54, "at": [2140, 240] },
+        { "id": 711, "name": "Серверная стойка R1", "kind": "server", "category": "equipment", "inv": "ИТ-3-001", "room": 55, "at": [260, 1300] },
+        { "id": 712, "name": "ИБП серверной 10 кВА", "kind": "ups", "category": "equipment", "inv": "ЭЛ-3-001", "room": 55, "at": [500, 1380] },
+        { "id": 713, "name": "Кондиционер серверной", "kind": "ac", "category": "equipment", "inv": "КЛ-3-003", "room": 55, "at": [260, 1040] },
+        { "id": 714, "name": "Светильник кухни", "kind": "light", "category": "equipment", "inv": "ЭЛ-3-010", "room": 56, "at": [2020, 1300] }
+      ]
+    },
+    {
+      "id": 603,
+      "object": 402,
+      "objectName": "Skyline",
+      "name": "15 этаж",
+      "level": 15,
+      "sort": 0,
+      "file": "skyline-floor-15.png",
+      "rooms": [
+        { "id": 424, "name": "Open space, 15 этаж", "rect": [120, 120, 1400, 900], "door": ["bottom", 0.6] },
+        { "id": 466, "name": "Переговорная «Дунав», 15 этаж", "new": true, "rect": [1520, 120, 760, 520], "door": ["left", 0.8] },
+        { "id": 425, "name": "Кухня, 15 этаж", "rect": [1520, 640, 760, 380], "door": ["left", 0.5] },
+        { "id": 467, "name": "Санузлы, 15 этаж", "new": true, "rect": [120, 1020, 560, 460], "door": ["right", 0.3] },
+        { "name": "Лифтовой холл", "rect": [680, 1020, 1600, 460], "door": ["top", 0.3] }
+      ],
+      "assets": [
+        { "id": 715, "name": "Кондиционер open space №1", "kind": "ac", "category": "equipment", "inv": "SK-15-001", "room": 424, "at": [360, 240] },
+        { "id": 716, "name": "Кондиционер open space №2", "kind": "ac", "category": "equipment", "inv": "SK-15-002", "room": 424, "at": [1280, 240] },
+        { "id": 717, "name": "Фанкойл переговорной «Дунав»", "kind": "fancoil", "category": "equipment", "inv": "SK-15-003", "room": 466, "at": [2140, 240] },
+        { "id": 718, "name": "Электрощит ЩР-15", "kind": "panel", "category": "equipment", "inv": "SK-15-010", "room": 425, "at": [2160, 920] },
+        { "id": 719, "name": "Датчик протечки санузла", "kind": "water", "category": "infra", "inv": "SK-15-020", "room": 467, "at": [240, 1380] },
+        { "id": 720, "name": "Датчик дыма open space", "kind": "smoke", "category": "infra", "inv": "SK-15-021", "room": 424, "at": [820, 880] }
+      ]
+    }
+  ],
+  "orders": [
+    { "id": 254, "layer": "hvac", "room": 55, "asset": 713, "contractor": 31, "title": "Течёт конденсат из кондиционера серверной", "descr": "Под внутренним блоком лужа, капает рядом со стойкой.", "priority": "high", "status": "assigned", "author": "req", "channel": "voice", "d": 1, "h": 8, "r": null, "due_h": 6 },
+    { "id": 255, "layer": "hvac", "room": 54, "asset": 710, "contractor": 31, "title": "Не греет фанкойл в кабинете директора", "descr": "Фанкойл гудит, но воздух холодный.", "priority": "normal", "status": "assigned", "author": "req", "channel": "text", "d": 1, "h": 9, "r": null, "due_h": 72 },
+    { "id": 256, "layer": "elec", "room": 24, "asset": 704, "contractor": 32, "title": "Мигает светильник в холле у лифтов", "descr": "Светильник над лифтами мигает с утра.", "priority": "normal", "status": "in_progress", "author": "req", "channel": "text", "d": 1, "h": 10, "r": 60, "due_h": 48 },
+    { "id": 257, "layer": "plumb", "room": 467, "asset": 719, "contractor": null, "title": "Сработал датчик протечки в санузле", "descr": "Датчик под раковиной пищит, на полу вода.", "priority": "high", "status": "new", "author": "mgr", "channel": "button", "d": 1, "h": 7, "r": null, "due_h": 24 }
+  ]
+}

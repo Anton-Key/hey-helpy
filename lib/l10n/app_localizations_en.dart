@@ -1871,4 +1871,477 @@ class AppLocalizationsEn extends AppLocalizations {
   String mapCityZoom(String city) {
     return 'Show $city';
   }
+
+  @override
+  String get filterAll => 'Filters';
+
+  @override
+  String filterAllCount(int count) {
+    return 'Filters · $count';
+  }
+
+  @override
+  String get filterAllWide => 'All filters';
+
+  @override
+  String filterAllWideCount(int count) {
+    return 'All filters · $count';
+  }
+
+  @override
+  String get filterAny => 'Any';
+
+  @override
+  String get filterShow => 'Show';
+
+  @override
+  String filterShowCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count requests',
+      one: 'Show $count request',
+      zero: 'No requests',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
+  String get commonGotIt => 'Got it';
+
+  @override
+  String get infoFiltersTitle => 'How filters work';
+
+  @override
+  String get infoFilters1 =>
+      'Pick conditions — the button below shows right away how many requests match.';
+
+  @override
+  String get infoFilters2 =>
+      '“Show” applies the filters; the “×” on a chip above the list removes one filter.';
+
+  @override
+  String get infoFilters3 =>
+      'Filters are remembered on this device, and in the browser also in the page address — you can send the link to a colleague.';
+
+  @override
+  String infoShowHint(String title) {
+    return 'Tip: $title';
+  }
+
+  @override
+  String get sortShortNewest => 'Newest';
+
+  @override
+  String get sortShortOldest => 'Oldest';
+
+  @override
+  String get sortShortDue => 'Due';
+
+  @override
+  String get sortShortPriority => 'Priority';
+
+  @override
+  String get sortShortStatus => 'Status';
+
+  @override
+  String get sortShortObject => 'Site';
+
+  @override
+  String get floorsHeader => 'Floors';
+
+  @override
+  String floorsTitle(int count) {
+    return 'Floors · $count';
+  }
+
+  @override
+  String get floorsEmpty => 'No floors yet';
+
+  @override
+  String get floorsEmptyManager =>
+      'Add a floor and upload its plan — then mark rooms and equipment on it.';
+
+  @override
+  String get floorAdd => 'Floor';
+
+  @override
+  String get floorAddLong => 'Add floor';
+
+  @override
+  String floorPlacesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rooms',
+      one: '$count room',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String floorOpenOrders(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open requests',
+      one: '$count open request',
+      zero: 'no open requests',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get floorNoPlan => 'No plan';
+
+  @override
+  String get floorFormNew => 'New floor';
+
+  @override
+  String get floorFormEdit => 'Floor';
+
+  @override
+  String get floorName => 'Name';
+
+  @override
+  String get floorNameHint => 'For example, Floor 3 or Parking';
+
+  @override
+  String get floorLevel => 'Floor number';
+
+  @override
+  String get floorLevelHint => '−1, −2 — underground levels';
+
+  @override
+  String get floorPlanImage => 'Plan image';
+
+  @override
+  String get floorPlanPick => 'Choose file';
+
+  @override
+  String get floorPlanOptional => 'Optional — you can upload the plan later.';
+
+  @override
+  String get floorNameEmpty => 'Enter the floor name';
+
+  @override
+  String get floorNameTooLong => 'Name must be 60 characters or fewer';
+
+  @override
+  String get floorNameTaken => 'A floor with this name already exists';
+
+  @override
+  String get floorLevelInvalid =>
+      'Floor number must be a whole number, e.g. 3 or −1';
+
+  @override
+  String get floorRename => 'Rename';
+
+  @override
+  String get floorUploadPlan => 'Upload plan';
+
+  @override
+  String get floorReplacePlan => 'Replace plan';
+
+  @override
+  String get floorRemovePlan => 'Remove plan';
+
+  @override
+  String get floorMoveUp => 'Move up';
+
+  @override
+  String get floorMoveDown => 'Move down';
+
+  @override
+  String get floorDelete => 'Delete floor';
+
+  @override
+  String floorDeleteConfirm(String name) {
+    return 'Delete floor “$name”?';
+  }
+
+  @override
+  String get floorDeleteHint =>
+      'Rooms and equipment will stay, but they will be removed from the plan.';
+
+  @override
+  String get floorDeleted => 'Floor deleted';
+
+  @override
+  String floorAddPlace(String name) {
+    return 'Add a room to “$name”';
+  }
+
+  @override
+  String floorMenu(String name) {
+    return 'Actions for “$name”';
+  }
+
+  @override
+  String get planTooBig =>
+      'The file is larger than 15 MB. Make the image smaller or save it as JPEG.';
+
+  @override
+  String get planPdf =>
+      'PDF isn’t supported: save the page you need as PNG or take a screenshot.';
+
+  @override
+  String get planBadType => 'Please choose a PNG, JPEG or WebP image.';
+
+  @override
+  String get planUnreadable => 'Couldn’t read the image. Try another file.';
+
+  @override
+  String get planNoRights =>
+      'Only a manager can change floors, plans and markers.';
+
+  @override
+  String get planUploadFailed =>
+      'Couldn’t upload the plan. Check your connection and try again.';
+
+  @override
+  String get planUploaded => 'Plan uploaded';
+
+  @override
+  String get planRemoved => 'Plan removed';
+
+  @override
+  String get placeNotOnPlan => 'not on plan';
+
+  @override
+  String get infoFloorsTitle => 'Floors and plans';
+
+  @override
+  String get infoFloors1 =>
+      'A floor is part of a site. A floor can have a plan image.';
+
+  @override
+  String get infoFloors2 =>
+      'Rooms and equipment are marked on the plan, so technicians find the spot faster.';
+
+  @override
+  String get infoFloors3 =>
+      'Managers add floors, upload plans and place markers. Everyone else sees the plan read-only.';
+
+  @override
+  String get infoUploadTitle => 'Uploading a plan';
+
+  @override
+  String get infoUpload1 => 'PNG, JPEG and WebP images up to 15 MB.';
+
+  @override
+  String get infoUpload2 =>
+      'PDF: save the page you need as PNG or take a screenshot.';
+
+  @override
+  String get infoUpload3 => 'Only people in your company can see the plan.';
+
+  @override
+  String get planTitle => 'Floor plan';
+
+  @override
+  String get planEdit => 'Edit';
+
+  @override
+  String get planEditMode => 'Placement mode';
+
+  @override
+  String get planDone => 'Done';
+
+  @override
+  String get planFilterAll => 'All';
+
+  @override
+  String get planFilterPlaces => 'Rooms';
+
+  @override
+  String get planFilterAssets => 'Equipment';
+
+  @override
+  String get planFilterWithOrders => 'With requests';
+
+  @override
+  String planOnPlan(int count) {
+    return 'On plan · $count';
+  }
+
+  @override
+  String planUnplaced(int count) {
+    return 'Not placed · $count';
+  }
+
+  @override
+  String get planSearch => 'Search rooms and equipment';
+
+  @override
+  String get planNotLoaded => 'No plan uploaded';
+
+  @override
+  String get planFit => 'Fit plan';
+
+  @override
+  String get planList => 'List';
+
+  @override
+  String get planOpenOrders => 'Open requests';
+
+  @override
+  String get planNoOpenOrders => 'No open requests';
+
+  @override
+  String get planCreateHere => 'Create request here';
+
+  @override
+  String get planAllPlaceOrders => 'All requests for this room';
+
+  @override
+  String get planAssetInventory => 'Inventory no.';
+
+  @override
+  String get planAssetCategory => 'Category';
+
+  @override
+  String get planAssetPlace => 'Room';
+
+  @override
+  String assetCategory(String code) {
+    String _temp0 = intl.Intl.selectLogic(
+      code,
+      {
+        'equipment': 'Equipment',
+        'furniture': 'Furniture',
+        'infra': 'Utilities',
+        'other': 'Other',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get planNewPlaceHere => 'New room here';
+
+  @override
+  String get planNewAssetHere => 'New equipment here';
+
+  @override
+  String get planPutHere => 'Place here…';
+
+  @override
+  String get planRename => 'Rename';
+
+  @override
+  String get planRemoveFromPlan => 'Remove from plan';
+
+  @override
+  String get planDelete => 'Delete';
+
+  @override
+  String planDeleteConfirm(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String planDeleteHasOrders(String name) {
+    return '“$name” has requests and can’t be deleted. You can remove it from the plan.';
+  }
+
+  @override
+  String get planSaved => 'Saved';
+
+  @override
+  String get planUndo => 'Undo';
+
+  @override
+  String get planNewPlace => 'New room';
+
+  @override
+  String get planNewAsset => 'New equipment';
+
+  @override
+  String get planNameLabel => 'Name';
+
+  @override
+  String get planNameRequired => 'Enter a name';
+
+  @override
+  String get planInventoryLabel => 'Inventory no. (optional)';
+
+  @override
+  String get planPickUnplaced => 'What to place here';
+
+  @override
+  String get planNothingUnplaced => 'Everything is already on the plan';
+
+  @override
+  String get planNotFound => 'Floor not found or no access.';
+
+  @override
+  String get planNoPlaces => 'Add a room to this floor first';
+
+  @override
+  String get planFloorPicker => 'Floor';
+
+  @override
+  String get planMarkerHint => 'Tap a marker for requests and actions';
+
+  @override
+  String get infoPlanTitle => 'What markers mean';
+
+  @override
+  String get infoPlan1 =>
+      'Circle — a room, the number is its open requests. Square — equipment.';
+
+  @override
+  String get infoPlan2 =>
+      'Red — overdue or critical requests, orange — urgent or in progress.';
+
+  @override
+  String get infoPlan3 => 'Teal — there are open requests, grey — none open.';
+
+  @override
+  String get infoEditTitle => 'Placement mode';
+
+  @override
+  String get infoEdit1 =>
+      'Drag a marker to move it (on a phone — long-press first). It saves right away, with Undo.';
+
+  @override
+  String get infoEdit2 =>
+      'Tap an empty spot to add a room or equipment, or to place something not yet on the plan.';
+
+  @override
+  String get infoEdit3 =>
+      'Tap a marker to rename it, remove it from the plan or delete it.';
+
+  @override
+  String get orderShowOnPlan => 'Show on plan';
+
+  @override
+  String planNearby(String floor, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open requests nearby',
+      one: '$count open request nearby',
+      zero: 'no open requests nearby',
+    );
+    return '$floor · $_temp0';
+  }
+
+  @override
+  String floorShort(int level) {
+    return 'fl. $level';
+  }
+
+  @override
+  String get formPlace => 'Room';
+
+  @override
+  String get formChoosePlace => 'No room';
+
+  @override
+  String get formAsset => 'Equipment';
 }

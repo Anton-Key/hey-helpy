@@ -15,6 +15,10 @@ class WorkOrder {
   final DateTime? createdAt;
   final String? placeName;
 
+  /// Этаж помещения (планы этажей, 0013): название и номер.
+  final String? floorName;
+  final int? floorLevel;
+
   /// Поля для фильтров списка (шаг 13c).
   final String? locationId;
   final String? contractorId;
@@ -36,6 +40,8 @@ class WorkOrder {
       this.dueAt,
       this.createdAt,
       this.placeName,
+      this.floorName,
+      this.floorLevel,
       this.locationId,
       this.contractorId,
       this.executorId,
@@ -49,7 +55,7 @@ class WorkOrder {
       'id,title,work_type,layer_id,priority,status,recurrence,object_id,'
       'location_id,assigned_contractor_id,assigned_executor_id,created_by,'
       'input_channel,requires_photo,return_count,due_at,created_at,'
-      'locations(name)';
+      'locations(name,floors(name,level))';
 
   factory WorkOrder.fromMap(Map<String, dynamic> m) {
     return WorkOrder(
@@ -64,6 +70,8 @@ class WorkOrder {
       dueAt: DateTime.tryParse('${m['due_at'] ?? ''}')?.toLocal(),
       createdAt: DateTime.tryParse('${m['created_at'] ?? ''}')?.toLocal(),
       placeName: (m['locations'] as Map<String, dynamic>?)?['name'] as String?,
+      floorName: _floor(m)?['name'] as String?,
+      floorLevel: (_floor(m)?['level'] as num?)?.toInt(),
       locationId: m['location_id'] as String?,
       contractorId: m['assigned_contractor_id'] as String?,
       executorId: m['assigned_executor_id'] as String?,
@@ -80,4 +88,21 @@ class WorkOrder {
   /// Просрочена: открыта, а срок прошёл.
   bool isOverdue([DateTime? now]) =>
       isOpen && dueAt != null && dueAt!.isBefore(now ?? DateTime.now());
+
+  static Map<String, dynamic>? _floor(Map<String, dynamic> m) {
+    final loc = m['locations'];
+    if (loc is! Map<String, dynamic>) return null;
+    final f = loc['floors'];
+    return f is Map<String, dynamic> ? f : null;
+  }
+}
+
+/// Помещение с этажом для строки списка: «Лобби · 1 эт.». Если этаж уже
+/// есть в названии помещения («Холл, 1 этаж») — без повтора.
+String placeWithFloor(String place, String? floorName, String? floorShort) {
+  final tag = floorShort ?? floorName;
+  if (tag == null || tag.isEmpty) return place;
+  final p = place.toLowerCase();
+  if (floorName != null && p.contains(floorName.toLowerCase())) return place;
+  return '$place · $tag';
 }

@@ -560,3 +560,60 @@ class AppPageRoute<T> extends CupertinoPageRoute<T> {
   /// Название предыдущего экрана — подпись «‹ назад».
   final String? backLabel;
 }
+
+/// Закреплённая (или «всплывающая») полоса под шапкой [AppSliverHeader]:
+/// строка поиска и фильтров остаётся сверху при прокрутке ([floating] ==
+/// false), а сегменты при [floating] прячутся при прокрутке вниз и
+/// возвращаются при прокрутке вверх. Фон — [AppColors.bg], ширина
+/// содержимого — до [maxWidth] по центру с полями экрана.
+class AppSliverBar extends StatelessWidget {
+  const AppSliverBar({
+    super.key,
+    required this.height,
+    required this.child,
+    this.floating = false,
+    this.maxWidth = AppSpace.contentMax,
+  });
+
+  final double height;
+  final Widget child;
+  final bool floating;
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) => SliverPersistentHeader(
+        pinned: !floating,
+        floating: floating,
+        delegate: _BarDelegate(height, child, maxWidth),
+      );
+}
+
+class _BarDelegate extends SliverPersistentHeaderDelegate {
+  _BarDelegate(this.height, this.child, this.maxWidth);
+  final double height;
+  final Widget child;
+  final double maxWidth;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlaps) =>
+      ColoredBox(
+        color: AppColors.bg,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: AppSpace.screen),
+          child: ContentWidth(
+              maxWidth: maxWidth - 2 * AppSpace.screen,
+              child: SizedBox(height: height, child: child)),
+        ),
+      );
+
+  @override
+  bool shouldRebuild(_BarDelegate old) =>
+      old.height != height || old.child != child || old.maxWidth != maxWidth;
+}

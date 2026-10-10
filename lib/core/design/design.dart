@@ -9,6 +9,7 @@ export 'controls.dart';
 export 'filters.dart';
 export 'group.dart';
 export 'icons.dart';
+export 'info.dart';
 export 'nav_bar.dart';
 export 'pressable.dart';
 export 'surfaces.dart';

@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Hey Helpy · демо-история за последние 30 дней (НЕ миграция)
 --
--- Что делает: добавляет в компанию «Демо БЦ» 68 заявок и 16 визитов,
+-- Что делает: добавляет в компанию «Демо БЦ» 72 заявки и 16 визитов,
 -- чтобы на демо «История» и «Отчёты» были наполнены, и 4 объекта на карте:
 --   • «КлиматСервис» (Климат) — 15 заявок, всё в срок, приёмка почти всегда
 --     с первого раза, 15 визитов при норме 4 в месяц;
@@ -20,6 +20,11 @@
 --     10 региональных подрядчиков (501–510) с закреплениями по объектам и видам
 --     работ, 31 заявка (223–253): 4 просрочены, 3 без подрядчика, 2 повторяющиеся.
 --     «ЭлектроПро» переводится с «всех объектов» на белградские.
+--   • планы этажей (шаг 14b, блок 5d — генерирует tools/demo_plans/generate.mjs):
+--     этажи 601 «1 этаж» и 602 «3 этаж» у «БЦ «Демо»», 603 «15 этаж» у «Skyline»,
+--     7 новых помещений (052–056, 466–467), точки помещений на ДЕМО-СХЕМАХ,
+--     оборудование 701–720, 4 заявки на нём (254–257, 254 просрочена).
+--     Картинки планов (plan_path) скрипт не трогает — их загружают через приложение.
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
 -- и миграций 0001–0010. Подробно: docs/DEMO_SETUP.md, шаг 4.
@@ -154,6 +159,7 @@ declare
   v_layer_clean uuid;
   v_layer_other uuid;
   v_world_orders int;
+  v_plan_orders int;
   v_photo_hvac boolean;
   v_photo_elec boolean;
   v_obj record;
@@ -689,6 +695,133 @@ begin
     return_reason = excluded.return_reason, return_count = excluded.return_count;
   get diagnostics v_world_orders = row_count;
   v_orders := v_orders + v_world_orders;
+
+  -- >>> demo_plans: сгенерировано tools/demo_plans/generate.mjs из plans.json — руками не править
+  -- 5d. Этажи и ДЕМО-СХЕМЫ планов (шаг 14b): этажи 601–603, помещения на планах,
+  --     оборудование 701–720, заявки 254–257 на этом оборудовании (254 — просрочена).
+  --     plan_path / plan_w / plan_h НЕ трогаются: картинки загружают через приложение
+  --     (assets/demo_plans/*.png), повторный запуск их не затирает.
+  update public.floors f set name = left(f.name, 50) || ' (старый)'
+   where f.company_id = c_company
+     and f.id not in ('de300000-0000-4000-8000-000000000601'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid)
+     and exists (select 1 from (values
+       ('de300000-0000-4000-8000-000000000010'::uuid, '1 этаж'),
+       ('de300000-0000-4000-8000-000000000010'::uuid, '3 этаж'),
+       ('de300000-0000-4000-8000-000000000402'::uuid, '15 этаж')
+     ) as d(o, n) where d.o = f.object_id and d.n = f.name);
+  insert into public.floors (id, company_id, object_id, name, level, sort) values
+    ('de300000-0000-4000-8000-000000000601'::uuid, c_company, 'de300000-0000-4000-8000-000000000010'::uuid, '1 этаж', 1, 0),
+    ('de300000-0000-4000-8000-000000000602'::uuid, c_company, 'de300000-0000-4000-8000-000000000010'::uuid, '3 этаж', 3, 1),
+    ('de300000-0000-4000-8000-000000000603'::uuid, c_company, 'de300000-0000-4000-8000-000000000402'::uuid, '15 этаж', 15, 0)
+  on conflict (id) do update set name = excluded.name, level = excluded.level, sort = excluded.sort;
+
+  -- Новые помещения на схемах.
+  insert into public.locations (id, object_id, name) values
+    ('de300000-0000-4000-8000-000000000053'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Кафе, 1 этаж'),
+    ('de300000-0000-4000-8000-000000000052'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Ресепшен, 1 этаж'),
+    ('de300000-0000-4000-8000-000000000054'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Кабинет директора, 3 этаж'),
+    ('de300000-0000-4000-8000-000000000055'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Серверная, 3 этаж'),
+    ('de300000-0000-4000-8000-000000000056'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Кухня, 3 этаж'),
+    ('de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, 'Переговорная «Дунав», 15 этаж'),
+    ('de300000-0000-4000-8000-000000000467'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, 'Санузлы, 15 этаж')
+  on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
+  -- Этаж и точка помещений (центр комнаты на схеме, доли 0..1).
+  update public.locations l set floor_id = v.f, plan_x = v.x, plan_y = v.y
+    from (values
+      ('de300000-0000-4000-8000-000000000022'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.15::real, 0.2063::real),
+      ('de300000-0000-4000-8000-000000000053'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.8::real, 0.2688::real),
+      ('de300000-0000-4000-8000-000000000052'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.15::real, 0.5125::real),
+      ('de300000-0000-4000-8000-000000000024'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.45::real, 0.5125::real),
+      ('de300000-0000-4000-8000-000000000021'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1833::real, 0.25::real),
+      ('de300000-0000-4000-8000-000000000054'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8167::real, 0.25::real),
+      ('de300000-0000-4000-8000-000000000055'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1583::real, 0.75::real),
+      ('de300000-0000-4000-8000-000000000056'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8417::real, 0.75::real),
+      ('de300000-0000-4000-8000-000000000424'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.3417::real, 0.3563::real),
+      ('de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.7917::real, 0.2375::real),
+      ('de300000-0000-4000-8000-000000000425'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.7917::real, 0.5188::real),
+      ('de300000-0000-4000-8000-000000000467'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.1667::real, 0.7813::real)
+    ) as v(id, f, x, y)
+   where l.id = v.id;
+
+  -- Оборудование: вид (meta.kind) — для значка на плане.
+  insert into public.assets (id, location_id, name, category, inventory_no, meta, floor_id, plan_x, plan_y) values
+    ('de300000-0000-4000-8000-000000000701'::uuid, 'de300000-0000-4000-8000-000000000022'::uuid, 'Электрощит ЩР-1', 'equipment', 'ЭЛ-1-001', '{"kind":"panel","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1083, 0.1625),
+    ('de300000-0000-4000-8000-000000000702'::uuid, 'de300000-0000-4000-8000-000000000022'::uuid, 'ИБП щитовой 3 кВА', 'equipment', 'ЭЛ-1-002', '{"kind":"ups","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1917, 0.25),
+    ('de300000-0000-4000-8000-000000000703'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Кондиционер холла', 'equipment', 'КЛ-1-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.3167, 0.4),
+    ('de300000-0000-4000-8000-000000000704'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Светильник холла у лифтов', 'equipment', 'ЭЛ-1-010', '{"kind":"light","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.5833, 0.4),
+    ('de300000-0000-4000-8000-000000000705'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Датчик дыма холла', 'infra', 'ПБ-1-001', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.45, 0.625),
+    ('de300000-0000-4000-8000-000000000706'::uuid, 'de300000-0000-4000-8000-000000000052'::uuid, 'Фанкойл ресепшена', 'equipment', 'КЛ-1-002', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1, 0.425),
+    ('de300000-0000-4000-8000-000000000707'::uuid, 'de300000-0000-4000-8000-000000000053'::uuid, 'Кондиционер кафе', 'equipment', 'КЛ-1-003', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.8917, 0.15),
+    ('de300000-0000-4000-8000-000000000708'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'Кондиционер переговорной', 'equipment', 'КЛ-3-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.1438),
+    ('de300000-0000-4000-8000-000000000709'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'Датчик дыма переговорной', 'infra', 'ПБ-3-001', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.2667, 0.35),
+    ('de300000-0000-4000-8000-000000000710'::uuid, 'de300000-0000-4000-8000-000000000054'::uuid, 'Фанкойл кабинета директора', 'equipment', 'КЛ-3-002', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8917, 0.15),
+    ('de300000-0000-4000-8000-000000000711'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'Серверная стойка R1', 'equipment', 'ИТ-3-001', '{"kind":"server","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.8125),
+    ('de300000-0000-4000-8000-000000000712'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'ИБП серверной 10 кВА', 'equipment', 'ЭЛ-3-001', '{"kind":"ups","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.2083, 0.8625),
+    ('de300000-0000-4000-8000-000000000713'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'Кондиционер серверной', 'equipment', 'КЛ-3-003', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.65),
+    ('de300000-0000-4000-8000-000000000714'::uuid, 'de300000-0000-4000-8000-000000000056'::uuid, 'Светильник кухни', 'equipment', 'ЭЛ-3-010', '{"kind":"light","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8417, 0.8125),
+    ('de300000-0000-4000-8000-000000000715'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Кондиционер open space №1', 'equipment', 'SK-15-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.15, 0.15),
+    ('de300000-0000-4000-8000-000000000716'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Кондиционер open space №2', 'equipment', 'SK-15-002', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.5333, 0.15),
+    ('de300000-0000-4000-8000-000000000717'::uuid, 'de300000-0000-4000-8000-000000000466'::uuid, 'Фанкойл переговорной «Дунав»', 'equipment', 'SK-15-003', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.8917, 0.15),
+    ('de300000-0000-4000-8000-000000000718'::uuid, 'de300000-0000-4000-8000-000000000425'::uuid, 'Электрощит ЩР-15', 'equipment', 'SK-15-010', '{"kind":"panel","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.9, 0.575),
+    ('de300000-0000-4000-8000-000000000719'::uuid, 'de300000-0000-4000-8000-000000000467'::uuid, 'Датчик протечки санузла', 'infra', 'SK-15-020', '{"kind":"water","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.1, 0.8625),
+    ('de300000-0000-4000-8000-000000000720'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Датчик дыма open space', 'infra', 'SK-15-021', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.3417, 0.55)
+  on conflict (id) do update set
+    location_id = excluded.location_id, name = excluded.name, category = excluded.category,
+    inventory_no = excluded.inventory_no, meta = excluded.meta, floor_id = excluded.floor_id,
+    plan_x = excluded.plan_x, plan_y = excluded.plan_y;
+
+  -- Заявки на оборудовании этажей. Колонки как в 5c, плюс a — оборудование.
+  insert into public.work_orders (
+    id, company_id, object_id, location_id, asset_id, title, description, work_type, layer_id,
+    priority, status, requires_photo, input_channel, created_by,
+    assigned_contractor_id, assigned_by, due_at, created_at, updated_at, started_at,
+    return_count, recurrence)
+  select
+    ('de300000-0000-4000-8000-' || lpad(t.n::text, 12, '0'))::uuid,
+    c_company, lo.object_id, lo.id,
+    ('de300000-0000-4000-8000-' || lpad(t.a::text, 12, '0'))::uuid,
+    t.title, t.descr, ly.name, ly.id, t.priority, t.status, ly.requires_photo, t.channel,
+    case t.author when 'mgr' then v_manager else v_requester end,
+    case when t.c is not null then ('de300000-0000-4000-8000-' || lpad(t.c::text, 12, '0'))::uuid end,
+    case when t.c is not null then 'rule' end,
+    x.created + make_interval(hours => t.due_h),
+    x.created,
+    case when t.r is not null then x.created + make_interval(mins => t.r) else x.created end,
+    case when t.r is not null then x.created + make_interval(mins => t.r) end,
+    0, null
+  from (values
+    (254,'hvac',55,713,31::int,'Течёт конденсат из кондиционера серверной','Под внутренним блоком лужа, капает рядом со стойкой.','high','assigned','req','voice',1,8,null::int,6),
+    (255,'hvac',54,710,31,'Не греет фанкойл в кабинете директора','Фанкойл гудит, но воздух холодный.','normal','assigned','req','text',1,9,null,72),
+    (256,'elec',24,704,32,'Мигает светильник в холле у лифтов','Светильник над лифтами мигает с утра.','normal','in_progress','req','text',1,10,60,48),
+    (257,'plumb',467,719,null,'Сработал датчик протечки в санузле','Датчик под раковиной пищит, на полу вода.','high','new','mgr','button',1,7,null,24)
+  ) as t(n, layer, loc, a, c, title, descr, priority, status, author, channel, d, h, r, due_h)
+  cross join lateral (
+    select v_today - make_interval(days => t.d) + make_interval(hours => t.h) as created
+  ) x
+  join public.locations lo
+    on lo.id = ('de300000-0000-4000-8000-' || lpad(t.loc::text, 12, '0'))::uuid
+  join public.layers ly
+    on ly.id = case t.layer when 'hvac' then v_layer_hvac when 'elec' then v_layer_elec
+                            when 'plumb' then v_layer_plumb when 'clean' then v_layer_clean
+                            else v_layer_other end
+  on conflict (id) do update set
+    company_id = excluded.company_id, object_id = excluded.object_id,
+    location_id = excluded.location_id, asset_id = excluded.asset_id,
+    title = excluded.title, description = excluded.description,
+    work_type = excluded.work_type, layer_id = excluded.layer_id,
+    priority = excluded.priority, status = excluded.status, recurrence = null,
+    requires_photo = excluded.requires_photo, requires_scan = false,
+    input_channel = excluded.input_channel, created_by = excluded.created_by,
+    assigned_contractor_id = excluded.assigned_contractor_id,
+    assigned_executor_id = null, assigned_by = excluded.assigned_by,
+    due_at = excluded.due_at, time_spent_minutes = null,
+    created_at = excluded.created_at, updated_at = excluded.updated_at,
+    started_at = excluded.started_at, submitted_at = null,
+    accepted_at = null, accepted_by = null,
+    return_reason = null, return_count = 0;
+  get diagnostics v_plan_orders = row_count;
+  v_orders := v_orders + v_plan_orders;
+  -- <<< demo_plans
 
   -- 6. Визиты
   -- Колонки: vn — номер (часть id); n — заявка; off — минут от начала работы

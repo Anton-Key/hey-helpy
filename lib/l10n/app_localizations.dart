@@ -3248,6 +3248,774 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Показать город {city}'**
   String mapCityZoom(String city);
+
+  /// No description provided for @filterAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры'**
+  String get filterAll;
+
+  /// No description provided for @filterAllCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры · {count}'**
+  String filterAllCount(int count);
+
+  /// No description provided for @filterAllWide.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все фильтры'**
+  String get filterAllWide;
+
+  /// No description provided for @filterAllWideCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все фильтры · {count}'**
+  String filterAllWideCount(int count);
+
+  /// No description provided for @filterAny.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все'**
+  String get filterAny;
+
+  /// No description provided for @filterShow.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать'**
+  String get filterShow;
+
+  /// No description provided for @filterShowCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =0{Нет заявок} one{Показать {count} заявку} few{Показать {count} заявки} other{Показать {count} заявок}}'**
+  String filterShowCount(int count);
+
+  /// No description provided for @commonClose.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закрыть'**
+  String get commonClose;
+
+  /// No description provided for @commonGotIt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Понятно'**
+  String get commonGotIt;
+
+  /// No description provided for @infoFiltersTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Как работают фильтры'**
+  String get infoFiltersTitle;
+
+  /// No description provided for @infoFilters1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите условия — на кнопке внизу сразу видно, сколько заявок подойдёт.'**
+  String get infoFilters1;
+
+  /// No description provided for @infoFilters2.
+  ///
+  /// In ru, this message translates to:
+  /// **'«Показать» применяет фильтры, «×» на таблетке над списком снимает один фильтр.'**
+  String get infoFilters2;
+
+  /// No description provided for @infoFilters3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры запоминаются на этом устройстве, а в браузере — ещё и в адресе страницы: ссылку можно отправить коллеге.'**
+  String get infoFilters3;
+
+  /// No description provided for @infoShowHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подсказка: {title}'**
+  String infoShowHint(String title);
+
+  /// No description provided for @sortShortNewest.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новые'**
+  String get sortShortNewest;
+
+  /// No description provided for @sortShortOldest.
+  ///
+  /// In ru, this message translates to:
+  /// **'Старые'**
+  String get sortShortOldest;
+
+  /// No description provided for @sortShortDue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок'**
+  String get sortShortDue;
+
+  /// No description provided for @sortShortPriority.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срочность'**
+  String get sortShortPriority;
+
+  /// No description provided for @sortShortStatus.
+  ///
+  /// In ru, this message translates to:
+  /// **'Статус'**
+  String get sortShortStatus;
+
+  /// No description provided for @sortShortObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get sortShortObject;
+
+  /// No description provided for @floorsHeader.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этажи'**
+  String get floorsHeader;
+
+  /// No description provided for @floorsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этажи · {count}'**
+  String floorsTitle(int count);
+
+  /// No description provided for @floorsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этажей пока нет'**
+  String get floorsEmpty;
+
+  /// No description provided for @floorsEmptyManager.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте этаж и загрузите план — на нём можно будет отметить помещения и оборудование.'**
+  String get floorsEmptyManager;
+
+  /// No description provided for @floorAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж'**
+  String get floorAdd;
+
+  /// No description provided for @floorAddLong.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить этаж'**
+  String get floorAddLong;
+
+  /// No description provided for @floorPlacesCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} помещение} few{{count} помещения} other{{count} помещений}}'**
+  String floorPlacesCount(int count);
+
+  /// No description provided for @floorOpenOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =0{нет открытых заявок} one{{count} открытая заявка} few{{count} открытые заявки} other{{count} открытых заявок}}'**
+  String floorOpenOrders(int count);
+
+  /// No description provided for @floorNoPlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без плана'**
+  String get floorNoPlan;
+
+  /// No description provided for @floorFormNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый этаж'**
+  String get floorFormNew;
+
+  /// No description provided for @floorFormEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж'**
+  String get floorFormEdit;
+
+  /// No description provided for @floorName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get floorName;
+
+  /// No description provided for @floorNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, 3 этаж или Парковка'**
+  String get floorNameHint;
+
+  /// No description provided for @floorLevel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер этажа'**
+  String get floorLevel;
+
+  /// No description provided for @floorLevelHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'−1, −2 — подземные этажи'**
+  String get floorLevelHint;
+
+  /// No description provided for @floorPlanImage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Картинка плана'**
+  String get floorPlanImage;
+
+  /// No description provided for @floorPlanPick.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать файл'**
+  String get floorPlanPick;
+
+  /// No description provided for @floorPlanOptional.
+  ///
+  /// In ru, this message translates to:
+  /// **'Необязательно — план можно загрузить позже.'**
+  String get floorPlanOptional;
+
+  /// No description provided for @floorNameEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите название этажа'**
+  String get floorNameEmpty;
+
+  /// No description provided for @floorNameTooLong.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название — не длиннее 60 символов'**
+  String get floorNameTooLong;
+
+  /// No description provided for @floorNameTaken.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж с таким названием уже есть'**
+  String get floorNameTaken;
+
+  /// No description provided for @floorLevelInvalid.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер этажа — целое число, например 3 или −1'**
+  String get floorLevelInvalid;
+
+  /// No description provided for @floorRename.
+  ///
+  /// In ru, this message translates to:
+  /// **'Переименовать'**
+  String get floorRename;
+
+  /// No description provided for @floorUploadPlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузить план'**
+  String get floorUploadPlan;
+
+  /// No description provided for @floorReplacePlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заменить план'**
+  String get floorReplacePlan;
+
+  /// No description provided for @floorRemovePlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать план'**
+  String get floorRemovePlan;
+
+  /// No description provided for @floorMoveUp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выше'**
+  String get floorMoveUp;
+
+  /// No description provided for @floorMoveDown.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ниже'**
+  String get floorMoveDown;
+
+  /// No description provided for @floorDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить этаж'**
+  String get floorDelete;
+
+  /// No description provided for @floorDeleteConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить этаж «{name}»?'**
+  String floorDeleteConfirm(String name);
+
+  /// No description provided for @floorDeleteHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещения и оборудование останутся, но уйдут с плана.'**
+  String get floorDeleteHint;
+
+  /// No description provided for @floorDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж удалён'**
+  String get floorDeleted;
+
+  /// No description provided for @floorAddPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить помещение на этаж «{name}»'**
+  String floorAddPlace(String name);
+
+  /// No description provided for @floorMenu.
+  ///
+  /// In ru, this message translates to:
+  /// **'Действия с этажом «{name}»'**
+  String floorMenu(String name);
+
+  /// No description provided for @planTooBig.
+  ///
+  /// In ru, this message translates to:
+  /// **'Файл больше 15 МБ. Уменьшите картинку или сохраните её в JPEG.'**
+  String get planTooBig;
+
+  /// No description provided for @planPdf.
+  ///
+  /// In ru, this message translates to:
+  /// **'PDF не подходит: сохраните нужную страницу как PNG или сделайте снимок экрана.'**
+  String get planPdf;
+
+  /// No description provided for @planBadType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужна картинка PNG, JPEG или WebP.'**
+  String get planBadType;
+
+  /// No description provided for @planUnreadable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось прочитать картинку. Попробуйте другой файл.'**
+  String get planUnreadable;
+
+  /// No description provided for @planNoRights.
+  ///
+  /// In ru, this message translates to:
+  /// **'Менять этажи, планы и маркеры может только менеджер.'**
+  String get planNoRights;
+
+  /// No description provided for @planUploadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить план. Проверьте интернет и попробуйте ещё раз.'**
+  String get planUploadFailed;
+
+  /// No description provided for @planUploaded.
+  ///
+  /// In ru, this message translates to:
+  /// **'План загружен'**
+  String get planUploaded;
+
+  /// No description provided for @planRemoved.
+  ///
+  /// In ru, this message translates to:
+  /// **'План убран'**
+  String get planRemoved;
+
+  /// No description provided for @placeNotOnPlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'не на плане'**
+  String get placeNotOnPlan;
+
+  /// No description provided for @infoFloorsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этажи и планы'**
+  String get infoFloorsTitle;
+
+  /// No description provided for @infoFloors1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж — часть объекта. У этажа может быть картинка плана.'**
+  String get infoFloors1;
+
+  /// No description provided for @infoFloors2.
+  ///
+  /// In ru, this message translates to:
+  /// **'На плане отмечают помещения и оборудование — исполнитель быстрее найдёт место.'**
+  String get infoFloors2;
+
+  /// No description provided for @infoFloors3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавлять этажи, загружать планы и расставлять маркеры может менеджер. Остальные видят план только для чтения.'**
+  String get infoFloors3;
+
+  /// No description provided for @infoUploadTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузка плана'**
+  String get infoUploadTitle;
+
+  /// No description provided for @infoUpload1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подходят картинки PNG, JPEG и WebP до 15 МБ.'**
+  String get infoUpload1;
+
+  /// No description provided for @infoUpload2.
+  ///
+  /// In ru, this message translates to:
+  /// **'PDF: сохраните нужную страницу как PNG или сделайте снимок экрана.'**
+  String get infoUpload2;
+
+  /// No description provided for @infoUpload3.
+  ///
+  /// In ru, this message translates to:
+  /// **'План видят только сотрудники вашей компании.'**
+  String get infoUpload3;
+
+  /// No description provided for @planTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'План этажа'**
+  String get planTitle;
+
+  /// No description provided for @planEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Редактировать'**
+  String get planEdit;
+
+  /// No description provided for @planEditMode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Режим расстановки'**
+  String get planEditMode;
+
+  /// No description provided for @planDone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово'**
+  String get planDone;
+
+  /// No description provided for @planFilterAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё'**
+  String get planFilterAll;
+
+  /// No description provided for @planFilterPlaces.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещения'**
+  String get planFilterPlaces;
+
+  /// No description provided for @planFilterAssets.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get planFilterAssets;
+
+  /// No description provided for @planFilterWithOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'С заявками'**
+  String get planFilterWithOrders;
+
+  /// No description provided for @planOnPlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'На плане · {count}'**
+  String planOnPlan(int count);
+
+  /// No description provided for @planUnplaced.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не размещены · {count}'**
+  String planUnplaced(int count);
+
+  /// No description provided for @planSearch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск по помещениям и оборудованию'**
+  String get planSearch;
+
+  /// No description provided for @planNotLoaded.
+  ///
+  /// In ru, this message translates to:
+  /// **'План не загружен'**
+  String get planNotLoaded;
+
+  /// No description provided for @planFit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вписать план'**
+  String get planFit;
+
+  /// No description provided for @planList.
+  ///
+  /// In ru, this message translates to:
+  /// **'Список'**
+  String get planList;
+
+  /// No description provided for @planOpenOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открытые заявки'**
+  String get planOpenOrders;
+
+  /// No description provided for @planNoOpenOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открытых заявок нет'**
+  String get planNoOpenOrders;
+
+  /// No description provided for @planCreateHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать заявку здесь'**
+  String get planCreateHere;
+
+  /// No description provided for @planAllPlaceOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все заявки помещения'**
+  String get planAllPlaceOrders;
+
+  /// No description provided for @planAssetInventory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Инвентарный номер'**
+  String get planAssetInventory;
+
+  /// No description provided for @planAssetCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категория'**
+  String get planAssetCategory;
+
+  /// No description provided for @planAssetPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get planAssetPlace;
+
+  /// No description provided for @assetCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'{code, select, equipment{Оборудование} furniture{Мебель} infra{Инженерные сети} other{Другое}}'**
+  String assetCategory(String code);
+
+  /// No description provided for @planNewPlaceHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новое помещение здесь'**
+  String get planNewPlaceHere;
+
+  /// No description provided for @planNewAssetHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новое оборудование здесь'**
+  String get planNewAssetHere;
+
+  /// No description provided for @planPutHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поставить сюда…'**
+  String get planPutHere;
+
+  /// No description provided for @planRename.
+  ///
+  /// In ru, this message translates to:
+  /// **'Переименовать'**
+  String get planRename;
+
+  /// No description provided for @planRemoveFromPlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать с плана'**
+  String get planRemoveFromPlan;
+
+  /// No description provided for @planDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить'**
+  String get planDelete;
+
+  /// No description provided for @planDeleteConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить «{name}»?'**
+  String planDeleteConfirm(String name);
+
+  /// No description provided for @planDeleteHasOrders.
+  ///
+  /// In ru, this message translates to:
+  /// **'У «{name}» есть заявки — удалить нельзя. Можно убрать с плана.'**
+  String planDeleteHasOrders(String name);
+
+  /// No description provided for @planSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранено'**
+  String get planSaved;
+
+  /// No description provided for @planUndo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменить'**
+  String get planUndo;
+
+  /// No description provided for @planNewPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новое помещение'**
+  String get planNewPlace;
+
+  /// No description provided for @planNewAsset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новое оборудование'**
+  String get planNewAsset;
+
+  /// No description provided for @planNameLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get planNameLabel;
+
+  /// No description provided for @planNameRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите название'**
+  String get planNameRequired;
+
+  /// No description provided for @planInventoryLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Инвентарный номер (необязательно)'**
+  String get planInventoryLabel;
+
+  /// No description provided for @planPickUnplaced.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что поставить сюда'**
+  String get planPickUnplaced;
+
+  /// No description provided for @planNothingUnplaced.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё уже на плане'**
+  String get planNothingUnplaced;
+
+  /// No description provided for @planNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж не найден или нет доступа.'**
+  String get planNotFound;
+
+  /// No description provided for @planNoPlaces.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала добавьте помещение на этот этаж'**
+  String get planNoPlaces;
+
+  /// No description provided for @planFloorPicker.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж'**
+  String get planFloorPicker;
+
+  /// No description provided for @planMarkerHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажмите на маркер — заявки и действия'**
+  String get planMarkerHint;
+
+  /// No description provided for @infoPlanTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что значат маркеры'**
+  String get infoPlanTitle;
+
+  /// No description provided for @infoPlan1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кружок — помещение, число — его открытые заявки. Квадрат — оборудование.'**
+  String get infoPlan1;
+
+  /// No description provided for @infoPlan2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Красный — есть просроченные или критические заявки, оранжевый — срочные или в работе.'**
+  String get infoPlan2;
+
+  /// No description provided for @infoPlan3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бирюзовый — есть открытые заявки, серый — открытых нет.'**
+  String get infoPlan3;
+
+  /// No description provided for @infoEditTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Режим расстановки'**
+  String get infoEditTitle;
+
+  /// No description provided for @infoEdit1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Перетащите маркер, чтобы передвинуть (на телефоне — долгое нажатие). Сохраняется сразу, можно «Отменить».'**
+  String get infoEdit1;
+
+  /// No description provided for @infoEdit2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажмите на пустое место — добавьте помещение или оборудование или поставьте то, что ещё не размещено.'**
+  String get infoEdit2;
+
+  /// No description provided for @infoEdit3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажмите на маркер — переименовать, убрать с плана или удалить.'**
+  String get infoEdit3;
+
+  /// No description provided for @orderShowOnPlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать на плане'**
+  String get orderShowOnPlan;
+
+  /// No description provided for @planNearby.
+  ///
+  /// In ru, this message translates to:
+  /// **'{floor} · {count, plural, =0{открытых заявок рядом нет} one{{count} открытая заявка рядом} few{{count} открытые заявки рядом} other{{count} открытых заявок рядом}}'**
+  String planNearby(String floor, int count);
+
+  /// No description provided for @floorShort.
+  ///
+  /// In ru, this message translates to:
+  /// **'{level} эт.'**
+  String floorShort(int level);
+
+  /// No description provided for @formPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get formPlace;
+
+  /// No description provided for @formChoosePlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без помещения'**
+  String get formChoosePlace;
+
+  /// No description provided for @formAsset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get formAsset;
 }
 
 class _AppLocalizationsDelegate

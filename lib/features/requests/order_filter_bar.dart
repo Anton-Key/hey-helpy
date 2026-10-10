@@ -68,6 +68,16 @@ class OrderFilterLabels {
         OrderSort.object => l.sortObject,
       };
 
+  /// Короткая подпись сортировки (кнопка рядом с фильтрами на ПК).
+  String sortShort(OrderSort s) => switch (s) {
+        OrderSort.newest => l.sortShortNewest,
+        OrderSort.oldest => l.sortShortOldest,
+        OrderSort.due => l.sortShortDue,
+        OrderSort.priority => l.sortShortPriority,
+        OrderSort.status => l.sortShortStatus,
+        OrderSort.object => l.sortShortObject,
+      };
+
   String channel(String c) => switch (c) {
         'voice' => l.filterChannelVoice,
         'text' => l.filterChannelText,
@@ -123,6 +133,63 @@ class OrderFilterLabels {
     return items.length == 1 ? items.single : l.filterMoreCount(items.length);
   }
 
+  /// Название фильтра (строка окна «Фильтры», подпись для диктора).
+  String title(FilterKey k) => switch (k) {
+        FilterKey.period => l.filterPeriod,
+        FilterKey.status => l.filterStatus,
+        FilterKey.object => l.filterObject,
+        FilterKey.room => l.filterRoom,
+        FilterKey.contractor => l.filterContractor,
+        FilterKey.layer => l.filterWorkType,
+        FilterKey.priority => l.filterPriority,
+        FilterKey.recurrence => l.filterType,
+        FilterKey.channel => l.filterSource,
+        FilterKey.photo => l.filterNeedsPhoto,
+        FilterKey.returned => l.filterReturned,
+        FilterKey.mine => l.filterCreatedByMe,
+        FilterKey.toMe => l.filterAssignedToMe,
+      };
+
+  List<FilterOption> channelOptions() =>
+      [for (final c in kChannels) FilterOption(c, channel(c))];
+
+  /// Подпись выбранного значения фильтра [k] («Москва (5)», «Просрочено +1»,
+  /// «30 дней»). null — фильтр не выбран.
+  String? value(FilterKey k, OrderFilter f, FilterChoices c, DateTime now) =>
+      switch (k) {
+        FilterKey.period => period(f, now),
+        FilterKey.status => multi(f.statuses, statusOptions()),
+        FilterKey.object => objectsSelectionLabel(l, f.objectIds, c.objects),
+        FilterKey.room => f.effectiveLocationIds.isEmpty
+            ? null
+            : multi(f.effectiveLocationIds, c.places),
+        FilterKey.contractor =>
+          multi(f.contractorIds, contractorOptions(c.contractors)),
+        FilterKey.layer => multi(f.layerIds, c.layers),
+        FilterKey.priority => multi(f.priorities, priorityOptions()),
+        FilterKey.recurrence => switch (f.recurrence) {
+            RecurrenceFilter.once => l.filterOnce,
+            RecurrenceFilter.recurring => l.filterRecurring,
+            null => null,
+          },
+        FilterKey.channel => multi(f.channels, channelOptions()),
+        FilterKey.photo => f.needsPhoto ? l.filterNeedsPhoto : null,
+        FilterKey.returned => f.returned ? l.filterReturned : null,
+        FilterKey.mine => f.createdByMe ? l.filterCreatedByMe : null,
+        FilterKey.toMe => f.assignedToMe ? l.filterAssignedToMe : null,
+      };
+
+  /// Таблетки строки применённых фильтров: (фильтр, подпись) по порядку
+  /// [OrderFilter.activeKeys]; [skip] — те, что уже стоят таблетками
+  /// рядом с поиском (широкий экран).
+  List<(FilterKey, String)> applied(
+          OrderFilter f, FilterChoices c, DateTime now,
+          {Set<FilterKey> skip = const {}}) =>
+      [
+        for (final k in f.activeKeys)
+          if (!skip.contains(k)) (k, value(k, f, c, now) ?? title(k)),
+      ];
+
   List<FilterOption> priorityOptions() => [
         for (final p in kPriorityOrder)
           FilterOption(p, l.priority(p), leading: PriorityDot(p)),
@@ -139,230 +206,6 @@ class OrderFilterLabels {
         ...contractors,
         FilterOption(kNoContractor, l.filterNoContractor),
       ];
-}
-
-// ---------------------------------------------------------------------
-// Строка фильтров
-// ---------------------------------------------------------------------
-
-/// Строка «таблеток» над списком заявок: горизонтальная прокрутка, справа —
-/// сортировка. Каждая таблетка открывает окно выбора ([showFilterPicker]).
-class OrderFilterBar extends StatelessWidget {
-  const OrderFilterBar({
-    super.key,
-    required this.filter,
-    required this.choices,
-    required this.onChanged,
-    this.loadPlaces,
-  });
-
-  final OrderFilter filter;
-  final FilterChoices choices;
-  final ValueChanged<OrderFilter> onChanged;
-
-  /// Помещения выбранного объекта — загружаются при открытии окна.
-  final Future<List<FilterOption>> Function(String objectId)? loadPlaces;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final lb = OrderFilterLabels(l);
-    final now = DateTime.now();
-    final f = filter;
-
-    Widget chip(
-        {required String label,
-        required String? active,
-        required Future<OrderFilter?> Function(BuildContext anchor) open,
-        required OrderFilter Function() clear}) {
-      return _ChipSlot(
-          active: active != null,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(end: AppSpace.s),
-            child: Builder(
-              builder: (anchor) => AppFilterChip(
-                label: label,
-                activeLabel: active,
-                clearLabel: l.filterClearOne(label),
-                onTap: () async {
-                  final r = await open(anchor);
-                  if (r != null) onChanged(r);
-                },
-                onClear: () => onChanged(clear()),
-              ),
-            ),
-          ));
-    }
-
-    Future<Set<String>?> pickMulti(BuildContext anchor, String title,
-        List<FilterOption> options, Set<String> selected,
-        {bool searchable = true}) {
-      return showFilterPicker<Set<String>>(
-        context: anchor,
-        builder: (_) => MultiSelectPanel(
-            title: title,
-            options: options,
-            selected: selected,
-            searchable: searchable),
-      );
-    }
-
-    final contractors = lb.contractorOptions(choices.contractors);
-    final chips = <Widget>[
-      chip(
-        label: l.filterPeriod,
-        active: lb.period(f, now),
-        open: (a) => showFilterPicker<OrderFilter>(
-            context: a, builder: (_) => PeriodPanel(filter: f)),
-        clear: () =>
-            f.copyWith(clearPeriod: true, dateField: DateField.created),
-      ),
-      chip(
-        label: l.filterObject,
-        active: objectsSelectionLabel(l, f.objectIds, choices.objects),
-        open: (a) async {
-          final r = await showFilterPicker<Set<String>>(
-            context: a,
-            builder: (_) => ObjectPickerPanel(
-                title: l.filterObject,
-                objects: choices.objects,
-                selected: f.objectIds),
-          );
-          return r == null ? null : f.copyWith(objectIds: r);
-        },
-        clear: () => f.copyWith(objectIds: const {}),
-      ),
-      if (f.objectIds.length == 1)
-        chip(
-          label: l.filterRoom,
-          active: f.effectiveLocationIds.isEmpty
-              ? null
-              : lb.multi(f.effectiveLocationIds, choices.places),
-          open: (a) async {
-            final places = loadPlaces == null
-                ? choices.places
-                : await loadPlaces!(f.objectIds.single);
-            if (!a.mounted) return null;
-            final r = await pickMulti(a, l.filterRoom, places, f.locationIds);
-            return r == null ? null : f.copyWith(locationIds: r);
-          },
-          clear: () => f.copyWith(locationIds: const {}),
-        ),
-      chip(
-        label: l.filterContractor,
-        active: lb.multi(f.contractorIds, contractors),
-        open: (a) async {
-          final r = await pickMulti(
-              a, l.filterContractor, contractors, f.contractorIds);
-          return r == null ? null : f.copyWith(contractorIds: r);
-        },
-        clear: () => f.copyWith(contractorIds: const {}),
-      ),
-      chip(
-        label: l.filterPriority,
-        active: lb.multi(f.priorities, lb.priorityOptions()),
-        open: (a) async {
-          final r = await pickMulti(
-              a, l.filterPriority, lb.priorityOptions(), f.priorities);
-          return r == null ? null : f.copyWith(priorities: r);
-        },
-        clear: () => f.copyWith(priorities: const {}),
-      ),
-      chip(
-        label: l.filterStatus,
-        active: lb.multi(f.statuses, lb.statusOptions()),
-        open: (a) async {
-          final r = await pickMulti(
-              a, l.filterStatus, lb.statusOptions(), f.statuses,
-              searchable: false);
-          return r == null ? null : f.copyWith(statuses: r);
-        },
-        clear: () => f.copyWith(statuses: const {}),
-      ),
-      chip(
-        label: l.filterWorkType,
-        active: lb.multi(f.layerIds, choices.layers),
-        open: (a) async {
-          final r =
-              await pickMulti(a, l.filterWorkType, choices.layers, f.layerIds);
-          return r == null ? null : f.copyWith(layerIds: r);
-        },
-        clear: () => f.copyWith(layerIds: const {}),
-      ),
-      chip(
-        label: l.filterMore,
-        active: lb.more(f),
-        open: (a) => showFilterPicker<OrderFilter>(
-            context: a,
-            builder: (_) =>
-                MorePanel(filter: f, isExecutor: choices.isExecutor)),
-        clear: () => f.copyWith(
-            clearRecurrence: true,
-            channels: const {},
-            needsPhoto: false,
-            returned: false,
-            createdByMe: false,
-            assignedToMe: false),
-      ),
-      if (f.hasFilters)
-        Pressable(
-          onTap: () => onChanged(f.cleared().copyWith(segment: f.segment)),
-          child: SizedBox(
-            height: AppSizes.filterChip,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsetsDirectional.symmetric(horizontal: 6),
-                child: Text(l.filterResetAll,
-                    style: AppText.footnote.copyWith(
-                        fontSize: 14,
-                        color: AppColors.accentText,
-                        fontWeight: FontWeight.w600)),
-              ),
-            ),
-          ),
-        ),
-    ];
-
-    return Row(children: [
-      Expanded(
-        // Сортировка — отдельно справа, а строка таблеток прокручивается
-        // и плавно гаснет у края: видно, что за ним есть ещё фильтры.
-        child: AppFadingScroll(
-          // Выбранные фильтры — первыми: на телефоне их видно без прокрутки.
-          child: Row(children: [
-            for (final c in chips)
-              if (c is _ChipSlot && c.active) c,
-            for (final c in chips)
-              if (c is! _ChipSlot || !c.active) c,
-          ]),
-        ),
-      ),
-      const SizedBox(width: AppSpace.m),
-      Builder(
-        builder: (anchor) => AppFilterChip(
-          icon: AppIcons.sort,
-          label: lb.sort(f.sort),
-          // На телефоне — только значок: строке фильтров нужно место.
-          compact: MediaQuery.sizeOf(context).width < 600,
-          onTap: () async {
-            final r = await showFilterPicker<OrderSort>(
-                context: anchor, builder: (_) => SortPanel(sort: f.sort));
-            if (r != null) onChanged(f.copyWith(sort: r));
-          },
-        ),
-      ),
-    ]);
-  }
-}
-
-/// Таблетка в строке и признак «выбрана» (для порядка).
-class _ChipSlot extends StatelessWidget {
-  const _ChipSlot({required this.active, required this.child});
-  final bool active;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => child;
 }
 
 // ---------------------------------------------------------------------
@@ -524,87 +367,6 @@ class _PeriodPanelState extends State<PeriodPanel> {
             selected: _f.period == PeriodPreset.custom && _f.hasPeriod,
             onTap: _pickCustom,
           ),
-        ]),
-      ],
-    );
-  }
-}
-
-/// «Ещё»: тип, источник и отметки.
-class MorePanel extends StatefulWidget {
-  const MorePanel({super.key, required this.filter, required this.isExecutor});
-  final OrderFilter filter;
-  final bool isExecutor;
-
-  @override
-  State<MorePanel> createState() => _MorePanelState();
-}
-
-class _MorePanelState extends State<MorePanel> {
-  late OrderFilter _f = widget.filter;
-
-  void _set(OrderFilter f) => setState(() => _f = f);
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final lb = OrderFilterLabels(l);
-    final count = _f.moreCount;
-    AppCheckRow rec(RecurrenceFilter r, String title) => AppCheckRow(
-          title: title,
-          selected: _f.recurrence == r,
-          onTap: () => _set(_f.recurrence == r
-              ? _f.copyWith(clearRecurrence: true)
-              : _f.copyWith(recurrence: r)),
-        );
-    return AppFilterPanel(
-      title: l.filterMore,
-      resetLabel: l.filterReset,
-      onReset: count == 0
-          ? null
-          : () => _set(_f.copyWith(
-              clearRecurrence: true,
-              channels: const {},
-              needsPhoto: false,
-              returned: false,
-              createdByMe: false,
-              assignedToMe: false)),
-      applyLabel: count == 0 ? l.filterApply : l.filterApplyCount(count),
-      onApply: () => Navigator.pop(context, _f),
-      children: [
-        AppPanelGroup(header: l.filterType, children: [
-          rec(RecurrenceFilter.once, l.filterOnce),
-          rec(RecurrenceFilter.recurring, l.filterRecurring),
-        ]),
-        AppPanelGroup(header: l.filterSource, children: [
-          for (final c in kChannels)
-            AppCheckRow(
-              title: lb.channel(c),
-              selected: _f.channels.contains(c),
-              onTap: () => _set(_f.copyWith(
-                  channels: _f.channels.contains(c)
-                      ? ({..._f.channels}..remove(c))
-                      : {..._f.channels, c})),
-            ),
-        ]),
-        AppPanelGroup(header: l.filterOptions, children: [
-          AppCheckRow(
-              title: l.filterNeedsPhoto,
-              selected: _f.needsPhoto,
-              onTap: () => _set(_f.copyWith(needsPhoto: !_f.needsPhoto))),
-          AppCheckRow(
-              title: l.filterReturned,
-              selected: _f.returned,
-              onTap: () => _set(_f.copyWith(returned: !_f.returned))),
-          AppCheckRow(
-              title: l.filterCreatedByMe,
-              selected: _f.createdByMe,
-              onTap: () => _set(_f.copyWith(createdByMe: !_f.createdByMe))),
-          if (widget.isExecutor || _f.assignedToMe)
-            AppCheckRow(
-                title: l.filterAssignedToMe,
-                selected: _f.assignedToMe,
-                onTap: () => _set(_f.copyWith(assignedToMe: !_f.assignedToMe))),
         ]),
       ],
     );

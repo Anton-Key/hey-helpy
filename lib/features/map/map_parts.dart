@@ -79,7 +79,8 @@ class ClusterMarker extends StatelessWidget {
       required this.open,
       required this.tone,
       required this.onTap,
-      this.city});
+      this.city,
+      this.moreCities = 0});
   final int objects;
   final int open;
   final MarkerTone tone;
@@ -87,6 +88,9 @@ class ClusterMarker extends StatelessWidget {
 
   /// Подпись города под кружком (кластер «весь город» на мелком масштабе).
   final String? city;
+
+  /// Ещё городов в кружке (слились на мелком масштабе): «Белград +2».
+  final int moreCities;
 
   static const size = 50.0;
 
@@ -110,7 +114,7 @@ class ClusterMarker extends StatelessWidget {
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.pill),
             boxShadow: AppShadows.floating),
-        child: Text(city!,
+        child: Text(_cityLabel(context)!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppText.caption
@@ -119,11 +123,16 @@ class ClusterMarker extends StatelessWidget {
     ]);
   }
 
+  /// «Белград» или «Белград +2» (слитые города).
+  String? _cityLabel(BuildContext context) => city == null || moreCities == 0
+      ? city
+      : context.l10n.filterPlus(city!, moreCities);
+
   Widget _circle(BuildContext context) {
     final (ring, _) = toneColors(tone);
     final label = city == null
         ? context.l10n.mapCluster(objects)
-        : '$city · ${context.l10n.mapCluster(objects)}';
+        : '${_cityLabel(context)} · ${context.l10n.mapCluster(objects)}';
     return Center(
       child: Tooltip(
         message: label,
@@ -194,8 +203,14 @@ class ObjectInfoCard extends StatelessWidget {
       required this.onOrders,
       required this.onCreate,
       required this.onMove,
-      required this.onClose});
+      required this.onClose,
+      this.floors = 0,
+      this.onFloors});
   final Obj object;
+
+  /// Этажей у объекта; > 0 — строка «Этажи · N» ([onFloors]).
+  final int floors;
+  final VoidCallback? onFloors;
   final ObjectStats stats;
   final bool isManager;
   final VoidCallback onOpen;
@@ -304,6 +319,13 @@ class ObjectInfoCard extends StatelessWidget {
         const SizedBox(height: AppSpace.s),
         AppButton.tinted(
             label: l.mapCreateHere, icon: AppIcons.add, onPressed: onCreate),
+        if (floors > 0 && onFloors != null) ...[
+          const SizedBox(height: AppSpace.s),
+          AppButton.tinted(
+              label: l.floorsTitle(floors),
+              icon: AppIcons.floors,
+              onPressed: onFloors),
+        ],
         if (isManager)
           Padding(
             padding: const EdgeInsetsDirectional.only(top: AppSpace.xs),

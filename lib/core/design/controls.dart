@@ -115,7 +115,9 @@ class SegmentedControl<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final index = segments.indexWhere((s) => s.value == selected);
-    Widget cell(int i) {
+    // Узкие сегменты (телефон 360, три сегмента с числами) — меньше поля,
+    // чтобы «Просрочено · 7» помещалось целиком.
+    Widget cell(int i, {double pad = 10}) {
       final s = segments[i];
       final on = i == index;
       final style = AppText.footnote.copyWith(
@@ -127,7 +129,7 @@ class SegmentedControl<T> extends StatelessWidget {
         selected: on,
         child: Container(
           height: AppSizes.segmentHeight - 4,
-          padding: const EdgeInsetsDirectional.symmetric(horizontal: 10),
+          padding: EdgeInsetsDirectional.symmetric(horizontal: pad),
           alignment: Alignment.center,
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             if (s.icon != null) ...[
@@ -174,7 +176,8 @@ class SegmentedControl<T> extends StatelessWidget {
               child: Container(decoration: _thumb),
             ),
           Row(children: [
-            for (var i = 0; i < segments.length; i++) Expanded(child: cell(i)),
+            for (var i = 0; i < segments.length; i++)
+              Expanded(child: cell(i, pad: w < 120 ? 3 : 10)),
           ]),
         ]);
       }),

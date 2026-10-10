@@ -14,7 +14,12 @@ import '../voice/wake_word_service.dart';
 import 'order_filter.dart';
 import 'order_filter_bar.dart';
 import 'order_filter_store.dart';
+import 'order_filters_panel.dart';
 import 'requests.dart';
+
+/// Ширина колонки вкладки «Заявки» на ПК: рядом с поиском помещаются
+/// таблетки главных фильтров.
+const kRequestsMaxWidth = 960.0;
 
 /// Вкладка «Заявки»: поиск, строка фильтров, сегменты «Все / Открытые /
 /// Просрочено», «Найдено N из M» и список (группы — по смыслу сортировки).
@@ -164,6 +169,24 @@ class _RequestsTabState extends State<RequestsTab> {
     if (reload) _load(refs: false);
   }
 
+  /// Запрос только количества для «Показать N заявок».
+  Future<int> _count(OrderFilter f) {
+    final now = DateTime.now();
+    return _repo.countFiltered([
+      ...f.serverConditions(now: now, uid: _repo.uid, myExecutorIds: _execIds),
+      ...f.segmentConditions(now),
+    ]);
+  }
+
+  Future<void> _openFilters() async {
+    final r = await showOrderFilters(context,
+        filter: _filter,
+        choices: _choices(),
+        count: _count,
+        loadPlaces: _loadPlaces);
+    if (r != null && mounted) _setFilter(r);
+  }
+
   void _resetAll() {
     _search.clear();
     setState(() => _query = '');
@@ -267,12 +290,22 @@ class _RequestsTabState extends State<RequestsTab> {
         search: _matches,
         objectName: (id) => _objName(l, id));
     final ready = !_loading && _error == null;
+    final wide = MediaQuery.sizeOf(context).width >= AppSpace.wideFrom;
+    final choices = _choices();
+    final skip = wide ? kMainFilterKeys.toSet() : const <FilterKey>{};
+    final applied = _filterReady &&
+        OrderFilterLabels(l)
+            .applied(_filter, choices, now, skip: skip)
+            .isNotEmpty;
+    // Строка поиска и фильтров (+ строка применённых) закреплена под шапкой.
+    final barHeight = AppSpace.xs * 2 + AppSizes.minTap * (applied ? 2 : 1);
     return Stack(children: [
       Positioned.fill(
         child: CustomScrollView(slivers: [
           HomeHeader(
             title: l.tabRequests,
             eyebrow: l.appName,
+            maxWidth: kRequestsMaxWidth,
             actions: [
               AppIconButton(
                   icon: AppIcons.refresh,
@@ -280,23 +313,54 @@ class _RequestsTabState extends State<RequestsTab> {
                   onPressed: _loading ? null : _load),
             ],
           ),
-          SliverContent(
-            sliver: SliverList.list(children: [
-              AppSearchField(
-                  controller: _search,
-                  hint: l.reqSearchHint,
-                  onChanged: (v) => setState(() => _query = v)),
-              if (_filterReady) ...[
-                const SizedBox(height: AppSpace.m),
-                OrderFilterBar(
-                  filter: _filter,
-                  choices: _choices(),
-                  onChanged: _setFilter,
-                  loadPlaces: _loadPlaces,
-                ),
-              ],
-              const SizedBox(height: AppSpace.m),
-              SegmentedControl<OrderSegment>(
+          AppSliverBar(
+            height: barHeight,
+            maxWidth: kRequestsMaxWidth,
+            child: Padding(
+              padding:
+                  const EdgeInsetsDirectional.symmetric(vertical: AppSpace.xs),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_filterReady)
+                      OrderControlBar(
+                        filter: _filter,
+                        choices: choices,
+                        search: _search,
+                        onSearch: (v) => setState(() => _query = v),
+                        onChanged: _setFilter,
+                        onOpenAll: _openFilters,
+                        loadPlaces: _loadPlaces,
+                      )
+                    else
+                      SizedBox(
+                        height: AppSizes.minTap,
+                        child: Center(
+                          child: AppSearchField(
+                              controller: _search,
+                              hint: l.reqSearchHint,
+                              onChanged: (v) => setState(() => _query = v)),
+                        ),
+                      ),
+                    if (applied)
+                      AppliedFiltersRow(
+                        filter: _filter,
+                        choices: choices,
+                        onChanged: _setFilter,
+                        onOpenAll: _openFilters,
+                        skip: skip,
+                        loadPlaces: _loadPlaces,
+                      ),
+                  ]),
+            ),
+          ),
+          // Сегменты прячутся при прокрутке вниз и возвращаются вверх.
+          AppSliverBar(
+            floating: true,
+            height: AppSizes.segmentHeight + AppSpace.s * 2,
+            maxWidth: kRequestsMaxWidth,
+            child: Center(
+              child: SegmentedControl<OrderSegment>(
                 segments: [
                   Segment(OrderSegment.all, l.reqSegAll(view.all)),
                   Segment(OrderSegment.open, l.reqSegOpen(view.open)),
@@ -305,15 +369,21 @@ class _RequestsTabState extends State<RequestsTab> {
                 selected: _filter.segment,
                 onChanged: (s) => _setFilter(_filter.copyWith(segment: s)),
               ),
-              if (ready && _total > 0)
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                      AppSpace.rowH, AppSpace.m, AppSpace.rowH, 0),
+            ),
+          ),
+          if (ready && _total > 0)
+            SliverContent(
+              top: 0,
+              maxWidth: kRequestsMaxWidth,
+              sliver: SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AppSpace.rowH),
                   child: Text(l.filterFound(view.items.length, _total),
                       style: AppText.footnote),
                 ),
-            ]),
-          ),
+              ),
+            ),
           ..._body(view, now),
           const SliverBottomInset(extra: AppSizes.fabClearance),
         ]),
@@ -385,7 +455,11 @@ class _RequestsTabState extends State<RequestsTab> {
       // «Москва · Офис 3 · Лобби · Климат» — объект всегда с городом.
       final place = [
         _objName(l, w.objectId),
-        if (w.placeName != null && w.placeName!.isNotEmpty) w.placeName!,
+        if (w.placeName != null && w.placeName!.isNotEmpty)
+          placeWithFloor(
+              w.placeName!,
+              w.floorName,
+              w.floorLevel == null ? null : l.floorShort(w.floorLevel!)),
       ].join(' · ');
       final overdue = w.isOverdue(now);
       final due = _filter.sort == OrderSort.due && w.dueAt != null
@@ -414,7 +488,8 @@ class _RequestsTabState extends State<RequestsTab> {
     final groups = groupOrders(view.items, _filter.sort, now: now);
     return [
       SliverContent(
-        top: AppSpace.xs,
+        top: AppSpace.s,
+        maxWidth: kRequestsMaxWidth,
         sliver: SliverList.list(children: [
           for (final g in groups)
             AppGroup(

@@ -363,10 +363,14 @@ void main() {
     await t.tap(find.byIcon(AppIcons.close));
     await t.pumpAndSettle();
     expect((taps, clears), (1, 1));
-    final active = t.widget<Container>(find
-        .ancestor(of: find.text('Новая +1'), matching: find.byType(Container))
-        .last);
+    final chip = find.ancestor(
+        of: find.text('Новая +1'), matching: find.byType(AppFilterChip));
+    final active = t.widget<Container>(
+        find.descendant(of: chip, matching: find.byType(Container)).first);
     expect((active.decoration as BoxDecoration).color, AppColors.accentTint);
+    // Капсула 34 px, цель нажатия — 44 px.
+    expect(t.getSize(chip).height, AppSizes.minTap);
+    expect(t.getSize(find.byWidget(active)).height, AppSizes.filterChip);
   });
 
   testWidgets('AppFilterChip compact: только значок, подпись — для диктора',
@@ -491,5 +495,72 @@ void main() {
     await pump(6);
     await t.pump();
     expect(find.byType(ShaderMask), findsOneWidget);
+  });
+
+  group('Шаг 13e: подсказки и панель', () {
+    Future<void> openSide(WidgetTester t, Size size) async {
+      t.view.physicalSize = size;
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      await t.pumpWidget(_app(
+          Builder(
+            builder: (ctx) => AppFilterChip(
+              label: 'Фильтры',
+              onTap: () => showAppSidePanel<void>(
+                  context: ctx,
+                  builder: (_) => const Center(child: Text('панель'))),
+            ),
+          ),
+          size: size));
+      await t.tap(find.text('Фильтры'));
+      await t.pumpAndSettle();
+    }
+
+    testWidgets('showAppSidePanel: телефон — шторка на весь экран', (t) async {
+      await openSide(t, const Size(360, 780));
+      expect(find.byType(SheetGrabber), findsOneWidget);
+      expect(t.getRect(find.text('панель')).center.dy, greaterThan(300));
+    });
+
+    testWidgets('showAppSidePanel: ПК — панель справа 400 px', (t) async {
+      await openSide(t, const Size(1280, 800));
+      expect(find.byType(SheetGrabber), findsNothing);
+      final x = t.getCenter(find.text('панель')).dx;
+      expect(x, closeTo(1280 - AppSizes.sidePanel / 2, 1));
+    });
+
+    testWidgets('AppInfoButton: цель 44, открывает подсказку', (t) async {
+      await t.pumpWidget(_app(const Center(
+          child: AppInfoButton(
+              title: 'Этажи',
+              lines: ['Первая строка', 'Вторая строка'],
+              closeLabel: 'Понятно'))));
+      expect(t.getSize(find.byType(AppInfoButton)),
+          const Size(AppSizes.minTap, AppSizes.minTap));
+      await t.tap(find.byType(AppInfoButton));
+      await t.pumpAndSettle();
+      expect(find.text('Этажи'), findsOneWidget);
+      expect(find.text('Вторая строка'), findsOneWidget);
+      await t.tap(find.text('Понятно'));
+      await t.pumpAndSettle();
+      expect(find.text('Вторая строка'), findsNothing);
+    });
+
+    testWidgets('AppFilterChip strong: акцентная заливка без стрелки',
+        (t) async {
+      await t.pumpWidget(_app(Center(
+          child: AppFilterChip(
+              label: 'Фильтры',
+              activeLabel: 'Фильтры · 3',
+              strong: true,
+              chevron: false,
+              icon: AppIcons.filter,
+              onTap: () {}))));
+      expect(find.text('Фильтры · 3'), findsOneWidget);
+      expect(find.byIcon(AppIcons.chevronDown), findsNothing);
+      expect(find.byIcon(AppIcons.close), findsNothing);
+      final box = t.widget<Container>(find.byType(Container).first);
+      expect((box.decoration as BoxDecoration).color, AppColors.accent);
+    });
   });
 }

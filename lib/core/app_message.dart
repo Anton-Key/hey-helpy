@@ -27,18 +27,28 @@ const appMessageMaxStack = 3;
 /// на телефоне — на всю ширину. Плавно появляется, через 3 с (ошибка — 5 с)
 /// плавно исчезает, можно закрыть крестиком. Несколько подряд — стопкой,
 /// не больше [appMessageMaxStack]. Одинаковый текст не дублируется.
+///
+/// [actionLabel] + [onAction] — кнопка в сообщении («Отменить»): нажатие
+/// выполняет действие и закрывает сообщение. С кнопкой сообщение висит 5 с.
 void showAppMessage(BuildContext context, String text,
-    {AppMessageType type = AppMessageType.info}) {
+    {AppMessageType type = AppMessageType.info,
+    String? actionLabel,
+    VoidCallback? onAction}) {
   final overlay = Overlay.maybeOf(context, rootOverlay: true);
   if (overlay == null) return;
-  _AppMessages.instance.show(overlay, text, type);
+  _AppMessages.instance.show(overlay, text, type,
+      actionLabel: actionLabel, onAction: onAction);
 }
 
 class _Msg {
-  _Msg(this.id, this.text, this.type);
+  _Msg(this.id, this.text, this.type, {this.actionLabel, this.onAction});
   final int id;
   final String text;
   final AppMessageType type;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  bool get hasAction => actionLabel != null && onAction != null;
 }
 
 class _AppMessages {
@@ -48,7 +58,8 @@ class _AppMessages {
   OverlayState? _overlay;
   int _seq = 0;
 
-  void show(OverlayState overlay, String text, AppMessageType type) {
+  void show(OverlayState overlay, String text, AppMessageType type,
+      {String? actionLabel, VoidCallback? onAction}) {
     final entry = _entry;
     if (entry == null || _overlay != overlay || !entry.mounted) {
       if (entry != null && entry.mounted) entry.remove();
@@ -58,7 +69,7 @@ class _AppMessages {
     final list = [
       for (final m in items.value)
         if (m.text != text) m,
-      _Msg(++_seq, text, type),
+      _Msg(++_seq, text, type, actionLabel: actionLabel, onAction: onAction),
     ];
     while (list.length > appMessageMaxStack) {
       list.removeAt(0);
@@ -127,7 +138,11 @@ class _MessageCardState extends State<_MessageCard>
   @override
   void initState() {
     super.initState();
-    _timer = Timer(appMessageDuration(widget.msg.type), _close);
+    _timer = Timer(
+        widget.msg.hasAction
+            ? appMessageDuration(AppMessageType.error)
+            : appMessageDuration(widget.msg.type),
+        _close);
   }
 
   Future<void> _close() async {
@@ -182,6 +197,28 @@ class _MessageCardState extends State<_MessageCard>
                     child: Text(widget.msg.text, style: AppText.callout),
                   ),
                 ),
+                if (widget.msg.hasAction)
+                  Pressable(
+                    onTap: () {
+                      widget.msg.onAction!();
+                      _close();
+                    },
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                          minHeight: AppSizes.minTap, minWidth: AppSizes.minTap),
+                      child: Center(
+                        widthFactor: 1,
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.symmetric(
+                              horizontal: 8),
+                          child: Text(widget.msg.actionLabel!,
+                              style: AppText.callout.copyWith(
+                                  color: AppColors.accentText,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ),
+                  ),
                 Pressable(
                   onTap: _close,
                   semanticLabel:

@@ -25,10 +25,25 @@ create table if not exists auth.users (
   created_at         timestamptz not null default now()
 );
 
+-- Как в Supabase: sub из request.jwt.claim.sub (старый способ, так делают
+-- тесты) или из request.jwt.claims (так передаёт PostgREST 12 — локальный
+-- бэкенд для снимков, tools/screens/local_backend.mjs).
 create or replace function auth.uid() returns uuid
 language sql stable as $$
-  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
+  select coalesce(
+    nullif(current_setting('request.jwt.claim.sub', true), ''),
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')
+  )::uuid;
 $$;
+
+-- Роль, под которой PostgREST подключается к базе (локальный бэкенд).
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'authenticator') then
+    create role authenticator login noinherit password 'local-only';
+  end if;
+end $$;
+grant anon, authenticated to authenticator;
 grant usage on schema auth to anon, authenticated, service_role;
 grant execute on function auth.uid() to anon, authenticated, service_role;
 

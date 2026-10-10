@@ -2768,4 +2768,143 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get pprInfo4 =>
       'План с задачами нельзя удалить — его можно приостановить.';
+
+  @override
+  String get reportPrint => 'Печать отчёта';
+
+  @override
+  String get reportPrintPreparing => 'Готовим PDF…';
+
+  @override
+  String get reportPrintFailed =>
+      'Не удалось сформировать PDF. Попробуйте ещё раз.';
+
+  @override
+  String get reportPrintInfo1 =>
+      'PDF собирается по тем же фильтрам, что сейчас на экране: период, объекты, регион, подрядчик, вид работ и тип задачи.';
+
+  @override
+  String get reportPrintInfo2 =>
+      'В браузере откроется окно печати — там же можно выбрать «Сохранить как PDF».';
+
+  @override
+  String get reportPrintInfo3 =>
+      'На телефоне файл можно отправить в мессенджер или почту либо распечатать.';
+
+  @override
+  String get reportPrintInfo4 =>
+      'В отчёте: показатели, таблицы «По регионам» и «По подрядчикам», список заявок с номерами страниц.';
+
+  @override
+  String get reportFilterRegion => 'Регион';
+
+  @override
+  String get reportFilterKind => 'Тип';
+
+  @override
+  String get reportKindOnce => 'Разовые';
+
+  @override
+  String get reportKindRecurring => 'Повторяющиеся';
+
+  @override
+  String get reportKindPpr => 'ППР';
+
+  @override
+  String get reportRegionsGroup => 'Регионы';
+
+  @override
+  String get reportCountriesGroup => 'Страны';
+
+  @override
+  String get reportByRegion => 'По регионам';
+
+  @override
+  String get reportByCity => 'По городам';
+
+  @override
+  String get reportNoRegion => 'Без региона';
+
+  @override
+  String get reportNoCity => 'Без города';
+
+  @override
+  String get reportPprDone => 'ППР выполнено';
+
+  @override
+  String reportPprOf(String done, String total) {
+    return '$done из $total';
+  }
+
+  @override
+  String get pdfTitle => 'Отчёт по заявкам и подрядчикам';
+
+  @override
+  String pdfCompany(String name) {
+    return 'Компания: $name';
+  }
+
+  @override
+  String pdfPeriod(String period) {
+    return 'Период: $period';
+  }
+
+  @override
+  String pdfFilters(String filters) {
+    return 'Фильтры: $filters';
+  }
+
+  @override
+  String get pdfNoFilters => 'все объекты, подрядчики и виды работ';
+
+  @override
+  String pdfGenerated(String date, String name) {
+    return 'Сформирован: $date, $name';
+  }
+
+  @override
+  String pdfPageOf(String page, String pages) {
+    return 'стр. $page из $pages';
+  }
+
+  @override
+  String get pdfOrders => 'Заявки';
+
+  @override
+  String get pdfOrdersEmpty => 'За период заявок нет.';
+
+  @override
+  String get pdfColNumber => '№';
+
+  @override
+  String get pdfColDate => 'Дата';
+
+  @override
+  String get pdfColObject => 'Объект';
+
+  @override
+  String get pdfColPlace => 'Помещение';
+
+  @override
+  String get pdfColLayer => 'Система';
+
+  @override
+  String get pdfColContractor => 'Подрядчик';
+
+  @override
+  String get pdfColStatus => 'Статус';
+
+  @override
+  String get pdfColDue => 'Срок';
+
+  @override
+  String get pdfColRegion => 'Регион';
+
+  @override
+  String get pdfColCity => 'Город';
+
+  @override
+  String pdfFileName(String period) {
+    return 'HeyHelpy_Отчёт_$period.pdf';
+  }
 }

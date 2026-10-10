@@ -2742,4 +2742,142 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pprInfo4 =>
       'A plan with tasks can\'t be deleted — pause it instead.';
+
+  @override
+  String get reportPrint => 'Print report';
+
+  @override
+  String get reportPrintPreparing => 'Preparing PDF…';
+
+  @override
+  String get reportPrintFailed => 'Couldn\'t create the PDF. Please try again.';
+
+  @override
+  String get reportPrintInfo1 =>
+      'The PDF uses the filters currently on screen: period, objects, region, contractor, work type and task type.';
+
+  @override
+  String get reportPrintInfo2 =>
+      'In the browser, a print dialog opens — choose “Save as PDF” there.';
+
+  @override
+  String get reportPrintInfo3 =>
+      'On a phone you can send the file to a messenger or email, or print it.';
+
+  @override
+  String get reportPrintInfo4 =>
+      'The report contains KPIs, “By region” and “By contractor” tables and the list of requests, with page numbers.';
+
+  @override
+  String get reportFilterRegion => 'Region';
+
+  @override
+  String get reportFilterKind => 'Type';
+
+  @override
+  String get reportKindOnce => 'One-off';
+
+  @override
+  String get reportKindRecurring => 'Recurring';
+
+  @override
+  String get reportKindPpr => 'Planned maintenance';
+
+  @override
+  String get reportRegionsGroup => 'Regions';
+
+  @override
+  String get reportCountriesGroup => 'Countries';
+
+  @override
+  String get reportByRegion => 'By region';
+
+  @override
+  String get reportByCity => 'By city';
+
+  @override
+  String get reportNoRegion => 'No region';
+
+  @override
+  String get reportNoCity => 'No city';
+
+  @override
+  String get reportPprDone => 'Maintenance done';
+
+  @override
+  String reportPprOf(String done, String total) {
+    return '$done of $total';
+  }
+
+  @override
+  String get pdfTitle => 'Requests and contractors report';
+
+  @override
+  String pdfCompany(String name) {
+    return 'Company: $name';
+  }
+
+  @override
+  String pdfPeriod(String period) {
+    return 'Period: $period';
+  }
+
+  @override
+  String pdfFilters(String filters) {
+    return 'Filters: $filters';
+  }
+
+  @override
+  String get pdfNoFilters => 'all objects, contractors and work types';
+
+  @override
+  String pdfGenerated(String date, String name) {
+    return 'Generated: $date, $name';
+  }
+
+  @override
+  String pdfPageOf(String page, String pages) {
+    return 'page $page of $pages';
+  }
+
+  @override
+  String get pdfOrders => 'Requests';
+
+  @override
+  String get pdfOrdersEmpty => 'No requests in this period.';
+
+  @override
+  String get pdfColNumber => 'No.';
+
+  @override
+  String get pdfColDate => 'Date';
+
+  @override
+  String get pdfColObject => 'Property';
+
+  @override
+  String get pdfColPlace => 'Room';
+
+  @override
+  String get pdfColLayer => 'System';
+
+  @override
+  String get pdfColContractor => 'Contractor';
+
+  @override
+  String get pdfColStatus => 'Status';
+
+  @override
+  String get pdfColDue => 'Due';
+
+  @override
+  String get pdfColRegion => 'Region';
+
+  @override
+  String get pdfColCity => 'City';
+
+  @override
+  String pdfFileName(String period) {
+    return 'HeyHelpy_Report_$period.pdf';
+  }
 }

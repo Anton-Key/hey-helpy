@@ -960,5 +960,10 @@
   "hotkeyVoice": "Голосовая заявка",
   "hotkeySearch": "Поиск по заявкам",
   "hotkeyHelp": "Эта справка",
-  "hotkeyNote": "Не срабатывают, когда курсор в поле ввода."
+  "hotkeyNote": "Не срабатывают, когда курсор в поле ввода.",
+  "migrationNeeded": "Нужна миграция {number}: раздел заработает, когда её применят в базе (Actions → «Apply migration»).",
+  "@migrationNeeded": {
+    "description": "Экран нового раздела на базе без нужной миграции (шаг 16)",
+    "placeholders": {"number": {"type": "String"}}
+  }
 }

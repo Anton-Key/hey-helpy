@@ -4154,6 +4154,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не срабатывают, когда курсор в поле ввода.'**
   String get hotkeyNote;
+
+  /// Экран нового раздела на базе без нужной миграции (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужна миграция {number}: раздел заработает, когда её применят в базе (Actions → «Apply migration»).'**
+  String migrationNeeded(String number);
 }
 
 class _AppLocalizationsDelegate

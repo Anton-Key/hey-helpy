@@ -9,6 +9,7 @@ import '../map/objects_map_view.dart';
 import 'contractor_card.dart';
 import 'object_card.dart';
 import '../../core/app_message.dart';
+import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import 'city.dart' as city;
 
@@ -24,6 +25,12 @@ class Obj {
 
   /// Радиус геозоны, м (20–5000, по умолчанию 150).
   final int geofenceRadiusM;
+
+  /// Страна (код ISO 3166-1, «RS»), город и регион компании (0015).
+  /// До миграции 0015 — null; город тогда берётся из адреса ([cityName]).
+  final String? countryCode;
+  final String? city;
+  final String? regionId;
   Obj(
       {required this.id,
       required this.name,
@@ -31,7 +38,10 @@ class Obj {
       required this.type,
       this.lat,
       this.lng,
-      this.geofenceRadiusM = 150});
+      this.geofenceRadiusM = 150,
+      this.countryCode,
+      this.city,
+      this.regionId});
   factory Obj.fromMap(Map<String, dynamic> m) => Obj(
         id: m['id'] as String,
         name: (m['name'] ?? '') as String,
@@ -40,9 +50,21 @@ class Obj {
         lat: (m['lat'] as num?)?.toDouble(),
         lng: (m['lng'] as num?)?.toDouble(),
         geofenceRadiusM: (m['geofence_radius_m'] as num?)?.toInt() ?? 150,
+        countryCode: (m['country_code'] as String?)?.trim(),
+        city: m['city'] as String?,
+        regionId: m['region_id'] as String?,
       );
   bool get hasCoordinates => lat != null && lng != null;
+
+  /// Город: поле города (0015), иначе — часть адреса до запятой; '' — нет.
+  String get cityName {
+    final c = city?.trim() ?? '';
+    return c.isNotEmpty ? c : _cityOfAddress(address);
+  }
 }
+
+/// Город по адресу (внутри [Obj] имя `city` занято полем).
+String _cityOfAddress(String? address) => city.cityOf(address);
 
 /// Закрепление подрядчика за видом работ (слоем) и объектом
 /// (contractor_layers, 0004) с нормой визитов в месяц (0010).
@@ -116,12 +138,16 @@ class Place {
   final String name;
   final String? objectName;
   final String? objectAddress;
+
+  /// Номер помещения («305», 0015); null — без номера.
+  final String? code;
   Place(
       {required this.id,
       required this.objectId,
       required this.name,
       this.objectName,
-      this.objectAddress});
+      this.objectAddress,
+      this.code});
   factory Place.fromMap(Map<String, dynamic> m) => Place(
         id: m['id'] as String,
         objectId: m['object_id'] as String,
@@ -129,12 +155,24 @@ class Place {
         objectName: (m['objects'] as Map<String, dynamic>?)?['name'] as String?,
         objectAddress:
             (m['objects'] as Map<String, dynamic>?)?['address'] as String?,
+        code: (m['code'] as String?)?.trim().isEmpty == true
+            ? null
+            : (m['code'] as String?)?.trim(),
       );
 
-  /// «Москва · Офис 3 · Лобби».
+  /// «305 · Переговорная» (с номером) или просто «Переговорная».
+  String get label => placeLabel(name, code);
+
+  /// «Москва · Офис 3 · 305 · Лобби».
   String get fullName => objectName == null
-      ? name
-      : '${city.objectLabel(objectName!, objectAddress)} · $name';
+      ? label
+      : '${city.objectLabel(objectName!, objectAddress)} · $label';
+}
+
+/// «305 · Переговорная»; без номера — только название.
+String placeLabel(String name, String? code) {
+  final c = code?.trim() ?? '';
+  return c.isEmpty ? name : '$c · $name';
 }
 
 /// Слой (вид работ). [name] — основное название, по нему база назначает
@@ -237,10 +275,16 @@ class DirectoryRepo {
 
   /// Помещения всех объектов компании (доступ ограничен RLS).
   Future<List<Place>> places() async {
-    final rows = await _c
-        .from('locations')
-        .select('id,object_id,name,objects(name,address)')
-        .order('name');
+    final rows = await SchemaCompat.run(
+        '0015',
+        () => _c
+            .from('locations')
+            .select('id,object_id,name,code,objects(name,address)')
+            .order('name'),
+        legacy: () => _c
+            .from('locations')
+            .select('id,object_id,name,objects(name,address)')
+            .order('name'));
     return (rows as List)
         .map((e) => Place.fromMap(e as Map<String, dynamic>))
         .toList();
@@ -272,11 +316,18 @@ class DirectoryRepo {
 
   /// Помещения одного объекта.
   Future<List<Place>> placesOf(String objectId) async {
-    final rows = await _c
-        .from('locations')
-        .select('id,object_id,name')
-        .eq('object_id', objectId)
-        .order('name');
+    final rows = await SchemaCompat.run(
+        '0015',
+        () => _c
+            .from('locations')
+            .select('id,object_id,name,code')
+            .eq('object_id', objectId)
+            .order('name'),
+        legacy: () => _c
+            .from('locations')
+            .select('id,object_id,name')
+            .eq('object_id', objectId)
+            .order('name'));
     return (rows as List)
         .map((e) => Place.fromMap(e as Map<String, dynamic>))
         .toList();

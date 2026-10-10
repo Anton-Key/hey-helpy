@@ -2428,4 +2428,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hotkeyNote =>
       'They don\'t work while the cursor is in a text field.';
+
+  @override
+  String migrationNeeded(String number) {
+    return 'Migration $number is required: this section will work once it is applied to the database (Actions → “Apply migration”).';
+  }
 }

@@ -22,8 +22,10 @@ String objectLabel(String name, String? address, {bool withCity = true}) {
 
 /// Название объекта для показа: везде, где нет контекста города, —
 /// «Москва · Офис 3» (в разных городах бывают одинаковые «Офис 1»).
-String objectDisplayName(Obj object, {bool withCity = true}) =>
-    objectLabel(object.name, object.address, withCity: withCity);
+String objectDisplayName(Obj object, {bool withCity = true}) {
+  final c = withCity ? object.cityName : '';
+  return c.isEmpty ? object.name : '$c · ${object.name}';
+}
 
 String _key(String s) => s.toLowerCase().replaceAll('ё', 'е');
 

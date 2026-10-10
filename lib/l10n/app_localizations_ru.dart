@@ -2453,4 +2453,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get hotkeyNote => 'Не срабатывают, когда курсор в поле ввода.';
+
+  @override
+  String migrationNeeded(String number) {
+    return 'Нужна миграция $number: раздел заработает, когда её применят в базе (Actions → «Apply migration»).';
+  }
 }

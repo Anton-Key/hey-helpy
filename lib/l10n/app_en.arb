@@ -683,5 +683,6 @@
   "hotkeyVoice": "Voice request",
   "hotkeySearch": "Search requests",
   "hotkeyHelp": "This help",
-  "hotkeyNote": "They don't work while the cursor is in a text field."
+  "hotkeyNote": "They don't work while the cursor is in a text field.",
+  "migrationNeeded": "Migration {number} is required: this section will work once it is applied to the database (Actions → “Apply migration”)."
 }

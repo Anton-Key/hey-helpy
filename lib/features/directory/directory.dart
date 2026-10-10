@@ -12,6 +12,8 @@ import '../../core/app_message.dart';
 import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import 'city.dart' as city;
+import '../regions/countries.dart';
+import '../regions/region.dart';
 
 class Obj {
   final String id;
@@ -433,6 +435,9 @@ class _ObjectsTabState extends State<ObjectsTab> {
   String? _companyId;
   bool _isManager = false;
 
+  /// Регионы компании (0015): группировка «Регион → страна → город».
+  List<Region> _regions = const [];
+
   /// Режим вкладки: список карточек или карта. Запоминается на устройстве.
   bool _mapMode = false;
   static const _modeKey = 'locations_view_mode';
@@ -448,6 +453,12 @@ class _ObjectsTabState extends State<ObjectsTab> {
       if (mounted) setState(() => _companyId = v);
     }, onError: (_) {});
     _loadMode();
+    _loadRegions();
+  }
+
+  Future<void> _loadRegions() async {
+    final r = await RegionRepository().listOrEmpty();
+    if (mounted) setState(() => _regions = r);
   }
 
   Future<void> _loadMode() async {
@@ -466,7 +477,10 @@ class _ObjectsTabState extends State<ObjectsTab> {
     } catch (_) {}
   }
 
-  void _reload() => setState(() => _future = _repo.objects());
+  void _reload() {
+    setState(() => _future = _repo.objects());
+    _loadRegions();
+  }
 
   Future<void> _reloadAndWait() async {
     final f = _repo.objects();
@@ -554,35 +568,76 @@ class _ObjectsTabState extends State<ObjectsTab> {
               child:
                   AppEmptyState(icon: AppIcons.building, text: l.objectsEmpty));
         } else {
-          // Секции по городам («МОСКВА · 5»): город — часть адреса до запятой.
-          final groups = city.groupObjectsByCity(snap.data!);
-          content = SliverContent(
-            top: 0,
-            sliver: SliverList.list(children: [
-              for (final g in groups)
-                AppGroup(
-                  header: l.cityCount(
-                      g.city.isEmpty ? l.cityNone : g.city, g.items.length),
-                  children: [
-                    for (final o in g.items)
-                      AppRow(
-                        leading: const LeadingIcon(AppIcons.building),
-                        title: o.name,
-                        subtitle: o.address?.isNotEmpty == true
-                            ? '${o.address} · ${l.objectType(o.type)}'
-                            : l.objectType(o.type),
-                        onTap: () async {
-                          await Navigator.push(
-                              context,
-                              appRoute((_) => ObjectCardScreen(object: o),
-                                  title: l.tabLocations));
-                          _reload();
-                        },
+          Widget row(Obj o) => AppRow(
+                leading: const LeadingIcon(AppIcons.building),
+                title: o.name,
+                subtitle: o.address?.isNotEmpty == true
+                    ? '${o.address} · ${l.objectType(o.type)}'
+                    : l.objectType(o.type),
+                onTap: () async {
+                  await Navigator.push(
+                      context,
+                      appRoute((_) => ObjectCardScreen(object: o),
+                          title: l.tabLocations));
+                  _reload();
+                },
+              );
+          final geo = city.groupObjectsByRegion(
+              snap.data!, _regions, context.localeCode);
+          if (geo != null) {
+            // Регион → страна → город (шаг 16): «ЕВРОПА · 7» → «🇷🇸 Сербия» →
+            // «БЕЛГРАД · 7».
+            content = SliverContent(
+              top: 0,
+              sliver: SliverList.list(children: [
+                for (final r in geo) ...[
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                        top: AppSpace.s, bottom: AppSpace.xs),
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                          l.cityCount(
+                              r.region?.name ?? l.regionNone, r.count),
+                          style: AppText.title2),
+                    ),
+                  ),
+                  for (final c in r.countries) ...[
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                          top: AppSpace.xs, bottom: AppSpace.xxs),
+                      child: Text(
+                          c.code.isEmpty
+                              ? l.countryNone
+                              : countryLabel(c.code, context.localeCode),
+                          style: AppText.headline),
+                    ),
+                    for (final g in c.cities)
+                      AppGroup(
+                        header: l.cityCount(
+                            g.city.isEmpty ? l.cityNone : g.city,
+                            g.items.length),
+                        children: [for (final o in g.items) row(o)],
                       ),
                   ],
-                ),
-            ]),
-          );
+                ],
+              ]),
+            );
+          } else {
+            // Секции по городам («МОСКВА · 5»): поле города, иначе адрес.
+            final groups = city.groupObjectsByCity(snap.data!);
+            content = SliverContent(
+              top: 0,
+              sliver: SliverList.list(children: [
+                for (final g in groups)
+                  AppGroup(
+                    header: l.cityCount(
+                        g.city.isEmpty ? l.cityNone : g.city, g.items.length),
+                    children: [for (final o in g.items) row(o)],
+                  ),
+              ]),
+            );
+          }
         }
         return CustomScrollView(slivers: [
           HomeHeader(
@@ -734,7 +789,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
     ];
     final byCity = <String, int>{};
     for (final o in objs) {
-      final c = city.cityOf(o.address);
+      final c = o.cityName;
       if (c.isNotEmpty) byCity[c] = (byCity[c] ?? 0) + 1;
     }
     final cities = byCity.keys.toList()

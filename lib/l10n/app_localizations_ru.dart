@@ -2975,4 +2975,200 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get roomInfo4 =>
       'Область закрашена цветом заявок помещения; нажатие в любом месте области открывает помещение.';
+
+  @override
+  String get regionNone => 'Без региона';
+
+  @override
+  String get regionWhole => 'Весь регион';
+
+  @override
+  String get countryNone => 'Страна не указана';
+
+  @override
+  String geoWholeCity(String city) {
+    return 'Весь город: $city';
+  }
+
+  @override
+  String geoWholeCountry(String country) {
+    return 'Вся страна: $country';
+  }
+
+  @override
+  String get regionsTitle => 'Регионы';
+
+  @override
+  String get regionsEmpty =>
+      'Регионов пока нет. Добавьте первый — например, «Европа».';
+
+  @override
+  String get regionsLoadFailed => 'Не удалось загрузить регионы';
+
+  @override
+  String get regionAdd => 'Новый регион';
+
+  @override
+  String get regionAddRow => '+ Новый регион';
+
+  @override
+  String get regionNameLabel => 'Название региона';
+
+  @override
+  String get regionNameHint => 'Например, Европа';
+
+  @override
+  String get regionNameRequired => 'Введите название региона';
+
+  @override
+  String get regionNameTooLong => 'Не больше 60 символов';
+
+  @override
+  String get regionRename => 'Переименовать';
+
+  @override
+  String get regionMoveUp => 'Выше';
+
+  @override
+  String get regionMoveDown => 'Ниже';
+
+  @override
+  String get regionMerge => 'Объединить с…';
+
+  @override
+  String get regionDelete => 'Удалить';
+
+  @override
+  String regionActions(String name) {
+    return 'Действия с регионом «$name»';
+  }
+
+  @override
+  String get regionSimilarTitle => 'Похожий регион уже есть';
+
+  @override
+  String regionSimilarText(String name, String objects) {
+    return 'Похоже, такой регион уже есть: «$name» ($objects). Использовать его?';
+  }
+
+  @override
+  String regionUseExisting(String name) {
+    return 'Использовать «$name»';
+  }
+
+  @override
+  String get regionCreateAnyway => 'Всё равно создать';
+
+  @override
+  String get regionRenameAnyway => 'Всё равно переименовать';
+
+  @override
+  String get regionDuplicate =>
+      'Регион с таким названием уже есть — выберите его из списка';
+
+  @override
+  String get regionCreated => 'Регион добавлен';
+
+  @override
+  String get regionRenamed => 'Регион переименован';
+
+  @override
+  String get regionDeleted => 'Регион удалён';
+
+  @override
+  String get regionMerged => 'Регионы объединены';
+
+  @override
+  String regionMergePick(String name) {
+    return 'Объединить «$name» с…';
+  }
+
+  @override
+  String get regionMergeConfirmTitle => 'Объединить регионы?';
+
+  @override
+  String regionMergeConfirm(String objects, String into, String from) {
+    return '$objects перейдут в «$into», регион «$from» будет удалён.';
+  }
+
+  @override
+  String get regionMergeAction => 'Объединить';
+
+  @override
+  String get regionMergeNoOther => 'Других регионов нет — объединять не с чем';
+
+  @override
+  String regionDeleteConfirmTitle(String name) {
+    return 'Удалить регион «$name»?';
+  }
+
+  @override
+  String regionDeleteConfirm(String objects) {
+    return 'У объектов ($objects) регион станет пустым.';
+  }
+
+  @override
+  String get regionOnlyManager => 'Регионы меняет менеджер компании';
+
+  @override
+  String get regionInfo1 =>
+      'Один общий список регионов компании: в объекте регион выбирается из списка, а не вводится текстом.';
+
+  @override
+  String get regionInfo2 =>
+      'Похожие названия («Европа» и «Европпа») приложение замечает и предлагает выбрать уже существующий регион.';
+
+  @override
+  String get regionInfo3 =>
+      'Лишний регион можно объединить с нужным: его объекты перейдут, а он сам удалится.';
+
+  @override
+  String get regionInfo4 =>
+      'Переименование сразу видно во всех объектах, фильтрах и отчётах.';
+
+  @override
+  String get regionPickTitle => 'Регион';
+
+  @override
+  String get regionNotSet => 'Не указан';
+
+  @override
+  String get regionManage => 'Регионы компании';
+
+  @override
+  String get countryTitle => 'Страна';
+
+  @override
+  String get countrySearchHint => 'Название или код страны';
+
+  @override
+  String get countryNotFound => 'Страна не найдена';
+
+  @override
+  String get geoCity => 'Город';
+
+  @override
+  String get geoCityHint => 'Например, Белград';
+
+  @override
+  String get geoCitySimilarTitle => 'Похожий город уже есть';
+
+  @override
+  String geoCitySimilar(String name) {
+    return 'В компании уже есть город «$name». Использовать его?';
+  }
+
+  @override
+  String geoCityKeep(String name) {
+    return 'Оставить «$name»';
+  }
+
+  @override
+  String get geoCitySuggestions => 'Города компании в этой стране';
+
+  @override
+  String get geoEditTitle => 'Страна, город, регион';
+
+  @override
+  String get geoEdit => 'Изменить страну, город, регион';
 }

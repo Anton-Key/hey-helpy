@@ -8,6 +8,10 @@ import '../../core/language_picker.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/locale_controller.dart';
 import '../../models/profile.dart';
+import '../../models/user_role.dart';
+import '../access/zone_editor.dart';
+import '../access/zone_logic.dart';
+import '../access/zone_repository.dart';
 import '../auth/auth_repository.dart';
 import '../directory/directory.dart';
 import '../history/history_screen.dart';
@@ -48,6 +52,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Название компании — таблетка «Компания · роль» на ПК.
   String? _companyName;
+
+  /// Зона доступа менеджера словами («Климат, Москва»); null — вся компания.
+  String? _zoneText;
 
   /// ПК: выбор «Свернуть меню» (null — по ширине окна).
   bool? _railPref;
@@ -116,6 +123,24 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
     await _loadUnread();
+    if (p?.role == UserRole.manager) await _loadZone();
+  }
+
+  /// Своя зона доступа (шаг 17) — для таблетки роли на ПК. Без 0016 или
+  /// без зон — пусто.
+  Future<void> _loadZone() async {
+    try {
+      final rows = await ZoneRepository().myZones();
+      if (rows.isEmpty || isWholeCompany(rows)) {
+        if (mounted) setState(() => _zoneText = null);
+        return;
+      }
+      final refs = await ZoneRefs.load(rows);
+      if (!mounted) return;
+      setState(() => _zoneText = zonesShortText(rows, refs.names(context.l10n)));
+    } catch (e) {
+      debugPrint('Zone: $e');
+    }
   }
 
   /// Открыть экран поверх: на ПК — справа от бокового меню.
@@ -310,6 +335,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final l = context.l10n;
     final role = l.role(p.role);
     final company = _companyName;
+    final zone = _zoneText;
+    if (zone != null) {
+      final text = l.zonePill(company ?? '', role, zone);
+      // Полностью — в подсказке: в таблетке длинная зона обрезается.
+      return Tooltip(message: text, child: AppContextPill(text));
+    }
     return AppContextPill(
         company == null ? role : l.navCompanyRole(company, role));
   }

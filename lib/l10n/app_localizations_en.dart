@@ -3422,4 +3422,203 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get assetFieldInventoryHint => 'E.g. AC-3-001';
+
+  @override
+  String get zoneTitle => 'Access zone';
+
+  @override
+  String get zoneMenuRole => 'Change role';
+
+  @override
+  String get zoneWholeCompany => 'Whole company';
+
+  @override
+  String get zoneWholeCompanyHint =>
+      'Sees all sites and systems of the company — as before.';
+
+  @override
+  String get zoneAllSystems => 'All systems';
+
+  @override
+  String get zoneRules => 'Rules';
+
+  @override
+  String get zoneRulesFooter =>
+      'Rules add up: everything matching at least one rule is visible.';
+
+  @override
+  String get zoneRuleAdd => 'Add rule';
+
+  @override
+  String get zoneRuleTitle => 'Rule';
+
+  @override
+  String get zoneRuleSystems => 'Systems';
+
+  @override
+  String get zoneRulePlaces => 'Places';
+
+  @override
+  String get zoneRuleAddPlace => 'Choose places';
+
+  @override
+  String get zoneRuleRefine => 'Floor or equipment';
+
+  @override
+  String get zoneRuleRefineTitle => 'Narrow the place';
+
+  @override
+  String get zoneRuleWholeObject => 'Whole site';
+
+  @override
+  String get zoneRuleFloors => 'Floors';
+
+  @override
+  String get zoneRuleAssets => 'Equipment';
+
+  @override
+  String get zoneRuleDelete => 'Delete rule';
+
+  @override
+  String get zoneRuleEmpty => 'Choose at least one place';
+
+  @override
+  String get zoneRulesEmpty => 'Add a rule or choose a template';
+
+  @override
+  String get zoneTemplates => 'Templates';
+
+  @override
+  String get zoneTemplateCompany => 'Whole company';
+
+  @override
+  String get zoneTemplateSystem => 'One system on all sites';
+
+  @override
+  String get zoneTemplateRegion => 'Whole region';
+
+  @override
+  String get zoneTemplatePickSystem => 'Which system?';
+
+  @override
+  String get zoneTemplatePickRegion => 'Which region?';
+
+  @override
+  String get zoneNoRegions => 'The company has no regions';
+
+  @override
+  String get zoneSaved => 'Access zone saved';
+
+  @override
+  String get zoneSaveDenied => 'Only an administrator can change access zones';
+
+  @override
+  String get zoneLoadFailed =>
+      'Couldn\'t load the access zone. Check your connection and try again.';
+
+  @override
+  String zonePill(String company, String role, String zone) {
+    return '$company · $role · $zone';
+  }
+
+  @override
+  String get zoneInfoTitle => 'Access zone';
+
+  @override
+  String get zoneInfo1 =>
+      'By default a manager sees the whole company — nothing to set up.';
+
+  @override
+  String get zoneInfo2 =>
+      'A rule is systems × places, e.g. “HVAC, Plumbing · Moscow”. Rules add up.';
+
+  @override
+  String get zoneInfo3 =>
+      'Outside the zone the manager sees no orders, equipment, contractors or reports — the database enforces it.';
+
+  @override
+  String get zoneInfo4 =>
+      'Only an administrator can change zones; every change is logged.';
+
+  @override
+  String get zoneRefused =>
+      'Not allowed: outside your zone or an administrator is required';
+
+  @override
+  String get crewSection => 'Crews';
+
+  @override
+  String get crewEmpty =>
+      'No crews — all executors see the contractor\'s sites by its bindings.';
+
+  @override
+  String get crewAdd => 'New crew';
+
+  @override
+  String get crewTitle => 'Crew';
+
+  @override
+  String get crewName => 'Name';
+
+  @override
+  String get crewNameHint => 'E.g. Beijing';
+
+  @override
+  String get crewNameRequired => 'Enter the crew name (up to 60 characters)';
+
+  @override
+  String get crewDuplicate => 'A crew with this name already exists';
+
+  @override
+  String get crewMembers => 'Executors';
+
+  @override
+  String get crewNoExecutors => 'The contractor has no executors yet';
+
+  @override
+  String get crewZone => 'Crew zone';
+
+  @override
+  String get crewZoneHint =>
+      'Crew executors see only these places and systems.';
+
+  @override
+  String crewMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count executors',
+      one: '$count executor',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get crewSaved => 'Crew saved';
+
+  @override
+  String get crewDeleted => 'Crew deleted';
+
+  @override
+  String get crewDelete => 'Delete crew';
+
+  @override
+  String crewDeleteConfirm(String name) {
+    return 'Delete the crew “$name”? Its executors will see all the contractor\'s sites again.';
+  }
+
+  @override
+  String get crewInfoTitle => 'Crews';
+
+  @override
+  String get crewInfo1 =>
+      'Needed only if different crews of one contractor must not see each other\'s sites.';
+
+  @override
+  String get crewInfo2 =>
+      'An executor in a crew sees only the crew zone; without a crew — everything by the contractor\'s bindings.';
+
+  @override
+  String get crewInfo3 =>
+      'Crews are set up by a manager who can see the contractor.';
 }

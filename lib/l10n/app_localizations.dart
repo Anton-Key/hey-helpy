@@ -5840,6 +5840,354 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Например, КЛ-3-001'**
   String get assetFieldInventoryHint;
+
+  /// Зона доступа менеджера (шаг 17, 0016)
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона доступа'**
+  String get zoneTitle;
+
+  /// No description provided for @zoneMenuRole.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сменить роль'**
+  String get zoneMenuRole;
+
+  /// No description provided for @zoneWholeCompany.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вся компания'**
+  String get zoneWholeCompany;
+
+  /// No description provided for @zoneWholeCompanyHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Видит все объекты и системы компании — как раньше.'**
+  String get zoneWholeCompanyHint;
+
+  /// No description provided for @zoneAllSystems.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все системы'**
+  String get zoneAllSystems;
+
+  /// No description provided for @zoneRules.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правила'**
+  String get zoneRules;
+
+  /// No description provided for @zoneRulesFooter.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правила складываются: видно всё, что подходит хотя бы под одно.'**
+  String get zoneRulesFooter;
+
+  /// No description provided for @zoneRuleAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить правило'**
+  String get zoneRuleAdd;
+
+  /// No description provided for @zoneRuleTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правило'**
+  String get zoneRuleTitle;
+
+  /// No description provided for @zoneRuleSystems.
+  ///
+  /// In ru, this message translates to:
+  /// **'Системы'**
+  String get zoneRuleSystems;
+
+  /// No description provided for @zoneRulePlaces.
+  ///
+  /// In ru, this message translates to:
+  /// **'Места'**
+  String get zoneRulePlaces;
+
+  /// No description provided for @zoneRuleAddPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать места'**
+  String get zoneRuleAddPlace;
+
+  /// No description provided for @zoneRuleRefine.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж или оборудование'**
+  String get zoneRuleRefine;
+
+  /// No description provided for @zoneRuleRefineTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уточнить место'**
+  String get zoneRuleRefineTitle;
+
+  /// No description provided for @zoneRuleWholeObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Весь объект'**
+  String get zoneRuleWholeObject;
+
+  /// No description provided for @zoneRuleFloors.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этажи'**
+  String get zoneRuleFloors;
+
+  /// No description provided for @zoneRuleAssets.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get zoneRuleAssets;
+
+  /// No description provided for @zoneRuleDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить правило'**
+  String get zoneRuleDelete;
+
+  /// No description provided for @zoneRuleEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите хотя бы одно место'**
+  String get zoneRuleEmpty;
+
+  /// No description provided for @zoneRulesEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте правило или выберите шаблон'**
+  String get zoneRulesEmpty;
+
+  /// No description provided for @zoneTemplates.
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаблоны'**
+  String get zoneTemplates;
+
+  /// No description provided for @zoneTemplateCompany.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вся компания'**
+  String get zoneTemplateCompany;
+
+  /// No description provided for @zoneTemplateSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Одна система во всех объектах'**
+  String get zoneTemplateSystem;
+
+  /// No description provided for @zoneTemplateRegion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион целиком'**
+  String get zoneTemplateRegion;
+
+  /// No description provided for @zoneTemplatePickSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Какая система?'**
+  String get zoneTemplatePickSystem;
+
+  /// No description provided for @zoneTemplatePickRegion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Какой регион?'**
+  String get zoneTemplatePickRegion;
+
+  /// No description provided for @zoneNoRegions.
+  ///
+  /// In ru, this message translates to:
+  /// **'У компании нет регионов'**
+  String get zoneNoRegions;
+
+  /// No description provided for @zoneSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона доступа сохранена'**
+  String get zoneSaved;
+
+  /// No description provided for @zoneSaveDenied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зону доступа меняет только администратор'**
+  String get zoneSaveDenied;
+
+  /// No description provided for @zoneLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить зону доступа. Проверьте интернет и попробуйте ещё раз.'**
+  String get zoneLoadFailed;
+
+  /// No description provided for @zonePill.
+  ///
+  /// In ru, this message translates to:
+  /// **'{company} · {role} · {zone}'**
+  String zonePill(String company, String role, String zone);
+
+  /// No description provided for @zoneInfoTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона доступа'**
+  String get zoneInfoTitle;
+
+  /// No description provided for @zoneInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'По умолчанию менеджер видит всю компанию — ничего настраивать не нужно.'**
+  String get zoneInfo1;
+
+  /// No description provided for @zoneInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правило — системы × места: например, «Климат, Сантехника · Москва». Правила складываются.'**
+  String get zoneInfo2;
+
+  /// No description provided for @zoneInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вне зоны менеджер не видит ни заявок, ни оборудования, ни подрядчиков, ни отчётов — это проверяет база.'**
+  String get zoneInfo3;
+
+  /// No description provided for @zoneInfo4.
+  ///
+  /// In ru, this message translates to:
+  /// **'Менять зоны может только администратор; все изменения записываются в журнал.'**
+  String get zoneInfo4;
+
+  /// No description provided for @zoneRefused.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет доступа: это вне вашей зоны или нужен администратор'**
+  String get zoneRefused;
+
+  /// No description provided for @crewSection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригады'**
+  String get crewSection;
+
+  /// No description provided for @crewEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригад нет — все исполнители видят объекты подрядчика по закреплениям.'**
+  String get crewEmpty;
+
+  /// No description provided for @crewAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая бригада'**
+  String get crewAdd;
+
+  /// No description provided for @crewTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада'**
+  String get crewTitle;
+
+  /// No description provided for @crewName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get crewName;
+
+  /// No description provided for @crewNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например: Пекин'**
+  String get crewNameHint;
+
+  /// No description provided for @crewNameRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите название бригады (до 60 символов)'**
+  String get crewNameRequired;
+
+  /// No description provided for @crewDuplicate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада с таким названием уже есть'**
+  String get crewDuplicate;
+
+  /// No description provided for @crewMembers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнители'**
+  String get crewMembers;
+
+  /// No description provided for @crewNoExecutors.
+  ///
+  /// In ru, this message translates to:
+  /// **'У подрядчика пока нет исполнителей'**
+  String get crewNoExecutors;
+
+  /// No description provided for @crewZone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона бригады'**
+  String get crewZone;
+
+  /// No description provided for @crewZoneHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнители бригады видят только эти места и системы.'**
+  String get crewZoneHint;
+
+  /// No description provided for @crewMembersCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} исполнитель} few{{count} исполнителя} many{{count} исполнителей} other{{count} исполнителя}}'**
+  String crewMembersCount(int count);
+
+  /// No description provided for @crewSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада сохранена'**
+  String get crewSaved;
+
+  /// No description provided for @crewDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада удалена'**
+  String get crewDeleted;
+
+  /// No description provided for @crewDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить бригаду'**
+  String get crewDelete;
+
+  /// No description provided for @crewDeleteConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить бригаду «{name}»? Её исполнители снова увидят все объекты подрядчика.'**
+  String crewDeleteConfirm(String name);
+
+  /// No description provided for @crewInfoTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригады'**
+  String get crewInfoTitle;
+
+  /// No description provided for @crewInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужны, только если разные бригады одного подрядчика не должны видеть объекты друг друга.'**
+  String get crewInfo1;
+
+  /// No description provided for @crewInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнитель в бригаде видит только зону своей бригады; без бригады — всё по закреплениям подрядчика.'**
+  String get crewInfo2;
+
+  /// No description provided for @crewInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригады заводит менеджер, которому виден подрядчик.'**
+  String get crewInfo3;
 }
 
 class _AppLocalizationsDelegate

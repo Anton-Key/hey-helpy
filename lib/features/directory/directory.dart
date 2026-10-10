@@ -65,6 +65,9 @@ class Obj {
   }
 }
 
+/// База отказала по правам (RLS / зона доступа, шаг 17) — не «нет интернета».
+bool _refused(Object e) => e is PostgrestException && e.code == '42501';
+
 /// Город по адресу (внутри [Obj] имя `city` занято полем).
 String _cityOfAddress(String? address) => city.cityOf(address);
 
@@ -708,7 +711,7 @@ class _ObjectsTabState extends State<ObjectsTab> {
                 if (ctx.mounted) Navigator.pop(ctx, true);
               } catch (e) {
                 debugPrint('addObject: $e');
-                _snack(l.saveFailed, type: AppMessageType.error);
+                _snack(_refused(e) ? l.zoneRefused : l.saveFailed, type: AppMessageType.error);
               }
             },
           ),
@@ -905,7 +908,7 @@ class _ContractorsTabState extends State<ContractorsTab> {
               if (ctx.mounted) Navigator.pop(ctx, true);
             } catch (e) {
               debugPrint('addContractor: $e');
-              _snack(l.saveFailed, type: AppMessageType.error);
+              _snack(_refused(e) ? l.zoneRefused : l.saveFailed, type: AppMessageType.error);
             }
           },
         ),

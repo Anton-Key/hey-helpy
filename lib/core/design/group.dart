@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../l10n_ext.dart';
 import 'icons.dart';
 import 'pressable.dart';
 import 'tokens.dart';
@@ -222,13 +223,30 @@ class PriorityDot extends StatelessWidget {
   final String priority;
   final double size;
 
+  /// Размер значка «!» у критичной заявки — чуть больше точки.
+  static const criticalSize = 15.0;
+
   @override
-  Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-            color: AppColors.priority(priority), shape: BoxShape.circle),
-      );
+  Widget build(BuildContext context) {
+    // Шаг 21: критичная — красный «!» с подсказкой «Критичный»; ширина
+    // места одна для всех, чтобы названия в списке стояли ровно.
+    final Widget mark = priority == 'critical'
+        ? Tooltip(
+            message: context.l10n.priority(priority),
+            child: Icon(AppIcons.critical,
+                size: criticalSize,
+                color: AppColors.priorityCritical,
+                semanticLabel: context.l10n.priority(priority)),
+          )
+        : Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+                color: AppColors.priority(priority), shape: BoxShape.circle),
+          );
+    return SizedBox(
+        width: math.max(size, criticalSize), child: Center(child: mark));
+  }
 }
 
 /// Строка места в списке заявок (шаг 21): **объект** жирным основным

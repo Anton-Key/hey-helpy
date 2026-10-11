@@ -292,7 +292,8 @@ class FloorRepo {
   }
 
   /// Область помещения на плане этажа [floorId] (null — удалить область).
-  /// Помещению без точки ставится точка в центре области.
+  /// Помещению без точки (или с точкой вне области) ставится точка в центре
+  /// области.
   Future<void> setShape(
       PlanItem place, String floorId, List<(double, double)>? points) {
     final v = <String, dynamic>{
@@ -300,10 +301,10 @@ class FloorRepo {
     };
     if (points != null) {
       v['floor_id'] = floorId;
-      if (!place.placed || place.floorId != floorId) {
-        final (cx, cy) = polygonCentroid(points);
-        v['plan_x'] = cx;
-        v['plan_y'] = cy;
+      final p = pointForShape(place, floorId, points);
+      if (p != null) {
+        v['plan_x'] = p.$1;
+        v['plan_y'] = p.$2;
       }
     }
     return _update('locations', place.id, v);

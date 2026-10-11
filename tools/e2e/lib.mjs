@@ -53,6 +53,8 @@ export const profileTab = (page) => page.getByRole('tab', { name: /^Профил
 export const settle = (page, ms = 1200) => page.waitForTimeout(ms);
 
 export async function openApp(page, base, path = '') {
+  // Смена только «#…» не перезагружает страницу — сначала пустая страница.
+  if (page.url().startsWith(base)) await page.goto('about:blank');
   await page.goto(base + path, { waitUntil: 'load' });
   const placeholder = page.locator('flt-semantics-placeholder');
   await placeholder.waitFor({ state: 'attached', timeout: 60000 });
@@ -82,8 +84,8 @@ export async function login(page, base, email) {
   ]);
   if (first === 'home') return;
   await typeInto(page, emailBox, email);
-  await typeInto(page, page.getByRole('textbox', { name: 'Пароль' }), 'local-only');
-  await btn(page, 'Войти').click();
+  await typeInto(page, page.getByRole('textbox', { name: /Пароль|Password/ }), 'local-only');
+  await btn(page, /^(Войти|Sign in|Log in)/).click();
   await profileTab(page).waitFor({ timeout: 30000 });
   await settle(page, 1500);
 }
@@ -130,4 +132,22 @@ export async function waitDb(q, expect, timeout = 15000) {
 
 export function assert(cond, msg) {
   if (!cond) throw new Error(msg);
+}
+
+/**
+ * Нажатия мышью мимо слоя доступности Flutter: с включённой доступностью
+ * клик по узлу холста превращается в «нажатие по центру узла» (план этажа
+ * получал точку 0.5, 0.5). На время действия слой не принимает мышь.
+ */
+export async function raw(page, fn) {
+  await page.evaluate(() => {
+    for (const el of document.querySelectorAll('flt-semantics-host')) el.style.pointerEvents = 'none';
+  });
+  try {
+    await fn();
+  } finally {
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll('flt-semantics-host')) el.style.pointerEvents = '';
+    });
+  }
 }

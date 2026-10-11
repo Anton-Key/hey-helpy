@@ -33,6 +33,23 @@ Uint8List bytes(List<int> b, {int pad = 0}) =>
     Uint8List.fromList([...b, ...List.filled(pad, 0)]);
 
 void main() {
+  group('Точка помещения при сохранении области (шаг 18)', () {
+    final square = rectShape((0.5, 0.6), (0.7, 0.9));
+    test('точка внутри области — не трогаем', () {
+      expect(pointForShape(place('r', x: 0.6, y: 0.7), 'f1', square), isNull);
+    });
+    test('точка снаружи области — в центр области', () {
+      final p = pointForShape(place('r', x: 0.5, y: 0.5), 'f1', square)!;
+      expect(p.$1, closeTo(0.6, 1e-9));
+      expect(p.$2, closeTo(0.75, 1e-9));
+    });
+    test('без точки или на другом этаже — в центр области', () {
+      expect(pointForShape(place('r', floor: null), 'f1', square), isNotNull);
+      expect(pointForShape(place('r', floor: 'f2', x: 0.6, y: 0.7), 'f1', square),
+          isNotNull);
+    });
+  });
+
   group('Доли ↔ пиксели плана', () {
     const plan = Size(2400, 1600);
 

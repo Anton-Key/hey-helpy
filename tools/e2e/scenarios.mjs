@@ -1,11 +1,11 @@
 // Сценарии сквозных тестов. Каждый — отдельный тест: run(ctx) бросает
 // исключение, если что-то не так. Проверки — и по экрану, и по базе.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync } from 'node:fs';
+import { existsSync, mkdtempSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  USERS, assert, btn, home, login, profileTab, scrollTo, section, see, settle, sql, typeInto, uuid, waitDb,
+  USERS, assert, btn, home, login, openApp, raw, profileTab, scrollTo, section, see, settle, sql, typeInto, uuid, waitDb,
 } from './lib.mjs';
 
 const TMP = mkdtempSync(join(tmpdir(), 'hh-e2e-'));
@@ -59,6 +59,28 @@ async function reportTiles(page, base) {
   const orders = +(t.match(/(\d+)\s*\n?\s*заяв/)?.[1] ?? NaN);
   const firstTime = +(t.match(/приняты с первого раза\s*\n?\s*из (\d+)/)?.[1] ?? NaN);
   return { orders, firstTime };
+}
+
+/** PDF отчёта: веб-версия отдаёт Blob в окно печати — перехват в ctx.page(). */
+async function capturePdf(page) {
+  const print = page.getByRole('button', { name: /Печать|Распечатать|PDF/ });
+  await ((await print.count()) > 1 ? print.nth(1) : print.first()).click();
+  for (let i = 0; i < 120; i++) {
+    if (await page.evaluate(() => !!window.__pdfBlob)) break;
+    await page.waitForTimeout(500);
+  }
+  const b64 = await page.evaluate(async () => {
+    const blob = window.__pdfBlob;
+    if (!blob) return null;
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let s = '';
+    for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+    return btoa(s);
+  });
+  assert(b64, 'PDF не получен');
+  const f = join(TMP, `report-${Date.now()}.pdf`);
+  writeFileSync(f, Buffer.from(b64, 'base64'));
+  return f;
 }
 
 export const SCENARIOS = [
@@ -194,6 +216,270 @@ export const SCENARIOS = [
       await see(m, /История периодов/).waitFor({ timeout: 20000 });
       await see(m, /Выполнено/).waitFor({ timeout: 10000 });
       await ctx.shot(m, 'ppr-card-done');
+    },
+  },
+  {
+    id: 3,
+    title: 'План этажа: «Показать на плане» → маркер; расстановка → помещение, номер «305», область; голосом «в 305-й не работает свет»',
+    async run(ctx) {
+      const { base } = ctx;
+      const room = uuid(23); // Open space, 2 этаж — в демо без точки на плане
+      sql(`update locations set code = null, floor_id = null, plan_x = null, plan_y = null, plan_shape = null where id = '${room}'`);
+      sql(`delete from work_orders where company_id = '${uuid(1)}' and title like 'Не работает свет%' and id::text not like 'de300000-%'`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      // a) Заявка на оборудовании → «Показать на плане».
+      await openOrder(m, base, 'Течёт конденсат из кондиционера');
+      await clickAction(m, /Показать на плане/);
+      await see(m, /На плане · \d/).waitFor({ timeout: 30000 });
+      await settle(m, 1500);
+      assert(/floors\//.test(m.url()) || await see(m, /Кондиционер серверной/).isVisible(), 'план не открылся');
+      const focused = m.getByRole('button', { name: 'Кондиционер серверной' }).first();
+      assert(await focused.isVisible().catch(() => false), 'маркер «Кондиционер серверной» не виден');
+      ctx.notes.push('маркер оборудования на плане 3 этажа виден');
+      await ctx.shot(m, 'show-on-plan');
+
+      // b) Режим расстановки 1 этажа: «Поставить сюда…» → Open space, номер 305, область.
+      await openApp(m, base, `#/objects/${uuid(10)}/floors/${uuid(601)}?edit=1`);
+      await see(m, /Режим расстановки/).waitFor({ timeout: 30000 });
+      await settle(m, 1500);
+      // Маркеры на холсте: «102 · Ресепшен, 1 этаж, нет открытых заявок».
+      const box = async (name) => m.getByRole('button', { name: new RegExp(`^\\d+ · ${name}, `) }).first().boundingBox();
+      const a = await box('Ресепшен, 1 этаж'); // (0.15, 0.5125)
+      const b = await box('Холл, 1 этаж'); // (0.45, 0.5125)
+      const c = await box('Электрощитовая, 1 этаж'); // (0.15, 0.2063)
+      assert(a && b && c, 'маркеры 1 этажа не найдены');
+      const kx = (b.x - a.x) / 0.30;
+      const ky = (a.y - c.y) / (0.5125 - 0.2063);
+      const at = (fx, fy) => ({ x: a.x + a.width / 2 + (fx - 0.15) * kx, y: a.y + a.height / 2 + (fy - 0.5125) * ky });
+      const spot = at(0.62, 0.80);
+      await raw(m, () => m.mouse.click(spot.x, spot.y));
+      await clickAction(m, /Поставить сюда/);
+      // Пункт шторки (последний на экране; слева — такой же в списке «Не размещены»).
+      await m.getByRole('button', { name: /^Open space, 2 этаж/ }).last().click();
+      await settle(m, 1500);
+      await waitDb(`select floor_id from locations where id = '${room}'`, uuid(601));
+      const marker = () => m.getByRole('button', { name: /^(305 · )?Open space, 2 этаж, / }).first();
+      await marker().click();
+      await settle(m, 1000);
+      await clickAction(m, /^Номер помещения/);
+      await typeInto(m, m.getByRole('textbox').last(), '305');
+      await clickAction(m, /^Сохранить/);
+      await waitDb(`select code from locations where id = '${room}'`, '305');
+      await marker().click();
+      await settle(m, 1000);
+      await clickAction(m, /^Обвести область/);
+      // Область прямоугольником: протянуть мышью.
+      const p1 = at(0.55, 0.70);
+      const p2 = at(0.72, 0.92);
+      await raw(m, async () => {
+        await m.mouse.move(p1.x, p1.y);
+        await m.mouse.down();
+        await m.mouse.move((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, { steps: 8 });
+        await m.mouse.move(p2.x, p2.y, { steps: 8 });
+        await m.mouse.up();
+      });
+      await settle(m, 800);
+      await ctx.shot(m, 'area-draft');
+      await clickAction(m, /^Готово/);
+      const shape = await waitDb(`select plan_shape::text from locations where id = '${room}'`, (v) => v.length > 0);
+      const pts = JSON.parse(shape).points;
+      const xs = pts.map((q) => q[0]);
+      const ys = pts.map((q) => q[1]);
+      ctx.notes.push(`область: x ${Math.min(...xs).toFixed(2)}–${Math.max(...xs).toFixed(2)}, y ${Math.min(...ys).toFixed(2)}–${Math.max(...ys).toFixed(2)}`);
+      assert(Math.abs(Math.min(...xs) - 0.55) < 0.04 && Math.abs(Math.max(...ys) - 0.92) < 0.04, 'область сохранилась не там, где рисовали');
+      const pt = sql(`select plan_x || ',' || plan_y from locations where id = '${room}'`);
+      const [px, py] = pt.split(',').map(Number);
+      ctx.notes.push(`точка помещения: ${pt}`);
+      assert(px >= Math.min(...xs) && px <= Math.max(...xs) && py >= Math.min(...ys) && py <= Math.max(...ys),
+        'маркер помещения остался вне своей области');
+      await ctx.shot(m, 'area-saved');
+
+      // c) Голосом «в 305-й не работает свет» → помещение Open space найдено.
+      await home(m, base, `?voice=${encodeURIComponent('Эй, Хелпи, в 305-й не работает свет')}`);
+      await clickAction(m, /Нажми и говори/);
+      await see(m, /не работает свет/).waitFor({ timeout: 15000 });
+      await settle(m, 800);
+      await clickAction(m, /^Готово/);
+      await see(m, /Проверьте заявку/).waitFor({ timeout: 20000 });
+      await see(m, /Open space/).waitFor({ timeout: 5000 });
+      await ctx.shot(m, 'voice-305');
+      await clickAction(m, /^Отправить/);
+      const row = await waitDb(`select coalesce(l.name, '-') || '|' || coalesce(c.org_name, '-') from work_orders w
+        left join locations l on l.id = w.location_id left join contractors c on c.id = w.assigned_contractor_id
+        where w.company_id = '${uuid(1)}' and w.title like 'Не работает свет%' and w.created_at > now() - interval '2 minutes'`,
+      (v) => v.length > 0);
+      ctx.notes.push(`заявка «305»: ${row}`);
+      assert(row.startsWith('Open space, 2 этаж|ЭлектроПро'), `ждали Open space и ЭлектроПро: ${row}`);
+    },
+  },
+  {
+    id: 4,
+    title: 'Регионы: «Европпа» → «Использовать «Европа»»; объединение регионов; «Весь регион» в заявках и отчётах',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`update objects set region_id = '${uuid(901)}' where region_id in (select id from regions where name in ('Европпа', 'Балканы'))`);
+      sql(`delete from regions where company_id = '${uuid(1)}' and name in ('Европпа', 'Балканы')`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      const openRegions = async () => {
+        await home(m, base);
+        await profileTab(m).click();
+        await settle(m, 1000);
+        await btn(m, /^Моя компания/).click();
+        await settle(m, 1500);
+        await scrollTo(m, /Регионы компании/);
+        await btn(m, /Регионы компании/).click();
+        await see(m, /Европа/).waitFor({ timeout: 20000 });
+        await settle(m, 800);
+      };
+      const addRegion = async (name) => {
+        await clickAction(m, /Новый регион/);
+        await typeInto(m, m.getByRole('textbox').last(), name);
+        await clickAction(m, /^Сохранить|^Создать|^Готово|^Добавить/);
+      };
+      await openRegions();
+      await addRegion('Европпа');
+      await see(m, /Похоже/).waitFor({ timeout: 10000 });
+      await ctx.shot(m, 'similar');
+      await clickAction(m, /Использовать «Европа»/);
+      assert(sql(`select count(*) from regions where company_id = '${uuid(1)}' and name = 'Европпа'`) === '0', '«Европпа» создан, хотя выбрали «Европа»');
+      ctx.notes.push('«Европпа» → предложено «Европа», дубль не создан');
+
+      // Объединение: новый «Балканы», объект «Белград · Хаб 1» в нём → объединить с «Европа».
+      await addRegion('Балканы');
+      const balkans = await waitDb(`select id from regions where company_id = '${uuid(1)}' and name = 'Балканы'`, (v) => v.length > 0);
+      sql(`update objects set region_id = '${balkans}' where id = '${uuid(401)}'`);
+      await openRegions();
+      await m.getByRole('button', { name: /Балканы/ }).first().click();
+      await settle(m, 800);
+      await clickAction(m, /Объединить с/);
+      await clickAction(m, /^Европа/);
+      await ctx.shot(m, 'merge-confirm');
+      await clickAction(m, /^Объединить$/);
+      await waitDb(`select count(*) from regions where id = '${balkans}'`, '0');
+      assert(sql(`select region_id from objects where id = '${uuid(401)}'`) === uuid(901), 'объект не перешёл в «Европа»');
+      ctx.notes.push('«Балканы» объединён с «Европа», объект перешёл');
+
+      // «Весь регион» в заявках: СНГ.
+      await home(m, base);
+      const pill = m.getByRole('button', { name: /^Объект/ }).first();
+      if (await pill.isVisible().catch(() => false)) await pill.click();
+      else { await btn(m, /^Фильтры/).click(); await settle(m, 800); await btn(m, /^Объект/).click(); }
+      await settle(m, 1000);
+      await scrollTo(m, /СНГ/);
+      const whole = m.getByRole('button', { name: /Весь регион/ }).or(m.getByText(/Весь регион/));
+      const n = await whole.count();
+      // «Весь регион» — под заголовком региона; у СНГ — второй по порядку (Европа, СНГ, …).
+      let clicked = false;
+      for (let i = 0; i < n && !clicked; i++) {
+        const el = whole.nth(i);
+        const label = (await el.getAttribute('aria-label').catch(() => '')) ?? '';
+        if (/СНГ/.test(label)) { await el.click(); clicked = true; }
+      }
+      if (!clicked) await whole.nth(1).click();
+      await settle(m, 600);
+      const apply = btn(m, /^Применить|^Показать|^Готово/);
+      if (await apply.isVisible().catch(() => false)) await apply.click();
+      await settle(m, 2000);
+      await ctx.shot(m, 'requests-region');
+      const t = await screenText(m);
+      const shown = (t.match(/(\d+) из \d+/) ?? [])[1];
+      const all = +sql(`select count(*) from work_orders w join objects o on o.id = w.object_id
+        where w.company_id = '${uuid(1)}' and o.region_id = '${uuid(902)}'`);
+      assert(+shown === all, `фильтр «Весь регион СНГ»: на экране ${shown}, заявок региона в базе ${all}`);
+      ctx.notes.push(`заявки «Весь регион СНГ»: ${shown} = в базе ${all}`);
+
+      // Отчёты: фильтр «Регион» = СНГ.
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await see(m, /приняты с первого раза/).waitFor({ timeout: 20000 });
+      await btn(m, /^Регион/).click();
+      await settle(m, 800);
+      await clickAction(m, /^СНГ/);
+      const ap = btn(m, /^Применить|^Показать|^Готово/);
+      if (await ap.isVisible().catch(() => false)) await ap.click();
+      await settle(m, 2500);
+      const rt = await screenText(m);
+      const orders = +(rt.match(/(\d+)\s*\n?\s*заяв/)?.[1] ?? NaN);
+      const dbOrders = +sql(`select count(*) from work_orders w join objects o on o.id = w.object_id
+        where w.company_id = '${uuid(1)}' and o.region_id = '${uuid(902)}' and w.created_at >= now() - interval '30 days'`);
+      ctx.notes.push(`отчёт по СНГ: заявок ${orders}, в базе за 30 дней ${dbOrders}`);
+      assert(orders > 0 && orders <= dbOrders + 1 && !/Европа\s*\n?\s*Заявок/.test(rt), 'отчёт с фильтром «СНГ» неверен');
+      await ctx.shot(m, 'report-region');
+    },
+  },
+  {
+    id: 5,
+    title: 'PDF: отчёт по региону → файл создан, страниц > 0, в тексте фильтры',
+    async run(ctx) {
+      const { base } = ctx;
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await see(m, /приняты с первого раза/).waitFor({ timeout: 20000 });
+      await btn(m, /^Регион/).click();
+      await settle(m, 800);
+      await clickAction(m, /^СНГ/);
+      const ap = btn(m, /^Применить|^Показать|^Готово/);
+      if (await ap.isVisible().catch(() => false)) await ap.click();
+      await settle(m, 2000);
+      const pdf = await capturePdf(m);
+      const pages = +(execFileSync('pdfinfo', [pdf], { encoding: 'utf8' }).match(/Pages:\s+(\d+)/)?.[1] ?? 0);
+      const text = execFileSync('pdftotext', ['-layout', pdf, '-'], { encoding: 'utf8' });
+      ctx.notes.push(`PDF: ${pages} стр., ${Math.round(statSync(pdf).size / 1024)} КБ`);
+      assert(pages > 0, 'в PDF нет страниц');
+      assert(/СНГ/.test(text), 'в тексте PDF нет фильтра «СНГ»');
+      assert(!/Европа|Белград|Дубай/.test(text), 'в PDF по СНГ попали другие регионы');
+      assert(/Москва|МосКлимат/.test(text), 'в PDF нет данных региона');
+    },
+  },
+  {
+    id: 6,
+    title: 'Реестр оборудования: импорт CSV с ошибками → предпросмотр ошибок → импорт корректных строк',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`delete from assets where inventory_no in ('E2E-001', 'E2E-002', 'E2E-003', 'E2E-004')`);
+      const before = +sql(`select count(*) from assets a join locations l on l.id = a.location_id where l.object_id = '${uuid(10)}'`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await section(m, /^Локации/);
+      const list = m.getByRole('button', { name: /^Список/ }).or(m.getByText(/^Список$/)).first();
+      if (await list.isVisible().catch(() => false)) await list.click();
+      await settle(m, 1200);
+      await btn(m, /^БЦ «Демо»/).click();
+      await see(m, /Адрес|Этажи/).waitFor({ timeout: 20000 });
+      await settle(m, 1500);
+      await scrollTo(m, /Импорт из Excel/);
+      await btn(m, /Импорт из Excel/).click();
+      await settle(m, 1200);
+      const csv = join(TMP, 'import.csv');
+      writeFileSync(csv, [
+        'Название;Помещение;Система;Инвентарный номер;Производитель;Модель;Серийный номер;Дата ввода',
+        'Кондиционер №3;Переговорная, 3 этаж;Климат;E2E-001;Daikin;FTXM25R;DK-1;2025-03-01',
+        'Светильник;Нет такой комнаты;Электрика;E2E-002;Philips;RC132V;PH-1;2025-03-01',
+        'Насос;Кухня, 3 этаж;Лифты;E2E-003;Grundfos;UPS;GR-1;2025-03-01',
+        'ИБП;Серверная, 3 этаж;Электрика;E2E-004;APC;SRT;AS-1;2025-13-40',
+        'Щит освещения;Холл, 1 этаж;Электрика;E2E-005;ABB;MISTRAL;AB-1;01.02.2024',
+      ].join('\n'));
+      const chooser = m.waitForEvent('filechooser', { timeout: 15000 });
+      await btn(m, /Выбрать файл/).click();
+      await (await chooser).setFiles(csv);
+      await see(m, /Строк: 5 · готово: 2 · с ошибками: 3/).waitFor({ timeout: 20000 });
+      await ctx.shot(m, 'preview');
+      for (const issue of [/нет помещения «Нет такой комнаты»/, /нет системы «Лифты»/, /дата не распознана/]) {
+        assert(await see(m, issue).isVisible().catch(() => false) || /./.test(await screenText(m).then((t) => (issue.test(t) ? 'x' : ''))),
+          `в предпросмотре нет ошибки ${issue}`);
+      }
+      await clickAction(m, /Импортировать 2 строки/);
+      await waitDb(`select count(*) from assets a join locations l on l.id = a.location_id where l.object_id = '${uuid(10)}'`,
+        String(before + 2), 20000);
+      const got = sql(`select string_agg(inventory_no, ',' order by inventory_no) from assets where inventory_no like 'E2E-%'`);
+      ctx.notes.push(`импортировано: ${got}`);
+      assert(got === 'E2E-001,E2E-005', `ждали E2E-001 и E2E-005, в базе: ${got}`);
+      sql(`delete from assets where inventory_no like 'E2E-%'`);
     },
   },
 ];

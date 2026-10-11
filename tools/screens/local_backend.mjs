@@ -81,15 +81,9 @@ export function mockAi(uid, text) {
     [/теч|кран|вода|унитаз|leak|water/, 'Сантехника'], [/убор|грязн|clean/, 'Клининг']];
   const layerName = rules.find(([re]) => re.test(t))?.[1];
   const layer = layers.find((l) => l.name === layerName) ?? null;
-  const code = t.match(/(\d{3,4})/)?.[1];
-  let loc = null;
-  if (code) {
-    loc = psqlAs(uid, `select id || '|' || name from public.locations where code = ${lit(code)} order by name limit 1`) || null;
-  }
-  if (!loc && /переговор|meeting/.test(t)) {
-    loc = psqlAs(uid, `select l.id || '|' || l.name from public.locations l join public.objects o on o.id = l.object_id
-      where l.name ilike 'Переговорная%' order by (o.id = 'de300000-0000-4000-8000-000000000010') desc, l.name limit 1`) || null;
-  }
+  // Помещение «ИИ» не ищет: его находит разбор по словарю в приложении
+  // (номер «305», название и этаж) — так тест проверяет код приложения.
+  const loc = null;
   const [locId, locName] = loc ? loc.split('|') : [null, null];
   const clean = text.replace(/^\s*(эй,?\s*хелпи|hey,?\s*helpy)[,!.]?\s*/i, '');
   const title = (layerName === 'Климат' ? 'Не работает кондиционер' : layerName === 'Электрика' ? 'Не работает свет'

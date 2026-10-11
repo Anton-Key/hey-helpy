@@ -466,6 +466,23 @@ List<(double, double)> rectShape((double, double) a, (double, double) b) {
   return [(x0, y0), (x1, y0), (x1, y1), (x0, y1)];
 }
 
+/// Новая точка помещения при сохранении области [points] на этаже
+/// [floorId]: центр области, если у помещения нет точки на этом этаже или
+/// точка осталась снаружи области (маркер «висел» бы в чужой комнате);
+/// null — точку не трогать.
+(double, double)? pointForShape(
+    PlanItem place, String floorId, List<(double, double)> points) {
+  final x = place.x, y = place.y;
+  if (place.placed &&
+      place.floorId == floorId &&
+      x != null &&
+      y != null &&
+      pointInPolygon(x, y, points)) {
+    return null;
+  }
+  return polygonCentroid(points);
+}
+
 /// Точка внутри многоугольника (луч вправо, чётность пересечений).
 /// Точки — в одной системе (доли или пиксели).
 bool pointInPolygon(double x, double y, List<(double, double)> poly) {

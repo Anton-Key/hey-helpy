@@ -144,7 +144,7 @@ void main() {
               recurrence: null,
               periodStart: '2026-10-01',
               periodEnd: '2026-12-31'),
-          startsWith('PPM · Q4 2026 · due'));
+          startsWith('PM · Q4 2026 · due'));
       // База без 0015 — полей нет.
       expect(
           pprTaskLine(ru,

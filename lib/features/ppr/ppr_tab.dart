@@ -236,7 +236,12 @@ class _PprTabState extends State<PprTab> {
       return [
         SliverFillRemaining(
             hasScrollBody: false,
-            child: AppEmptyState(icon: AppIcons.calendar, text: l.pprEmpty)),
+            // Пустой раздел — сразу кнопка «Новый план ППР» (менеджеру).
+            child: AppEmptyState(
+                icon: AppIcons.calendar,
+                text: l.pprEmpty,
+                actionLabel: d.isManager ? l.pprFormNew : null,
+                onAction: d.isManager ? _create : null)),
       ];
     }
     final list = [

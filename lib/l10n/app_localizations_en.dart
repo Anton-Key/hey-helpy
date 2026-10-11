@@ -107,7 +107,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navProfile => 'Profile';
 
   @override
-  String get tabRequests => 'Requests';
+  String get tabRequests => 'Work orders';
 
   @override
   String get tabContractors => 'Contractors';
@@ -116,7 +116,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabLocations => 'Locations';
 
   @override
-  String get reportsKpiRequests => 'requests';
+  String get reportsKpiRequests => 'work orders';
 
   @override
   String get reportsKpiOnTime => 'on time';
@@ -205,28 +205,28 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count requests',
-      one: '$count request',
-      zero: 'No requests',
+      other: '$count work orders',
+      one: '$count work order',
+      zero: 'No work orders',
     );
     return '$_temp0';
   }
 
   @override
   String get requestsLoadFailed =>
-      'Couldn\'t load requests. Check your connection and tap Refresh.';
+      'Couldn\'t load work orders. Check your connection and tap Refresh.';
 
   @override
-  String get requestsEmpty => 'No requests yet.\nTap “New request”.';
+  String get requestsEmpty => 'No work orders yet.\nTap “New work order”.';
 
   @override
-  String get requestsCreate => 'New request';
+  String get requestsCreate => 'New work order';
 
   @override
   String get requestsVoice => 'Tap and speak';
 
   @override
-  String get requestsCreated => 'Request created';
+  String get requestsCreated => 'Work order created';
 
   @override
   String get requestsNoCompany =>
@@ -248,14 +248,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contractorUnknown => 'contractor';
 
   @override
-  String get detailTitle => 'Request';
+  String get detailTitle => 'Work order';
 
   @override
   String get detailEdit => 'Edit';
 
   @override
   String get detailLoadFailed =>
-      'Couldn\'t open the request. Check your connection and try again.';
+      'Couldn\'t open the work order. Check your connection and try again.';
 
   @override
   String get fieldObject => 'Site';
@@ -331,10 +331,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionReturn => 'Return for rework';
 
   @override
-  String get actionCancel => 'Cancel request';
+  String get actionCancel => 'Cancel work order';
 
   @override
-  String get toastInProgress => 'Request in progress';
+  String get toastInProgress => 'Work order in progress';
 
   @override
   String get toastSubmitted => 'Sent for review';
@@ -343,7 +343,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toastAccepted => 'Work accepted';
 
   @override
-  String get toastCancelled => 'Request cancelled';
+  String get toastCancelled => 'Work order cancelled';
 
   @override
   String get toastReturned => 'Returned to the contractor';
@@ -376,10 +376,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This action isn\'t available for your role or the current status';
 
   @override
-  String get formNewTitle => 'New request';
+  String get formNewTitle => 'New work order';
 
   @override
-  String get formEditTitle => 'Edit request';
+  String get formEditTitle => 'Edit work order';
 
   @override
   String get formWhat => 'What happened?';
@@ -406,11 +406,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get formSaveFailed =>
-      'Couldn\'t save the request. Check your connection and try again.';
+      'Couldn\'t save the work order. Check your connection and try again.';
 
   @override
   String get formLayersFailed =>
-      'Couldn\'t load work types. You can send the request without one.';
+      'Couldn\'t load work types. You can send the work order without one.';
 
   @override
   String get voiceTitle => 'Voice request';
@@ -827,7 +827,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t load the report. Check your connection and try again.';
 
   @override
-  String get reportsEmpty => 'No requests or visits in this period.';
+  String get reportsEmpty => 'No work orders or visits in this period.';
 
   @override
   String get reportsKpiFirstPass => 'accepted first time';
@@ -847,7 +847,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsNoContractor => 'No contractor';
 
   @override
-  String get reportsOrders => 'Requests';
+  String get reportsOrders => 'Work orders';
 
   @override
   String get reportsAccepted => 'Accepted';
@@ -902,10 +902,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportsHelp =>
-      'On time — share of requests accepted by the deadline, among all requests with a deadline: accepted after the deadline and still open past the deadline count as late; cancelled ones are not counted. First time — accepted without being returned. Response — from creation to “In progress”; execution — from “In progress” to “In review”. Visit targets are prorated to the period length and rounded to a whole number (below 1 — to one decimal).';
+      'On time — share of work orders accepted by the deadline, among all work orders with a deadline: accepted after the deadline and still open past the deadline count as late; cancelled ones are not counted. First time — accepted without being returned. Response — from creation to “In progress”; execution — from “In progress” to “In review”. Visit targets are prorated to the period length and rounded to a whole number (below 1 — to one decimal).';
 
   @override
-  String get reportsOrdersEmpty => 'No requests in this period.';
+  String get reportsOrdersEmpty => 'No work orders in this period.';
 
   @override
   String reportsReturnedTimes(int count) {
@@ -942,7 +942,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t load this card. Check your connection and try again.';
 
   @override
-  String get cardContractorOrders => 'Contractor requests';
+  String get cardContractorOrders => 'Contractor work orders';
 
   @override
   String get cardContractorReport => 'Report';
@@ -1048,13 +1048,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cardObjectContractorsTitle => 'Contractors by work type';
 
   @override
-  String get cardRecentOrders => 'Recent requests';
+  String get cardRecentOrders => 'Recent work orders';
 
   @override
-  String get cardOrdersEmpty => 'No requests yet.';
+  String get cardOrdersEmpty => 'No work orders yet.';
 
   @override
-  String get cardAllObjectOrders => 'All site requests';
+  String get cardAllObjectOrders => 'All site work orders';
 
   @override
   String get historyLoadFailed =>
@@ -1066,7 +1066,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get historyEmpty => 'No completed requests in this period.';
+  String get historyEmpty => 'No completed work orders in this period.';
 
   @override
   String historyAcceptedAt(String date) {
@@ -1138,7 +1138,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get companyRoleExecutorHint =>
-      'To see requests, a technician must be linked to a contractor — use an invitation.';
+      'To see work orders, a technician must be linked to a contractor — use an invitation.';
 
   @override
   String get companyRoleChanged => 'Role changed';
@@ -1168,7 +1168,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteRoleInfo =>
-      'Role: technician of this contractor. They will see the contractor\'s requests and can work on them. You can assign a different role later in the people list.';
+      'Role: technician of this contractor. They will see the contractor\'s work orders and can work on them. You can assign a different role later in the people list.';
 
   @override
   String get inviteValidity => 'Valid for';
@@ -1316,7 +1316,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t load notifications. Check your connection.';
 
   @override
-  String get notifAssigned => 'New request for your contractor';
+  String get notifAssigned => 'New work order for your contractor';
 
   @override
   String get notifReturned => 'Work returned for rework';
@@ -1325,7 +1325,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifOnReview => 'Work awaits acceptance';
 
   @override
-  String get notifOverdue => 'Deadline passed, request still open';
+  String get notifOverdue => 'Deadline passed, work order still open';
 
   @override
   String get notifVisitOutside => 'Visit outside the geofence';
@@ -1339,10 +1339,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifVisitMock => 'Visit with spoofed GPS';
 
   @override
-  String get notifInProgress => 'Your request is in progress';
+  String get notifInProgress => 'Your work order is in progress';
 
   @override
-  String get notifAccepted => 'Work on your request was accepted';
+  String get notifAccepted => 'Work on your work order was accepted';
 
   @override
   String notifBellTooltip(int count) {
@@ -1442,18 +1442,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteOrderConfirm =>
-      'Delete this request permanently? Its history, photos and reports will be gone. If the work just isn\'t needed, better “Cancel request”.';
+      'Delete this work order permanently? Its history, photos and reports will be gone. If the work just isn\'t needed, better “Cancel work order”.';
 
   @override
-  String get toastDeleted => 'Request deleted';
+  String get toastDeleted => 'Work order deleted';
 
   @override
   String get deleteOrderDenied =>
-      'Only a manager can delete requests. The request was not deleted.';
+      'Only a manager can delete work orders. The work order was not deleted.';
 
   @override
   String get deleteOrderFailed =>
-      'Couldn\'t delete the request. Check your connection and try again.';
+      'Couldn\'t delete the work order. Check your connection and try again.';
 
   @override
   String get mapViewList => 'List';
@@ -1563,10 +1563,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapOpenObject => 'Open location';
 
   @override
-  String get mapOrders => 'Requests';
+  String get mapOrders => 'Work orders';
 
   @override
-  String get mapCreateHere => 'New request here';
+  String get mapCreateHere => 'New work order here';
 
   @override
   String get mapCountNew => 'New';
@@ -1585,9 +1585,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count open requests',
-      one: '$count open request',
-      zero: 'No open requests',
+      other: '$count open work orders',
+      one: '$count open work order',
+      zero: 'No open work orders',
     );
     return '$_temp0';
   }
@@ -1605,7 +1605,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapOrdersFailed =>
-      'Couldn\'t load requests — marker numbers may be inaccurate.';
+      'Couldn\'t load work orders — marker numbers may be inaccurate.';
 
   @override
   String get mapClose => 'Close';
@@ -1624,7 +1624,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get requestsFilterClear => 'Clear filter';
 
   @override
-  String get reqSearchHint => 'Search requests';
+  String get reqSearchHint => 'Search work orders';
 
   @override
   String reqSegAll(String count) {
@@ -1907,9 +1907,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Show $count requests',
-      one: 'Show $count request',
-      zero: 'No requests',
+      other: 'Show $count work orders',
+      one: 'Show $count work order',
+      zero: 'No work orders',
     );
     return '$_temp0';
   }
@@ -1925,7 +1925,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get infoFilters1 =>
-      'Pick conditions — the button below shows right away how many requests match.';
+      'Pick conditions — the button below shows right away how many work orders match.';
 
   @override
   String get infoFilters2 =>
@@ -1995,9 +1995,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count open requests',
-      one: '$count open request',
-      zero: 'no open requests',
+      other: '$count open work orders',
+      one: '$count open work order',
+      zero: 'no open work orders',
     );
     return '$_temp0';
   }
@@ -2182,7 +2182,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get planFilterAssets => 'Equipment';
 
   @override
-  String get planFilterWithOrders => 'With requests';
+  String get planFilterWithOrders => 'With work orders';
 
   @override
   String planOnPlan(int count) {
@@ -2207,16 +2207,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get planList => 'List';
 
   @override
-  String get planOpenOrders => 'Open requests';
+  String get planOpenOrders => 'Open work orders';
 
   @override
-  String get planNoOpenOrders => 'No open requests';
+  String get planNoOpenOrders => 'No open work orders';
 
   @override
-  String get planCreateHere => 'Create request here';
+  String get planCreateHere => 'Create work order here';
 
   @override
-  String get planAllPlaceOrders => 'All requests for this room';
+  String get planAllPlaceOrders => 'All work orders for this room';
 
   @override
   String get planAssetInventory => 'Inventory no.';
@@ -2266,7 +2266,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String planDeleteHasOrders(String name) {
-    return '“$name” has requests and can’t be deleted. You can remove it from the plan.';
+    return '“$name” has work orders and can’t be deleted. You can remove it from the plan.';
   }
 
   @override
@@ -2306,25 +2306,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get planFloorPicker => 'Floor';
 
   @override
-  String get planMarkerHint => 'Tap a marker for requests and actions';
+  String get planMarkerHint => 'Tap a marker for work orders and actions';
 
   @override
   String get infoPlanTitle => 'What markers mean';
 
   @override
   String get infoPlan1 =>
-      'Circle — a room, the number is its open requests. Square — equipment.';
+      'Circle — a room, the number is its open work orders. Square — equipment.';
 
   @override
   String get infoPlan2 =>
-      'Red — overdue or critical requests, orange — urgent or in progress.';
+      'Red — overdue or critical work orders, orange — urgent or in progress.';
 
   @override
-  String get infoPlan3 => 'Teal — there are open requests, grey — none open.';
+  String get infoPlan3 =>
+      'Teal — there are open work orders, grey — none open.';
 
   @override
   String get infoPlan4 =>
-      'Pulsing — equipment with an overdue request. Ripples and a glow — the selected marker; tap an empty spot to clear it.';
+      'Pulsing — equipment with an overdue work order. Ripples and a glow — the selected marker; tap an empty spot to clear it.';
 
   @override
   String get infoEditTitle => 'Placement mode';
@@ -2349,9 +2350,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count open requests nearby',
-      one: '$count open request nearby',
-      zero: 'no open requests nearby',
+      other: '$count open work orders nearby',
+      one: '$count open work order nearby',
+      zero: 'no open work orders nearby',
     );
     return '$floor · $_temp0';
   }
@@ -2371,7 +2372,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get formAsset => 'Equipment';
 
   @override
-  String get navAddOrder => 'Request';
+  String get navAddOrder => 'Work order';
 
   @override
   String get navCollapse => 'Collapse menu';
@@ -2400,11 +2401,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTip1 =>
-      '“Hey Helpy” — say what happened and where: the request fills itself in, you just check and send it.';
+      '“Hey Helpy” — say what happened and where: the work order fills itself in, you just check and send it.';
 
   @override
   String get helpTip2 =>
-      'A request can\'t be closed without an “after” photo and approval by its author or a manager.';
+      'A work order can\'t be closed without an “after” photo and approval by its author or a manager.';
 
   @override
   String get helpTip3 =>
@@ -2414,13 +2415,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpHotkeys => 'Keyboard shortcuts';
 
   @override
-  String get hotkeyNew => 'New request';
+  String get hotkeyNew => 'New work order';
 
   @override
-  String get hotkeyVoice => 'Voice request';
+  String get hotkeyVoice => 'Voice work order';
 
   @override
-  String get hotkeySearch => 'Search requests';
+  String get hotkeySearch => 'Search work orders';
 
   @override
   String get hotkeyHelp => 'This help';
@@ -2435,10 +2436,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tabPpr => 'PPM';
+  String get tabPpr => 'PM';
 
   @override
-  String get pprTitle => 'Planned maintenance';
+  String get pprTitle => 'Preventive maintenance';
 
   @override
   String pprSummary(String month, int done, int total) {
@@ -2526,7 +2527,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String pprTaskLine(String period, String due) {
-    return 'PPM · $period · due $due';
+    return 'PM · $period · due $due';
   }
 
   @override
@@ -2536,13 +2537,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pprPeriodRow => 'Maintenance period';
 
   @override
-  String get pprTag => 'PPM';
+  String get pprTag => 'PM';
 
   @override
-  String get pprKindOrder => 'Planned maintenance';
+  String get pprKindOrder => 'Preventive maintenance';
 
   @override
-  String get filterPpr => 'PPM';
+  String get filterPpr => 'PM';
 
   @override
   String get pprFilters => 'Filters';
@@ -2725,7 +2726,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pprChooseObject => 'Choose a site';
 
   @override
-  String get pprInfoTitle => 'Planned maintenance';
+  String get pprInfoTitle => 'Preventive maintenance';
 
   @override
   String get pprInfo1 =>
@@ -2766,7 +2767,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportPrintInfo4 =>
-      'The report contains KPIs, “By region” and “By contractor” tables and the list of requests, with page numbers.';
+      'The report contains KPIs, “By region” and “By contractor” tables and the list of work orders, with page numbers.';
 
   @override
   String get reportFilterRegion => 'Region';
@@ -2781,7 +2782,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportKindRecurring => 'Recurring';
 
   @override
-  String get reportKindPpr => 'Planned maintenance';
+  String get reportKindPpr => 'Preventive maintenance';
 
   @override
   String get reportRegionsGroup => 'Regions';
@@ -2810,7 +2811,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pdfTitle => 'Requests and contractors report';
+  String get pdfTitle => 'Work orders and contractors report';
 
   @override
   String pdfCompany(String name) {
@@ -2841,10 +2842,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pdfOrders => 'Requests';
+  String get pdfOrders => 'Work orders';
 
   @override
-  String get pdfOrdersEmpty => 'No requests in this period.';
+  String get pdfOrdersEmpty => 'No work orders in this period.';
 
   @override
   String get pdfColNumber => 'No.';
@@ -2935,7 +2936,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roomInfo1 =>
-      'The room number (“305”) shows in lists and on the plan, can be searched, and voice requests understand it: “tap leaking in room 305”.';
+      'The room number (“305”) shows in lists and on the plan, can be searched, and voice work orders understand it: “tap leaking in room 305”.';
 
   @override
   String get roomInfo2 =>
@@ -2947,7 +2948,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roomInfo4 =>
-      'The area is tinted with the colour of the room’s requests; tapping anywhere inside opens the room.';
+      'The area is tinted with the colour of the room’s work orders; tapping anywhere inside opens the room.';
 
   @override
   String get regionNone => 'No region';
@@ -3245,14 +3246,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String assetCardOrders(int count) {
-    return 'Requests · $count';
+    return 'Work orders · $count';
   }
 
   @override
-  String get assetCardOrdersEmpty => 'No requests for this equipment';
+  String get assetCardOrdersEmpty => 'No work orders for this equipment';
 
   @override
-  String get assetCreateOrder => 'Create request';
+  String get assetCreateOrder => 'Create work order';
 
   @override
   String get assetLoadFailed => 'Couldn\'t load the equipment';

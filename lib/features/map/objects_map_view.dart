@@ -18,6 +18,7 @@ import '../floors/floor_repository.dart';
 import '../floors/floors_section.dart';
 import '../floors/plan_image.dart';
 import '../directory/city.dart';
+import '../regions/region.dart';
 import '../directory/directory.dart';
 import '../directory/object_card.dart';
 import '../requests/requests.dart';
@@ -121,14 +122,24 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
   GeoPoint? _me;
   bool _locating = false;
 
-  /// Чип города над картой: null — «Все».
+  /// Чип над картой: null — «Все»; город — его название; регион —
+  /// «r:<id>» (шаг 16).
   String? _city;
+
+  /// Регионы компании (0015): чипы над картой — регионы, если они есть.
+  List<Region> _regions = const [];
 
   @override
   void initState() {
     super.initState();
     HardwareKeyboard.instance.addHandler(_onKey);
     _loadStats();
+    _loadRegions();
+  }
+
+  Future<void> _loadRegions() async {
+    final r = await RegionRepository().listOrEmpty();
+    if (mounted) setState(() => _regions = r);
   }
 
   @override
@@ -311,24 +322,43 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
 
   void _fitAll() => _fitPoints([for (final i in _items) i.point]);
 
-  /// Чип города: плавно приблизить к объектам города; «Все» — весь мир.
+  /// Чип города или региона: плавно приблизить к его объектам; «Все» —
+  /// весь мир.
   void _showCity(String? city) {
     setState(() => _city = city);
     if (city == null) {
       _fitAll();
       return;
     }
+    final region = city.startsWith('r:') ? city.substring(2) : null;
     _fitPoints([
       for (final i in _items)
-        if (cityOf(i.value.address) == city) i.point
+        if (region != null
+            ? i.value.regionId == region
+            : i.value.cityName == city)
+          i.point
     ], maxZoom: 15);
   }
 
-  /// Чипы «Все · Абиджан · Белград · …» с числом открытых заявок.
+  /// Чипы регионов (шаг 16): «Все · Европа · СНГ · …» с числом открытых
+  /// заявок; null — регионов нет (тогда чипы городов).
+  List<(String, String, List<Obj>)>? _regionChipList() {
+    final chips = regionChips([for (final i in _items) i.value],
+        regionOf: (Obj o) => o.regionId,
+        regions: [for (final r in _regions) (id: r.id, name: r.name)]);
+    if (chips == null) return null;
+    return [for (final c in chips) ('r:${c.id}', c.name, c.items)];
+  }
+
+  /// Чипы «Все · Абиджан · Белград · …» (или регионы) с числом открытых
+  /// заявок.
   Widget _cityChips(AppLocalizations l) {
-    final groups = groupObjectsByCity([for (final i in _items) i.value])
-        .where((g) => g.city.isNotEmpty)
-        .toList();
+    final groups = _regionChipList() ??
+        [
+          for (final g
+              in groupObjectsByCity([for (final i in _items) i.value]))
+            if (g.city.isNotEmpty) (g.city, g.city, g.items)
+        ];
     if (groups.length < 2) return const SizedBox.shrink();
     int open(Iterable<Obj> list) =>
         list.fold(0, (sum, o) => sum + _statsOf(o.id).open);
@@ -344,7 +374,7 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
                 onTap: () => _showCity(city)),
           ),
         );
-    final all = open([for (final g in groups) ...g.items]);
+    final all = open([for (final i in _items) i.value]);
     // Чипы не уходят под кнопки карты: строка обрезается и гаснет у края.
     return AppFadingScroll(
       child: Padding(
@@ -352,12 +382,9 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
         padding: const EdgeInsetsDirectional.fromSTEB(2, 2, 6, 8),
         child: Row(children: [
           chip(null, all > 0 ? l.cityCount(l.cityAll, all) : l.cityAll),
-          for (final g in groups)
-            chip(
-                g.city,
-                open(g.items) > 0
-                    ? l.cityCount(g.city, open(g.items))
-                    : g.city),
+          for (final (key, name, items) in groups)
+            chip(key,
+                open(items) > 0 ? l.cityCount(name, open(items)) : name),
         ]),
       ),
     );
@@ -670,8 +697,8 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
           ),
         if (listed.isNotEmpty && area is! _CircleArea)
           // Секции по городам: «МОСКВА · 5».
-          for (final g in groupByCity(listed,
-              address: (e) => e.$1.address, name: (e) => e.$1.name))
+          for (final g in groupByCityName(listed,
+              city: (e) => e.$1.cityName, name: (e) => e.$1.name))
             AppGroup(
               header: l.cityCount(
                   g.city.isEmpty ? l.cityNone : g.city, g.items.length),
@@ -1055,7 +1082,7 @@ class _ClusteredMarkers extends StatelessWidget {
     final zoom = MapCamera.of(context).zoom;
     // Мелкий масштаб — один кружок на город с подписью; крупнее — по сетке.
     final clusters =
-        clusterMap(items, zoom, cityOf: (Obj o) => cityOf(o.address));
+        clusterMap(items, zoom, cityOf: (Obj o) => o.cityName);
     // Подписи городов не наезжают на соседние кружки и подписи.
     final l = context.l10n;
     final labels = cityLabelPlacement(clusters, zoom,

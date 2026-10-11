@@ -12,8 +12,9 @@ enum OrderSort { newest, oldest, due, priority, status, object }
 /// Быстрые пресеты над фильтром: сегменты «Все / Открытые / Просрочено».
 enum OrderSegment { all, open, overdue }
 
-/// Тип заявки: разовая или повторяющаяся (work_orders.recurrence).
-enum RecurrenceFilter { once, recurring }
+/// Тип заявки: разовая, повторяющаяся (work_orders.recurrence) или задача
+/// периода ППР (recurrence.kind = 'ppr', шаг 16).
+enum RecurrenceFilter { once, recurring, ppr }
 
 /// Один выбранный фильтр — одна таблетка в строке применённых фильтров и
 /// одна единица в счётчике «Фильтры · N» ([OrderFilter.activeKeys]).
@@ -368,7 +369,11 @@ class OrderFilter {
       case RecurrenceFilter.once:
         out.add(const ServerCond('recurrence', 'is', 'null'));
       case RecurrenceFilter.recurring:
-        out.add(const ServerCond('recurrence', 'not.is', 'null'));
+        out
+          ..add(const ServerCond('recurrence', 'not.is', 'null'))
+          ..add(const ServerCond('recurrence->>kind', 'neq', 'ppr'));
+      case RecurrenceFilter.ppr:
+        out.add(const ServerCond('recurrence->>kind', 'eq', 'ppr'));
       case null:
         break;
     }
@@ -439,7 +444,10 @@ class OrderFilter {
     }
     if (layerIds.isNotEmpty && !layerIds.contains(w.layerId)) return false;
     if (recurrence == RecurrenceFilter.once && w.recurring) return false;
-    if (recurrence == RecurrenceFilter.recurring && !w.recurring) return false;
+    if (recurrence == RecurrenceFilter.recurring && (!w.recurring || w.isPpr)) {
+      return false;
+    }
+    if (recurrence == RecurrenceFilter.ppr && !w.isPpr) return false;
     if (channels.isNotEmpty && !channels.contains(w.inputChannel)) return false;
     if (needsPhoto && !w.requiresPhoto) return false;
     if (returned && w.returnCount <= 0) return false;

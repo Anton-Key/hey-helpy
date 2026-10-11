@@ -8,11 +8,17 @@ import '../../core/language_picker.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/locale_controller.dart';
 import '../../models/profile.dart';
+import '../../models/user_role.dart';
+import '../access/zone_editor.dart';
+import '../access/zone_logic.dart';
+import '../access/zone_repository.dart';
 import '../auth/auth_repository.dart';
 import '../directory/directory.dart';
 import '../history/history_screen.dart';
 import '../notifications/notification_repository.dart';
 import '../notifications/notifications_screen.dart';
+import '../ppr/ppr_repository.dart';
+import '../ppr/ppr_tab.dart';
 import '../profile/company_screen.dart';
 import '../profile/profile_repository.dart';
 import '../profile/settings_screen.dart';
@@ -46,6 +52,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Название компании — таблетка «Компания · роль» на ПК.
   String? _companyName;
+
+  /// Зона доступа менеджера словами («Климат, Москва»); null — вся компания.
+  String? _zoneText;
 
   /// ПК: выбор «Свернуть меню» (null — по ширине окна).
   bool? _railPref;
@@ -99,6 +108,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final p = await _auth.fetchMyProfile();
     if (!mounted) return;
     setState(() => _profile = p);
+    // ППР: задачи текущего периода создаются при входе менеджера (не чаще
+    // раза в 10 минут; без миграции 0015 — молча ничего).
+    if (p?.role.canSeeReports == true) {
+      PprRepository().generate().ignore();
+    }
     final cid = p?.companyId;
     if (cid != null) {
       try {
@@ -109,6 +123,24 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
     await _loadUnread();
+    if (p?.role == UserRole.manager) await _loadZone();
+  }
+
+  /// Своя зона доступа (шаг 17) — для таблетки роли на ПК. Без 0016 или
+  /// без зон — пусто.
+  Future<void> _loadZone() async {
+    try {
+      final rows = await ZoneRepository().myZones();
+      if (rows.isEmpty || isWholeCompany(rows)) {
+        if (mounted) setState(() => _zoneText = null);
+        return;
+      }
+      final refs = await ZoneRefs.load(rows);
+      if (!mounted) return;
+      setState(() => _zoneText = zonesShortText(rows, refs.names(context.l10n)));
+    } catch (e) {
+      debugPrint('Zone: $e');
+    }
   }
 
   /// Открыть экран поверх: на ПК — справа от бокового меню.
@@ -303,6 +335,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final l = context.l10n;
     final role = l.role(p.role);
     final company = _companyName;
+    final zone = _zoneText;
+    if (zone != null) {
+      final text = l.zonePill(company ?? '', role, zone);
+      // Полностью — в подсказке: в таблетке длинная зона обрезается.
+      return Tooltip(message: text, child: AppContextPill(text));
+    }
     return AppContextPill(
         company == null ? role : l.navCompanyRole(company, role));
   }
@@ -354,15 +392,27 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    // Разделы: 0 — главная, 1 — история, 2 — отчёты, 3 — профиль.
+    // Разделы: 0 — главная, 1 — история, 2 — отчёты, 3 — профиль,
+    // 4 — ППР (только на ПК; на телефоне ППР — вкладка «Главной»).
     // «Отчёты» — только менеджеру и администратору (данные всё равно
     // ограничивает RLS в базе).
     final showReports = _profile?.role.canSeeReports == true;
-    final sections = [0, 1, if (showReports) 2, 3];
-    final section = sections.contains(_section) ? _section : 0;
     final layout =
         appNavLayoutFor(MediaQuery.sizeOf(context).width, collapsed: _railPref);
     final desktop = layout != AppNavLayout.bottom;
+    final sections = desktop
+        ? [0, 4, 1, if (showReports) 2, 3]
+        : [0, 1, if (showReports) 2, 3];
+    var section = _section;
+    // Окно сузили на вкладке «ППР» ПК → вкладка «ППР» телефона, и наоборот.
+    if (!desktop && section == 4) {
+      section = 0;
+      _tab = 3;
+    } else if (desktop && section == 0 && _tab == 3) {
+      section = 4;
+      _tab = 0;
+    }
+    if (!sections.contains(section)) section = 0;
     final body = _body(section);
     Widget chrome(Widget child) => HomeChrome(
           unread: _unread,
@@ -427,6 +477,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   label: l.navHome,
                   badge: _actions.overdue),
               AppNavItem(
+                  icon: AppIcons.calendar,
+                  activeIcon: AppIcons.calendar,
+                  label: l.tabPpr),
+              AppNavItem(
                   icon: AppIcons.history,
                   activeIcon: AppIcons.historyActive,
                   label: l.navHistory),
@@ -470,10 +524,14 @@ class _HomeScreenState extends State<HomeScreen> {
         return const ReportsScreen();
       case 3:
         return _profileView();
+      case 4:
+        return const PprTab();
       default:
         switch (_tab) {
           case 1:
             return const ContractorsTab();
+          case 3:
+            return const PprTab();
           case 2:
             return ObjectsTab(
                 onShowOrders: (o) => setState(() {

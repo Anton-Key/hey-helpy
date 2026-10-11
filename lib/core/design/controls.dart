@@ -117,12 +117,14 @@ class SegmentedControl<T> extends StatelessWidget {
     final index = segments.indexWhere((s) => s.value == selected);
     // Узкие сегменты (телефон 360, три сегмента с числами) — меньше поля,
     // чтобы «Просрочено · 7» помещалось целиком.
-    Widget cell(int i, {double pad = 10}) {
+    // Четыре сегмента на 360 («Заявки | ППР | Подрядчики | Локации») —
+    // шрифт на пункт меньше, чтобы подписи не обрезались.
+    Widget cell(int i, {double pad = 10, double fontSize = 13}) {
       final s = segments[i];
       final on = i == index;
       final style = AppText.footnote.copyWith(
           color: AppColors.ink,
-          fontSize: 13,
+          fontSize: fontSize,
           fontWeight: on ? FontWeight.w600 : FontWeight.w500);
       return Pressable(
         onTap: on ? () {} : () => onChanged(s.value),
@@ -136,9 +138,13 @@ class SegmentedControl<T> extends StatelessWidget {
               Icon(s.icon, size: 16, color: AppColors.ink),
               const SizedBox(width: 5),
             ],
+            // Узкий экран (360): подпись чуть уменьшается, а не обрезается
+            // («Просрочено · 10», а не «Просрочено · …»).
             Flexible(
-              child: Text(s.label,
-                  maxLines: 1, overflow: TextOverflow.ellipsis, style: style),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(s.label, maxLines: 1, style: style),
+              ),
             ),
           ]),
         ),
@@ -177,7 +183,9 @@ class SegmentedControl<T> extends StatelessWidget {
             ),
           Row(children: [
             for (var i = 0; i < segments.length; i++)
-              Expanded(child: cell(i, pad: w < 120 ? 3 : 10)),
+              Expanded(
+                  child: cell(i,
+                      pad: w < 120 ? 3 : 10, fontSize: w < 88 ? 12 : 13)),
           ]),
         ]);
       }),

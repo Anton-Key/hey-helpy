@@ -267,19 +267,41 @@ class _FloorFormState extends State<_FloorForm> {
 }
 
 /// Шторка с одним полем (название помещения, переименование).
+/// [allowEmpty] — пустое поле можно сохранить (например, убрать номер
+/// помещения): вернётся ''. [maxLength] — предел длины.
 Future<String?> askText(BuildContext context,
-    {required String title, String initial = '', String? label}) {
+    {required String title,
+    String initial = '',
+    String? label,
+    String? hint,
+    bool allowEmpty = false,
+    int maxLength = 120}) {
   return showAppSheet<String>(
     context: context,
-    builder: (_) => _TextSheet(title: title, initial: initial, label: label),
+    builder: (_) => _TextSheet(
+        title: title,
+        initial: initial,
+        label: label,
+        hint: hint,
+        allowEmpty: allowEmpty,
+        maxLength: maxLength),
   );
 }
 
 class _TextSheet extends StatefulWidget {
-  const _TextSheet({required this.title, required this.initial, this.label});
+  const _TextSheet(
+      {required this.title,
+      required this.initial,
+      this.label,
+      this.hint,
+      this.allowEmpty = false,
+      this.maxLength = 120});
   final String title;
   final String initial;
   final String? label;
+  final String? hint;
+  final bool allowEmpty;
+  final int maxLength;
 
   @override
   State<_TextSheet> createState() => _TextSheetState();
@@ -297,7 +319,7 @@ class _TextSheetState extends State<_TextSheet> {
 
   void _done() {
     final t = _c.text.trim();
-    if (t.isEmpty) {
+    if (t.isEmpty && !widget.allowEmpty) {
       setState(() => _error = context.l10n.planNameRequired);
       return;
     }
@@ -321,9 +343,10 @@ class _TextSheetState extends State<_TextSheet> {
             child: TextField(
               controller: _c,
               autofocus: true,
-              maxLength: 120,
+              maxLength: widget.maxLength,
               decoration: InputDecoration(
                   labelText: widget.label ?? l.planNameLabel,
+                  hintText: widget.hint,
                   errorText: _error),
               onSubmitted: (_) => _done(),
             ),

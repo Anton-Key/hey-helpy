@@ -140,12 +140,15 @@ class AppButton extends StatelessWidget {
           width: expand ? double.infinity : null,
           padding: EdgeInsetsDirectional.symmetric(
               horizontal: small ? 14 : (kind == AppButtonKind.plain ? 8 : 22)),
-          alignment: Alignment.center,
+          // Container с alignment занимает всю ширину родителя — у кнопки
+          // «по размеру» (expand: false) центрируем через Center шириной по
+          // содержимому (шаг 18: в Wrap кнопки растягивались на всю строку).
+          alignment: expand ? Alignment.center : null,
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
-          child: content,
+          child: expand ? content : Center(widthFactor: 1, child: content),
         ),
       ),
     );

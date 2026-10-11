@@ -136,6 +136,7 @@ class OrderFilterLabels {
   List<String> moreItems(OrderFilter f) => [
         if (f.recurrence == RecurrenceFilter.once) l.filterOnce,
         if (f.recurrence == RecurrenceFilter.recurring) l.filterRecurring,
+        if (f.recurrence == RecurrenceFilter.ppr) l.filterPpr,
         for (final c in kChannels)
           if (f.channels.contains(c)) channel(c),
         if (f.needsPhoto) l.filterNeedsPhoto,
@@ -187,6 +188,7 @@ class OrderFilterLabels {
         FilterKey.recurrence => switch (f.recurrence) {
             RecurrenceFilter.once => l.filterOnce,
             RecurrenceFilter.recurring => l.filterRecurring,
+            RecurrenceFilter.ppr => l.filterPpr,
             null => null,
           },
         FilterKey.channel => multi(f.channels, channelOptions()),

@@ -102,6 +102,31 @@ void main() {
     expect(find.byType(InkWell), findsNothing);
   });
 
+  testWidgets('AppRow на 360: длинное значение не сжимает заголовок (шаг 18)',
+      (t) async {
+    await t.pumpWidget(_app(const Center(
+      child: SizedBox(
+        width: 328,
+        child: AppRow(
+            leading: LeadingIcon(AppIcons.map),
+            title: 'Адрес',
+            value: 'Белград, Савски венац, улица очень длинная (демо)'),
+      ),
+    )));
+    final title = t.getSize(find.text('Адрес'));
+    // Заголовок в одну строку (высота строки текста), а не «Адре / с».
+    expect(title.height, lessThan(30));
+  });
+
+  testWidgets('AppButton expand: false — по размеру подписи, не на всю ширину',
+      (t) async {
+    await t.pumpWidget(_app(Wrap(children: [
+      AppButton.secondary(
+          label: 'Готово', small: true, expand: false, onPressed: () {}),
+    ])));
+    expect(t.getSize(find.byType(AppButton)).width, lessThan(200));
+  });
+
   testWidgets('SectionHeader — прописными', (t) async {
     await t.pumpWidget(_app(const SectionHeader('Описание')));
     expect(find.text('ОПИСАНИЕ'), findsOneWidget);

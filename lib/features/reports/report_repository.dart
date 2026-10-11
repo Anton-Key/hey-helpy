@@ -1,22 +1,30 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/paging.dart';
+import '../../core/schema_compat.dart';
+
+/// Тип задачи в отчёте: разовая, повторяющаяся, ППР (задача периода плана).
+enum ReportKind { once, recurring, ppr }
 
 /// Период и фильтры отчёта. [to] — не включительно.
 class ReportQuery {
   final DateTime from;
   final DateTime to;
 
-  /// Объекты (несколько — например «весь город»); пусто — все.
+  /// Объекты (несколько — например «весь город» или «весь регион»); пусто — все.
   final Set<String> objectIds;
   final String? contractorId;
   final String? layerId;
+
+  /// Тип задачи; null — все.
+  final ReportKind? kind;
   const ReportQuery(
       {required this.from,
       required this.to,
       this.objectIds = const {},
       this.contractorId,
-      this.layerId});
+      this.layerId,
+      this.kind});
 }
 
 /// Заявка в отчёте: только то, что нужно для расчёта.
@@ -30,6 +38,12 @@ class ReportOrder {
   final String? workType;
   final String? contractorId;
   final bool recurring;
+
+  /// Помещение — для списка заявок в PDF.
+  final String? locationId;
+
+  /// Задача периода плана ППР (0015); null — обычная заявка.
+  final String? planId;
   final DateTime createdAt;
   final DateTime? startedAt;
   final DateTime? submittedAt;
@@ -51,6 +65,8 @@ class ReportOrder {
       this.workType,
       this.contractorId,
       this.recurring = false,
+      this.locationId,
+      this.planId,
       required this.createdAt,
       this.startedAt,
       this.submittedAt,
@@ -78,6 +94,8 @@ class ReportOrder {
       workType: m['work_type'] as String?,
       contractorId: m['assigned_contractor_id'] as String?,
       recurring: m['recurrence'] != null,
+      locationId: m['location_id'] as String?,
+      planId: m['plan_id'] as String?,
       createdAt: DateTime.parse('${m['created_at']}'),
       startedAt: DateTime.tryParse('${m['started_at']}'),
       submittedAt: DateTime.tryParse('${m['submitted_at']}'),
@@ -91,6 +109,14 @@ class ReportOrder {
 
   bool get accepted => status == 'done';
   bool get cancelled => status == 'cancelled';
+
+  /// Задача ППР (план регламентных работ).
+  bool get isPpr => planId != null;
+
+  /// Тип задачи для фильтра «Тип».
+  ReportKind get kind => isPpr
+      ? ReportKind.ppr
+      : (recurring ? ReportKind.recurring : ReportKind.once);
   bool get wasReturned => returnCount > 0 || status == 'returned';
 
   /// Работа сдана (на проверке или принята) — для доли с фото.
@@ -174,12 +200,20 @@ class ReportStats {
   int submitted = 0;
   int submittedWithPhotos = 0;
 
+  /// Задачи ППР (не отменённые) и из них принятые.
+  int pprTotal = 0;
+  int pprDone = 0;
+
   /// Норма визитов за период (дробная: за неделю при норме 2 в месяц ≈ 0,5);
   /// null — нормы нет.
   double? visitNorm;
 
   void addOrder(ReportOrder o, DateTime now) {
     total++;
+    if (o.isPpr && !o.cancelled) {
+      pprTotal++;
+      if (o.accepted) pprDone++;
+    }
     if (o.wasReturned) returned++;
     if (o.isOverdue(now)) overdue++;
     if (o.accepted) {
@@ -251,10 +285,19 @@ class Report {
 
   /// false — миграция 0010 ещё не применена, норм визитов в базе нет.
   final bool normsAvailable;
+
+  /// false — миграция 0015 ещё не применена: ППР нет (показывается «—»).
+  final bool pprAvailable;
   const Report(
       {required this.company,
       required this.contractors,
-      this.normsAvailable = true});
+      this.normsAvailable = true,
+      this.pprAvailable = true});
+
+  /// Все заявки отчёта, новые сверху.
+  List<ReportOrder> get orders => [
+        for (final c in contractors) ...c.orders,
+      ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   /// Сводит заявки, визиты и нормы в отчёт. Подрядчики — в порядке
   /// [contractorOrder], затем «без подрядчика».
@@ -265,6 +308,7 @@ class Report {
     required List<VisitNorm> norms,
     required List<String> contractorOrder,
     bool normsAvailable = true,
+    bool pprAvailable = true,
     DateTime? now,
   }) {
     final at = now ?? DateTime.now();
@@ -316,6 +360,7 @@ class Report {
     return Report(
       company: company,
       normsAvailable: normsAvailable,
+      pprAvailable: pprAvailable,
       contractors: [
         for (final id in ids)
           ContractorReport(
@@ -329,10 +374,119 @@ class Report {
   }
 }
 
+/// Регион компании (0015) — для блока «По регионам».
+class ReportRegion {
+  final String id;
+  final String name;
+  final int sort;
+  const ReportRegion({required this.id, required this.name, this.sort = 0});
+}
+
+/// Строка блока «По регионам»: [key] — id региона (или город, если регионов
+/// в компании нет); [label] — подпись; null-ключ — «Без региона» / «Без города».
+class RegionReport {
+  final String? key;
+  final String? label;
+  final ReportStats stats;
+  const RegionReport(
+      {required this.key, required this.label, required this.stats});
+}
+
+/// Сводка по регионам: заявки, в срок, просрочено, ППР. Если у компании
+/// есть регионы ([regions] не пусто) — по региону объекта, иначе по городу
+/// ([cityOf]). Порядок — как у регионов (sort, название), города — по
+/// алфавиту; «без региона / города» — в конце. Пустые регионы не выводятся.
+List<RegionReport> buildRegionReports({
+  required List<ReportOrder> orders,
+  required List<ReportRegion> regions,
+  required String? Function(String objectId) regionOf,
+  required String Function(String objectId) cityOf,
+  DateTime? now,
+}) {
+  final at = now ?? DateTime.now();
+  final byRegion = regions.isNotEmpty;
+  final names = {for (final r in regions) r.id: r.name};
+  final stats = <String?, ReportStats>{};
+  for (final o in orders) {
+    final oid = o.objectId;
+    String? key;
+    if (oid != null) {
+      if (byRegion) {
+        final r = regionOf(oid);
+        key = r != null && names.containsKey(r) ? r : null;
+      } else {
+        final c = cityOf(oid).trim();
+        key = c.isEmpty ? null : c;
+      }
+    }
+    stats.putIfAbsent(key, ReportStats.new).addOrder(o, at);
+  }
+  int regionRank(String id) {
+    final i = regions.indexWhere((r) => r.id == id);
+    return i < 0 ? regions.length : i;
+  }
+
+  final keys = stats.keys.toList()
+    ..sort((a, b) {
+      if (a == null || b == null) return a == null ? (b == null ? 0 : 1) : -1;
+      if (byRegion) return regionRank(a).compareTo(regionRank(b));
+      return a.toLowerCase().compareTo(b.toLowerCase());
+    });
+  return [
+    for (final k in keys)
+      RegionReport(
+          key: k,
+          label: k == null ? null : (byRegion ? names[k] : k),
+          stats: stats[k]!),
+  ];
+}
+
+/// Регионы в порядке показа (sort, затем название).
+List<ReportRegion> sortRegions(List<ReportRegion> list) => [...list]
+  ..sort((a, b) {
+    final s = a.sort.compareTo(b.sort);
+    return s != 0 ? s : a.name.toLowerCase().compareTo(b.name.toLowerCase());
+  });
+
 /// Данные отчёта. Все запросы идут под RLS: менеджер видит всю компанию,
 /// у остальных база отдаёт только их собственные заявки и визиты.
 class ReportRepository {
   final SupabaseClient _c = Supabase.instance.client;
+
+  /// Регионы компании (0015); до миграции — пусто.
+  Future<List<ReportRegion>> regions() => SchemaCompat.run<List<ReportRegion>>(
+        '0015',
+        () async {
+          final rows = await _c.from('regions').select('id,name,sort');
+          return sortRegions([
+            for (final r in rows)
+              ReportRegion(
+                  id: r['id'] as String,
+                  name: (r['name'] ?? '') as String,
+                  sort: (r['sort'] as num?)?.toInt() ?? 0),
+          ]);
+        },
+        legacy: () async => const <ReportRegion>[],
+      );
+
+  /// Название компании и имя текущего пользователя — для шапки PDF.
+  Future<({String? company, String? me})> header() async {
+    final uid = _c.auth.currentUser?.id;
+    if (uid == null) return (company: null, me: null);
+    final p = await _c
+        .from('profiles')
+        .select('full_name,company_id')
+        .eq('id', uid)
+        .maybeSingle();
+    final cid = p?['company_id'] as String?;
+    final c = cid == null
+        ? null
+        : await _c.from('companies').select('name').eq('id', cid).maybeSingle();
+    return (
+      company: c?['name'] as String?,
+      me: (p?['full_name'] as String?) ?? _c.auth.currentUser?.email
+    );
+  }
 
   Future<Report> load(ReportQuery q,
       {required List<String> contractorOrder}) async {
@@ -408,14 +562,23 @@ class ReportRepository {
           ),
     ];
 
+    // select() без списка полей: plan_id есть только после 0015.
+    final pprAvailable = orderRows.isEmpty
+        ? SchemaCompat.has('0015') != false
+        : orderRows.first.containsKey('plan_id');
+    final orders = [
+      for (final r in orderRows)
+        ReportOrder.fromMap(r,
+            hasBefore: before.contains(r['id']),
+            hasAfter: after.contains(r['id'])),
+    ];
     return Report.build(
       query: q,
       orders: [
-        for (final r in orderRows)
-          ReportOrder.fromMap(r,
-              hasBefore: before.contains(r['id']),
-              hasAfter: after.contains(r['id'])),
+        for (final o in orders)
+          if (q.kind == null || o.kind == q.kind) o,
       ],
+      pprAvailable: pprAvailable,
       visits: [for (final r in visitRows) ReportVisit.fromMap(r)],
       norms: norms,
       contractorOrder: contractorOrder,

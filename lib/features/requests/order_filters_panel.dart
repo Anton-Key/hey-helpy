@@ -434,6 +434,7 @@ class _OrderFiltersPanelState extends State<OrderFiltersPanel> {
               AppPanelGroup(header: l.filterType, children: [
                 rec(RecurrenceFilter.once, l.filterOnce),
                 rec(RecurrenceFilter.recurring, l.filterRecurring),
+                rec(RecurrenceFilter.ppr, l.filterPpr),
               ]),
               const SizedBox(height: AppSpace.group),
               AppPanelGroup(header: l.filterOptions, children: [

@@ -41,7 +41,8 @@ class HomeChrome extends InheritedWidget {
   final int unread;
   final VoidCallback? onBell;
 
-  /// Вкладка раздела «Главная»: 0 — заявки, 1 — подрядчики, 2 — локации.
+  /// Вкладка раздела «Главная»: 0 — заявки, 1 — подрядчики, 2 — локации,
+  /// 3 — ППР (на телефоне; на ПК ППР — раздел бокового меню).
   final int tab;
   final ValueChanged<int> onTab;
 
@@ -93,9 +94,12 @@ class _MainTabs extends StatelessWidget {
       padding: const EdgeInsetsDirectional.fromSTEB(
           AppSpace.screen, 0, AppSpace.screen, 10),
       child: ContentWidth(
+        // Телефон: «Заявки | ППР | Подрядчики | Локации» (ППР — вкладка 3);
+        // на ПК «ППР» — отдельный пункт бокового меню.
         child: SegmentedControl<int>(
           segments: [
             Segment(0, l.tabRequests),
+            if (!chrome.desktop) Segment(3, l.tabPpr),
             Segment(1, l.tabContractors),
             Segment(2, l.tabLocations),
           ],

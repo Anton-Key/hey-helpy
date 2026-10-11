@@ -4154,6 +4154,2178 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не срабатывают, когда курсор в поле ввода.'**
   String get hotkeyNote;
+
+  /// Экран нового раздела на базе без нужной миграции (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужна миграция {number}: раздел заработает, когда её применят в базе (Actions → «Apply migration»).'**
+  String migrationNeeded(String number);
+
+  /// Вкладка и пункт меню «ППР» — планово-предупредительные (регламентные) работы (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get tabPpr;
+
+  /// No description provided for @pprTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регламентные работы'**
+  String get pprTitle;
+
+  /// No description provided for @pprSummary.
+  ///
+  /// In ru, this message translates to:
+  /// **'{month}: выполнено {done} из {total}'**
+  String pprSummary(String month, int done, int total);
+
+  /// No description provided for @pprEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Планов ППР пока нет. Менеджер добавляет их кнопкой «+».'**
+  String get pprEmpty;
+
+  /// No description provided for @pprEmptyFiltered.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет планов по выбранным фильтрам'**
+  String get pprEmptyFiltered;
+
+  /// No description provided for @pprLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить планы ППР. Проверьте интернет и попробуйте ещё раз.'**
+  String get pprLoadFailed;
+
+  /// No description provided for @pprStateDone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнено'**
+  String get pprStateDone;
+
+  /// No description provided for @pprStateInProgress.
+  ///
+  /// In ru, this message translates to:
+  /// **'В работе'**
+  String get pprStateInProgress;
+
+  /// No description provided for @pprStateNotStarted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не начато'**
+  String get pprStateNotStarted;
+
+  /// No description provided for @pprStateOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просрочено'**
+  String get pprStateOverdue;
+
+  /// No description provided for @pprStatePaused.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приостановлен'**
+  String get pprStatePaused;
+
+  /// No description provided for @pprEveryMonth.
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый месяц'**
+  String get pprEveryMonth;
+
+  /// No description provided for @pprEveryQuarter.
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый квартал'**
+  String get pprEveryQuarter;
+
+  /// No description provided for @pprEveryHalfYear.
+  ///
+  /// In ru, this message translates to:
+  /// **'каждые полгода'**
+  String get pprEveryHalfYear;
+
+  /// No description provided for @pprEveryYear.
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый год'**
+  String get pprEveryYear;
+
+  /// No description provided for @pprEveryDays.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{каждый {count} день} few{каждые {count} дня} other{каждые {count} дней}}'**
+  String pprEveryDays(int count);
+
+  /// No description provided for @pprKindMonth.
+  ///
+  /// In ru, this message translates to:
+  /// **'Месяц'**
+  String get pprKindMonth;
+
+  /// No description provided for @pprKindQuarter.
+  ///
+  /// In ru, this message translates to:
+  /// **'Квартал'**
+  String get pprKindQuarter;
+
+  /// No description provided for @pprKindHalfYear.
+  ///
+  /// In ru, this message translates to:
+  /// **'Полгода'**
+  String get pprKindHalfYear;
+
+  /// No description provided for @pprKindYear.
+  ///
+  /// In ru, this message translates to:
+  /// **'Год'**
+  String get pprKindYear;
+
+  /// No description provided for @pprKindDays.
+  ///
+  /// In ru, this message translates to:
+  /// **'N дней'**
+  String get pprKindDays;
+
+  /// Квартал: по-русски q — римская цифра (IV), по-английски — число (4)
+  ///
+  /// In ru, this message translates to:
+  /// **'{q} кв. {year}'**
+  String pprQuarterLabel(String q, String year);
+
+  /// Полугодие: по-русски h — римская цифра (II), по-английски — число (2)
+  ///
+  /// In ru, this message translates to:
+  /// **'{h} полугодие {year}'**
+  String pprHalfLabel(String h, String year);
+
+  /// No description provided for @pprYearLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'{year} год'**
+  String pprYearLabel(String year);
+
+  /// No description provided for @pprTaskLine.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР · {period} · до {due}'**
+  String pprTaskLine(String period, String due);
+
+  /// No description provided for @pprDoWithin.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнить в течение периода'**
+  String get pprDoWithin;
+
+  /// No description provided for @pprPeriodRow.
+  ///
+  /// In ru, this message translates to:
+  /// **'Период ППР'**
+  String get pprPeriodRow;
+
+  /// No description provided for @pprTag.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get pprTag;
+
+  /// No description provided for @pprKindOrder.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get pprKindOrder;
+
+  /// No description provided for @filterPpr.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get filterPpr;
+
+  /// No description provided for @pprFilters.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры'**
+  String get pprFilters;
+
+  /// No description provided for @pprFiltersCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры · {count}'**
+  String pprFiltersCount(int count);
+
+  /// No description provided for @pprFilterObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get pprFilterObject;
+
+  /// No description provided for @pprFilterSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get pprFilterSystem;
+
+  /// No description provided for @pprFilterContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get pprFilterContractor;
+
+  /// No description provided for @pprFilterState.
+  ///
+  /// In ru, this message translates to:
+  /// **'Статус периода'**
+  String get pprFilterState;
+
+  /// No description provided for @pprFiltersShow.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =0{Нет планов} one{Показать {count} план} few{Показать {count} плана} other{Показать {count} планов}}'**
+  String pprFiltersShow(int count);
+
+  /// No description provided for @pprCardPeriodicity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Периодичность'**
+  String get pprCardPeriodicity;
+
+  /// No description provided for @pprCardStarts.
+  ///
+  /// In ru, this message translates to:
+  /// **'с {date}'**
+  String pprCardStarts(String date);
+
+  /// No description provided for @pprCardCurrent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Текущий период'**
+  String get pprCardCurrent;
+
+  /// No description provided for @pprCardChecklist.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чек-лист'**
+  String get pprCardChecklist;
+
+  /// No description provided for @pprCardHistory.
+  ///
+  /// In ru, this message translates to:
+  /// **'История периодов'**
+  String get pprCardHistory;
+
+  /// No description provided for @pprCardHistoryEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задач по плану ещё не было'**
+  String get pprCardHistoryEmpty;
+
+  /// No description provided for @pprCardNoTask.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задача периода ещё не создана'**
+  String get pprCardNoTask;
+
+  /// No description provided for @pprAcceptedBy.
+  ///
+  /// In ru, this message translates to:
+  /// **'Принято {date} · {name}'**
+  String pprAcceptedBy(String date, String name);
+
+  /// No description provided for @pprAcceptedAt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Принято {date}'**
+  String pprAcceptedAt(String date);
+
+  /// No description provided for @pprNoContractor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не закреплён за системой на этом объекте'**
+  String get pprNoContractor;
+
+  /// No description provided for @pprAsset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get pprAsset;
+
+  /// No description provided for @pprEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get pprEdit;
+
+  /// No description provided for @pprPause.
+  ///
+  /// In ru, this message translates to:
+  /// **'Приостановить'**
+  String get pprPause;
+
+  /// No description provided for @pprResume.
+  ///
+  /// In ru, this message translates to:
+  /// **'Возобновить'**
+  String get pprResume;
+
+  /// No description provided for @pprDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить план'**
+  String get pprDelete;
+
+  /// No description provided for @pprDeleteConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить план «{title}»? Это нельзя отменить.'**
+  String pprDeleteConfirm(String title);
+
+  /// No description provided for @pprDeleteHasTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'У плана уже есть задачи — его можно только приостановить.'**
+  String get pprDeleteHasTasks;
+
+  /// No description provided for @pprPaused.
+  ///
+  /// In ru, this message translates to:
+  /// **'План приостановлен'**
+  String get pprPaused;
+
+  /// No description provided for @pprResumed.
+  ///
+  /// In ru, this message translates to:
+  /// **'План возобновлён'**
+  String get pprResumed;
+
+  /// No description provided for @pprDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'План удалён'**
+  String get pprDeleted;
+
+  /// No description provided for @pprSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'План сохранён'**
+  String get pprSaved;
+
+  /// No description provided for @pprGenerated.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{Создана {count} задача ППР} few{Созданы {count} задачи ППР} other{Создано {count} задач ППР}}'**
+  String pprGenerated(int count);
+
+  /// No description provided for @pprFormNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый план ППР'**
+  String get pprFormNew;
+
+  /// No description provided for @pprFormEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'План ППР'**
+  String get pprFormEdit;
+
+  /// No description provided for @pprFormTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get pprFormTitle;
+
+  /// No description provided for @pprFormTitleHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например: ТО кондиционеров'**
+  String get pprFormTitleHint;
+
+  /// No description provided for @pprFormDescription.
+  ///
+  /// In ru, this message translates to:
+  /// **'Описание'**
+  String get pprFormDescription;
+
+  /// No description provided for @pprFormDescriptionHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что входит в работу'**
+  String get pprFormDescriptionHint;
+
+  /// No description provided for @pprFormObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get pprFormObject;
+
+  /// No description provided for @pprFormPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get pprFormPlace;
+
+  /// No description provided for @pprFormAsset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get pprFormAsset;
+
+  /// No description provided for @pprFormNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не выбрано'**
+  String get pprFormNone;
+
+  /// No description provided for @pprFormSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get pprFormSystem;
+
+  /// No description provided for @pprFormPeriod.
+  ///
+  /// In ru, this message translates to:
+  /// **'Периодичность'**
+  String get pprFormPeriod;
+
+  /// No description provided for @pprFormDays.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дней в периоде'**
+  String get pprFormDays;
+
+  /// No description provided for @pprFormStarts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начало'**
+  String get pprFormStarts;
+
+  /// No description provided for @pprFormChecklist.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чек-лист'**
+  String get pprFormChecklist;
+
+  /// No description provided for @pprFormChecklistHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'По пункту в строке'**
+  String get pprFormChecklistHint;
+
+  /// No description provided for @pprFormPhoto.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото «после» обязательно'**
+  String get pprFormPhoto;
+
+  /// No description provided for @pprFormRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заполните название, объект и систему'**
+  String get pprFormRequired;
+
+  /// No description provided for @pprFormDaysInvalid.
+  ///
+  /// In ru, this message translates to:
+  /// **'Число дней — от 1 до 3660'**
+  String get pprFormDaysInvalid;
+
+  /// No description provided for @pprDuplicate.
+  ///
+  /// In ru, this message translates to:
+  /// **'План с таким названием на этом объекте уже есть'**
+  String get pprDuplicate;
+
+  /// No description provided for @pprChooseObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите объект'**
+  String get pprChooseObject;
+
+  /// No description provided for @pprInfoTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР — регламентные работы'**
+  String get pprInfoTitle;
+
+  /// No description provided for @pprInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'План — регулярная работа на объекте: ТО, осмотр, уборка. Период — месяц, квартал, полгода, год или N дней.'**
+  String get pprInfo1;
+
+  /// No description provided for @pprInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задача текущего периода создаётся сама, когда менеджер открывает приложение (не чаще раза в 10 минут) или нажимает «Обновить». Подрядчик назначается по системе и объекту.'**
+  String get pprInfo2;
+
+  /// No description provided for @pprInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок задачи — последний день периода. Не принята к концу периода — просрочена.'**
+  String get pprInfo3;
+
+  /// No description provided for @pprInfo4.
+  ///
+  /// In ru, this message translates to:
+  /// **'План с задачами нельзя удалить — его можно приостановить.'**
+  String get pprInfo4;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Печать отчёта'**
+  String get reportPrint;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Готовим PDF…'**
+  String get reportPrintPreparing;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сформировать PDF. Попробуйте ещё раз.'**
+  String get reportPrintFailed;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'PDF собирается по тем же фильтрам, что сейчас на экране: период, объекты, регион, подрядчик, вид работ и тип задачи.'**
+  String get reportPrintInfo1;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'В браузере откроется окно печати — там же можно выбрать «Сохранить как PDF».'**
+  String get reportPrintInfo2;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'На телефоне файл можно отправить в мессенджер или почту либо распечатать.'**
+  String get reportPrintInfo3;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'В отчёте: показатели, таблицы «По регионам» и «По подрядчикам», список заявок с номерами страниц.'**
+  String get reportPrintInfo4;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион'**
+  String get reportFilterRegion;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип'**
+  String get reportFilterKind;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Разовые'**
+  String get reportKindOnce;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Повторяющиеся'**
+  String get reportKindRecurring;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР'**
+  String get reportKindPpr;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы'**
+  String get reportRegionsGroup;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Страны'**
+  String get reportCountriesGroup;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'По регионам'**
+  String get reportByRegion;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'По городам'**
+  String get reportByCity;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Без региона'**
+  String get reportNoRegion;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Без города'**
+  String get reportNoCity;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'ППР выполнено'**
+  String get reportPprDone;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'{done} из {total}'**
+  String reportPprOf(String done, String total);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Отчёт по заявкам и подрядчикам'**
+  String get pdfTitle;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Компания: {name}'**
+  String pdfCompany(String name);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Период: {period}'**
+  String pdfPeriod(String period);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Фильтры: {filters}'**
+  String pdfFilters(String filters);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'все объекты, подрядчики и виды работ'**
+  String get pdfNoFilters;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформирован: {date}, {name}'**
+  String pdfGenerated(String date, String name);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'стр. {page} из {pages}'**
+  String pdfPageOf(String page, String pages);
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявки'**
+  String get pdfOrders;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'За период заявок нет.'**
+  String get pdfOrdersEmpty;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'№'**
+  String get pdfColNumber;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата'**
+  String get pdfColDate;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get pdfColObject;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get pdfColPlace;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get pdfColLayer;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get pdfColContractor;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Статус'**
+  String get pdfColStatus;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок'**
+  String get pdfColDue;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион'**
+  String get pdfColRegion;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'Город'**
+  String get pdfColCity;
+
+  /// Шаг 16 (E): отчёты, PDF
+  ///
+  /// In ru, this message translates to:
+  /// **'HeyHelpy_Отчёт_{period}.pdf'**
+  String pdfFileName(String period);
+
+  /// No description provided for @roomCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер помещения'**
+  String get roomCode;
+
+  /// No description provided for @roomCodeHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, 305 или 12А'**
+  String get roomCodeHint;
+
+  /// No description provided for @roomCodeTaken.
+  ///
+  /// In ru, this message translates to:
+  /// **'Такой номер уже есть в этом объекте'**
+  String get roomCodeTaken;
+
+  /// No description provided for @roomCodeNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без номера'**
+  String get roomCodeNone;
+
+  /// No description provided for @areaDraw.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обвести область'**
+  String get areaDraw;
+
+  /// No description provided for @areaEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить область'**
+  String get areaEdit;
+
+  /// No description provided for @areaDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить область'**
+  String get areaDelete;
+
+  /// No description provided for @areaDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Область удалена'**
+  String get areaDeleted;
+
+  /// Шапка режима рисования области помещения (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Область: {name}'**
+  String areaTitle(String name);
+
+  /// No description provided for @areaHintPolygon.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажимайте по углам помещения. Точки можно двигать.'**
+  String get areaHintPolygon;
+
+  /// No description provided for @areaHintRect.
+  ///
+  /// In ru, this message translates to:
+  /// **'Протяните прямоугольник по помещению. Точки можно двигать.'**
+  String get areaHintRect;
+
+  /// No description provided for @areaModePolygon.
+  ///
+  /// In ru, this message translates to:
+  /// **'По углам'**
+  String get areaModePolygon;
+
+  /// No description provided for @areaModeRect.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прямоугольник'**
+  String get areaModeRect;
+
+  /// No description provided for @areaUndoPoint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменить точку'**
+  String get areaUndoPoint;
+
+  /// No description provided for @areaNeedPoints.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужно хотя бы 3 точки'**
+  String get areaNeedPoints;
+
+  /// No description provided for @roomInfoTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер и область помещения'**
+  String get roomInfoTitle;
+
+  /// No description provided for @roomInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер помещения («305») виден в списках и на плане, по нему ищут и его понимает голосовая заявка: «течёт кран в 305-й».'**
+  String get roomInfo1;
+
+  /// No description provided for @roomInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер уникален внутри объекта. Пустой номер — без номера.'**
+  String get roomInfo2;
+
+  /// No description provided for @roomInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Область — контур помещения на плане. Режим расстановки → помещение → «Обвести область»: нажимайте по углам или протяните прямоугольник, потом «Готово».'**
+  String get roomInfo3;
+
+  /// No description provided for @roomInfo4.
+  ///
+  /// In ru, this message translates to:
+  /// **'Область закрашена цветом заявок помещения; нажатие в любом месте области открывает помещение.'**
+  String get roomInfo4;
+
+  /// No description provided for @regionNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без региона'**
+  String get regionNone;
+
+  /// No description provided for @regionWhole.
+  ///
+  /// In ru, this message translates to:
+  /// **'Весь регион'**
+  String get regionWhole;
+
+  /// No description provided for @countryNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна не указана'**
+  String get countryNone;
+
+  /// No description provided for @geoWholeCity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Весь город: {city}'**
+  String geoWholeCity(String city);
+
+  /// No description provided for @geoWholeCountry.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вся страна: {country}'**
+  String geoWholeCountry(String country);
+
+  /// No description provided for @regionsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы'**
+  String get regionsTitle;
+
+  /// No description provided for @regionsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионов пока нет. Добавьте первый — например, «Европа».'**
+  String get regionsEmpty;
+
+  /// No description provided for @regionsLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить регионы'**
+  String get regionsLoadFailed;
+
+  /// No description provided for @regionAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый регион'**
+  String get regionAdd;
+
+  /// No description provided for @regionAddRow.
+  ///
+  /// In ru, this message translates to:
+  /// **'+ Новый регион'**
+  String get regionAddRow;
+
+  /// No description provided for @regionNameLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название региона'**
+  String get regionNameLabel;
+
+  /// No description provided for @regionNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, Европа'**
+  String get regionNameHint;
+
+  /// No description provided for @regionNameRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите название региона'**
+  String get regionNameRequired;
+
+  /// No description provided for @regionNameTooLong.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не больше 60 символов'**
+  String get regionNameTooLong;
+
+  /// No description provided for @regionRename.
+  ///
+  /// In ru, this message translates to:
+  /// **'Переименовать'**
+  String get regionRename;
+
+  /// No description provided for @regionMoveUp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выше'**
+  String get regionMoveUp;
+
+  /// No description provided for @regionMoveDown.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ниже'**
+  String get regionMoveDown;
+
+  /// No description provided for @regionMerge.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить с…'**
+  String get regionMerge;
+
+  /// No description provided for @regionDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить'**
+  String get regionDelete;
+
+  /// No description provided for @regionActions.
+  ///
+  /// In ru, this message translates to:
+  /// **'Действия с регионом «{name}»'**
+  String regionActions(String name);
+
+  /// No description provided for @regionSimilarTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожий регион уже есть'**
+  String get regionSimilarTitle;
+
+  /// No description provided for @regionSimilarText.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похоже, такой регион уже есть: «{name}» ({objects}). Использовать его?'**
+  String regionSimilarText(String name, String objects);
+
+  /// No description provided for @regionUseExisting.
+  ///
+  /// In ru, this message translates to:
+  /// **'Использовать «{name}»'**
+  String regionUseExisting(String name);
+
+  /// No description provided for @regionCreateAnyway.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё равно создать'**
+  String get regionCreateAnyway;
+
+  /// No description provided for @regionRenameAnyway.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё равно переименовать'**
+  String get regionRenameAnyway;
+
+  /// No description provided for @regionDuplicate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион с таким названием уже есть — выберите его из списка'**
+  String get regionDuplicate;
+
+  /// No description provided for @regionCreated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион добавлен'**
+  String get regionCreated;
+
+  /// No description provided for @regionRenamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион переименован'**
+  String get regionRenamed;
+
+  /// No description provided for @regionDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион удалён'**
+  String get regionDeleted;
+
+  /// No description provided for @regionMerged.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы объединены'**
+  String get regionMerged;
+
+  /// No description provided for @regionMergePick.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить «{name}» с…'**
+  String regionMergePick(String name);
+
+  /// No description provided for @regionMergeConfirmTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить регионы?'**
+  String get regionMergeConfirmTitle;
+
+  /// No description provided for @regionMergeConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'{objects} перейдут в «{into}», регион «{from}» будет удалён.'**
+  String regionMergeConfirm(String objects, String into, String from);
+
+  /// No description provided for @regionMergeAction.
+  ///
+  /// In ru, this message translates to:
+  /// **'Объединить'**
+  String get regionMergeAction;
+
+  /// No description provided for @regionMergeNoOther.
+  ///
+  /// In ru, this message translates to:
+  /// **'Других регионов нет — объединять не с чем'**
+  String get regionMergeNoOther;
+
+  /// No description provided for @regionDeleteConfirmTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить регион «{name}»?'**
+  String regionDeleteConfirmTitle(String name);
+
+  /// No description provided for @regionDeleteConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'У объектов ({objects}) регион станет пустым.'**
+  String regionDeleteConfirm(String objects);
+
+  /// No description provided for @regionOnlyManager.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы меняет менеджер компании'**
+  String get regionOnlyManager;
+
+  /// No description provided for @regionInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Один общий список регионов компании: в объекте регион выбирается из списка, а не вводится текстом.'**
+  String get regionInfo1;
+
+  /// No description provided for @regionInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожие названия («Европа» и «Европпа») приложение замечает и предлагает выбрать уже существующий регион.'**
+  String get regionInfo2;
+
+  /// No description provided for @regionInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Лишний регион можно объединить с нужным: его объекты перейдут, а он сам удалится.'**
+  String get regionInfo3;
+
+  /// No description provided for @regionInfo4.
+  ///
+  /// In ru, this message translates to:
+  /// **'Переименование сразу видно во всех объектах, фильтрах и отчётах.'**
+  String get regionInfo4;
+
+  /// No description provided for @regionPickTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион'**
+  String get regionPickTitle;
+
+  /// No description provided for @regionNotSet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не указан'**
+  String get regionNotSet;
+
+  /// No description provided for @regionManage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регионы компании'**
+  String get regionManage;
+
+  /// No description provided for @countryTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна'**
+  String get countryTitle;
+
+  /// No description provided for @countrySearchHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название или код страны'**
+  String get countrySearchHint;
+
+  /// No description provided for @countryNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна не найдена'**
+  String get countryNotFound;
+
+  /// No description provided for @geoCity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Город'**
+  String get geoCity;
+
+  /// No description provided for @geoCityHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, Белград'**
+  String get geoCityHint;
+
+  /// No description provided for @geoCitySimilarTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожий город уже есть'**
+  String get geoCitySimilarTitle;
+
+  /// No description provided for @geoCitySimilar.
+  ///
+  /// In ru, this message translates to:
+  /// **'В компании уже есть город «{name}». Использовать его?'**
+  String geoCitySimilar(String name);
+
+  /// No description provided for @geoCityKeep.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставить «{name}»'**
+  String geoCityKeep(String name);
+
+  /// No description provided for @geoCitySuggestions.
+  ///
+  /// In ru, this message translates to:
+  /// **'Города компании в этой стране'**
+  String get geoCitySuggestions;
+
+  /// No description provided for @geoEditTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Страна, город, регион'**
+  String get geoEditTitle;
+
+  /// No description provided for @geoEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить страну, город, регион'**
+  String get geoEdit;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование · {count}'**
+  String equipSectionTitle(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Название, номер, модель'**
+  String get equipSearchHint;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудования пока нет'**
+  String get equipEmpty;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить оборудование'**
+  String get equipAdd;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импорт из Excel / CSV'**
+  String get equipImport;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Без системы'**
+  String get equipNoSystem;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не найдено'**
+  String get equipNothingFound;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'{system} · {count}'**
+  String equipGroupTitle(String system, int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Новое оборудование'**
+  String get assetFormNewTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get assetFormEditTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get assetFieldName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, кондиционер переговорной'**
+  String get assetFieldNameHint;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get assetFieldSystem;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get assetFieldRoom;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите помещение'**
+  String get assetChooseRoom;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Инвентарный номер'**
+  String get assetFieldInventory;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Производитель'**
+  String get assetFieldManufacturer;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Модель'**
+  String get assetFieldModel;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Серийный номер'**
+  String get assetFieldSerial;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата ввода'**
+  String get assetFieldInstalled;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите название'**
+  String get assetNameRequired;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите помещение'**
+  String get assetRoomRequired;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование сохранено'**
+  String get assetSaved;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить. Проверьте связь и попробуйте ещё раз.'**
+  String get assetSaveFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала добавьте помещение в объект'**
+  String get assetNoPlaces;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Паспорт'**
+  String get assetCardPassport;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Где стоит'**
+  String get assetCardWhere;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get assetCardObject;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж'**
+  String get assetCardFloor;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Планы ППР'**
+  String get assetCardPlans;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет планов ППР'**
+  String get assetCardPlansEmpty;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявки · {count}'**
+  String assetCardOrders(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявок по этому оборудованию нет'**
+  String get assetCardOrdersEmpty;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать заявку'**
+  String get assetCreateOrder;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить оборудование'**
+  String get assetLoadFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get assetEdit;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый месяц'**
+  String get assetPeriodMonth;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'каждый квартал'**
+  String get assetPeriodQuarter;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'раз в полгода'**
+  String get assetPeriodHalfYear;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'раз в год'**
+  String get assetPeriodYear;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'каждые {days} дн.'**
+  String assetPeriodDays(int days);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'приостановлен'**
+  String get assetPlanPaused;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импорт оборудования'**
+  String get importTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать шаблон Excel'**
+  String get importTemplateXlsx;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать шаблон CSV'**
+  String get importTemplateCsv;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать файл (.xlsx, .csv)'**
+  String get importPickFile;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Первая строка — заголовки. Обязательны «Название» и «Помещение».'**
+  String get importFooter;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаблон сохранён'**
+  String get importTemplateSaved;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить шаблон'**
+  String get importTemplateFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось прочитать файл. Сохраните его как .xlsx или .csv (UTF-8) и попробуйте ещё раз.'**
+  String get importReadFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'В файле нет строк с оборудованием'**
+  String get importEmpty;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'В файле нет колонок: {columns}. Скачайте шаблон и перенесите данные в него.'**
+  String importMissingColumns(String columns);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get importColName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get importColRoom;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Строк: {total} · готово: {ok} · с ошибками: {bad}'**
+  String importSummary(int total, int ok, int bad);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать недостающие помещения ({count})'**
+  String importCreateRooms(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'С ошибками — не будут загружены'**
+  String get importErrorsTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово к импорту'**
+  String get importReadyTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Строка {line} · {name}'**
+  String importRowTitle(int line, String name);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'без названия'**
+  String get importNoRowName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'И ещё {count}'**
+  String importMore(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'нет названия'**
+  String get importIssueNoName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'не указано помещение'**
+  String get importIssueNoRoom;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'нет помещения «{room}»'**
+  String importIssueRoomNotFound(String room);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'нет системы «{system}»'**
+  String importIssueUnknownSystem(String system);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'инвентарный номер повторяется в файле'**
+  String get importIssueDupFile;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'такой инвентарный номер уже есть'**
+  String get importIssueDupDb;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'дата не распознана (нужно ГГГГ-ММ-ДД или ДД.ММ.ГГГГ)'**
+  String get importIssueBadDate;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'слишком длинное значение (больше 120 символов)'**
+  String get importIssueTooLong;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{Импортировать {count} строку} few{Импортировать {count} строки} other{Импортировать {count} строк}}'**
+  String importButton(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импортировано: {count}'**
+  String importDone(int count);
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импорт не выполнен — ничего не загружено. Проверьте связь и попробуйте ещё раз.'**
+  String get importFailed;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Импорт оборудования'**
+  String get importInfoTitle;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачайте шаблон Excel или CSV: первая строка — заголовки, вторая — пример (её можно удалить).'**
+  String get importInfo1;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Обязательны «Название» и «Помещение». Помещение — по номеру («305») или по названию, как в карточке объекта.'**
+  String get importInfo2;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'«Система» — как в видах работ (Климат, Электрика…). Дата ввода — ГГГГ-ММ-ДД или ДД.ММ.ГГГГ.'**
+  String get importInfo3;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Строки с ошибками не загружаются: исправьте их в файле и выберите файл ещё раз. Недостающие помещения можно создать при импорте.'**
+  String get importInfo4;
+
+  /// Имя файла шаблона импорта, без расширения (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'HeyHelpy_Оборудование_шаблон'**
+  String get importTemplateFileName;
+
+  /// Реестр оборудования (шаг 16)
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, КЛ-3-001'**
+  String get assetFieldInventoryHint;
+
+  /// Зона доступа менеджера (шаг 17, 0016)
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона доступа'**
+  String get zoneTitle;
+
+  /// No description provided for @zoneMenuRole.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сменить роль'**
+  String get zoneMenuRole;
+
+  /// No description provided for @zoneWholeCompany.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вся компания'**
+  String get zoneWholeCompany;
+
+  /// No description provided for @zoneWholeCompanyHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Видит все объекты и системы компании — как раньше.'**
+  String get zoneWholeCompanyHint;
+
+  /// No description provided for @zoneAllSystems.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все системы'**
+  String get zoneAllSystems;
+
+  /// No description provided for @zoneRules.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правила'**
+  String get zoneRules;
+
+  /// No description provided for @zoneRulesFooter.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правила складываются: видно всё, что подходит хотя бы под одно.'**
+  String get zoneRulesFooter;
+
+  /// No description provided for @zoneRuleAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить правило'**
+  String get zoneRuleAdd;
+
+  /// No description provided for @zoneRuleTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правило'**
+  String get zoneRuleTitle;
+
+  /// No description provided for @zoneRuleSystems.
+  ///
+  /// In ru, this message translates to:
+  /// **'Системы'**
+  String get zoneRuleSystems;
+
+  /// No description provided for @zoneRulePlaces.
+  ///
+  /// In ru, this message translates to:
+  /// **'Места'**
+  String get zoneRulePlaces;
+
+  /// No description provided for @zoneRuleAddPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать места'**
+  String get zoneRuleAddPlace;
+
+  /// No description provided for @zoneRuleRefine.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этаж или оборудование'**
+  String get zoneRuleRefine;
+
+  /// No description provided for @zoneRuleRefineTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уточнить место'**
+  String get zoneRuleRefineTitle;
+
+  /// No description provided for @zoneRuleWholeObject.
+  ///
+  /// In ru, this message translates to:
+  /// **'Весь объект'**
+  String get zoneRuleWholeObject;
+
+  /// No description provided for @zoneRuleFloors.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этажи'**
+  String get zoneRuleFloors;
+
+  /// No description provided for @zoneRuleAssets.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get zoneRuleAssets;
+
+  /// No description provided for @zoneRuleDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить правило'**
+  String get zoneRuleDelete;
+
+  /// No description provided for @zoneRuleEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите хотя бы одно место'**
+  String get zoneRuleEmpty;
+
+  /// No description provided for @zoneRulesEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте правило или выберите шаблон'**
+  String get zoneRulesEmpty;
+
+  /// No description provided for @zoneTemplates.
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаблоны'**
+  String get zoneTemplates;
+
+  /// No description provided for @zoneTemplateCompany.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вся компания'**
+  String get zoneTemplateCompany;
+
+  /// No description provided for @zoneTemplateSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Одна система во всех объектах'**
+  String get zoneTemplateSystem;
+
+  /// No description provided for @zoneTemplateRegion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регион целиком'**
+  String get zoneTemplateRegion;
+
+  /// No description provided for @zoneTemplatePickSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Какая система?'**
+  String get zoneTemplatePickSystem;
+
+  /// No description provided for @zoneTemplatePickRegion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Какой регион?'**
+  String get zoneTemplatePickRegion;
+
+  /// No description provided for @zoneNoRegions.
+  ///
+  /// In ru, this message translates to:
+  /// **'У компании нет регионов'**
+  String get zoneNoRegions;
+
+  /// No description provided for @zoneSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона доступа сохранена'**
+  String get zoneSaved;
+
+  /// No description provided for @zoneSaveDenied.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зону доступа меняет только администратор'**
+  String get zoneSaveDenied;
+
+  /// No description provided for @zoneLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить зону доступа. Проверьте интернет и попробуйте ещё раз.'**
+  String get zoneLoadFailed;
+
+  /// No description provided for @zonePill.
+  ///
+  /// In ru, this message translates to:
+  /// **'{company} · {role} · {zone}'**
+  String zonePill(String company, String role, String zone);
+
+  /// No description provided for @zoneInfoTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона доступа'**
+  String get zoneInfoTitle;
+
+  /// No description provided for @zoneInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'По умолчанию менеджер видит всю компанию — ничего настраивать не нужно.'**
+  String get zoneInfo1;
+
+  /// No description provided for @zoneInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Правило — системы × места: например, «Климат, Сантехника · Москва». Правила складываются.'**
+  String get zoneInfo2;
+
+  /// No description provided for @zoneInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вне зоны менеджер не видит ни заявок, ни оборудования, ни подрядчиков, ни отчётов — это проверяет база.'**
+  String get zoneInfo3;
+
+  /// No description provided for @zoneInfo4.
+  ///
+  /// In ru, this message translates to:
+  /// **'Менять зоны может только администратор; все изменения записываются в журнал.'**
+  String get zoneInfo4;
+
+  /// No description provided for @zoneRefused.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет доступа: это вне вашей зоны или нужен администратор'**
+  String get zoneRefused;
+
+  /// No description provided for @crewSection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригады'**
+  String get crewSection;
+
+  /// No description provided for @crewEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригад нет — все исполнители видят объекты подрядчика по закреплениям.'**
+  String get crewEmpty;
+
+  /// No description provided for @crewAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая бригада'**
+  String get crewAdd;
+
+  /// No description provided for @crewTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада'**
+  String get crewTitle;
+
+  /// No description provided for @crewName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get crewName;
+
+  /// No description provided for @crewNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например: Пекин'**
+  String get crewNameHint;
+
+  /// No description provided for @crewNameRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите название бригады (до 60 символов)'**
+  String get crewNameRequired;
+
+  /// No description provided for @crewDuplicate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада с таким названием уже есть'**
+  String get crewDuplicate;
+
+  /// No description provided for @crewMembers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнители'**
+  String get crewMembers;
+
+  /// No description provided for @crewNoExecutors.
+  ///
+  /// In ru, this message translates to:
+  /// **'У подрядчика пока нет исполнителей'**
+  String get crewNoExecutors;
+
+  /// No description provided for @crewZone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона бригады'**
+  String get crewZone;
+
+  /// No description provided for @crewZoneHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнители бригады видят только эти места и системы.'**
+  String get crewZoneHint;
+
+  /// No description provided for @crewMembersCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} исполнитель} few{{count} исполнителя} many{{count} исполнителей} other{{count} исполнителя}}'**
+  String crewMembersCount(int count);
+
+  /// No description provided for @crewSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада сохранена'**
+  String get crewSaved;
+
+  /// No description provided for @crewDeleted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада удалена'**
+  String get crewDeleted;
+
+  /// No description provided for @crewDelete.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить бригаду'**
+  String get crewDelete;
+
+  /// No description provided for @crewDeleteConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить бригаду «{name}»? Её исполнители снова увидят все объекты подрядчика.'**
+  String crewDeleteConfirm(String name);
+
+  /// No description provided for @crewInfoTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригады'**
+  String get crewInfoTitle;
+
+  /// No description provided for @crewInfo1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужны, только если разные бригады одного подрядчика не должны видеть объекты друг друга.'**
+  String get crewInfo1;
+
+  /// No description provided for @crewInfo2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнитель в бригаде видит только зону своей бригады; без бригады — всё по закреплениям подрядчика.'**
+  String get crewInfo2;
+
+  /// No description provided for @crewInfo3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригады заводит менеджер, которому виден подрядчик.'**
+  String get crewInfo3;
+
+  /// No description provided for @auditTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Журнал доступа'**
+  String get auditTitle;
+
+  /// No description provided for @auditMenu.
+  ///
+  /// In ru, this message translates to:
+  /// **'Журнал изменений доступа'**
+  String get auditMenu;
+
+  /// No description provided for @auditMenuHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кто, когда и что менял в зонах, бригадах и ролях'**
+  String get auditMenuHint;
+
+  /// No description provided for @auditEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменений доступа пока не было'**
+  String get auditEmpty;
+
+  /// No description provided for @auditLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить журнал. Проверьте интернет и попробуйте ещё раз.'**
+  String get auditLoadFailed;
+
+  /// No description provided for @auditFilterPerson.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сотрудник'**
+  String get auditFilterPerson;
+
+  /// No description provided for @auditAllPeople.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все сотрудники'**
+  String get auditAllPeople;
+
+  /// No description provided for @auditSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get auditSystem;
+
+  /// No description provided for @auditUnknownPerson.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бывший сотрудник'**
+  String get auditUnknownPerson;
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Роль: {name}'**
+  String auditRole(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона доступа: {name}'**
+  String auditZone(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Было: {text}'**
+  String auditWas(String text);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Стало: {text}'**
+  String auditNow(String text);
+
+  /// No description provided for @auditNowWholeCompany.
+  ///
+  /// In ru, this message translates to:
+  /// **'Стало: вся компания, без ограничений'**
+  String get auditNowWholeCompany;
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада «{name}» создана'**
+  String auditCrewCreated(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада переименована в «{name}»'**
+  String auditCrewRenamed(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада «{name}» удалена'**
+  String auditCrewDeleted(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Состав бригады «{name}»'**
+  String auditCrewMembers(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона бригады «{name}»'**
+  String auditCrewZone(String name);
+
+  /// No description provided for @auditCrewZoneNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Стало: без ограничений'**
+  String get auditCrewZoneNone;
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменение: {entity}'**
+  String auditOther(String entity);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'{who} · {when}'**
+  String auditBy(String who, String when);
+
+  /// No description provided for @auditFooter.
+  ///
+  /// In ru, this message translates to:
+  /// **'Журнал ведёт база, его видит только администратор. Последние 500 записей.'**
+  String get auditFooter;
 }
 
 class _AppLocalizationsDelegate

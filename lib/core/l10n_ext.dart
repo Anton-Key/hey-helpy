@@ -70,4 +70,8 @@ extension L10nCodes on AppLocalizations {
   /// Дата и время по правилам выбранного языка.
   String dateTime(DateTime d) =>
       DateFormat.yMMMd(localeName).add_Hm().format(d.toLocal());
+
+  /// Только дата («10 окт. 2026 г.»). Даты без времени (UTC-полночь) — как есть.
+  String date(DateTime d) => DateFormat.yMMMd(localeName)
+      .format(d.isUtc && d.hour == 0 && d.minute == 0 ? d : d.toLocal());
 }

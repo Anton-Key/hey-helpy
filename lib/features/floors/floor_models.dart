@@ -1,3 +1,5 @@
+import 'plan_logic.dart' show parsePlanShape;
+
 /// Этаж объекта (таблица floors, миграция 0013).
 class Floor {
   const Floor({
@@ -63,6 +65,8 @@ class PlanItem {
     this.category,
     this.equipmentKind,
     this.inventoryNo,
+    this.code,
+    this.shape,
   });
 
   final PlanKind kind;
@@ -83,7 +87,24 @@ class PlanItem {
   final String? equipmentKind;
   final String? inventoryNo;
 
+  /// Помещение: номер («305», locations.code, 0015); null — без номера.
+  final String? code;
+
+  /// Помещение: область на плане — многоугольник, точки долями 0..1
+  /// (locations.plan_shape, 0013); null — области нет.
+  final List<(double, double)>? shape;
+
   bool get isPlace => kind == PlanKind.place;
+
+  /// Подпись: «305 · Переговорная» (с номером) или название.
+  String get label {
+    final c = code?.trim() ?? '';
+    return c.isEmpty ? name : '$c · $name';
+  }
+
+  /// Есть область на плане этажа [floorId].
+  bool hasAreaOn(String floorId) =>
+      isPlace && this.floorId == floorId && (shape?.length ?? 0) >= 3;
 
   /// Есть точка на плане.
   bool get placed => x != null && y != null;
@@ -103,6 +124,10 @@ class PlanItem {
     double? y,
     bool clearPoint = false,
     String? locationId,
+    String? code,
+    bool clearCode = false,
+    List<(double, double)>? shape,
+    bool clearShape = false,
   }) =>
       PlanItem(
         kind: kind,
@@ -115,9 +140,15 @@ class PlanItem {
         category: category,
         equipmentKind: equipmentKind,
         inventoryNo: inventoryNo,
+        code: clearCode ? null : (code ?? this.code),
+        shape: clearShape ? null : (shape ?? this.shape),
       );
 
-  static const placeColumns = 'id,object_id,name,floor_id,plan_x,plan_y';
+  /// Колонки помещения: без номера — для базы до миграции 0015
+  /// (plan_shape есть с 0013).
+  static const placeColumnsLegacy =
+      'id,object_id,name,floor_id,plan_x,plan_y,plan_shape';
+  static const placeColumns = '$placeColumnsLegacy,code';
   static const assetColumns =
       'id,location_id,name,category,inventory_no,meta,floor_id,plan_x,plan_y,'
       'locations!inner(object_id)';
@@ -129,6 +160,11 @@ class PlanItem {
         floorId: m['floor_id'] as String?,
         x: (m['plan_x'] as num?)?.toDouble(),
         y: (m['plan_y'] as num?)?.toDouble(),
+        code: switch ((m['code'] as String?)?.trim()) {
+          final c? when c.isNotEmpty => c,
+          _ => null,
+        },
+        shape: parsePlanShape(m['plan_shape']),
       );
 
   factory PlanItem.assetFromMap(Map<String, dynamic> m) {

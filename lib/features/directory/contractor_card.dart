@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
+import '../access/crews_section.dart';
 import '../reports/reports_screen.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
@@ -252,6 +253,12 @@ class _ContractorCardScreenState extends State<ContractorCardScreen> {
                   : null,
             ),
       ]),
+
+      // Бригады (шаг 17, необязательно)
+      CrewsSection(
+          contractorId: widget.contractor.id,
+          executors: _executors,
+          isManager: _isManager),
     ];
   }
 }

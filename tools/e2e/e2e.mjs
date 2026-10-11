@@ -1,17 +1,19 @@
 // Сквозные сценарии на локальной базе (шаг 18). Запуск — tools/e2e/run.sh.
 //   node e2e.mjs [--only=1,3] [--shots]   (--shots — снимок после каждого шага)
 // Итоги — tools/e2e/out/results.json и results.md (таблица для отчёта).
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { startLocalBackend } from '../screens/local_backend.mjs';
-import { chromium, startWeb } from './lib.mjs';
+import { DB, chromium, startWeb } from './lib.mjs';
 import { SCENARIOS } from './scenarios.mjs';
 
 const OUT = join(import.meta.dirname, 'out');
 const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7).split(',');
 const SHOTS = process.argv.includes('--shots');
-rmSync(OUT, { recursive: true, force: true });
+// --keep — дописать итоги к прошлому запуску (run.sh: сценарий 9 на базе hh_old).
+if (!process.argv.includes('--keep')) rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
+const OLD = DB === 'hh_old';
 
 process.env.HH_MOCK_AI = '1';
 const backend = await startLocalBackend({ port: 54321 });
@@ -21,6 +23,7 @@ const results = [];
 
 for (const s of SCENARIOS) {
   if (ONLY && !ONLY.includes(String(s.id))) continue;
+  if ((s.db === 'hh_old') !== OLD) continue;
   const t0 = Date.now();
   const contexts = [];
   let shot = 0;
@@ -47,6 +50,7 @@ for (const s of SCENARIOS) {
       if (SHOTS) await page.screenshot({ path: join(OUT, `${s.id}-${String(++shot).padStart(2, '0')}-${name}.png`) });
     },
     notes: [],
+    errors,
   };
   let ok = true;
   let err = '';
@@ -72,6 +76,10 @@ for (const s of SCENARIOS) {
 await browser.close();
 web.stop();
 backend.stop();
+const prev = process.argv.includes('--keep') && existsSync(join(OUT, 'results.json'))
+  ? JSON.parse(readFileSync(join(OUT, 'results.json'), 'utf8')) : [];
+results.unshift(...prev.filter((p) => !results.some((r) => r.id === p.id)));
+results.sort((a, b) => a.id - b.id);
 writeFileSync(join(OUT, 'results.json'), JSON.stringify(results, null, 2));
 writeFileSync(join(OUT, 'results.md'), [
   '| № | Сценарий | Итог | Время | Примечание |', '|---|---|---|---|---|',

@@ -145,11 +145,32 @@ function linkDemoPlans() {
   }
 }
 
+/** Клиент Supabase шлёт файл multipart-формой (поле cacheControl + файл) — достать файл. */
+function filePart(type, body) {
+  const b = type.match(/boundary=(?:"([^"]+)"|([^;]+))/);
+  if (!/multipart\/form-data/.test(type) || !b) return { type: type || 'application/octet-stream', data: body };
+  const sep = Buffer.from(`--${b[1] ?? b[2]}`);
+  let pos = body.indexOf(sep);
+  while (pos >= 0) {
+    const headEnd = body.indexOf('\r\n\r\n', pos);
+    if (headEnd < 0) break;
+    const next = body.indexOf(sep, headEnd);
+    const head = body.subarray(pos, headEnd).toString();
+    if (/filename=|content-type:/i.test(head)) {
+      const partType = head.match(/content-type:\s*([^\r\n]+)/i)?.[1] ?? 'application/octet-stream';
+      return { type: partType, data: body.subarray(headEnd + 4, (next < 0 ? body.length : next) - 2) };
+    }
+    pos = next;
+  }
+  return { type: 'application/octet-stream', data: body };
+}
+
 // Файлы, загруженные через локальный «Storage»: bucket/path → { type, data }.
 const files = new Map();
 
 /** Фото заявок и новые планы: запись в storage.objects под пользователем. */
 async function storageRequest(req, url, path) {
+  if (process.env.HH_LOG_STORAGE) console.log('storage', req.method, path, url.search);
   const uid = readJwt((req.headers.authorization ?? '').replace(/^Bearer /, ''))?.sub;
   const fail = (e) => ({ status: 400, body: { statusCode: '403', error: 'Unauthorized',
     message: /row-level security|violates/.test(String(e.stderr ?? e)) ? 'new row violates row-level security policy' : String(e.stderr ?? e).slice(0, 200) } });
@@ -161,7 +182,8 @@ async function storageRequest(req, url, path) {
     try {
       psqlAs(uid, `insert into storage.objects(bucket_id, name, owner) values (${lit(m[1])}, ${lit(name)}, ${lit(uid)})`);
     } catch (e) { return fail(e); }
-    files.set(`${m[1]}/${name}`, { type: req.headers['content-type'] ?? 'application/octet-stream', data: body });
+    files.set(`${m[1]}/${name}`, filePart(req.headers['content-type'] ?? '', body));
+    if (process.env.HH_LOG_STORAGE) console.log('upload', req.headers['content-type'], body.length, body.subarray(0, 60).toString('latin1').replace(/[^ -~]/g, '.'), files.get(`${m[1]}/${name}`).type, files.get(`${m[1]}/${name}`).data.subarray(0, 4).toString('hex'));
     return { status: 200, body: { Key: `${m[1]}/${name}`, Id: name } };
   }
   m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans)$/);

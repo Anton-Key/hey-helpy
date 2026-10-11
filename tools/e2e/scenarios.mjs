@@ -639,4 +639,71 @@ export const SCENARIOS = [
       assert(foreign.length === 0, `утечка: ${foreign.slice(0, 3).join(', ')}`);
     },
   },
+  {
+    id: 9,
+    db: 'hh_old',
+    title: 'Старая база (без 0015/0016, как рабочая сейчас): приложение работает, новые разделы — «Нужна миграция …», без красных ошибок',
+    async run(ctx) {
+      const { base } = ctx;
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      const bad = /Не удалось загрузить|Что-то пошло не так|permission denied|does not exist|PostgrestException/;
+      const check = async (where) => {
+        await settle(m, 1500);
+        const t = await screenText(m);
+        assert(!bad.test(t), `${where}: ошибка на экране — ${(t.match(bad) ?? [''])[0]}`);
+        return t;
+      };
+      await home(m, base);
+      const t0 = await check('Заявки');
+      assert(/Протечка|кондиционер|Не работает|\d+ из \d+/i.test(t0) || t0.length > 200, 'список заявок пуст');
+      await ctx.shot(m, 'requests');
+      await section(m, /^ППР/);
+      const t1 = await screenText(m);
+      assert(/Нужна миграция 0015|миграци/i.test(t1), 'ППР: нет «Нужна миграция 0015»');
+      ctx.notes.push('ППР: «Нужна миграция 0015»');
+      await ctx.shot(m, 'ppr');
+      await home(m, base);
+      await section(m, /^Локации/);
+      await check('Локации');
+      await btn(m, /^БЦ «Демо»/).click();
+      await settle(m, 2500);
+      await check('Карточка объекта');
+      await ctx.shot(m, 'object');
+      await home(m, base);
+      await section(m, /^Подрядчики/);
+      await check('Подрядчики');
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await check('Отчёты');
+      await ctx.shot(m, 'reports');
+      await home(m, base);
+      await section(m, /^История/);
+      await check('История');
+      await home(m, base);
+      await profileTab(m).click();
+      await settle(m, 800);
+      await btn(m, /^Моя компания/).click();
+      await check('Моя компания');
+      await scrollTo(m, /Регионы компании/);
+      await btn(m, /Регионы компании/).click();
+      await settle(m, 2000);
+      const t2 = await screenText(m);
+      assert(/миграци/i.test(t2), 'Регионы: нет «Нужна миграция 0015»');
+      await ctx.shot(m, 'regions');
+      // Голосовая заявка на старой базе: создаётся и назначается.
+      await home(m, base);
+      await clickAction(m, /Нажми и говори/);
+      await see(m, /не работает кондиционер/).waitFor({ timeout: 15000 });
+      await clickAction(m, /^Готово/);
+      await see(m, /Проверьте заявку/).waitFor({ timeout: 20000 });
+      await clickAction(m, /^Отправить/);
+      const row = await waitDb(`select status from work_orders where title like 'Не работает кондиционер%'
+        and created_at > now() - interval '2 minutes' order by created_at desc limit 1`, (v) => v.length > 0);
+      ctx.notes.push(`заявка на старой базе: ${row}`);
+      assert(row === 'assigned', `заявка на старой базе: ${row}`);
+      const js = ctx.errors.filter((e) => !/ResizeObserver/.test(e));
+      assert(js.length === 0, `ошибки JavaScript: ${js.slice(0, 2).join(' | ')}`);
+    },
+  },
 ];

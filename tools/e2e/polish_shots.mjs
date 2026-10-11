@@ -5,7 +5,7 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { startLocalBackend } from '../screens/local_backend.mjs';
-import { USERS, btn, chromium, login, openApp, profileTab, settle, startWeb, uuid } from './lib.mjs';
+import { USERS, chromium, login, openApp, profileTab, settle, startWeb, typeInto, uuid } from './lib.mjs';
 
 const OUT = join(import.meta.dirname, 'out/polish');
 mkdirSync(OUT, { recursive: true });
@@ -49,10 +49,17 @@ async function scrollFind(page, re) {
   return el;
 }
 
+async function openOrder(p) {
+  await go(p);
+  await typeInto(p, p.getByRole('textbox').first(), 'Течёт конденсат');
+  await settle(p, 1800);
+  await click(p, /^Течёт конденсат/, 2200);
+}
+
 const SCREENS = (t) => [
   ['requests', (p) => go(p)],
-  ['order-card', async (p) => { await go(p); await click(p, /Течёт конденсат|Condensate/); }],
-  ['plan', async (p) => { await go(p); await click(p, /Течёт конденсат/); await click(p, t.show, 4000); }],
+  ['order-card', async (p) => { await openOrder(p); }],
+  ['plan', async (p) => { await openOrder(p); await click(p, t.show, 4000); }],
   ['ppr', async (p) => { await go(p); await click(p, t.ppr, 2500); }],
   ['ppr-card', async (p) => { await go(p); await click(p, t.ppr, 2500); await click(p, /^ТО кондиционеров/); }],
   ['locations', async (p) => { await go(p); await click(p, t.loc); const l = p.getByRole('button', { name: t.list }).first();
@@ -64,7 +71,8 @@ const SCREENS = (t) => [
     if (await l.isVisible().catch(() => false)) await l.click(); await settle(p, 1200); await click(p, t.bc, 2500);
     await (await scrollFind(p, /ИБП серверной 10 кВА/)).scrollIntoViewIfNeeded().catch(() => {}); await settle(p, 800); }],
   ['contractors', async (p) => { await go(p); await click(p, t.contr); }],
-  ['contractor-card', async (p) => { await go(p); await click(p, t.contr); await click(p, /^Huaxin FM/, 2500); }],
+  ['contractor-card', async (p) => { await go(p); await click(p, t.contr); await (await scrollFind(p, /^Huaxin FM/)).click();
+    await settle(p, 2500); }],
   ['reports', async (p) => { await go(p); await click(p, t.rep, 3000); }],
   ['history', async (p) => { await go(p); await click(p, t.hist, 2500); }],
   ['profile', async (p) => { await go(p); await click(p, t.prof, 1500); }],
@@ -93,11 +101,7 @@ for (const lang of LANG === 'all' ? ['ru', 'en'] : [LANG]) {
       await go(page);
       const en = page.getByRole('button', { name: /^EN$/ }).first();
       if (await en.isVisible().catch(() => false)) await en.click();
-      else {
-        await click(page, /^Профиль/, 1200); await click(page, /^Язык|^Настройки/, 1500);
-        const e2 = page.getByRole('button', { name: /English/ }).or(page.getByText(/English/)).first();
-        if (await e2.isVisible().catch(() => false)) await e2.click();
-      }
+      // Нет переключателя (телефон): язык уже английский — браузер en-US, в профиле язык не задан.
       await settle(page, 2500);
     }
     for (const [key, run] of SCREENS(T[lang])) {

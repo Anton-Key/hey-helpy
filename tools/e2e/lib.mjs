@@ -47,9 +47,9 @@ export const see = (page, text) => page.getByRole('tab', { name: ci(text) })
   .or(page.getByText(ci(text)))
   .or(page.getByLabel(ci(text))).first();
 export const btn = (page, name) => page.getByRole('button', { name, exact: false }).first();
-export const profileTab = (page) => page.getByRole('tab', { name: /^Профиль/ })
-  .or(page.getByRole('button', { name: /^Профиль/ }))
-  .or(page.getByLabel(/^Профиль(, \d+)?$/)).first();
+export const profileTab = (page) => page.getByRole('tab', { name: /^(Профиль|Profile)/ })
+  .or(page.getByRole('button', { name: /^(Профиль|Profile)/ }))
+  .or(page.getByLabel(/^(Профиль|Profile)(, \d+)?$/)).first();
 export const settle = (page, ms = 1200) => page.waitForTimeout(ms);
 
 export async function openApp(page, base, path = '') {

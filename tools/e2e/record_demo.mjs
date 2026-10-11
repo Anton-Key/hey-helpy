@@ -31,7 +31,7 @@ process.env.HH_MOCK_AI = '1';
 process.env.HH_MOCK_AI_MS = '1600';
 const backend = await startLocalBackend({ port: 54321 });
 const web = await startWeb();
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] }); // /dev/shm в контейнере — 64 МБ
 const base = web.base;
 
 // Чистое состояние: убрать заявки прошлых записей, второму менеджеру — зона.

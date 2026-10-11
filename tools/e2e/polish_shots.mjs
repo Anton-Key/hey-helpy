@@ -16,7 +16,7 @@ const H = { 360: 780, 412: 915, 1280: 800, 1920: 1080 };
 
 const backend = await startLocalBackend({ port: 54321 });
 const web = await startWeb();
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] }); // /dev/shm в контейнере — 64 МБ
 const base = web.base;
 
 const T = {

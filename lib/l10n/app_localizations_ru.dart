@@ -3651,4 +3651,98 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get crewInfo3 => 'Бригады заводит менеджер, которому виден подрядчик.';
+
+  @override
+  String get auditTitle => 'Журнал доступа';
+
+  @override
+  String get auditMenu => 'Журнал изменений доступа';
+
+  @override
+  String get auditMenuHint =>
+      'Кто, когда и что менял в зонах, бригадах и ролях';
+
+  @override
+  String get auditEmpty => 'Изменений доступа пока не было';
+
+  @override
+  String get auditLoadFailed =>
+      'Не удалось загрузить журнал. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get auditFilterPerson => 'Сотрудник';
+
+  @override
+  String get auditAllPeople => 'Все сотрудники';
+
+  @override
+  String get auditSystem => 'Система';
+
+  @override
+  String get auditUnknownPerson => 'Бывший сотрудник';
+
+  @override
+  String auditRole(String name) {
+    return 'Роль: $name';
+  }
+
+  @override
+  String auditZone(String name) {
+    return 'Зона доступа: $name';
+  }
+
+  @override
+  String auditWas(String text) {
+    return 'Было: $text';
+  }
+
+  @override
+  String auditNow(String text) {
+    return 'Стало: $text';
+  }
+
+  @override
+  String get auditNowWholeCompany => 'Стало: вся компания, без ограничений';
+
+  @override
+  String auditCrewCreated(String name) {
+    return 'Бригада «$name» создана';
+  }
+
+  @override
+  String auditCrewRenamed(String name) {
+    return 'Бригада переименована в «$name»';
+  }
+
+  @override
+  String auditCrewDeleted(String name) {
+    return 'Бригада «$name» удалена';
+  }
+
+  @override
+  String auditCrewMembers(String name) {
+    return 'Состав бригады «$name»';
+  }
+
+  @override
+  String auditCrewZone(String name) {
+    return 'Зона бригады «$name»';
+  }
+
+  @override
+  String get auditCrewZoneNone => 'Стало: без ограничений';
+
+  @override
+  String auditOther(String entity) {
+    return 'Изменение: $entity';
+  }
+
+  @override
+  String auditBy(String who, String when) {
+    return '$who · $when';
+  }
+
+  @override
+  String get auditFooter =>
+      'Журнал ведёт база, его видит только администратор. Последние 500 записей.';
 }

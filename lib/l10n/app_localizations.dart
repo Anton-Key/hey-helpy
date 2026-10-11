@@ -6188,6 +6188,144 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Бригады заводит менеджер, которому виден подрядчик.'**
   String get crewInfo3;
+
+  /// No description provided for @auditTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Журнал доступа'**
+  String get auditTitle;
+
+  /// No description provided for @auditMenu.
+  ///
+  /// In ru, this message translates to:
+  /// **'Журнал изменений доступа'**
+  String get auditMenu;
+
+  /// No description provided for @auditMenuHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кто, когда и что менял в зонах, бригадах и ролях'**
+  String get auditMenuHint;
+
+  /// No description provided for @auditEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменений доступа пока не было'**
+  String get auditEmpty;
+
+  /// No description provided for @auditLoadFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить журнал. Проверьте интернет и попробуйте ещё раз.'**
+  String get auditLoadFailed;
+
+  /// No description provided for @auditFilterPerson.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сотрудник'**
+  String get auditFilterPerson;
+
+  /// No description provided for @auditAllPeople.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все сотрудники'**
+  String get auditAllPeople;
+
+  /// No description provided for @auditSystem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get auditSystem;
+
+  /// No description provided for @auditUnknownPerson.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бывший сотрудник'**
+  String get auditUnknownPerson;
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Роль: {name}'**
+  String auditRole(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона доступа: {name}'**
+  String auditZone(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Было: {text}'**
+  String auditWas(String text);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Стало: {text}'**
+  String auditNow(String text);
+
+  /// No description provided for @auditNowWholeCompany.
+  ///
+  /// In ru, this message translates to:
+  /// **'Стало: вся компания, без ограничений'**
+  String get auditNowWholeCompany;
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада «{name}» создана'**
+  String auditCrewCreated(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада переименована в «{name}»'**
+  String auditCrewRenamed(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Бригада «{name}» удалена'**
+  String auditCrewDeleted(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Состав бригады «{name}»'**
+  String auditCrewMembers(String name);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Зона бригады «{name}»'**
+  String auditCrewZone(String name);
+
+  /// No description provided for @auditCrewZoneNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Стало: без ограничений'**
+  String get auditCrewZoneNone;
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменение: {entity}'**
+  String auditOther(String entity);
+
+  /// Шаг 18: журнал доступа
+  ///
+  /// In ru, this message translates to:
+  /// **'{who} · {when}'**
+  String auditBy(String who, String when);
+
+  /// No description provided for @auditFooter.
+  ///
+  /// In ru, this message translates to:
+  /// **'Журнал ведёт база, его видит только администратор. Последние 500 записей.'**
+  String get auditFooter;
 }
 
 class _AppLocalizationsDelegate

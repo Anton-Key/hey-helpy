@@ -62,18 +62,18 @@ class ZoneRepository {
     }
   }
 
-  /// Заменить зоны сотрудника: удалить старые, вставить новые.
+  /// Заменить зоны сотрудника одной транзакцией (функция базы
+  /// `set_member_zones`): при ошибке старые зоны остаются — менеджер не
+  /// окажется без зон (то есть со всей компанией).
   Future<void> replaceZones(
           {required String profileId,
           required String companyId,
           required List<ZoneRow> rows}) =>
       SchemaCompat.run('0016', () async {
-        await _c.from('access_zones').delete().eq('profile_id', profileId);
-        if (rows.isEmpty) return;
-        await _c.from('access_zones').insert([
-          for (final r in rows)
-            {...r.toMap(), 'profile_id': profileId, 'company_id': companyId},
-        ]);
+        await _c.rpc('set_member_zones', params: {
+          'p_profile': profileId,
+          'p_zones': [for (final r in rows) r.toMap()],
+        });
       });
 
   /// Бригады подрядчика с участниками и зонами.
@@ -115,49 +115,21 @@ class ZoneRepository {
     required List<ZoneRow> zones,
   }) =>
       SchemaCompat.run('0016', () async {
-        String crewId;
+        // Одной транзакцией (функция базы save_crew): название, состав и
+        // зона сохраняются целиком или не сохраняются вовсе.
         try {
-          if (id == null) {
-            final r = await _c
-                .from('crews')
-                .insert({
-                  'company_id': companyId,
-                  'contractor_id': contractorId,
-                  'name': name.trim(),
-                })
-                .select('id')
-                .single();
-            crewId = r['id'] as String;
-          } else {
-            final r = await _c
-                .from('crews')
-                .update({'name': name.trim()})
-                .eq('id', id)
-                .select('id');
-            if (r.isEmpty) {
-              throw const PostgrestException(message: 'not allowed');
-            }
-            crewId = id;
-          }
+          final r = await _c.rpc('save_crew', params: {
+            'p_id': id,
+            'p_contractor': contractorId,
+            'p_name': name.trim(),
+            'p_executors': executorIds.toList(),
+            'p_zones': [for (final z in zones) z.toMap()],
+          });
+          return r as String;
         } catch (e) {
           if (_dup(e)) throw const CrewDuplicate();
           rethrow;
         }
-        await _c.from('crew_members').delete().eq('crew_id', crewId);
-        if (executorIds.isNotEmpty) {
-          await _c.from('crew_members').insert([
-            for (final e in executorIds)
-              {'crew_id': crewId, 'executor_id': e, 'company_id': companyId},
-          ]);
-        }
-        await _c.from('crew_zones').delete().eq('crew_id', crewId);
-        if (zones.isNotEmpty) {
-          await _c.from('crew_zones').insert([
-            for (final z in zones)
-              {...z.toMap(), 'crew_id': crewId, 'company_id': companyId},
-          ]);
-        }
-        return crewId;
       });
 
   Future<void> deleteCrew(String id) => SchemaCompat.run('0016', () async {

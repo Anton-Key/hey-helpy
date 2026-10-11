@@ -3621,4 +3621,98 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get crewInfo3 =>
       'Crews are set up by a manager who can see the contractor.';
+
+  @override
+  String get auditTitle => 'Access log';
+
+  @override
+  String get auditMenu => 'Access change log';
+
+  @override
+  String get auditMenuHint =>
+      'Who changed access zones, crews and roles, and when';
+
+  @override
+  String get auditEmpty => 'No access changes yet';
+
+  @override
+  String get auditLoadFailed =>
+      'Couldn\'t load the log. Check your connection and try again.';
+
+  @override
+  String get auditFilterPerson => 'Employee';
+
+  @override
+  String get auditAllPeople => 'All employees';
+
+  @override
+  String get auditSystem => 'System';
+
+  @override
+  String get auditUnknownPerson => 'Former employee';
+
+  @override
+  String auditRole(String name) {
+    return 'Role: $name';
+  }
+
+  @override
+  String auditZone(String name) {
+    return 'Access zone: $name';
+  }
+
+  @override
+  String auditWas(String text) {
+    return 'Before: $text';
+  }
+
+  @override
+  String auditNow(String text) {
+    return 'Now: $text';
+  }
+
+  @override
+  String get auditNowWholeCompany => 'Now: whole company, no restrictions';
+
+  @override
+  String auditCrewCreated(String name) {
+    return 'Crew “$name” created';
+  }
+
+  @override
+  String auditCrewRenamed(String name) {
+    return 'Crew renamed to “$name”';
+  }
+
+  @override
+  String auditCrewDeleted(String name) {
+    return 'Crew “$name” deleted';
+  }
+
+  @override
+  String auditCrewMembers(String name) {
+    return 'Members of crew “$name”';
+  }
+
+  @override
+  String auditCrewZone(String name) {
+    return 'Zone of crew “$name”';
+  }
+
+  @override
+  String get auditCrewZoneNone => 'Now: no restrictions';
+
+  @override
+  String auditOther(String entity) {
+    return 'Change: $entity';
+  }
+
+  @override
+  String auditBy(String who, String when) {
+    return '$who · $when';
+  }
+
+  @override
+  String get auditFooter =>
+      'The database keeps this log; only the administrator can see it. Last 500 records.';
 }

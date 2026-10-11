@@ -11,6 +11,7 @@ import '../access/zone_editor.dart';
 import '../directory/directory.dart';
 import '../onboarding/onboarding_repository.dart';
 import '../onboarding/onboarding_screen.dart';
+import '../access/audit_screen.dart';
 import '../regions/regions_screen.dart';
 import 'profile_repository.dart';
 import '../../core/app_message.dart';
@@ -445,6 +446,18 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                               companyId: _me.companyId),
                           title: l.profileMyCompany)),
                 ),
+                // Журнал изменений доступа (шаг 18): только администратор.
+                if (_me.role == UserRole.admin && _me.companyId != null)
+                  AppRow(
+                    leading: const LeadingIcon(AppIcons.key),
+                    title: l.auditMenu,
+                    subtitle: l.auditMenuHint,
+                    onTap: () => Navigator.push(
+                        context,
+                        appRoute(
+                            (_) => AuditScreen(companyId: _me.companyId!),
+                            title: l.profileMyCompany)),
+                  ),
               ]),
             ],
           ]),

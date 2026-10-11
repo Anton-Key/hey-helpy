@@ -1435,6 +1435,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Voice input works in Chrome and Edge. Type the work order — AI will parse it just the same.';
 
   @override
+  String get voiceAiParsing => 'AI is reading your work order…';
+
+  @override
+  String get voiceAiAlmost => 'Almost there…';
+
+  @override
   String get voiceBrowserHint =>
       'For voice input, it\'s best to open this in Google Chrome or Microsoft Edge';
 

@@ -63,10 +63,14 @@ class ServerVoiceIntake implements VoiceIntakeClient {
   ServerVoiceIntake(
       {IntakeCall? call,
       this.fallback = const LocalVoiceIntake(),
-      this.timeout = const Duration(seconds: 10)})
+      this.timeout = defaultTimeout})
       : _call = call ?? _invoke;
 
   static const functionName = 'voice-intake';
+
+  /// Сколько ждём функцию: ей нужно до 14 с на YandexGPT (основная модель
+  /// 7 с, затем запасная) плюс вход и справочники.
+  static const defaultTimeout = Duration(seconds: 16);
 
   final IntakeCall _call;
   final VoiceIntakeClient fallback;
@@ -125,3 +129,22 @@ class ServerVoiceIntake implements VoiceIntakeClient {
     );
   }
 }
+
+/// Что показывать, пока ждём разбор заявки.
+enum IntakeWait {
+  /// Первые 3 с — «Разбираю заявку…».
+  reading,
+
+  /// 3–8 с — «ИИ разбирает заявку…».
+  ai,
+
+  /// После 8 с — «Ещё немного…».
+  almost,
+}
+
+const intakeAiAfter = Duration(seconds: 3);
+const intakeAlmostAfter = Duration(seconds: 8);
+
+IntakeWait intakeWaitStage(Duration elapsed) => elapsed < intakeAiAfter
+    ? IntakeWait.reading
+    : (elapsed < intakeAlmostAfter ? IntakeWait.ai : IntakeWait.almost);

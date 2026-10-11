@@ -1444,6 +1444,12 @@ class AppLocalizationsRu extends AppLocalizations {
       'Голосовой ввод работает в Chrome и Edge. Напишите заявку — ИИ разберёт её так же.';
 
   @override
+  String get voiceAiParsing => 'ИИ разбирает заявку…';
+
+  @override
+  String get voiceAiAlmost => 'Ещё немного…';
+
+  @override
   String get voiceBrowserHint =>
       'Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge';
 

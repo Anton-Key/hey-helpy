@@ -409,6 +409,8 @@
   "voiceErrorCode": "code: {code}",
   "voiceMicSilent": "The microphone doesn't hear any sound — check which microphone is selected",
   "voiceOnlyChromeEdge": "Voice input works in Chrome and Edge. Type the work order — AI will parse it just the same.",
+  "voiceAiParsing": "AI is reading your work order…",
+  "voiceAiAlmost": "Almost there…",
   "voiceBrowserHint": "For voice input, it's best to open this in Google Chrome or Microsoft Edge",
   "detailMore": "More",
   "actionDelete": "Delete",

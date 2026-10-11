@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hey_helpy/core/design/design.dart';
 import 'package:hey_helpy/features/voice/speech_input.dart';
+import 'package:hey_helpy/features/voice/voice_draft.dart';
+import 'package:hey_helpy/features/voice/voice_intake_client.dart';
 import 'package:hey_helpy/features/voice/voice_record_screen.dart';
 import 'package:hey_helpy/l10n/app_localizations.dart';
 
@@ -87,4 +91,42 @@ void main() {
     // Закрыть экран, чтобы таймеры остановились.
     await t.pumpWidget(const SizedBox());
   });
+
+  testWidgets(
+      'медленный ИИ: 3 с — «ИИ разбирает заявку…», 8 с — «Ещё немного…»',
+      (t) async {
+    final slow = _SlowIntake();
+    await t.pumpWidget(_app(
+        VoiceRecordScreen(
+            companyId: 'c',
+            objects: const [],
+            speech: _FakeSpeech(unavailable: true),
+            client: slow),
+        'ru'));
+    await t.pumpAndSettle();
+    final l = await AppLocalizations.delegate.load(const Locale('ru'));
+    await t.enterText(find.byType(TextField), 'не работает кондиционер');
+    await t.pump();
+    await t.tap(find.text(l.voiceNext));
+    await t.pump();
+    expect(find.text(l.voiceProcessing), findsOneWidget);
+    await t.pump(const Duration(seconds: 3));
+    expect(find.text(l.voiceAiParsing), findsOneWidget);
+    await t.pump(const Duration(seconds: 5));
+    expect(find.text(l.voiceAiAlmost), findsOneWidget);
+    // Разбор не удался — экран с ошибкой и «Ввести текстом» (как раньше).
+    slow.done.completeError(StateError('нет ответа'));
+    await t.pump();
+    expect(find.text(l.voiceAiAlmost), findsNothing);
+    await t.pumpWidget(const SizedBox());
+  });
+}
+
+/// Разбор, который отвечает, когда тест скажет.
+class _SlowIntake implements VoiceIntakeClient {
+  final done = Completer<VoiceDraft>();
+  @override
+  Future<VoiceDraft> process(String transcript,
+          {required String locale, required IntakeCatalog catalog}) =>
+      done.future;
 }

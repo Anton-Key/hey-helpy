@@ -2553,6 +2553,18 @@ abstract class AppLocalizations {
   /// **'Голосовой ввод работает в Chrome и Edge. Напишите заявку — ИИ разберёт её так же.'**
   String get voiceOnlyChromeEdge;
 
+  /// No description provided for @voiceAiParsing.
+  ///
+  /// In ru, this message translates to:
+  /// **'ИИ разбирает заявку…'**
+  String get voiceAiParsing;
+
+  /// No description provided for @voiceAiAlmost.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё немного…'**
+  String get voiceAiAlmost;
+
   /// No description provided for @voiceBrowserHint.
   ///
   /// In ru, this message translates to:

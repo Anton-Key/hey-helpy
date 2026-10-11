@@ -24,12 +24,16 @@ class VoiceRecordScreen extends StatefulWidget {
       {super.key,
       required this.companyId,
       required this.objects,
-      @visibleForTesting this.speech});
+      @visibleForTesting this.speech,
+      @visibleForTesting this.client});
   final String companyId;
   final List<Obj> objects;
 
   /// Распознаватель для тестов; по умолчанию — [createSpeechInput].
   final SpeechInput? speech;
+
+  /// Разбор для тестов; по умолчанию — [createVoiceIntakeClient].
+  final VoiceIntakeClient? client;
 
   static const listenFor = Duration(seconds: 30);
   static const pauseFor = Duration(seconds: 3);
@@ -41,7 +45,7 @@ class VoiceRecordScreen extends StatefulWidget {
 class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     with SingleTickerProviderStateMixin {
   late final _speech = widget.speech ?? createSpeechInput();
-  final _client = createVoiceIntakeClient();
+  late final _client = widget.client ?? createVoiceIntakeClient();
   final _typeC = TextEditingController();
   final _typeFocus = FocusNode();
   // Создаётся сразу: если микрофон так и не включался (ввод текстом),
@@ -67,6 +71,11 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   Timer? _ticker;
   Timer? _stopGuard;
 
+  /// Пока ждём разбор: через 3 с — «ИИ разбирает заявку…», через 8 с —
+  /// «Ещё немного…» ([intakeWaitStage]).
+  IntakeWait _waitStage = IntakeWait.reading;
+  final List<Timer> _waitTimers = [];
+
   /// Номер попытки: «Ввести текстом» во время запуска отменяет её.
   int _attempt = 0;
 
@@ -90,6 +99,7 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   void dispose() {
     _ticker?.cancel();
     _stopGuard?.cancel();
+    _stopWaitTimers();
     if (_phase == _Phase.listening || _phase == _Phase.starting) {
       _speech.cancel();
     }
@@ -104,14 +114,16 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   /// Слои и помещения компании — для разбора текста; грузятся, пока
   /// человек говорит. Не загрузились — разбор без справочников.
   Future<IntakeCatalog> _loadCatalog() async {
-    final dir = DirectoryRepo();
     List<Layer> layers = const [];
     List<Place> places = const [];
     try {
-      layers = await dir.layers();
-    } catch (_) {}
-    try {
-      places = await dir.places();
+      final dir = DirectoryRepo();
+      try {
+        layers = await dir.layers();
+      } catch (_) {}
+      try {
+        places = await dir.places();
+      } catch (_) {}
     } catch (_) {}
     return IntakeCatalog(
         layers: layers, places: places, objects: widget.objects);
@@ -198,16 +210,33 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     _speech.cancel();
   }
 
+  void _stopWaitTimers() {
+    for (final t in _waitTimers) {
+      t.cancel();
+    }
+    _waitTimers.clear();
+  }
+
   Future<void> _process(String text, {required bool typed}) async {
     final locale = context.localeCode;
+    _stopWaitTimers();
     setState(() {
       _phase = _Phase.processing;
       _text = text;
+      _waitStage = IntakeWait.reading;
     });
+    for (final d in [intakeAiAfter, intakeAlmostAfter]) {
+      _waitTimers.add(Timer(d, () {
+        if (mounted && _phase == _Phase.processing) {
+          setState(() => _waitStage = intakeWaitStage(d));
+        }
+      }));
+    }
     try {
       final catalog = await _catalog;
       final draft =
           await _client.process(text, locale: locale, catalog: catalog);
+      _stopWaitTimers();
       if (!mounted) return;
       // Снизу, как шторка (fullscreenDialog), с переходом iOS.
       final created = await Navigator.push<bool>(
@@ -466,7 +495,11 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     return switch (_phase) {
       _Phase.starting => l.voiceStarting,
       _Phase.listening => l.voiceListening,
-      _Phase.processing => l.voiceProcessing,
+      _Phase.processing => switch (_waitStage) {
+          IntakeWait.reading => l.voiceProcessing,
+          IntakeWait.ai => l.voiceAiParsing,
+          IntakeWait.almost => l.voiceAiAlmost,
+        },
       _Phase.error => l.voiceFailedTitle,
       _Phase.typing => l.voiceTypeTitle,
     };

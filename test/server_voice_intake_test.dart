@@ -89,4 +89,49 @@ void main() {
         timeout: const Duration(milliseconds: 50));
     expect(d.source, DraftSource.dictionary);
   });
+
+  // testWidgets — время подменённое: 12 с проходят мгновенно.
+  testWidgets('ждём функцию 16 с: ответ запасной модели через 12 с — это ИИ',
+      (t) async {
+    expect(ServerVoiceIntake.defaultTimeout, const Duration(seconds: 16));
+    VoiceDraft? d;
+    ServerVoiceIntake(
+            call: (_) => Future.delayed(
+                const Duration(seconds: 12),
+                () => {
+                      'source': 'ai',
+                      'title': 'Жарко в переговорной',
+                      'layer_id': 'hvac',
+                      'layer': 'Климат',
+                      'priority': 'high',
+                      // Новое поле шага 20 — какая модель ответила.
+                      'model': 'lite',
+                    }))
+        .process(_text, locale: 'ru', catalog: _catalog)
+        .then((v) => d = v);
+    await t.pump(const Duration(seconds: 13));
+    expect(d?.source, DraftSource.ai);
+    expect(d?.title, 'Жарко в переговорной');
+  });
+
+  testWidgets('функция молчит дольше 16 с — словарь', (t) async {
+    VoiceDraft? d;
+    ServerVoiceIntake(call: (_) => Completer<Object?>().future)
+        .process(_text, locale: 'ru', catalog: _catalog)
+        .then((v) => d = v);
+    await t.pump(const Duration(seconds: 15));
+    expect(d, isNull, reason: 'на 15-й секунде ещё ждём');
+    await t.pump(const Duration(seconds: 2));
+    expect(d?.source, DraftSource.dictionary);
+  });
+
+  test('стадии ожидания: 0–3 с, 3–8 с, после 8 с', () {
+    expect(intakeWaitStage(Duration.zero), IntakeWait.reading);
+    expect(intakeWaitStage(const Duration(milliseconds: 2999)),
+        IntakeWait.reading);
+    expect(intakeWaitStage(const Duration(seconds: 3)), IntakeWait.ai);
+    expect(intakeWaitStage(const Duration(milliseconds: 7999)), IntakeWait.ai);
+    expect(intakeWaitStage(const Duration(seconds: 8)), IntakeWait.almost);
+    expect(intakeWaitStage(const Duration(seconds: 15)), IntakeWait.almost);
+  });
 }

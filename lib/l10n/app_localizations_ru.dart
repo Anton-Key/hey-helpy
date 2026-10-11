@@ -2404,6 +2404,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get formChoosePlace => 'Без помещения';
 
   @override
+  String get placeSearchHint => 'Номер или название';
+
+  @override
+  String get placeNotFound => 'Ничего не найдено';
+
+  @override
   String get formAsset => 'Оборудование';
 
   @override

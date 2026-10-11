@@ -2379,6 +2379,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get formChoosePlace => 'No room';
 
   @override
+  String get placeSearchHint => 'Number or name';
+
+  @override
+  String get placeNotFound => 'Nothing found';
+
+  @override
   String get formAsset => 'Equipment';
 
   @override

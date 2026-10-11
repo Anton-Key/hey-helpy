@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui';
 
+import '../directory/city.dart';
 import '../map/map_logic.dart';
 import 'floor_models.dart';
 
@@ -47,6 +48,36 @@ PlanItem? nearestPlace(
     }
   }
   return best;
+}
+
+/// Помещения для выбора в форме заявки (шаг 21): по порядку этажей
+/// ([sortFloors]; без этажа — в конце), затем по номеру с числами по
+/// значению (2, 10, 101; без номера — после номеров), затем по названию.
+List<PlanItem> sortPlacesForPicker(
+    Iterable<PlanItem> places, Iterable<Floor> floors) {
+  final order = {
+    for (final (i, f) in sortFloors(floors).indexed) f.id: i,
+  };
+  int floorIdx(PlanItem p) => order[p.floorId] ?? order.length;
+  String code(PlanItem p) => p.code?.trim() ?? '';
+  return places.toList()
+    ..sort((a, b) {
+      final f = floorIdx(a).compareTo(floorIdx(b));
+      if (f != 0) return f;
+      final ca = code(a), cb = code(b);
+      if (ca.isEmpty != cb.isEmpty) return ca.isEmpty ? 1 : -1;
+      final c = naturalCompare(ca.toLowerCase(), cb.toLowerCase());
+      if (c != 0) return c;
+      return naturalCompare(a.name.toLowerCase(), b.name.toLowerCase());
+    });
+}
+
+/// Поиск помещения по номеру или названию, без учёта регистра и «ё».
+bool placeMatchesQuery(PlanItem p, String query) {
+  String k(String s) => s.toLowerCase().replaceAll('ё', 'е').trim();
+  final q = k(query);
+  if (q.isEmpty) return true;
+  return k(p.name).contains(q) || k(p.code ?? '').contains(q);
 }
 
 /// Этажи по порядку: [Floor.sort], затем номер этажа, затем название.

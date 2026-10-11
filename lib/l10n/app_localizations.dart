@@ -4065,6 +4065,18 @@ abstract class AppLocalizations {
   /// **'Без помещения'**
   String get formChoosePlace;
 
+  /// Поиск в окне выбора помещения новой заявки (шаг 21)
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер или название'**
+  String get placeSearchHint;
+
+  /// No description provided for @placeNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не найдено'**
+  String get placeNotFound;
+
   /// No description provided for @formAsset.
   ///
   /// In ru, this message translates to:

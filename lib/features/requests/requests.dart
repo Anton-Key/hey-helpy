@@ -13,6 +13,8 @@ import '../directory/directory.dart';
 import '../floors/floor_models.dart';
 import '../floors/floor_repository.dart';
 import '../floors/order_plan_link.dart';
+import '../floors/plan_logic.dart';
+import '../regions/geo_pickers.dart';
 import '../photos/photo_capture.dart';
 import '../ppr/ppr_logic.dart';
 import '../ppr/ppr_text.dart';
@@ -1201,7 +1203,9 @@ class PlaceField extends StatefulWidget {
 }
 
 class _PlaceFieldState extends State<PlaceField> {
-  List<(String, String)>? _places;
+  /// Помещения объекта по этажу и номеру ([sortPlacesForPicker]).
+  List<PlanItem>? _places;
+  Map<String, String> _floors = const {};
 
   @override
   void initState() {
@@ -1216,16 +1220,17 @@ class _PlaceFieldState extends State<PlaceField> {
         repo.itemsOf(widget.objectId),
         repo.floorsOf(widget.objectId),
       ]);
-      final floors = {for (final f in r[1] as List<Floor>) f.id: f.name};
-      final items = [
+      final floors = r[1] as List<Floor>;
+      final items = sortPlacesForPicker([
         for (final i in r[0] as List<PlanItem>)
-          if (i.isPlace)
-            (
-              i.id,
-              [i.label, if (floors[i.floorId] case final f?) f].join(' · ')
-            )
-      ];
-      if (mounted) setState(() => _places = items);
+          if (i.isPlace) i
+      ], floors);
+      if (mounted) {
+        setState(() {
+          _places = items;
+          _floors = {for (final f in floors) f.id: f.name};
+        });
+      }
     } catch (e) {
       debugPrint('PlaceField: ${e.runtimeType}');
       if (mounted) setState(() => _places = const []);
@@ -1240,17 +1245,86 @@ class _PlaceFieldState extends State<PlaceField> {
       return const Padding(
           padding: EdgeInsets.all(AppSpace.m), child: AppLoader());
     }
-    final value = places.any((p) => p.$1 == widget.value) ? widget.value : null;
-    return _Dropdown(
-      value: value ?? '',
-      hint: l.formChoosePlace,
-      items: [
-        DropdownMenuItem(
-            value: '', child: Text(l.formChoosePlace, style: AppText.body)),
-        for (final (id, label) in places)
-          DropdownMenuItem(value: id, child: Text(label, style: AppText.body)),
+    PlanItem? selected;
+    for (final p in places) {
+      if (p.id == widget.value) selected = p;
+    }
+    // «301 · Переговорная», этаж — серым под ним.
+    return AppRow(
+      title: selected?.label ?? l.formChoosePlace,
+      titleStyle: selected == null
+          ? AppText.body.copyWith(color: AppColors.secondary)
+          : AppText.body,
+      subtitle: selected == null ? null : _floors[selected.floorId],
+      onTap: places.isEmpty
+          ? null
+          : () async {
+              final picked = await showAppSheet<String>(
+                  context: context,
+                  builder: (_) => PlacePickerSheet(
+                      places: places, floors: _floors, selected: widget.value));
+              if (picked == null) return;
+              widget.onChanged(picked.isEmpty ? null : picked);
+            },
+    );
+  }
+}
+
+/// Окно выбора помещения: поиск по номеру и названию, «Без помещения»
+/// сверху. Возвращает id; '' — без помещения; null — закрыли.
+class PlacePickerSheet extends StatefulWidget {
+  const PlacePickerSheet(
+      {super.key,
+      required this.places,
+      required this.floors,
+      required this.selected});
+  final List<PlanItem> places;
+  final Map<String, String> floors;
+  final String? selected;
+
+  @override
+  State<PlacePickerSheet> createState() => _PlacePickerSheetState();
+}
+
+class _PlacePickerSheetState extends State<PlacePickerSheet> {
+  String _q = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final list = [
+      for (final p in widget.places)
+        if (placeMatchesQuery(p, _q)) p
+    ];
+    return ListPickerSheet(
+      title: l.formPlace,
+      search: widget.places.length < 6
+          ? null
+          : AppSearchField(
+              hint: l.placeSearchHint,
+              onChanged: (v) => setState(() => _q = v)),
+      children: [
+        AppGroup(margin: EdgeInsets.zero, children: [
+          if (_q.trim().isEmpty)
+            AppCheckRow(
+                title: l.formChoosePlace,
+                selected: widget.selected == null,
+                onTap: () => Navigator.pop(context, '')),
+          for (final p in list)
+            AppCheckRow(
+              title: p.label,
+              subtitle: widget.floors[p.floorId],
+              selected: p.id == widget.selected,
+              onTap: () => Navigator.pop(context, p.id),
+            ),
+        ]),
+        if (list.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(AppSpace.l),
+            child: Text(l.placeNotFound,
+                textAlign: TextAlign.center, style: AppText.footnote),
+          ),
       ],
-      onChanged: (v) => widget.onChanged(v == null || v.isEmpty ? null : v),
     );
   }
 }

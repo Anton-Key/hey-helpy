@@ -667,6 +667,8 @@
   "floorShort": "fl. {level}",
   "formPlace": "Room",
   "formChoosePlace": "No room",
+  "placeSearchHint": "Number or name",
+  "placeNotFound": "Nothing found",
   "formAsset": "Equipment",
   "navAddOrder": "Work order",
   "navCollapse": "Collapse menu",

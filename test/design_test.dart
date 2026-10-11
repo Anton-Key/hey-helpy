@@ -118,6 +118,15 @@ void main() {
     expect(title.height, lessThan(30));
   });
 
+  testWidgets('AppButton expand: false — по размеру подписи, не на всю ширину',
+      (t) async {
+    await t.pumpWidget(_app(Wrap(children: [
+      AppButton.secondary(
+          label: 'Готово', small: true, expand: false, onPressed: () {}),
+    ])));
+    expect(t.getSize(find.byType(AppButton)).width, lessThan(200));
+  });
+
   testWidgets('SectionHeader — прописными', (t) async {
     await t.pumpWidget(_app(const SectionHeader('Описание')));
     expect(find.text('ОПИСАНИЕ'), findsOneWidget);

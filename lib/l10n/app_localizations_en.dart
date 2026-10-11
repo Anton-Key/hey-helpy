@@ -2428,4 +2428,1197 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hotkeyNote =>
       'They don\'t work while the cursor is in a text field.';
+
+  @override
+  String migrationNeeded(String number) {
+    return 'Migration $number is required: this section will work once it is applied to the database (Actions → “Apply migration”).';
+  }
+
+  @override
+  String get tabPpr => 'PPM';
+
+  @override
+  String get pprTitle => 'Planned maintenance';
+
+  @override
+  String pprSummary(String month, int done, int total) {
+    return '$month: $done of $total done';
+  }
+
+  @override
+  String get pprEmpty =>
+      'No maintenance plans yet. A manager adds them with “+”.';
+
+  @override
+  String get pprEmptyFiltered => 'No plans match the filters';
+
+  @override
+  String get pprLoadFailed =>
+      'Couldn\'t load maintenance plans. Check your connection and try again.';
+
+  @override
+  String get pprStateDone => 'Done';
+
+  @override
+  String get pprStateInProgress => 'In progress';
+
+  @override
+  String get pprStateNotStarted => 'Not started';
+
+  @override
+  String get pprStateOverdue => 'Overdue';
+
+  @override
+  String get pprStatePaused => 'Paused';
+
+  @override
+  String get pprEveryMonth => 'every month';
+
+  @override
+  String get pprEveryQuarter => 'every quarter';
+
+  @override
+  String get pprEveryHalfYear => 'every six months';
+
+  @override
+  String get pprEveryYear => 'every year';
+
+  @override
+  String pprEveryDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'every $count days',
+      one: 'every day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprKindMonth => 'Month';
+
+  @override
+  String get pprKindQuarter => 'Quarter';
+
+  @override
+  String get pprKindHalfYear => 'Half-year';
+
+  @override
+  String get pprKindYear => 'Year';
+
+  @override
+  String get pprKindDays => 'N days';
+
+  @override
+  String pprQuarterLabel(String q, String year) {
+    return 'Q$q $year';
+  }
+
+  @override
+  String pprHalfLabel(String h, String year) {
+    return 'H$h $year';
+  }
+
+  @override
+  String pprYearLabel(String year) {
+    return '$year';
+  }
+
+  @override
+  String pprTaskLine(String period, String due) {
+    return 'PPM · $period · due $due';
+  }
+
+  @override
+  String get pprDoWithin => 'Complete within the period';
+
+  @override
+  String get pprPeriodRow => 'Maintenance period';
+
+  @override
+  String get pprTag => 'PPM';
+
+  @override
+  String get pprKindOrder => 'Planned maintenance';
+
+  @override
+  String get filterPpr => 'PPM';
+
+  @override
+  String get pprFilters => 'Filters';
+
+  @override
+  String pprFiltersCount(int count) {
+    return 'Filters · $count';
+  }
+
+  @override
+  String get pprFilterObject => 'Site';
+
+  @override
+  String get pprFilterSystem => 'System';
+
+  @override
+  String get pprFilterContractor => 'Contractor';
+
+  @override
+  String get pprFilterState => 'Period status';
+
+  @override
+  String pprFiltersShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count plans',
+      one: 'Show $count plan',
+      zero: 'No plans',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprCardPeriodicity => 'Frequency';
+
+  @override
+  String pprCardStarts(String date) {
+    return 'from $date';
+  }
+
+  @override
+  String get pprCardCurrent => 'Current period';
+
+  @override
+  String get pprCardChecklist => 'Checklist';
+
+  @override
+  String get pprCardHistory => 'Period history';
+
+  @override
+  String get pprCardHistoryEmpty => 'No tasks for this plan yet';
+
+  @override
+  String get pprCardNoTask => 'No task for this period yet';
+
+  @override
+  String pprAcceptedBy(String date, String name) {
+    return 'Accepted $date · $name';
+  }
+
+  @override
+  String pprAcceptedAt(String date) {
+    return 'Accepted $date';
+  }
+
+  @override
+  String get pprNoContractor =>
+      'No contractor bound to this system on the site';
+
+  @override
+  String get pprAsset => 'Equipment';
+
+  @override
+  String get pprEdit => 'Edit';
+
+  @override
+  String get pprPause => 'Pause';
+
+  @override
+  String get pprResume => 'Resume';
+
+  @override
+  String get pprDelete => 'Delete plan';
+
+  @override
+  String pprDeleteConfirm(String title) {
+    return 'Delete the plan “$title”? This can\'t be undone.';
+  }
+
+  @override
+  String get pprDeleteHasTasks =>
+      'The plan already has tasks — it can only be paused.';
+
+  @override
+  String get pprPaused => 'Plan paused';
+
+  @override
+  String get pprResumed => 'Plan resumed';
+
+  @override
+  String get pprDeleted => 'Plan deleted';
+
+  @override
+  String get pprSaved => 'Plan saved';
+
+  @override
+  String pprGenerated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count maintenance tasks created',
+      one: '$count maintenance task created',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprFormNew => 'New maintenance plan';
+
+  @override
+  String get pprFormEdit => 'Maintenance plan';
+
+  @override
+  String get pprFormTitle => 'Title';
+
+  @override
+  String get pprFormTitleHint => 'E.g. HVAC service';
+
+  @override
+  String get pprFormDescription => 'Description';
+
+  @override
+  String get pprFormDescriptionHint => 'What the work includes';
+
+  @override
+  String get pprFormObject => 'Site';
+
+  @override
+  String get pprFormPlace => 'Room';
+
+  @override
+  String get pprFormAsset => 'Equipment';
+
+  @override
+  String get pprFormNone => 'Not selected';
+
+  @override
+  String get pprFormSystem => 'System';
+
+  @override
+  String get pprFormPeriod => 'Frequency';
+
+  @override
+  String get pprFormDays => 'Days per period';
+
+  @override
+  String get pprFormStarts => 'Start';
+
+  @override
+  String get pprFormChecklist => 'Checklist';
+
+  @override
+  String get pprFormChecklistHint => 'One item per line';
+
+  @override
+  String get pprFormPhoto => '“After” photo required';
+
+  @override
+  String get pprFormRequired => 'Fill in the title, site and system';
+
+  @override
+  String get pprFormDaysInvalid => 'Days must be from 1 to 3660';
+
+  @override
+  String get pprDuplicate =>
+      'A plan with this title already exists on this site';
+
+  @override
+  String get pprChooseObject => 'Choose a site';
+
+  @override
+  String get pprInfoTitle => 'Planned maintenance';
+
+  @override
+  String get pprInfo1 =>
+      'A plan is regular work on a site: service, inspection, cleaning. The period is a month, quarter, half-year, year or N days.';
+
+  @override
+  String get pprInfo2 =>
+      'The task for the current period is created automatically when a manager opens the app (at most once every 10 minutes) or taps “Refresh”. The contractor is assigned by system and site.';
+
+  @override
+  String get pprInfo3 =>
+      'The task is due on the last day of the period. Not accepted by then — overdue.';
+
+  @override
+  String get pprInfo4 =>
+      'A plan with tasks can\'t be deleted — pause it instead.';
+
+  @override
+  String get reportPrint => 'Print report';
+
+  @override
+  String get reportPrintPreparing => 'Preparing PDF…';
+
+  @override
+  String get reportPrintFailed => 'Couldn\'t create the PDF. Please try again.';
+
+  @override
+  String get reportPrintInfo1 =>
+      'The PDF uses the filters currently on screen: period, objects, region, contractor, work type and task type.';
+
+  @override
+  String get reportPrintInfo2 =>
+      'In the browser, a print dialog opens — choose “Save as PDF” there.';
+
+  @override
+  String get reportPrintInfo3 =>
+      'On a phone you can send the file to a messenger or email, or print it.';
+
+  @override
+  String get reportPrintInfo4 =>
+      'The report contains KPIs, “By region” and “By contractor” tables and the list of requests, with page numbers.';
+
+  @override
+  String get reportFilterRegion => 'Region';
+
+  @override
+  String get reportFilterKind => 'Type';
+
+  @override
+  String get reportKindOnce => 'One-off';
+
+  @override
+  String get reportKindRecurring => 'Recurring';
+
+  @override
+  String get reportKindPpr => 'Planned maintenance';
+
+  @override
+  String get reportRegionsGroup => 'Regions';
+
+  @override
+  String get reportCountriesGroup => 'Countries';
+
+  @override
+  String get reportByRegion => 'By region';
+
+  @override
+  String get reportByCity => 'By city';
+
+  @override
+  String get reportNoRegion => 'No region';
+
+  @override
+  String get reportNoCity => 'No city';
+
+  @override
+  String get reportPprDone => 'Maintenance done';
+
+  @override
+  String reportPprOf(String done, String total) {
+    return '$done of $total';
+  }
+
+  @override
+  String get pdfTitle => 'Requests and contractors report';
+
+  @override
+  String pdfCompany(String name) {
+    return 'Company: $name';
+  }
+
+  @override
+  String pdfPeriod(String period) {
+    return 'Period: $period';
+  }
+
+  @override
+  String pdfFilters(String filters) {
+    return 'Filters: $filters';
+  }
+
+  @override
+  String get pdfNoFilters => 'all objects, contractors and work types';
+
+  @override
+  String pdfGenerated(String date, String name) {
+    return 'Generated: $date, $name';
+  }
+
+  @override
+  String pdfPageOf(String page, String pages) {
+    return 'page $page of $pages';
+  }
+
+  @override
+  String get pdfOrders => 'Requests';
+
+  @override
+  String get pdfOrdersEmpty => 'No requests in this period.';
+
+  @override
+  String get pdfColNumber => 'No.';
+
+  @override
+  String get pdfColDate => 'Date';
+
+  @override
+  String get pdfColObject => 'Property';
+
+  @override
+  String get pdfColPlace => 'Room';
+
+  @override
+  String get pdfColLayer => 'System';
+
+  @override
+  String get pdfColContractor => 'Contractor';
+
+  @override
+  String get pdfColStatus => 'Status';
+
+  @override
+  String get pdfColDue => 'Due';
+
+  @override
+  String get pdfColRegion => 'Region';
+
+  @override
+  String get pdfColCity => 'City';
+
+  @override
+  String pdfFileName(String period) {
+    return 'HeyHelpy_Report_$period.pdf';
+  }
+
+  @override
+  String get roomCode => 'Room number';
+
+  @override
+  String get roomCodeHint => 'For example, 305 or 12A';
+
+  @override
+  String get roomCodeTaken => 'This number is already used in this building';
+
+  @override
+  String get roomCodeNone => 'No number';
+
+  @override
+  String get areaDraw => 'Outline area';
+
+  @override
+  String get areaEdit => 'Edit area';
+
+  @override
+  String get areaDelete => 'Delete area';
+
+  @override
+  String get areaDeleted => 'Area deleted';
+
+  @override
+  String areaTitle(String name) {
+    return 'Area: $name';
+  }
+
+  @override
+  String get areaHintPolygon =>
+      'Tap the corners of the room. Points can be dragged.';
+
+  @override
+  String get areaHintRect =>
+      'Drag a rectangle over the room. Points can be dragged.';
+
+  @override
+  String get areaModePolygon => 'Corners';
+
+  @override
+  String get areaModeRect => 'Rectangle';
+
+  @override
+  String get areaUndoPoint => 'Undo point';
+
+  @override
+  String get areaNeedPoints => 'At least 3 points are needed';
+
+  @override
+  String get roomInfoTitle => 'Room number and area';
+
+  @override
+  String get roomInfo1 =>
+      'The room number (“305”) shows in lists and on the plan, can be searched, and voice requests understand it: “tap leaking in room 305”.';
+
+  @override
+  String get roomInfo2 =>
+      'The number is unique within a building. Leave it empty for no number.';
+
+  @override
+  String get roomInfo3 =>
+      'The area is the room outline on the plan. Edit mode → room → “Outline area”: tap the corners or drag a rectangle, then “Done”.';
+
+  @override
+  String get roomInfo4 =>
+      'The area is tinted with the colour of the room’s requests; tapping anywhere inside opens the room.';
+
+  @override
+  String get regionNone => 'No region';
+
+  @override
+  String get regionWhole => 'Whole region';
+
+  @override
+  String get countryNone => 'Country not set';
+
+  @override
+  String geoWholeCity(String city) {
+    return 'Whole city: $city';
+  }
+
+  @override
+  String geoWholeCountry(String country) {
+    return 'Whole country: $country';
+  }
+
+  @override
+  String get regionsTitle => 'Regions';
+
+  @override
+  String get regionsEmpty =>
+      'No regions yet. Add the first one — for example, “Europe”.';
+
+  @override
+  String get regionsLoadFailed => 'Couldn’t load regions';
+
+  @override
+  String get regionAdd => 'New region';
+
+  @override
+  String get regionAddRow => '+ New region';
+
+  @override
+  String get regionNameLabel => 'Region name';
+
+  @override
+  String get regionNameHint => 'For example, Europe';
+
+  @override
+  String get regionNameRequired => 'Enter the region name';
+
+  @override
+  String get regionNameTooLong => '60 characters at most';
+
+  @override
+  String get regionRename => 'Rename';
+
+  @override
+  String get regionMoveUp => 'Move up';
+
+  @override
+  String get regionMoveDown => 'Move down';
+
+  @override
+  String get regionMerge => 'Merge with…';
+
+  @override
+  String get regionDelete => 'Delete';
+
+  @override
+  String regionActions(String name) {
+    return 'Actions for region “$name”';
+  }
+
+  @override
+  String get regionSimilarTitle => 'A similar region already exists';
+
+  @override
+  String regionSimilarText(String name, String objects) {
+    return 'Looks like this region already exists: “$name” ($objects). Use it?';
+  }
+
+  @override
+  String regionUseExisting(String name) {
+    return 'Use “$name”';
+  }
+
+  @override
+  String get regionCreateAnyway => 'Create anyway';
+
+  @override
+  String get regionRenameAnyway => 'Rename anyway';
+
+  @override
+  String get regionDuplicate =>
+      'A region with this name already exists — pick it from the list';
+
+  @override
+  String get regionCreated => 'Region added';
+
+  @override
+  String get regionRenamed => 'Region renamed';
+
+  @override
+  String get regionDeleted => 'Region deleted';
+
+  @override
+  String get regionMerged => 'Regions merged';
+
+  @override
+  String regionMergePick(String name) {
+    return 'Merge “$name” with…';
+  }
+
+  @override
+  String get regionMergeConfirmTitle => 'Merge regions?';
+
+  @override
+  String regionMergeConfirm(String objects, String into, String from) {
+    return '$objects will move to “$into”, region “$from” will be deleted.';
+  }
+
+  @override
+  String get regionMergeAction => 'Merge';
+
+  @override
+  String get regionMergeNoOther => 'There are no other regions to merge with';
+
+  @override
+  String regionDeleteConfirmTitle(String name) {
+    return 'Delete region “$name”?';
+  }
+
+  @override
+  String regionDeleteConfirm(String objects) {
+    return 'Objects ($objects) will have no region.';
+  }
+
+  @override
+  String get regionOnlyManager => 'Regions are edited by a company manager';
+
+  @override
+  String get regionInfo1 =>
+      'One shared list of company regions: an object’s region is picked from the list, not typed.';
+
+  @override
+  String get regionInfo2 =>
+      'Similar names (“Europe” and “Eurpe”) are detected, and the app offers the existing region.';
+
+  @override
+  String get regionInfo3 =>
+      'An extra region can be merged into the right one: its objects move over and it is deleted.';
+
+  @override
+  String get regionInfo4 =>
+      'A rename shows up at once in all objects, filters and reports.';
+
+  @override
+  String get regionPickTitle => 'Region';
+
+  @override
+  String get regionNotSet => 'Not set';
+
+  @override
+  String get regionManage => 'Company regions';
+
+  @override
+  String get countryTitle => 'Country';
+
+  @override
+  String get countrySearchHint => 'Country name or code';
+
+  @override
+  String get countryNotFound => 'No such country';
+
+  @override
+  String get geoCity => 'City';
+
+  @override
+  String get geoCityHint => 'For example, Belgrade';
+
+  @override
+  String get geoCitySimilarTitle => 'A similar city already exists';
+
+  @override
+  String geoCitySimilar(String name) {
+    return 'The company already has the city “$name”. Use it?';
+  }
+
+  @override
+  String geoCityKeep(String name) {
+    return 'Keep “$name”';
+  }
+
+  @override
+  String get geoCitySuggestions => 'Company cities in this country';
+
+  @override
+  String get geoEditTitle => 'Country, city, region';
+
+  @override
+  String get geoEdit => 'Edit country, city, region';
+
+  @override
+  String equipSectionTitle(int count) {
+    return 'Equipment · $count';
+  }
+
+  @override
+  String get equipSearchHint => 'Name, number, model';
+
+  @override
+  String get equipEmpty => 'No equipment yet';
+
+  @override
+  String get equipAdd => 'Add equipment';
+
+  @override
+  String get equipImport => 'Import from Excel / CSV';
+
+  @override
+  String get equipNoSystem => 'No system';
+
+  @override
+  String get equipNothingFound => 'Nothing found';
+
+  @override
+  String equipGroupTitle(String system, int count) {
+    return '$system · $count';
+  }
+
+  @override
+  String get assetFormNewTitle => 'New equipment';
+
+  @override
+  String get assetFormEditTitle => 'Equipment';
+
+  @override
+  String get assetFieldName => 'Name';
+
+  @override
+  String get assetFieldNameHint => 'E.g. meeting room air conditioner';
+
+  @override
+  String get assetFieldSystem => 'System';
+
+  @override
+  String get assetFieldRoom => 'Room';
+
+  @override
+  String get assetChooseRoom => 'Choose a room';
+
+  @override
+  String get assetFieldInventory => 'Inventory number';
+
+  @override
+  String get assetFieldManufacturer => 'Manufacturer';
+
+  @override
+  String get assetFieldModel => 'Model';
+
+  @override
+  String get assetFieldSerial => 'Serial number';
+
+  @override
+  String get assetFieldInstalled => 'Installed on';
+
+  @override
+  String get assetNameRequired => 'Enter a name';
+
+  @override
+  String get assetRoomRequired => 'Choose a room';
+
+  @override
+  String get assetSaved => 'Equipment saved';
+
+  @override
+  String get assetSaveFailed =>
+      'Couldn\'t save. Check your connection and try again.';
+
+  @override
+  String get assetNoPlaces => 'Add a room to the property first';
+
+  @override
+  String get assetCardPassport => 'Details';
+
+  @override
+  String get assetCardWhere => 'Location';
+
+  @override
+  String get assetCardObject => 'Property';
+
+  @override
+  String get assetCardFloor => 'Floor';
+
+  @override
+  String get assetCardPlans => 'Maintenance plans';
+
+  @override
+  String get assetCardPlansEmpty => 'No maintenance plans';
+
+  @override
+  String assetCardOrders(int count) {
+    return 'Requests · $count';
+  }
+
+  @override
+  String get assetCardOrdersEmpty => 'No requests for this equipment';
+
+  @override
+  String get assetCreateOrder => 'Create request';
+
+  @override
+  String get assetLoadFailed => 'Couldn\'t load the equipment';
+
+  @override
+  String get assetEdit => 'Edit';
+
+  @override
+  String get assetPeriodMonth => 'every month';
+
+  @override
+  String get assetPeriodQuarter => 'every quarter';
+
+  @override
+  String get assetPeriodHalfYear => 'every six months';
+
+  @override
+  String get assetPeriodYear => 'every year';
+
+  @override
+  String assetPeriodDays(int days) {
+    return 'every $days days';
+  }
+
+  @override
+  String get assetPlanPaused => 'paused';
+
+  @override
+  String get importTitle => 'Import equipment';
+
+  @override
+  String get importTemplateXlsx => 'Download Excel template';
+
+  @override
+  String get importTemplateCsv => 'Download CSV template';
+
+  @override
+  String get importPickFile => 'Choose a file (.xlsx, .csv)';
+
+  @override
+  String get importFooter =>
+      'The first row holds the headers. “Name” and “Room” are required.';
+
+  @override
+  String get importTemplateSaved => 'Template saved';
+
+  @override
+  String get importTemplateFailed => 'Couldn\'t save the template';
+
+  @override
+  String get importReadFailed =>
+      'Couldn\'t read the file. Save it as .xlsx or .csv (UTF-8) and try again.';
+
+  @override
+  String get importEmpty => 'The file has no equipment rows';
+
+  @override
+  String importMissingColumns(String columns) {
+    return 'The file is missing columns: $columns. Download the template and copy your data into it.';
+  }
+
+  @override
+  String get importColName => 'Name';
+
+  @override
+  String get importColRoom => 'Room';
+
+  @override
+  String importSummary(int total, int ok, int bad) {
+    return 'Rows: $total · ready: $ok · with errors: $bad';
+  }
+
+  @override
+  String importCreateRooms(int count) {
+    return 'Create missing rooms ($count)';
+  }
+
+  @override
+  String get importErrorsTitle => 'With errors — won\'t be imported';
+
+  @override
+  String get importReadyTitle => 'Ready to import';
+
+  @override
+  String importRowTitle(int line, String name) {
+    return 'Row $line · $name';
+  }
+
+  @override
+  String get importNoRowName => 'no name';
+
+  @override
+  String importMore(int count) {
+    return 'And $count more';
+  }
+
+  @override
+  String get importIssueNoName => 'no name';
+
+  @override
+  String get importIssueNoRoom => 'no room';
+
+  @override
+  String importIssueRoomNotFound(String room) {
+    return 'no room “$room”';
+  }
+
+  @override
+  String importIssueUnknownSystem(String system) {
+    return 'no system “$system”';
+  }
+
+  @override
+  String get importIssueDupFile => 'inventory number repeats in the file';
+
+  @override
+  String get importIssueDupDb => 'this inventory number already exists';
+
+  @override
+  String get importIssueBadDate =>
+      'date not recognised (use YYYY-MM-DD or DD.MM.YYYY)';
+
+  @override
+  String get importIssueTooLong => 'value too long (over 120 characters)';
+
+  @override
+  String importButton(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Import $count rows',
+      one: 'Import $count row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importDone(int count) {
+    return 'Imported: $count';
+  }
+
+  @override
+  String get importFailed =>
+      'Import failed — nothing was added. Check your connection and try again.';
+
+  @override
+  String get importInfoTitle => 'Importing equipment';
+
+  @override
+  String get importInfo1 =>
+      'Download the Excel or CSV template: row 1 holds the headers, row 2 is an example (you can delete it).';
+
+  @override
+  String get importInfo2 =>
+      '“Name” and “Room” are required. Room — by number (“305”) or by name, as on the property card.';
+
+  @override
+  String get importInfo3 =>
+      '“System” — as in the work types (HVAC, Electrical…). Installed on — YYYY-MM-DD or DD.MM.YYYY.';
+
+  @override
+  String get importInfo4 =>
+      'Rows with errors are skipped: fix them in the file and choose it again. Missing rooms can be created during import.';
+
+  @override
+  String get importTemplateFileName => 'HeyHelpy_Equipment_template';
+
+  @override
+  String get assetFieldInventoryHint => 'E.g. AC-3-001';
+
+  @override
+  String get zoneTitle => 'Access zone';
+
+  @override
+  String get zoneMenuRole => 'Change role';
+
+  @override
+  String get zoneWholeCompany => 'Whole company';
+
+  @override
+  String get zoneWholeCompanyHint =>
+      'Sees all sites and systems of the company — as before.';
+
+  @override
+  String get zoneAllSystems => 'All systems';
+
+  @override
+  String get zoneRules => 'Rules';
+
+  @override
+  String get zoneRulesFooter =>
+      'Rules add up: everything matching at least one rule is visible.';
+
+  @override
+  String get zoneRuleAdd => 'Add rule';
+
+  @override
+  String get zoneRuleTitle => 'Rule';
+
+  @override
+  String get zoneRuleSystems => 'Systems';
+
+  @override
+  String get zoneRulePlaces => 'Places';
+
+  @override
+  String get zoneRuleAddPlace => 'Choose places';
+
+  @override
+  String get zoneRuleRefine => 'Floor or equipment';
+
+  @override
+  String get zoneRuleRefineTitle => 'Narrow the place';
+
+  @override
+  String get zoneRuleWholeObject => 'Whole site';
+
+  @override
+  String get zoneRuleFloors => 'Floors';
+
+  @override
+  String get zoneRuleAssets => 'Equipment';
+
+  @override
+  String get zoneRuleDelete => 'Delete rule';
+
+  @override
+  String get zoneRuleEmpty => 'Choose at least one place';
+
+  @override
+  String get zoneRulesEmpty => 'Add a rule or choose a template';
+
+  @override
+  String get zoneTemplates => 'Templates';
+
+  @override
+  String get zoneTemplateCompany => 'Whole company';
+
+  @override
+  String get zoneTemplateSystem => 'One system on all sites';
+
+  @override
+  String get zoneTemplateRegion => 'Whole region';
+
+  @override
+  String get zoneTemplatePickSystem => 'Which system?';
+
+  @override
+  String get zoneTemplatePickRegion => 'Which region?';
+
+  @override
+  String get zoneNoRegions => 'The company has no regions';
+
+  @override
+  String get zoneSaved => 'Access zone saved';
+
+  @override
+  String get zoneSaveDenied => 'Only an administrator can change access zones';
+
+  @override
+  String get zoneLoadFailed =>
+      'Couldn\'t load the access zone. Check your connection and try again.';
+
+  @override
+  String zonePill(String company, String role, String zone) {
+    return '$company · $role · $zone';
+  }
+
+  @override
+  String get zoneInfoTitle => 'Access zone';
+
+  @override
+  String get zoneInfo1 =>
+      'By default a manager sees the whole company — nothing to set up.';
+
+  @override
+  String get zoneInfo2 =>
+      'A rule is systems × places, e.g. “HVAC, Plumbing · Moscow”. Rules add up.';
+
+  @override
+  String get zoneInfo3 =>
+      'Outside the zone the manager sees no orders, equipment, contractors or reports — the database enforces it.';
+
+  @override
+  String get zoneInfo4 =>
+      'Only an administrator can change zones; every change is logged.';
+
+  @override
+  String get zoneRefused =>
+      'Not allowed: outside your zone or an administrator is required';
+
+  @override
+  String get crewSection => 'Crews';
+
+  @override
+  String get crewEmpty =>
+      'No crews — all executors see the contractor\'s sites by its bindings.';
+
+  @override
+  String get crewAdd => 'New crew';
+
+  @override
+  String get crewTitle => 'Crew';
+
+  @override
+  String get crewName => 'Name';
+
+  @override
+  String get crewNameHint => 'E.g. Beijing';
+
+  @override
+  String get crewNameRequired => 'Enter the crew name (up to 60 characters)';
+
+  @override
+  String get crewDuplicate => 'A crew with this name already exists';
+
+  @override
+  String get crewMembers => 'Executors';
+
+  @override
+  String get crewNoExecutors => 'The contractor has no executors yet';
+
+  @override
+  String get crewZone => 'Crew zone';
+
+  @override
+  String get crewZoneHint =>
+      'Crew executors see only these places and systems.';
+
+  @override
+  String crewMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count executors',
+      one: '$count executor',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get crewSaved => 'Crew saved';
+
+  @override
+  String get crewDeleted => 'Crew deleted';
+
+  @override
+  String get crewDelete => 'Delete crew';
+
+  @override
+  String crewDeleteConfirm(String name) {
+    return 'Delete the crew “$name”? Its executors will see all the contractor\'s sites again.';
+  }
+
+  @override
+  String get crewInfoTitle => 'Crews';
+
+  @override
+  String get crewInfo1 =>
+      'Needed only if different crews of one contractor must not see each other\'s sites.';
+
+  @override
+  String get crewInfo2 =>
+      'An executor in a crew sees only the crew zone; without a crew — everything by the contractor\'s bindings.';
+
+  @override
+  String get crewInfo3 =>
+      'Crews are set up by a manager who can see the contractor.';
 }

@@ -2453,4 +2453,1202 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get hotkeyNote => 'Не срабатывают, когда курсор в поле ввода.';
+
+  @override
+  String migrationNeeded(String number) {
+    return 'Нужна миграция $number: раздел заработает, когда её применят в базе (Actions → «Apply migration»).';
+  }
+
+  @override
+  String get tabPpr => 'ППР';
+
+  @override
+  String get pprTitle => 'Регламентные работы';
+
+  @override
+  String pprSummary(String month, int done, int total) {
+    return '$month: выполнено $done из $total';
+  }
+
+  @override
+  String get pprEmpty =>
+      'Планов ППР пока нет. Менеджер добавляет их кнопкой «+».';
+
+  @override
+  String get pprEmptyFiltered => 'Нет планов по выбранным фильтрам';
+
+  @override
+  String get pprLoadFailed =>
+      'Не удалось загрузить планы ППР. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get pprStateDone => 'Выполнено';
+
+  @override
+  String get pprStateInProgress => 'В работе';
+
+  @override
+  String get pprStateNotStarted => 'Не начато';
+
+  @override
+  String get pprStateOverdue => 'Просрочено';
+
+  @override
+  String get pprStatePaused => 'Приостановлен';
+
+  @override
+  String get pprEveryMonth => 'каждый месяц';
+
+  @override
+  String get pprEveryQuarter => 'каждый квартал';
+
+  @override
+  String get pprEveryHalfYear => 'каждые полгода';
+
+  @override
+  String get pprEveryYear => 'каждый год';
+
+  @override
+  String pprEveryDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'каждые $count дней',
+      few: 'каждые $count дня',
+      one: 'каждый $count день',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprKindMonth => 'Месяц';
+
+  @override
+  String get pprKindQuarter => 'Квартал';
+
+  @override
+  String get pprKindHalfYear => 'Полгода';
+
+  @override
+  String get pprKindYear => 'Год';
+
+  @override
+  String get pprKindDays => 'N дней';
+
+  @override
+  String pprQuarterLabel(String q, String year) {
+    return '$q кв. $year';
+  }
+
+  @override
+  String pprHalfLabel(String h, String year) {
+    return '$h полугодие $year';
+  }
+
+  @override
+  String pprYearLabel(String year) {
+    return '$year год';
+  }
+
+  @override
+  String pprTaskLine(String period, String due) {
+    return 'ППР · $period · до $due';
+  }
+
+  @override
+  String get pprDoWithin => 'Выполнить в течение периода';
+
+  @override
+  String get pprPeriodRow => 'Период ППР';
+
+  @override
+  String get pprTag => 'ППР';
+
+  @override
+  String get pprKindOrder => 'ППР';
+
+  @override
+  String get filterPpr => 'ППР';
+
+  @override
+  String get pprFilters => 'Фильтры';
+
+  @override
+  String pprFiltersCount(int count) {
+    return 'Фильтры · $count';
+  }
+
+  @override
+  String get pprFilterObject => 'Объект';
+
+  @override
+  String get pprFilterSystem => 'Система';
+
+  @override
+  String get pprFilterContractor => 'Подрядчик';
+
+  @override
+  String get pprFilterState => 'Статус периода';
+
+  @override
+  String pprFiltersShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Показать $count планов',
+      few: 'Показать $count плана',
+      one: 'Показать $count план',
+      zero: 'Нет планов',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprCardPeriodicity => 'Периодичность';
+
+  @override
+  String pprCardStarts(String date) {
+    return 'с $date';
+  }
+
+  @override
+  String get pprCardCurrent => 'Текущий период';
+
+  @override
+  String get pprCardChecklist => 'Чек-лист';
+
+  @override
+  String get pprCardHistory => 'История периодов';
+
+  @override
+  String get pprCardHistoryEmpty => 'Задач по плану ещё не было';
+
+  @override
+  String get pprCardNoTask => 'Задача периода ещё не создана';
+
+  @override
+  String pprAcceptedBy(String date, String name) {
+    return 'Принято $date · $name';
+  }
+
+  @override
+  String pprAcceptedAt(String date) {
+    return 'Принято $date';
+  }
+
+  @override
+  String get pprNoContractor => 'Не закреплён за системой на этом объекте';
+
+  @override
+  String get pprAsset => 'Оборудование';
+
+  @override
+  String get pprEdit => 'Изменить';
+
+  @override
+  String get pprPause => 'Приостановить';
+
+  @override
+  String get pprResume => 'Возобновить';
+
+  @override
+  String get pprDelete => 'Удалить план';
+
+  @override
+  String pprDeleteConfirm(String title) {
+    return 'Удалить план «$title»? Это нельзя отменить.';
+  }
+
+  @override
+  String get pprDeleteHasTasks =>
+      'У плана уже есть задачи — его можно только приостановить.';
+
+  @override
+  String get pprPaused => 'План приостановлен';
+
+  @override
+  String get pprResumed => 'План возобновлён';
+
+  @override
+  String get pprDeleted => 'План удалён';
+
+  @override
+  String get pprSaved => 'План сохранён';
+
+  @override
+  String pprGenerated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Создано $count задач ППР',
+      few: 'Созданы $count задачи ППР',
+      one: 'Создана $count задача ППР',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pprFormNew => 'Новый план ППР';
+
+  @override
+  String get pprFormEdit => 'План ППР';
+
+  @override
+  String get pprFormTitle => 'Название';
+
+  @override
+  String get pprFormTitleHint => 'Например: ТО кондиционеров';
+
+  @override
+  String get pprFormDescription => 'Описание';
+
+  @override
+  String get pprFormDescriptionHint => 'Что входит в работу';
+
+  @override
+  String get pprFormObject => 'Объект';
+
+  @override
+  String get pprFormPlace => 'Помещение';
+
+  @override
+  String get pprFormAsset => 'Оборудование';
+
+  @override
+  String get pprFormNone => 'Не выбрано';
+
+  @override
+  String get pprFormSystem => 'Система';
+
+  @override
+  String get pprFormPeriod => 'Периодичность';
+
+  @override
+  String get pprFormDays => 'Дней в периоде';
+
+  @override
+  String get pprFormStarts => 'Начало';
+
+  @override
+  String get pprFormChecklist => 'Чек-лист';
+
+  @override
+  String get pprFormChecklistHint => 'По пункту в строке';
+
+  @override
+  String get pprFormPhoto => 'Фото «после» обязательно';
+
+  @override
+  String get pprFormRequired => 'Заполните название, объект и систему';
+
+  @override
+  String get pprFormDaysInvalid => 'Число дней — от 1 до 3660';
+
+  @override
+  String get pprDuplicate => 'План с таким названием на этом объекте уже есть';
+
+  @override
+  String get pprChooseObject => 'Выберите объект';
+
+  @override
+  String get pprInfoTitle => 'ППР — регламентные работы';
+
+  @override
+  String get pprInfo1 =>
+      'План — регулярная работа на объекте: ТО, осмотр, уборка. Период — месяц, квартал, полгода, год или N дней.';
+
+  @override
+  String get pprInfo2 =>
+      'Задача текущего периода создаётся сама, когда менеджер открывает приложение (не чаще раза в 10 минут) или нажимает «Обновить». Подрядчик назначается по системе и объекту.';
+
+  @override
+  String get pprInfo3 =>
+      'Срок задачи — последний день периода. Не принята к концу периода — просрочена.';
+
+  @override
+  String get pprInfo4 =>
+      'План с задачами нельзя удалить — его можно приостановить.';
+
+  @override
+  String get reportPrint => 'Печать отчёта';
+
+  @override
+  String get reportPrintPreparing => 'Готовим PDF…';
+
+  @override
+  String get reportPrintFailed =>
+      'Не удалось сформировать PDF. Попробуйте ещё раз.';
+
+  @override
+  String get reportPrintInfo1 =>
+      'PDF собирается по тем же фильтрам, что сейчас на экране: период, объекты, регион, подрядчик, вид работ и тип задачи.';
+
+  @override
+  String get reportPrintInfo2 =>
+      'В браузере откроется окно печати — там же можно выбрать «Сохранить как PDF».';
+
+  @override
+  String get reportPrintInfo3 =>
+      'На телефоне файл можно отправить в мессенджер или почту либо распечатать.';
+
+  @override
+  String get reportPrintInfo4 =>
+      'В отчёте: показатели, таблицы «По регионам» и «По подрядчикам», список заявок с номерами страниц.';
+
+  @override
+  String get reportFilterRegion => 'Регион';
+
+  @override
+  String get reportFilterKind => 'Тип';
+
+  @override
+  String get reportKindOnce => 'Разовые';
+
+  @override
+  String get reportKindRecurring => 'Повторяющиеся';
+
+  @override
+  String get reportKindPpr => 'ППР';
+
+  @override
+  String get reportRegionsGroup => 'Регионы';
+
+  @override
+  String get reportCountriesGroup => 'Страны';
+
+  @override
+  String get reportByRegion => 'По регионам';
+
+  @override
+  String get reportByCity => 'По городам';
+
+  @override
+  String get reportNoRegion => 'Без региона';
+
+  @override
+  String get reportNoCity => 'Без города';
+
+  @override
+  String get reportPprDone => 'ППР выполнено';
+
+  @override
+  String reportPprOf(String done, String total) {
+    return '$done из $total';
+  }
+
+  @override
+  String get pdfTitle => 'Отчёт по заявкам и подрядчикам';
+
+  @override
+  String pdfCompany(String name) {
+    return 'Компания: $name';
+  }
+
+  @override
+  String pdfPeriod(String period) {
+    return 'Период: $period';
+  }
+
+  @override
+  String pdfFilters(String filters) {
+    return 'Фильтры: $filters';
+  }
+
+  @override
+  String get pdfNoFilters => 'все объекты, подрядчики и виды работ';
+
+  @override
+  String pdfGenerated(String date, String name) {
+    return 'Сформирован: $date, $name';
+  }
+
+  @override
+  String pdfPageOf(String page, String pages) {
+    return 'стр. $page из $pages';
+  }
+
+  @override
+  String get pdfOrders => 'Заявки';
+
+  @override
+  String get pdfOrdersEmpty => 'За период заявок нет.';
+
+  @override
+  String get pdfColNumber => '№';
+
+  @override
+  String get pdfColDate => 'Дата';
+
+  @override
+  String get pdfColObject => 'Объект';
+
+  @override
+  String get pdfColPlace => 'Помещение';
+
+  @override
+  String get pdfColLayer => 'Система';
+
+  @override
+  String get pdfColContractor => 'Подрядчик';
+
+  @override
+  String get pdfColStatus => 'Статус';
+
+  @override
+  String get pdfColDue => 'Срок';
+
+  @override
+  String get pdfColRegion => 'Регион';
+
+  @override
+  String get pdfColCity => 'Город';
+
+  @override
+  String pdfFileName(String period) {
+    return 'HeyHelpy_Отчёт_$period.pdf';
+  }
+
+  @override
+  String get roomCode => 'Номер помещения';
+
+  @override
+  String get roomCodeHint => 'Например, 305 или 12А';
+
+  @override
+  String get roomCodeTaken => 'Такой номер уже есть в этом объекте';
+
+  @override
+  String get roomCodeNone => 'Без номера';
+
+  @override
+  String get areaDraw => 'Обвести область';
+
+  @override
+  String get areaEdit => 'Изменить область';
+
+  @override
+  String get areaDelete => 'Удалить область';
+
+  @override
+  String get areaDeleted => 'Область удалена';
+
+  @override
+  String areaTitle(String name) {
+    return 'Область: $name';
+  }
+
+  @override
+  String get areaHintPolygon =>
+      'Нажимайте по углам помещения. Точки можно двигать.';
+
+  @override
+  String get areaHintRect =>
+      'Протяните прямоугольник по помещению. Точки можно двигать.';
+
+  @override
+  String get areaModePolygon => 'По углам';
+
+  @override
+  String get areaModeRect => 'Прямоугольник';
+
+  @override
+  String get areaUndoPoint => 'Отменить точку';
+
+  @override
+  String get areaNeedPoints => 'Нужно хотя бы 3 точки';
+
+  @override
+  String get roomInfoTitle => 'Номер и область помещения';
+
+  @override
+  String get roomInfo1 =>
+      'Номер помещения («305») виден в списках и на плане, по нему ищут и его понимает голосовая заявка: «течёт кран в 305-й».';
+
+  @override
+  String get roomInfo2 =>
+      'Номер уникален внутри объекта. Пустой номер — без номера.';
+
+  @override
+  String get roomInfo3 =>
+      'Область — контур помещения на плане. Режим расстановки → помещение → «Обвести область»: нажимайте по углам или протяните прямоугольник, потом «Готово».';
+
+  @override
+  String get roomInfo4 =>
+      'Область закрашена цветом заявок помещения; нажатие в любом месте области открывает помещение.';
+
+  @override
+  String get regionNone => 'Без региона';
+
+  @override
+  String get regionWhole => 'Весь регион';
+
+  @override
+  String get countryNone => 'Страна не указана';
+
+  @override
+  String geoWholeCity(String city) {
+    return 'Весь город: $city';
+  }
+
+  @override
+  String geoWholeCountry(String country) {
+    return 'Вся страна: $country';
+  }
+
+  @override
+  String get regionsTitle => 'Регионы';
+
+  @override
+  String get regionsEmpty =>
+      'Регионов пока нет. Добавьте первый — например, «Европа».';
+
+  @override
+  String get regionsLoadFailed => 'Не удалось загрузить регионы';
+
+  @override
+  String get regionAdd => 'Новый регион';
+
+  @override
+  String get regionAddRow => '+ Новый регион';
+
+  @override
+  String get regionNameLabel => 'Название региона';
+
+  @override
+  String get regionNameHint => 'Например, Европа';
+
+  @override
+  String get regionNameRequired => 'Введите название региона';
+
+  @override
+  String get regionNameTooLong => 'Не больше 60 символов';
+
+  @override
+  String get regionRename => 'Переименовать';
+
+  @override
+  String get regionMoveUp => 'Выше';
+
+  @override
+  String get regionMoveDown => 'Ниже';
+
+  @override
+  String get regionMerge => 'Объединить с…';
+
+  @override
+  String get regionDelete => 'Удалить';
+
+  @override
+  String regionActions(String name) {
+    return 'Действия с регионом «$name»';
+  }
+
+  @override
+  String get regionSimilarTitle => 'Похожий регион уже есть';
+
+  @override
+  String regionSimilarText(String name, String objects) {
+    return 'Похоже, такой регион уже есть: «$name» ($objects). Использовать его?';
+  }
+
+  @override
+  String regionUseExisting(String name) {
+    return 'Использовать «$name»';
+  }
+
+  @override
+  String get regionCreateAnyway => 'Всё равно создать';
+
+  @override
+  String get regionRenameAnyway => 'Всё равно переименовать';
+
+  @override
+  String get regionDuplicate =>
+      'Регион с таким названием уже есть — выберите его из списка';
+
+  @override
+  String get regionCreated => 'Регион добавлен';
+
+  @override
+  String get regionRenamed => 'Регион переименован';
+
+  @override
+  String get regionDeleted => 'Регион удалён';
+
+  @override
+  String get regionMerged => 'Регионы объединены';
+
+  @override
+  String regionMergePick(String name) {
+    return 'Объединить «$name» с…';
+  }
+
+  @override
+  String get regionMergeConfirmTitle => 'Объединить регионы?';
+
+  @override
+  String regionMergeConfirm(String objects, String into, String from) {
+    return '$objects перейдут в «$into», регион «$from» будет удалён.';
+  }
+
+  @override
+  String get regionMergeAction => 'Объединить';
+
+  @override
+  String get regionMergeNoOther => 'Других регионов нет — объединять не с чем';
+
+  @override
+  String regionDeleteConfirmTitle(String name) {
+    return 'Удалить регион «$name»?';
+  }
+
+  @override
+  String regionDeleteConfirm(String objects) {
+    return 'У объектов ($objects) регион станет пустым.';
+  }
+
+  @override
+  String get regionOnlyManager => 'Регионы меняет менеджер компании';
+
+  @override
+  String get regionInfo1 =>
+      'Один общий список регионов компании: в объекте регион выбирается из списка, а не вводится текстом.';
+
+  @override
+  String get regionInfo2 =>
+      'Похожие названия («Европа» и «Европпа») приложение замечает и предлагает выбрать уже существующий регион.';
+
+  @override
+  String get regionInfo3 =>
+      'Лишний регион можно объединить с нужным: его объекты перейдут, а он сам удалится.';
+
+  @override
+  String get regionInfo4 =>
+      'Переименование сразу видно во всех объектах, фильтрах и отчётах.';
+
+  @override
+  String get regionPickTitle => 'Регион';
+
+  @override
+  String get regionNotSet => 'Не указан';
+
+  @override
+  String get regionManage => 'Регионы компании';
+
+  @override
+  String get countryTitle => 'Страна';
+
+  @override
+  String get countrySearchHint => 'Название или код страны';
+
+  @override
+  String get countryNotFound => 'Страна не найдена';
+
+  @override
+  String get geoCity => 'Город';
+
+  @override
+  String get geoCityHint => 'Например, Белград';
+
+  @override
+  String get geoCitySimilarTitle => 'Похожий город уже есть';
+
+  @override
+  String geoCitySimilar(String name) {
+    return 'В компании уже есть город «$name». Использовать его?';
+  }
+
+  @override
+  String geoCityKeep(String name) {
+    return 'Оставить «$name»';
+  }
+
+  @override
+  String get geoCitySuggestions => 'Города компании в этой стране';
+
+  @override
+  String get geoEditTitle => 'Страна, город, регион';
+
+  @override
+  String get geoEdit => 'Изменить страну, город, регион';
+
+  @override
+  String equipSectionTitle(int count) {
+    return 'Оборудование · $count';
+  }
+
+  @override
+  String get equipSearchHint => 'Название, номер, модель';
+
+  @override
+  String get equipEmpty => 'Оборудования пока нет';
+
+  @override
+  String get equipAdd => 'Добавить оборудование';
+
+  @override
+  String get equipImport => 'Импорт из Excel / CSV';
+
+  @override
+  String get equipNoSystem => 'Без системы';
+
+  @override
+  String get equipNothingFound => 'Ничего не найдено';
+
+  @override
+  String equipGroupTitle(String system, int count) {
+    return '$system · $count';
+  }
+
+  @override
+  String get assetFormNewTitle => 'Новое оборудование';
+
+  @override
+  String get assetFormEditTitle => 'Оборудование';
+
+  @override
+  String get assetFieldName => 'Название';
+
+  @override
+  String get assetFieldNameHint => 'Например, кондиционер переговорной';
+
+  @override
+  String get assetFieldSystem => 'Система';
+
+  @override
+  String get assetFieldRoom => 'Помещение';
+
+  @override
+  String get assetChooseRoom => 'Выберите помещение';
+
+  @override
+  String get assetFieldInventory => 'Инвентарный номер';
+
+  @override
+  String get assetFieldManufacturer => 'Производитель';
+
+  @override
+  String get assetFieldModel => 'Модель';
+
+  @override
+  String get assetFieldSerial => 'Серийный номер';
+
+  @override
+  String get assetFieldInstalled => 'Дата ввода';
+
+  @override
+  String get assetNameRequired => 'Укажите название';
+
+  @override
+  String get assetRoomRequired => 'Выберите помещение';
+
+  @override
+  String get assetSaved => 'Оборудование сохранено';
+
+  @override
+  String get assetSaveFailed =>
+      'Не удалось сохранить. Проверьте связь и попробуйте ещё раз.';
+
+  @override
+  String get assetNoPlaces => 'Сначала добавьте помещение в объект';
+
+  @override
+  String get assetCardPassport => 'Паспорт';
+
+  @override
+  String get assetCardWhere => 'Где стоит';
+
+  @override
+  String get assetCardObject => 'Объект';
+
+  @override
+  String get assetCardFloor => 'Этаж';
+
+  @override
+  String get assetCardPlans => 'Планы ППР';
+
+  @override
+  String get assetCardPlansEmpty => 'Нет планов ППР';
+
+  @override
+  String assetCardOrders(int count) {
+    return 'Заявки · $count';
+  }
+
+  @override
+  String get assetCardOrdersEmpty => 'Заявок по этому оборудованию нет';
+
+  @override
+  String get assetCreateOrder => 'Создать заявку';
+
+  @override
+  String get assetLoadFailed => 'Не удалось загрузить оборудование';
+
+  @override
+  String get assetEdit => 'Изменить';
+
+  @override
+  String get assetPeriodMonth => 'каждый месяц';
+
+  @override
+  String get assetPeriodQuarter => 'каждый квартал';
+
+  @override
+  String get assetPeriodHalfYear => 'раз в полгода';
+
+  @override
+  String get assetPeriodYear => 'раз в год';
+
+  @override
+  String assetPeriodDays(int days) {
+    return 'каждые $days дн.';
+  }
+
+  @override
+  String get assetPlanPaused => 'приостановлен';
+
+  @override
+  String get importTitle => 'Импорт оборудования';
+
+  @override
+  String get importTemplateXlsx => 'Скачать шаблон Excel';
+
+  @override
+  String get importTemplateCsv => 'Скачать шаблон CSV';
+
+  @override
+  String get importPickFile => 'Выбрать файл (.xlsx, .csv)';
+
+  @override
+  String get importFooter =>
+      'Первая строка — заголовки. Обязательны «Название» и «Помещение».';
+
+  @override
+  String get importTemplateSaved => 'Шаблон сохранён';
+
+  @override
+  String get importTemplateFailed => 'Не удалось сохранить шаблон';
+
+  @override
+  String get importReadFailed =>
+      'Не удалось прочитать файл. Сохраните его как .xlsx или .csv (UTF-8) и попробуйте ещё раз.';
+
+  @override
+  String get importEmpty => 'В файле нет строк с оборудованием';
+
+  @override
+  String importMissingColumns(String columns) {
+    return 'В файле нет колонок: $columns. Скачайте шаблон и перенесите данные в него.';
+  }
+
+  @override
+  String get importColName => 'Название';
+
+  @override
+  String get importColRoom => 'Помещение';
+
+  @override
+  String importSummary(int total, int ok, int bad) {
+    return 'Строк: $total · готово: $ok · с ошибками: $bad';
+  }
+
+  @override
+  String importCreateRooms(int count) {
+    return 'Создать недостающие помещения ($count)';
+  }
+
+  @override
+  String get importErrorsTitle => 'С ошибками — не будут загружены';
+
+  @override
+  String get importReadyTitle => 'Готово к импорту';
+
+  @override
+  String importRowTitle(int line, String name) {
+    return 'Строка $line · $name';
+  }
+
+  @override
+  String get importNoRowName => 'без названия';
+
+  @override
+  String importMore(int count) {
+    return 'И ещё $count';
+  }
+
+  @override
+  String get importIssueNoName => 'нет названия';
+
+  @override
+  String get importIssueNoRoom => 'не указано помещение';
+
+  @override
+  String importIssueRoomNotFound(String room) {
+    return 'нет помещения «$room»';
+  }
+
+  @override
+  String importIssueUnknownSystem(String system) {
+    return 'нет системы «$system»';
+  }
+
+  @override
+  String get importIssueDupFile => 'инвентарный номер повторяется в файле';
+
+  @override
+  String get importIssueDupDb => 'такой инвентарный номер уже есть';
+
+  @override
+  String get importIssueBadDate =>
+      'дата не распознана (нужно ГГГГ-ММ-ДД или ДД.ММ.ГГГГ)';
+
+  @override
+  String get importIssueTooLong =>
+      'слишком длинное значение (больше 120 символов)';
+
+  @override
+  String importButton(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Импортировать $count строк',
+      few: 'Импортировать $count строки',
+      one: 'Импортировать $count строку',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importDone(int count) {
+    return 'Импортировано: $count';
+  }
+
+  @override
+  String get importFailed =>
+      'Импорт не выполнен — ничего не загружено. Проверьте связь и попробуйте ещё раз.';
+
+  @override
+  String get importInfoTitle => 'Импорт оборудования';
+
+  @override
+  String get importInfo1 =>
+      'Скачайте шаблон Excel или CSV: первая строка — заголовки, вторая — пример (её можно удалить).';
+
+  @override
+  String get importInfo2 =>
+      'Обязательны «Название» и «Помещение». Помещение — по номеру («305») или по названию, как в карточке объекта.';
+
+  @override
+  String get importInfo3 =>
+      '«Система» — как в видах работ (Климат, Электрика…). Дата ввода — ГГГГ-ММ-ДД или ДД.ММ.ГГГГ.';
+
+  @override
+  String get importInfo4 =>
+      'Строки с ошибками не загружаются: исправьте их в файле и выберите файл ещё раз. Недостающие помещения можно создать при импорте.';
+
+  @override
+  String get importTemplateFileName => 'HeyHelpy_Оборудование_шаблон';
+
+  @override
+  String get assetFieldInventoryHint => 'Например, КЛ-3-001';
+
+  @override
+  String get zoneTitle => 'Зона доступа';
+
+  @override
+  String get zoneMenuRole => 'Сменить роль';
+
+  @override
+  String get zoneWholeCompany => 'Вся компания';
+
+  @override
+  String get zoneWholeCompanyHint =>
+      'Видит все объекты и системы компании — как раньше.';
+
+  @override
+  String get zoneAllSystems => 'Все системы';
+
+  @override
+  String get zoneRules => 'Правила';
+
+  @override
+  String get zoneRulesFooter =>
+      'Правила складываются: видно всё, что подходит хотя бы под одно.';
+
+  @override
+  String get zoneRuleAdd => 'Добавить правило';
+
+  @override
+  String get zoneRuleTitle => 'Правило';
+
+  @override
+  String get zoneRuleSystems => 'Системы';
+
+  @override
+  String get zoneRulePlaces => 'Места';
+
+  @override
+  String get zoneRuleAddPlace => 'Выбрать места';
+
+  @override
+  String get zoneRuleRefine => 'Этаж или оборудование';
+
+  @override
+  String get zoneRuleRefineTitle => 'Уточнить место';
+
+  @override
+  String get zoneRuleWholeObject => 'Весь объект';
+
+  @override
+  String get zoneRuleFloors => 'Этажи';
+
+  @override
+  String get zoneRuleAssets => 'Оборудование';
+
+  @override
+  String get zoneRuleDelete => 'Удалить правило';
+
+  @override
+  String get zoneRuleEmpty => 'Выберите хотя бы одно место';
+
+  @override
+  String get zoneRulesEmpty => 'Добавьте правило или выберите шаблон';
+
+  @override
+  String get zoneTemplates => 'Шаблоны';
+
+  @override
+  String get zoneTemplateCompany => 'Вся компания';
+
+  @override
+  String get zoneTemplateSystem => 'Одна система во всех объектах';
+
+  @override
+  String get zoneTemplateRegion => 'Регион целиком';
+
+  @override
+  String get zoneTemplatePickSystem => 'Какая система?';
+
+  @override
+  String get zoneTemplatePickRegion => 'Какой регион?';
+
+  @override
+  String get zoneNoRegions => 'У компании нет регионов';
+
+  @override
+  String get zoneSaved => 'Зона доступа сохранена';
+
+  @override
+  String get zoneSaveDenied => 'Зону доступа меняет только администратор';
+
+  @override
+  String get zoneLoadFailed =>
+      'Не удалось загрузить зону доступа. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String zonePill(String company, String role, String zone) {
+    return '$company · $role · $zone';
+  }
+
+  @override
+  String get zoneInfoTitle => 'Зона доступа';
+
+  @override
+  String get zoneInfo1 =>
+      'По умолчанию менеджер видит всю компанию — ничего настраивать не нужно.';
+
+  @override
+  String get zoneInfo2 =>
+      'Правило — системы × места: например, «Климат, Сантехника · Москва». Правила складываются.';
+
+  @override
+  String get zoneInfo3 =>
+      'Вне зоны менеджер не видит ни заявок, ни оборудования, ни подрядчиков, ни отчётов — это проверяет база.';
+
+  @override
+  String get zoneInfo4 =>
+      'Менять зоны может только администратор; все изменения записываются в журнал.';
+
+  @override
+  String get zoneRefused =>
+      'Нет доступа: это вне вашей зоны или нужен администратор';
+
+  @override
+  String get crewSection => 'Бригады';
+
+  @override
+  String get crewEmpty =>
+      'Бригад нет — все исполнители видят объекты подрядчика по закреплениям.';
+
+  @override
+  String get crewAdd => 'Новая бригада';
+
+  @override
+  String get crewTitle => 'Бригада';
+
+  @override
+  String get crewName => 'Название';
+
+  @override
+  String get crewNameHint => 'Например: Пекин';
+
+  @override
+  String get crewNameRequired => 'Укажите название бригады (до 60 символов)';
+
+  @override
+  String get crewDuplicate => 'Бригада с таким названием уже есть';
+
+  @override
+  String get crewMembers => 'Исполнители';
+
+  @override
+  String get crewNoExecutors => 'У подрядчика пока нет исполнителей';
+
+  @override
+  String get crewZone => 'Зона бригады';
+
+  @override
+  String get crewZoneHint =>
+      'Исполнители бригады видят только эти места и системы.';
+
+  @override
+  String crewMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count исполнителя',
+      many: '$count исполнителей',
+      few: '$count исполнителя',
+      one: '$count исполнитель',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get crewSaved => 'Бригада сохранена';
+
+  @override
+  String get crewDeleted => 'Бригада удалена';
+
+  @override
+  String get crewDelete => 'Удалить бригаду';
+
+  @override
+  String crewDeleteConfirm(String name) {
+    return 'Удалить бригаду «$name»? Её исполнители снова увидят все объекты подрядчика.';
+  }
+
+  @override
+  String get crewInfoTitle => 'Бригады';
+
+  @override
+  String get crewInfo1 =>
+      'Нужны, только если разные бригады одного подрядчика не должны видеть объекты друг друга.';
+
+  @override
+  String get crewInfo2 =>
+      'Исполнитель в бригаде видит только зону своей бригады; без бригады — всё по закреплениям подрядчика.';
+
+  @override
+  String get crewInfo3 => 'Бригады заводит менеджер, которому виден подрядчик.';
 }

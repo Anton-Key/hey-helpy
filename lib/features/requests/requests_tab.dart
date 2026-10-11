@@ -12,6 +12,7 @@ import '../home/home_actions.dart';
 import '../home/home_chrome.dart';
 import '../voice/voice_record_screen.dart';
 import '../voice/wake_word_service.dart';
+import '../ppr/ppr_text.dart';
 import 'order_filter.dart';
 import 'order_filter_bar.dart';
 import 'order_filter_store.dart';
@@ -247,7 +248,7 @@ class _RequestsTabState extends State<RequestsTab> {
     try {
       final list = await _dir.placesOf(objectId);
       return _places[objectId] = [
-        for (final p in list) FilterOption(p.id, p.name),
+        for (final p in list) FilterOption(p.id, p.label),
       ];
     } catch (e) {
       debugPrint('RequestsTab places: $e');
@@ -504,19 +505,30 @@ class _RequestsTabState extends State<RequestsTab> {
       final place = [
         _objName(l, w.objectId),
         if (w.placeName != null && w.placeName!.isNotEmpty)
-          placeWithFloor(w.placeName!, w.floorName,
+          placeWithFloor(placeLabel(w.placeName!, w.placeCode), w.floorName,
               w.floorLevel == null ? null : l.floorShort(w.floorLevel!)),
       ].join(' · ');
       final overdue = w.isOverdue(now);
       final overdueText = Text(l.statusOverdue,
           style: AppText.footnote
               .copyWith(color: AppColors.danger, fontWeight: FontWeight.w600));
-      final due = _filter.sort == OrderSort.due && w.dueAt != null
-          ? '${l.reqFieldDue}: ${l.dateTime(w.dueAt!)}'
+      // Задача ППР: вместо срока — «ППР · октябрь 2026 · до 31 окт.».
+      final ppr = w.isPpr
+          ? pprTaskLine(l,
+              recurrence: w.recurrence,
+              periodStart: w.periodStart,
+              periodEnd: w.periodEnd)
           : null;
+      final due = ppr ??
+          (_filter.sort == OrderSort.due && w.dueAt != null
+              ? '${l.reqFieldDue}: ${l.dateTime(w.dueAt!)}'
+              : null);
       return AppRow(
         leading: PriorityDot(w.priority),
-        title: w.title + (w.recurring ? '  · ${l.requestRecurringTag}' : ''),
+        title: w.title +
+            (w.isPpr
+                ? '  · ${l.pprTag}'
+                : (w.recurring ? '  · ${l.requestRecurringTag}' : '')),
         subtitle: [
           [place, if (workType != null) workType].join(' · '),
           if (due != null) due,

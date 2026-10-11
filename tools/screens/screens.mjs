@@ -518,7 +518,7 @@ async function openPlan(page, objectN, floorN) {
   const placeholder = page.locator('flt-semantics-placeholder');
   await placeholder.waitFor({ state: 'attached', timeout: 60000 });
   await placeholder.evaluate((el) => el.click());
-  await see(page, /На плане · \d/).waitFor({ timeout: 60000 });
+  await see(page, /(На плане|On plan) · \d/).waitFor({ timeout: 60000 });
   await settle(page, 2500);
 }
 
@@ -1091,7 +1091,7 @@ const SCREENS = [
       // Перетащить маркер помещения мышью на 60 px вправо и 40 px вниз.
       // Маркер — не строка списка слева (на ПК у неё та же подпись): подпись
       // маркера — «Кафе, 1 этаж, нет открытых заявок» одной строкой.
-      const marker = p.getByRole('button', { name: /^Кафе, 1 этаж, / }).first();
+      const marker = p.getByRole('button', { name: /^(\d+ · )?Кафе, 1 этаж, / }).first();
       const box = await marker.boundingBox();
       if (!box) throw new Error('Маркер «Кафе» не найден');
       const x = box.x + box.width / 2, y = box.y + 22;

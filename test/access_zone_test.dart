@@ -128,7 +128,7 @@ void main() {
       ];
       expect(
           placesFromSelection({'d1', 'i1'}, me,
-              [...regions, Region(id: 'me', name: 'Ближний Восток', sort: 4)]),
+              [...regions, const Region(id: 'me', name: 'Ближний Восток', sort: 4)]),
           [const ZonePlace(ZoneScope.region, 'me')]);
       expect(placesFromSelection({'s1', 's2'}, objects, regions),
           [const ZonePlace(ZoneScope.city, 'Шэньчжэнь')]);

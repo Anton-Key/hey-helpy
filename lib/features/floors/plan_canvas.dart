@@ -235,8 +235,9 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
     _animateTo(_matrix(_viewport.center(Offset.zero) - c * s1, s1));
   }
 
-  /// Приблизить к маркеру: 1,8 × «весь план» — комната и соседи видны
-  /// (было 2,5 × — на ПК 1920 в кадре оставался угол одной комнаты; шаг 18).
+  /// Приблизить к маркеру: на телефоне 1,8 × «весь план», на ПК 1,25 × —
+  /// этаж почти целиком, маркер в центре (было 2,5 × — на ПК 1920 в кадре
+  /// оставался угол одной комнаты; шаг 18).
   void _centerOn(PlanItem i) {
     if (!i.placed) return;
     if (_viewport.isEmpty || !_fitted) {
@@ -245,7 +246,8 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
     }
     _touched = true;
     final p = fractionToPixels(i.x!, i.y!, _plan);
-    final s = math.max(_scale, _fitScale * 1.8).clamp(_minScale, _maxScale);
+    final zoom = _viewport.width >= 900 ? 1.25 : 1.8;
+    final s = math.max(_scale, _fitScale * zoom).clamp(_minScale, _maxScale);
     _animateTo(_matrix(planCenterOn(p, s.toDouble(), _visible), s.toDouble()));
   }
 

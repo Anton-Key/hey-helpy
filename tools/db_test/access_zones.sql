@@ -146,4 +146,60 @@ begin
     perform t.check(sqlstate = '42501', 'зона сотруднику компании 2 — отклонена');
   end;
   perform t.login(null);
+
+  -- 8. Сохранение одной транзакцией (шаг 18): ошибка — ничего не меняется
+  declare
+    orig jsonb;
+  begin
+    perform t.login(t.id(1, 101));
+    select jsonb_agg(jsonb_build_object('layer_ids', layer_ids, 'scope_kind', scope_kind, 'scope_ref', scope_ref)),
+           count(*)
+      into orig, n
+      from public.access_zones where profile_id = t.id(1, 104);
+    begin
+      perform public.set_member_zones(t.id(1, 104),
+        '[{"scope_kind": "city", "scope_ref": "Москва"}, {"scope_kind": "object", "scope_ref": "не-uuid"}]'::jsonb);
+      perform t.check(false, 'зоны с ошибкой во второй строке — ПРОШЛО');
+    exception when others then
+      perform t.check(true, 'зоны с ошибкой во второй строке — отклонены');
+    end;
+    perform t.check((select count(*) from public.access_zones where profile_id = t.id(1, 104)) = n,
+      'после ошибки старые зоны менеджера на месте (не «вся компания»)');
+    perform public.set_member_zones(t.id(1, 104),
+      format('[{"layer_ids": ["%s"], "scope_kind": "city", "scope_ref": "Москва"}]', climate)::jsonb);
+    perform t.check((select count(*) from public.access_zones where profile_id = t.id(1, 104) and scope_kind = 'city') = 1,
+      'set_member_zones: зоны заменены');
+    perform public.set_member_zones(t.id(1, 104), orig);
+    perform t.check((select count(*) from public.access_zones where profile_id = t.id(1, 104)) = n,
+      'set_member_zones: исходные зоны восстановлены');
+    perform t.login(null);
+
+    -- Менеджер сам себе зону не снимет (удаление — только администратор,
+    -- функция под правами вызывающего).
+    perform t.login(t.id(1, 104));
+    begin
+      perform public.set_member_zones(t.id(1, 104), '[]'::jsonb);
+    exception when others then
+      null;
+    end;
+    perform t.login(null);
+    perform t.check((select count(*) from public.access_zones where profile_id = t.id(1, 104)) = n,
+      'менеджер не может снять себе зону');
+
+    perform t.login(t.id(1, 100));
+    begin
+      perform public.save_crew(t.id(1, 951), t.id(1, 32), 'Пекин 2', array[t.id(2, 52)], '[]'::jsonb);
+      perform t.check(false, 'бригада с исполнителем компании 2 — ПРОШЛО');
+    exception when others then
+      perform t.check(true, 'бригада с исполнителем компании 2 — отклонена');
+    end;
+    perform t.check((select name from public.crews where id = t.id(1, 951)) = 'Пекин'
+      and (select count(*) from public.crew_members where crew_id = t.id(1, 951)) = 1,
+      'после ошибки бригада не изменилась (название и состав)');
+    perform t.check(public.save_crew(t.id(1, 951), t.id(1, 32), 'Пекин', array[t.id(1, 52)],
+      (select jsonb_agg(jsonb_build_object('layer_ids', layer_ids, 'scope_kind', scope_kind, 'scope_ref', scope_ref))
+         from public.crew_zones where crew_id = t.id(1, 951))) = t.id(1, 951),
+      'save_crew: бригада сохранена');
+    perform t.login(null);
+  end;
 end $$;

@@ -879,6 +879,70 @@ create trigger trg_profiles_role_audit after update of role on public.profiles
 revoke all on function public.trg_access_refs_check() from public, anon, authenticated;
 revoke all on function public.trg_access_audit()      from public, anon, authenticated;
 
+-- ---------------------------------------------------------------------
+-- 7. Сохранение зон и бригад одной транзакцией (шаг 18)
+--    Раньше приложение сохраняло «удалить старое → вставить новое» отдельными
+--    запросами: при обрыве посередине у менеджера могло не остаться зон (и он
+--    видел бы всю компанию), бригада — сохраниться частично. Теперь всё внутри
+--    одной функции: ошибка на любом шаге откатывает всё. security invoker —
+--    права те же политики RLS (зоны — только администратор, бригады —
+--    менеджер, которому виден подрядчик).
+-- ---------------------------------------------------------------------
+create or replace function public.set_member_zones(p_profile uuid, p_zones jsonb)
+returns void language plpgsql security invoker set search_path = public as $$
+declare
+  v_company uuid := public.my_company_id();
+  z jsonb;
+begin
+  if p_zones is null or jsonb_typeof(p_zones) <> 'array' then
+    raise exception 'zones: ожидается массив' using errcode = '22023';
+  end if;
+  delete from access_zones where profile_id = p_profile;
+  for z in select value from jsonb_array_elements(p_zones) loop
+    insert into access_zones(company_id, profile_id, layer_ids, scope_kind, scope_ref)
+    values (v_company, p_profile,
+            coalesce(array(select jsonb_array_elements_text(coalesce(z -> 'layer_ids', '[]'::jsonb)))::uuid[], '{}'),
+            coalesce(z ->> 'scope_kind', 'company'), z ->> 'scope_ref');
+  end loop;
+end $$;
+revoke all on function public.set_member_zones(uuid, jsonb) from public, anon;
+grant execute on function public.set_member_zones(uuid, jsonb) to authenticated;
+
+create or replace function public.save_crew(p_id uuid, p_contractor uuid, p_name text,
+                                            p_executors uuid[], p_zones jsonb)
+returns uuid language plpgsql security invoker set search_path = public as $$
+declare
+  v_company uuid := public.my_company_id();
+  v_id uuid;
+  z jsonb;
+begin
+  if p_zones is not null and jsonb_typeof(p_zones) <> 'array' then
+    raise exception 'zones: ожидается массив' using errcode = '22023';
+  end if;
+  if p_id is null then
+    insert into crews(company_id, contractor_id, name)
+    values (v_company, p_contractor, btrim(p_name)) returning id into v_id;
+  else
+    update crews set name = btrim(p_name) where id = p_id returning id into v_id;
+    if v_id is null then
+      raise exception 'not allowed' using errcode = '42501';
+    end if;
+  end if;
+  delete from crew_members where crew_id = v_id;
+  insert into crew_members(crew_id, executor_id, company_id)
+  select v_id, e, v_company from unnest(coalesce(p_executors, '{}'::uuid[])) as e;
+  delete from crew_zones where crew_id = v_id;
+  for z in select value from jsonb_array_elements(coalesce(p_zones, '[]'::jsonb)) loop
+    insert into crew_zones(company_id, crew_id, layer_ids, scope_kind, scope_ref)
+    values (v_company, v_id,
+            coalesce(array(select jsonb_array_elements_text(coalesce(z -> 'layer_ids', '[]'::jsonb)))::uuid[], '{}'),
+            coalesce(z ->> 'scope_kind', 'company'), z ->> 'scope_ref');
+  end loop;
+  return v_id;
+end $$;
+revoke all on function public.save_crew(uuid, uuid, text, uuid[], jsonb) from public, anon;
+grant execute on function public.save_crew(uuid, uuid, text, uuid[], jsonb) to authenticated;
+
 -- =====================================================================
 -- Проверка после применения (только чтение; по одному запросу):
 --

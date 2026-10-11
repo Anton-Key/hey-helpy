@@ -1432,7 +1432,13 @@ const PITCH = [
   // Первая страница PDF-отчёта: файл, который веб-версия отдаёт в окно печати,
   // отрисован в PNG (pdftoppm), без окна печати.
   { file: '15-report-pdf-page1', width: 1920, key: 'report-pdf', pdf: true },
-  { file: '16-equipment-card-desktop', width: 1920, key: 'asset-card' },
+  // Карточка оборудования, прокрученная до планов ППР и истории заявок.
+  { file: '16-equipment-card-desktop', width: 1920, key: 'asset-card', run: async (p) => {
+      await openAsset(p);
+      await scrollTo(p, /Заявки · \d+|ЗАЯВКИ · \d+/);
+      await p.mouse.wheel(0, 250);
+      await settle(p, 1200);
+    } },
   // Второго менеджера в рабочей базе нет — та же модель зоны у бригады «Пекин».
   { file: '17-crew-zone-desktop', width: 1920, key: 'crew-zone' },
 ];

@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Hey Helpy · демо-история за последние 30 дней (НЕ миграция)
 --
--- Что делает: добавляет в компанию «Демо БЦ» 72 заявки и 16 визитов,
+-- Что делает: добавляет в компанию «Демо БЦ» 91 заявку (72 + 19 задач ППР шага 16) и 16 визитов,
 -- чтобы на демо «История» и «Отчёты» были наполнены, и 4 объекта на карте:
 --   • «КлиматСервис» (Климат) — 15 заявок, всё в срок, приёмка почти всегда
 --     с первого раза, 15 визитов при норме 4 в месяц;
@@ -25,9 +25,15 @@
 --     7 новых помещений (052–056, 466–467), точки помещений на ДЕМО-СХЕМАХ,
 --     оборудование 701–720, 4 заявки на нём (254–257, 254 просрочена).
 --     Картинки планов (plan_path) скрипт не трогает — их загружают через приложение.
+--   • шаг 16 (блок 5e, нужна миграция 0015): регионы 901–905, страна, город и
+--     регион у всех 20 объектов, паспорт оборудования 701–720 и ещё 15 единиц
+--     721–735, номера и области помещений на схемах (5d), планы ППР 801–808,
+--     задачи периодов 258–276 (266 и 270 просрочены), 234 и 241 — задачи планов.
+--   • шаг 17 (блок 5f, если применена 0016): бригады «Пекин» и «Шэньчжэнь»
+--     подрядчика Huaxin FM (950–951) с зонами по городу (970–971).
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
--- и миграций 0001–0010. Подробно: docs/DEMO_SETUP.md, шаг 4.
+-- и миграций 0001–0015. Подробно: docs/DEMO_SETUP.md, шаг 4.
 -- Или без SQL Editor: GitHub → Actions → «Refresh demo» (CLAUDE.md, «Перезаливка демо-данных»).
 --
 -- Даты считаются от момента запуска: «29 дней назад», «вчера» и т. д.
@@ -54,6 +60,17 @@
 -- =====================================================================
 
 begin;
+
+-- Шаг 16: регионы, ППР и реестр оборудования — нужна миграция 0015.
+do $$
+begin
+  if to_regclass('public.maintenance_plans') is null
+     or not exists (select 1 from information_schema.columns
+                     where table_schema = 'public' and table_name = 'objects'
+                       and column_name = 'region_id') then
+    raise exception 'Сначала примените миграцию 0015 (supabase/migrations/0015_ppr_regions_equipment.sql): Actions → «Apply migration»';
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------
 -- Блок 0. Удалить все НЕдемо-заявки компании «Демо БЦ» (всегда)
@@ -158,6 +175,9 @@ declare
   v_layer_plumb uuid;
   v_layer_clean uuid;
   v_layer_other uuid;
+  v_layer_sec uuid;
+  v_ppr_orders int;
+  v_plan_start date := (date_trunc('month', now()) - interval '6 months')::date;
   v_world_orders int;
   v_plan_orders int;
   v_photo_hvac boolean;
@@ -229,8 +249,10 @@ begin
   select id into v_layer_plumb from public.layers where company_id = c_company and name = 'Сантехника';
   select id into v_layer_clean from public.layers where company_id = c_company and name = 'Клининг';
   select id into v_layer_other from public.layers where company_id = c_company and name = 'Другое';
-  if v_layer_plumb is null or v_layer_clean is null or v_layer_other is null then
-    raise exception 'Не найдены слои «Сантехника», «Клининг» или «Другое» у компании «Демо БЦ»';
+  select id into v_layer_sec   from public.layers where company_id = c_company and name = 'Системы безопасности';
+  if v_layer_plumb is null or v_layer_clean is null or v_layer_other is null
+     or v_layer_sec is null then
+    raise exception 'Не найдены слои «Сантехника», «Клининг», «Другое» или «Системы безопасности» у компании «Демо БЦ»';
   end if;
 
   -- 3. Нормы визитов по договору: «КлиматСервис» — 4 в месяц, «ЭлектроПро» — 2.
@@ -725,22 +747,41 @@ begin
     ('de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, 'Переговорная «Дунав», 15 этаж'),
     ('de300000-0000-4000-8000-000000000467'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, 'Санузлы, 15 этаж')
   on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
-  -- Этаж и точка помещений (центр комнаты на схеме, доли 0..1).
-  update public.locations l set floor_id = v.f, plan_x = v.x, plan_y = v.y
+  -- Номера помещений (шаг 16): тот же номер у помещения, созданного руками, снимается.
+  update public.locations l set code = null
     from (values
-      ('de300000-0000-4000-8000-000000000022'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.15::real, 0.2063::real),
-      ('de300000-0000-4000-8000-000000000053'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.8::real, 0.2688::real),
-      ('de300000-0000-4000-8000-000000000052'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.15::real, 0.5125::real),
-      ('de300000-0000-4000-8000-000000000024'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.45::real, 0.5125::real),
-      ('de300000-0000-4000-8000-000000000021'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1833::real, 0.25::real),
-      ('de300000-0000-4000-8000-000000000054'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8167::real, 0.25::real),
-      ('de300000-0000-4000-8000-000000000055'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1583::real, 0.75::real),
-      ('de300000-0000-4000-8000-000000000056'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8417::real, 0.75::real),
-      ('de300000-0000-4000-8000-000000000424'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.3417::real, 0.3563::real),
-      ('de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.7917::real, 0.2375::real),
-      ('de300000-0000-4000-8000-000000000425'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.7917::real, 0.5188::real),
-      ('de300000-0000-4000-8000-000000000467'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.1667::real, 0.7813::real)
-    ) as v(id, f, x, y)
+      ('de300000-0000-4000-8000-000000000022'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, '101'),
+      ('de300000-0000-4000-8000-000000000053'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, '104'),
+      ('de300000-0000-4000-8000-000000000052'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, '102'),
+      ('de300000-0000-4000-8000-000000000024'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, '103'),
+      ('de300000-0000-4000-8000-000000000021'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, '301'),
+      ('de300000-0000-4000-8000-000000000054'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, '302'),
+      ('de300000-0000-4000-8000-000000000055'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, '303'),
+      ('de300000-0000-4000-8000-000000000056'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, '304'),
+      ('de300000-0000-4000-8000-000000000424'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, '1501'),
+      ('de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, '1502'),
+      ('de300000-0000-4000-8000-000000000425'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, '1503'),
+      ('de300000-0000-4000-8000-000000000467'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, '1504')
+    ) as v(id, o, code)
+   where l.object_id = v.o and lower(btrim(l.code)) = lower(v.code) and l.id <> v.id
+     and l.id not in ('de300000-0000-4000-8000-000000000022'::uuid, 'de300000-0000-4000-8000-000000000053'::uuid, 'de300000-0000-4000-8000-000000000052'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'de300000-0000-4000-8000-000000000054'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'de300000-0000-4000-8000-000000000056'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000425'::uuid, 'de300000-0000-4000-8000-000000000467'::uuid);
+  -- Этаж, точка (центр комнаты на схеме, доли 0..1), номер и область помещения
+  -- (прямоугольник комнаты — многоугольник из 4 точек, шаг 16).
+  update public.locations l set floor_id = v.f, plan_x = v.x, plan_y = v.y, code = v.code, plan_shape = v.shape
+    from (values
+      ('de300000-0000-4000-8000-000000000022'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.15::real, 0.2063::real, '101', '{"type":"polygon","points":[[0.05,0.075],[0.25,0.075],[0.25,0.3375],[0.05,0.3375]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000053'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.8::real, 0.2688::real, '104', '{"type":"polygon","points":[[0.65,0.075],[0.95,0.075],[0.95,0.4625],[0.65,0.4625]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000052'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.15::real, 0.5125::real, '102', '{"type":"polygon","points":[[0.05,0.3375],[0.25,0.3375],[0.25,0.6875],[0.05,0.6875]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000024'::uuid, 'de300000-0000-4000-8000-000000000601'::uuid, 0.45::real, 0.5125::real, '103', '{"type":"polygon","points":[[0.25,0.3375],[0.65,0.3375],[0.65,0.6875],[0.25,0.6875]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000021'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1833::real, 0.25::real, '301', '{"type":"polygon","points":[[0.05,0.075],[0.3167,0.075],[0.3167,0.425],[0.05,0.425]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000054'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8167::real, 0.25::real, '302', '{"type":"polygon","points":[[0.6833,0.075],[0.95,0.075],[0.95,0.425],[0.6833,0.425]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000055'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1583::real, 0.75::real, '303', '{"type":"polygon","points":[[0.05,0.575],[0.2667,0.575],[0.2667,0.925],[0.05,0.925]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000056'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8417::real, 0.75::real, '304', '{"type":"polygon","points":[[0.7333,0.575],[0.95,0.575],[0.95,0.925],[0.7333,0.925]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000424'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.3417::real, 0.3563::real, '1501', '{"type":"polygon","points":[[0.05,0.075],[0.6333,0.075],[0.6333,0.6375],[0.05,0.6375]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.7917::real, 0.2375::real, '1502', '{"type":"polygon","points":[[0.6333,0.075],[0.95,0.075],[0.95,0.4],[0.6333,0.4]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000425'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.7917::real, 0.5188::real, '1503', '{"type":"polygon","points":[[0.6333,0.4],[0.95,0.4],[0.95,0.6375],[0.6333,0.6375]]}'::jsonb),
+      ('de300000-0000-4000-8000-000000000467'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid, 0.1667::real, 0.7813::real, '1504', '{"type":"polygon","points":[[0.05,0.6375],[0.2833,0.6375],[0.2833,0.925],[0.05,0.925]]}'::jsonb)
+    ) as v(id, f, x, y, code, shape)
    where l.id = v.id;
 
   -- Оборудование: вид (meta.kind) — для значка на плане.
@@ -822,6 +863,301 @@ begin
   get diagnostics v_plan_orders = row_count;
   v_orders := v_orders + v_plan_orders;
   -- <<< demo_plans
+
+  -- 5e. Шаг 16: регионы и страны, реестр оборудования, планы ППР и задачи периодов.
+  --     Регионы 901–905, у всех 20 объектов — код страны (ISO), город, регион.
+  --     Оборудование 701–720 — система, производитель, модель, серийный номер,
+  --     дата ввода; ещё 15 единиц 721–735 (Москва · Офис 1, Дубай · Офис 1,
+  --     Абиджан) без точек на плане — для реестра. Планы ППР 801–808, задачи
+  --     периодов 258–276; заявки 234 и 241 — задачи текущего периода планов
+  --     803 и 802. Номер «305» — у «Open space» БЦ «Демо» (для «в 305-й»).
+  -- Регион с тем же названием, созданный руками, мешал бы (название уникально
+  -- в компании без учёта регистра) — переименовываем его.
+  update public.regions r set name = left(r.name, 50) || ' (старый)'
+   where r.company_id = c_company
+     and r.id::text !~ '^de300000-0000-4000-8000-00000000090[1-9]$'
+     and public.norm_name(r.name) in ('европа', 'снг', 'ближний восток', 'африка', 'азия');
+  insert into public.regions (id, company_id, name, sort)
+  select ('de300000-0000-4000-8000-' || lpad(g.n::text, 12, '0'))::uuid, c_company, g.name, g.sort
+  from (values (901, 'Европа', 1), (902, 'СНГ', 2), (903, 'Ближний Восток', 3),
+               (904, 'Африка', 4), (905, 'Азия', 5)) as g(n, name, sort)
+  on conflict (id) do update set company_id = excluded.company_id, name = excluded.name, sort = excluded.sort;
+
+  update public.objects o
+     set country_code = v.cc,
+         city = btrim(split_part(o.address, ',', 1)),
+         region_id = ('de300000-0000-4000-8000-' || lpad(v.rg::text, 12, '0'))::uuid
+    from (values
+      (10, 'RS', 901), (11, 'RS', 901), (12, 'RS', 901), (13, 'RS', 901), (14, 'RS', 901),
+      (401, 'RS', 901), (402, 'RS', 901),
+      (403, 'RU', 902), (404, 'RU', 902), (405, 'RU', 902), (406, 'RU', 902), (407, 'RU', 902),
+      (408, 'AE', 903), (409, 'AE', 903), (410, 'TR', 903), (411, 'TR', 903),
+      (412, 'CI', 904),
+      (413, 'CN', 905), (414, 'CN', 905), (415, 'CN', 905)
+    ) as v(n, cc, rg)
+   where o.id = ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid
+     and o.company_id = c_company;
+
+  -- Номер «305» — Open space БЦ «Демо» (номера помещений на схемах — в 5d).
+  update public.locations set code = null
+   where object_id = c_object and lower(btrim(code)) = '305' and id <> c_loc_open;
+  update public.locations set code = '305' where id = c_loc_open;
+
+  -- Оборудование на схемах (701–720): система и паспортные данные.
+  update public.assets a
+     set layer_id = case v.layer when 'hvac' then v_layer_hvac when 'elec' then v_layer_elec
+                                 when 'plumb' then v_layer_plumb when 'sec' then v_layer_sec
+                                 else v_layer_other end,
+         manufacturer = v.mf, model = v.model,
+         serial_no = v.sn, installed_at = v_today::date - v.age_days
+    from (values
+      (701, 'elec',  'ABB',        'MNS iS',              'ABB-24-118733', 1460),
+      (702, 'elec',  'APC',        'Smart-UPS SRT 3000',  'AS2207114392',  900),
+      (703, 'hvac',  'Daikin',     'FTXM35R',             'DK-E0412233',   730),
+      (704, 'elec',  'Philips',    'CoreLine RC132V',     'PH-77812',      400),
+      (705, 'sec',   'Bosch',      'FAP-425-O',           'BS-1180034',    1100),
+      (706, 'hvac',  'Carrier',    '42NH',                'CR-42N-5521',   1300),
+      (707, 'hvac',  'Daikin',     'FTXM50R',             'DK-E0415501',   650),
+      (708, 'hvac',  'Daikin',     'FTXM35R',             'DK-E0412290',   730),
+      (709, 'sec',   'Bosch',      'FAP-425-O',           'BS-1180102',    1100),
+      (710, 'hvac',  'Carrier',    '42NH',                'CR-42N-5577',   1300),
+      (711, 'other', 'Dell',       'PowerEdge R750',      'DL-7X9K2M3',    500),
+      (712, 'elec',  'APC',        'Smart-UPS SRT 10000', 'AS2301145007',  620),
+      (713, 'hvac',  'Mitsubishi', 'PKA-M60KAL',          'ME-31005612',   880),
+      (714, 'elec',  'Philips',    'CoreLine RC132V',     'PH-77890',      400),
+      (715, 'hvac',  'Daikin',     'FXZQ32A',             'DK-V2201871',   300),
+      (716, 'hvac',  'Daikin',     'FXZQ32A',             'DK-V2201872',   300),
+      (717, 'hvac',  'Carrier',    '42NH',                'CR-42N-6120',   300),
+      (718, 'elec',  'Schneider',  'Prisma P',            'SE-PP-449120',  300),
+      (719, 'plumb', 'Neptun',     'ProW+ Wi-Fi',         'NP-0098123',    280),
+      (720, 'sec',   'Bosch',      'FAP-425-O',           'BS-1180555',    300)
+    ) as v(n, layer, mf, model, sn, age_days)
+   where a.id = ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid;
+
+  -- Ещё 15 единиц для реестра (без точек на плане).
+  insert into public.assets (id, location_id, name, category, inventory_no, meta, layer_id,
+                             manufacturer, model, serial_no, installed_at)
+  select ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid,
+         ('de300000-0000-4000-8000-' || lpad(v.loc::text, 12, '0'))::uuid,
+         v.name, 'equipment', v.inv, jsonb_build_object('kind', v.kind, 'demo', true),
+         case v.layer when 'hvac' then v_layer_hvac when 'elec' then v_layer_elec
+                      when 'plumb' then v_layer_plumb when 'sec' then v_layer_sec
+                      else v_layer_other end,
+         v.mf, v.model, v.sn, v_today::date - v.age_days
+  from (values
+    -- Москва · Офис 1 (403): лобби 427, open space 428, серверная 429, переговорная 430
+    (721, 427, 'Лифт №1',                         'other', 'lift',      'MSK1-LF-01', 'Otis',        'Gen2 Life',          'OT-RU-55012',  2100),
+    (722, 427, 'Лифт №2',                         'other', 'lift',      'MSK1-LF-02', 'Otis',        'Gen2 Life',          'OT-RU-55013',  2100),
+    (723, 428, 'Кондиционер open space №1',       'hvac',  'ac',        'MSK1-KL-01', 'Daikin',      'FXZQ50A',            'DK-V2108811',  1200),
+    (724, 428, 'Кондиционер open space №2',       'hvac',  'ac',        'MSK1-KL-02', 'Daikin',      'FXZQ50A',            'DK-V2108812',  1200),
+    (725, 429, 'Прецизионный кондиционер',        'hvac',  'ac',        'MSK1-KL-03', 'Stulz',       'CyberAir 3PRO',      'ST-3P-20211',  950),
+    (726, 429, 'ИБП серверной 20 кВА',            'elec',  'ups',       'MSK1-EL-01', 'APC',         'Symmetra PX 20',     'AS1912000877', 1500),
+    (727, 428, 'Электрощит ЩР-32',                'elec',  'panel',     'MSK1-EL-02', 'ABB',         'MNS iS',             'ABB-19-554120', 2100),
+    (728, 430, 'Датчик дыма переговорной',        'sec',   'smoke',     'MSK1-PB-01', 'Bosch',       'FAP-425-O',          'BS-1170221',   1400),
+    -- Дубай · Офис 1 (408): лобби 443, open space 444, серверная 445
+    (729, 443, 'Кондиционер лобби',               'hvac',  'ac',        'DXB1-KL-01', 'Daikin',      'FXFQ100A',           'DK-AE-771203', 800),
+    (730, 444, 'VRF наружный блок',               'hvac',  'ac',        'DXB1-KL-02', 'Daikin',      'VRV 5 RXYSA',        'DK-AE-771500', 800),
+    (731, 444, 'Кондиционер open space',          'hvac',  'ac',        'DXB1-KL-03', 'Gree',        'GMV6',               'GR-6611823',   600),
+    (732, 445, 'ИБП серверной',                   'elec',  'ups',       'DXB1-EL-01', 'APC',         'Smart-UPS SRT 6000', 'AS2105112240', 700),
+    (733, 445, 'Прецизионный кондиционер серверной', 'hvac', 'ac',      'DXB1-KL-04', 'Stulz',       'CyberRow',           'ST-CR-30992',  700),
+    (734, 444, 'Датчик дыма open space',          'sec',   'smoke',     'DXB1-PB-01', 'Bosch',       'FAP-425-O',          'BS-1201882',   800),
+    -- Абиджан (412): генераторная 457
+    (735, 457, 'Дизель-генератор 250 кВА',        'elec',  'generator', 'ABJ-EL-01',  'Caterpillar', 'C9 250 kVA',         'CAT-C9-66120', 1800)
+  ) as v(n, loc, name, layer, kind, inv, mf, model, sn, age_days)
+  on conflict (id) do update set
+    location_id = excluded.location_id, name = excluded.name, category = excluded.category,
+    inventory_no = excluded.inventory_no, meta = excluded.meta, layer_id = excluded.layer_id,
+    manufacturer = excluded.manufacturer, model = excluded.model, serial_no = excluded.serial_no,
+    installed_at = excluded.installed_at, floor_id = null, plan_x = null, plan_y = null;
+
+  -- Планы ППР 801–808. Объект плана — там же, где старые регламентные заявки:
+  -- 234 «ТО лифтов» стоит на Москва · Офис 5 (Сколково), 241 «Чистка фильтров» —
+  -- на Дубай · Офис 2 (Marina), поэтому и планы 803 и 802 там.
+  -- Начало — 1-е число месяца полгода назад (видна история периодов).
+  update public.maintenance_plans p set title = left(p.title, 100) || ' (старый)'
+   where p.company_id = c_company
+     and p.id::text !~ '^de300000-0000-4000-8000-0000000008[0-4][0-9]$'
+     and exists (select 1 from (values
+       (403, 'ТО кондиционеров'), (409, 'Чистка фильтров кондиционеров'), (407, 'ТО лифтов'),
+       (10, 'Осмотр электрощитов'), (410, 'Генеральная уборка'), (412, 'Проверка генератора'),
+       (10, 'Проверка ИБП серверной'), (10, 'Поверка датчиков дыма')) as d(o, t)
+       where p.object_id = ('de300000-0000-4000-8000-' || lpad(d.o::text, 12, '0'))::uuid
+         and public.norm_name(p.title) = public.norm_name(d.t));
+  insert into public.maintenance_plans (id, company_id, object_id, location_id, asset_id, layer_id,
+    title, description, period_kind, starts_on, checklist, requires_photo, priority, active, created_by,
+    created_at, updated_at)
+  select ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid, c_company,
+         ('de300000-0000-4000-8000-' || lpad(v.o::text, 12, '0'))::uuid,
+         case when v.loc is not null then ('de300000-0000-4000-8000-' || lpad(v.loc::text, 12, '0'))::uuid end,
+         case when v.a is not null then ('de300000-0000-4000-8000-' || lpad(v.a::text, 12, '0'))::uuid end,
+         case v.layer when 'hvac' then v_layer_hvac when 'elec' then v_layer_elec
+                      when 'clean' then v_layer_clean when 'sec' then v_layer_sec
+                      else v_layer_other end,
+         v.title, v.descr, v.kind, v_plan_start, v.checklist::jsonb, true, v.priority, true, v_manager,
+         v_plan_start, v_plan_start
+  from (values
+    (801, 403, null::int, null::int, 'hvac',  'ТО кондиционеров', 'Ежемесячное ТО внутренних блоков и прецизионных кондиционеров офиса.', 'month', 'normal',
+     '["Очистить фильтры внутренних блоков", "Проверить дренаж и поддоны", "Проверить давление хладагента", "Замерить температуру на выходе", "Записать показания в журнал"]'),
+    (802, 409, null, null, 'hvac',  'Чистка фильтров кондиционеров', 'Чистка фильтров всех внутренних блоков раз в месяц.', 'month', 'low',
+     '["Снять и промыть фильтры", "Продезинфицировать теплообменник", "Проверить работу в режиме охлаждения"]'),
+    (803, 407, 440, null, 'other', 'ТО лифтов', 'Ежемесячный осмотр лифтов атриума по договору.', 'month', 'normal',
+     '["Проверить остановку на этажах", "Проверить двери и датчики", "Проверить связь с диспетчером", "Сделать запись в журнале лифта"]'),
+    (804, 10,  22,  null, 'elec',  'Осмотр электрощитов', 'Квартальный осмотр щитов: затяжка контактов, тепловизор.', 'quarter', 'normal',
+     '["Протянуть контактные соединения", "Снять термограмму щита", "Проверить автоматы и УЗО", "Убрать пыль внутри щита"]'),
+    (805, 410, null, null, 'clean', 'Генеральная уборка', 'Генеральная уборка офиса раз в месяц.', 'month', 'low',
+     '["Мытьё окон изнутри", "Чистка ковровых покрытий", "Уборка кухни и холодильников", "Дезинфекция санузлов"]'),
+    (806, 412, 457, 735,  'elec',  'Проверка генератора', 'Ежемесячная проверка дизель-генератора: пуск под нагрузкой 30 минут.', 'month', 'high',
+     '["Проверить уровень топлива и масла", "Проверить аккумулятор", "Пуск под нагрузкой 30 минут", "Записать моточасы"]'),
+    (807, 10,  55,  712,  'elec',  'Проверка ИБП серверной', 'Квартальная проверка ИБП серверной: батареи, тест переключения.', 'quarter', 'normal',
+     '["Проверить состояние батарей", "Тест перехода на батареи", "Проверить журнал событий ИБП"]'),
+    (808, 10,  null, null, 'sec',  'Поверка датчиков дыма', 'Проверка датчиков дыма тестовым аэрозолем раз в полгода.', 'half_year', 'normal',
+     '["Проверить каждый датчик тестовым аэрозолем", "Проверить сигнал на пульте охраны", "Заменить неисправные датчики", "Оформить акт проверки"]')
+  ) as v(n, o, loc, a, layer, title, descr, kind, priority, checklist)
+  on conflict (id) do update set
+    company_id = excluded.company_id, object_id = excluded.object_id, location_id = excluded.location_id,
+    asset_id = excluded.asset_id, layer_id = excluded.layer_id, title = excluded.title,
+    description = excluded.description, period_kind = excluded.period_kind, period_days = null,
+    starts_on = excluded.starts_on, checklist = excluded.checklist, requires_photo = excluded.requires_photo,
+    priority = excluded.priority, active = true, created_by = excluded.created_by,
+    created_at = excluded.created_at, updated_at = excluded.updated_at;
+
+  -- Задачи периодов 258–276. per: 0 — текущий период, -1 — прошлый, -2 … — раньше.
+  -- Прошлые периоды почти все приняты; 266 (генератор, сентябрь) и 270 (датчики
+  -- дыма, I полугодие) не выполнены к концу периода — просрочены.
+  -- Время: создана в начале периода; r — минут до начала работы, sub — работа,
+  -- acc — до приёмки (у текущего периода — «сейчас минус 6 часов» и позже).
+  insert into public.work_orders (
+    id, company_id, object_id, location_id, asset_id, title, description, work_type, layer_id,
+    priority, status, requires_photo, input_channel, created_by,
+    assigned_contractor_id, assigned_by, due_at, time_spent_minutes,
+    created_at, updated_at, started_at, submitted_at, accepted_at, accepted_by,
+    return_reason, return_count, recurrence, plan_id, period_start, period_end)
+  select
+    ('de300000-0000-4000-8000-' || lpad(t.n::text, 12, '0'))::uuid,
+    c_company, p.object_id, coalesce(p.location_id, a.location_id), p.asset_id,
+    p.title || ' — ' || public.period_label(p.period_kind, b.period_start, b.period_end, 'ru'),
+    p.description, ly.name, ly.id, p.priority, t.status, true, 'ppr', v_manager,
+    case when t.c is not null then ('de300000-0000-4000-8000-' || lpad(t.c::text, 12, '0'))::uuid end,
+    case when t.c is not null then 'rule' end,
+    (b.period_end::timestamp + interval '23 hours 59 minutes') at time zone 'utc',
+    t.sub,
+    x.created,
+    x.created + make_interval(mins => coalesce(t.r, 0) + coalesce(t.sub, 0) + coalesce(t.acc, 0)),
+    case when t.r is not null then x.created + make_interval(mins => t.r) end,
+    case when t.sub is not null then x.created + make_interval(mins => t.r + t.sub) end,
+    case when t.status = 'done' then x.created + make_interval(mins => t.r + t.sub + t.acc) end,
+    case when t.status = 'done' then v_manager end,
+    null, 0,
+    jsonb_build_object('kind', 'ppr', 'period', p.period_kind, 'days', null),
+    p.id, b.period_start, b.period_end
+  from (values
+    (258, 801, -1, 501,  'done',        2,  60,  180,  120),
+    (259, 801,  0, 501,  'in_progress', 1,  60,  null::int, null::int),
+    (272, 801, -2, 501,  'done',        3,  90,  150,  200),
+    (273, 801, -3, 501,  'done',        2,  45,  170,  90),
+    (274, 801, -4, 501,  'done',        4,  60,  160,  300),
+    (260, 802, -1, 505,  'done',        5,  120, 90,   60),
+    (261, 803, -1, 504,  'done',        6,  30,  120,  60),
+    (262, 804, -1, 32,   'done',        10, 300, 240,  600),
+    (263, 804,  0, 32,   'assigned',    2,  null, null, null),
+    (264, 805, -1, 507,  'done',        12, 60,  360,  120),
+    (265, 805,  0, 507,  'on_review',   1,  30,  120,  null),
+    (266, 806, -1, 508,  'in_progress', 20, 240, null, null),
+    (267, 806,  0, 508,  'assigned',    1,  null, null, null),
+    (275, 806, -2, 508,  'done',        3,  60,  45,   90),
+    (276, 806, -3, 508,  'done',        2,  60,  50,   60),
+    (268, 807, -1, 32,   'done',        15, 120, 90,   300),
+    (269, 807,  0, 32,   'done',        1,  30,  60,   60),
+    (270, 808, -1, null, 'new',         30, null, null, null),
+    (271, 808,  0, null, 'new',         1,  null, null, null)
+  ) as t(n, plan, per, c, status, day, r, sub, acc)
+  join public.maintenance_plans p on p.id = ('de300000-0000-4000-8000-' || lpad(t.plan::text, 12, '0'))::uuid
+  join public.layers ly on ly.id = p.layer_id
+  left join public.assets a on a.id = p.asset_id
+  cross join lateral (
+    select * from public.period_bounds(
+      p.period_kind, null, p.starts_on,
+      (date_trunc('month', v_today)
+         + case p.period_kind when 'month' then make_interval(months => t.per)
+                              when 'quarter' then make_interval(months => 3 * t.per)
+                              when 'half_year' then make_interval(months => 6 * t.per)
+                              else make_interval(years => t.per) end)::date)
+  ) b
+  cross join lateral (
+    select case when t.per = 0
+                then least(b.period_start + make_interval(days => t.day - 1, hours => 6),
+                           now() - interval '6 hours')
+                else b.period_start + make_interval(days => t.day - 1, hours => 6) end as created
+  ) x
+  on conflict (id) do update set
+    company_id = excluded.company_id, object_id = excluded.object_id,
+    location_id = excluded.location_id, asset_id = excluded.asset_id,
+    title = excluded.title, description = excluded.description,
+    work_type = excluded.work_type, layer_id = excluded.layer_id,
+    priority = excluded.priority, status = excluded.status, recurrence = excluded.recurrence,
+    requires_photo = excluded.requires_photo, requires_scan = false,
+    input_channel = excluded.input_channel, created_by = excluded.created_by,
+    assigned_contractor_id = excluded.assigned_contractor_id,
+    assigned_executor_id = null, assigned_by = excluded.assigned_by,
+    due_at = excluded.due_at, time_spent_minutes = excluded.time_spent_minutes,
+    created_at = excluded.created_at, updated_at = excluded.updated_at,
+    started_at = excluded.started_at, submitted_at = excluded.submitted_at,
+    accepted_at = excluded.accepted_at, accepted_by = excluded.accepted_by,
+    return_reason = null, return_count = 0,
+    plan_id = excluded.plan_id, period_start = excluded.period_start, period_end = excluded.period_end;
+  get diagnostics v_ppr_orders = row_count;
+  v_orders := v_orders + v_ppr_orders;
+
+  -- Старые регламентные заявки 234 и 241 — задачи текущего месяца планов 803 и 802.
+  update public.work_orders w
+     set plan_id = p.id, period_start = b.period_start, period_end = b.period_end,
+         recurrence = jsonb_build_object('kind', 'ppr', 'period', p.period_kind, 'days', null),
+         due_at = (b.period_end::timestamp + interval '23 hours 59 minutes') at time zone 'utc'
+    from (values (234, 803), (241, 802)) as v(n, plan)
+    join public.maintenance_plans p on p.id = ('de300000-0000-4000-8000-' || lpad(v.plan::text, 12, '0'))::uuid
+    cross join lateral public.period_bounds(p.period_kind, null, p.starts_on, v_today::date) b
+   where w.id = ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid;
+
+  -- Чек-листы задач ППР — из плана; у принятых все пункты отмечены.
+  delete from public.checklist_items ci
+   using public.work_orders w
+   where ci.work_order_id = w.id and w.company_id = c_company and w.plan_id is not null
+     and w.id::text ~ '^de300000-0000-4000-8000-000000000[12][0-9]{2}$';
+  insert into public.checklist_items (work_order_id, text, is_done, done_at, done_by, created_at)
+  select w.id, e.item #>> '{}', w.status in ('done', 'on_review'),
+         case when w.status in ('done', 'on_review') then w.submitted_at end,
+         case when w.status in ('done', 'on_review') then v_executor end,
+         w.created_at + make_interval(secs => e.ord)
+    from public.work_orders w
+    join public.maintenance_plans p on p.id = w.plan_id
+    cross join lateral jsonb_array_elements(p.checklist) with ordinality as e(item, ord)
+   where w.company_id = c_company and w.plan_id is not null
+     and w.id::text ~ '^de300000-0000-4000-8000-000000000[12][0-9]{2}$';
+
+  -- 5f. Шаг 17 (миграция 0016, если применена): бригады подрядчика
+  --     «Huaxin FM» (509) — «Пекин» (950) и «Шэньчжэнь» (951) с зонами
+  --     «город Пекин» (970) и «город Шэньчжэнь» (971). Исполнителей у
+  --     региональных подрядчиков в демо нет — состав бригад пустой (его
+  --     можно задать в карточке подрядчика). Зоны менеджеров демо НЕ задаются:
+  --     демо-менеджер видит всю компанию (на нём идёт показ).
+  if to_regclass('public.crews') is not null then
+    delete from public.crews
+     where contractor_id = 'de300000-0000-4000-8000-000000000509'
+       and id not in ('de300000-0000-4000-8000-000000000950', 'de300000-0000-4000-8000-000000000951')
+       and public.norm_name(name) in ('пекин', 'шэньчжэнь');
+    insert into public.crews (id, company_id, contractor_id, name) values
+      ('de300000-0000-4000-8000-000000000950', c_company, 'de300000-0000-4000-8000-000000000509', 'Пекин'),
+      ('de300000-0000-4000-8000-000000000951', c_company, 'de300000-0000-4000-8000-000000000509', 'Шэньчжэнь')
+    on conflict (id) do update set company_id = excluded.company_id,
+      contractor_id = excluded.contractor_id, name = excluded.name;
+    insert into public.crew_zones (id, company_id, crew_id, layer_ids, scope_kind, scope_ref) values
+      ('de300000-0000-4000-8000-000000000970', c_company, 'de300000-0000-4000-8000-000000000950', '{}', 'city', 'Пекин'),
+      ('de300000-0000-4000-8000-000000000971', c_company, 'de300000-0000-4000-8000-000000000951', '{}', 'city', 'Шэньчжэнь')
+    on conflict (id) do update set company_id = excluded.company_id, crew_id = excluded.crew_id,
+      layer_ids = excluded.layer_ids, scope_kind = excluded.scope_kind, scope_ref = excluded.scope_ref;
+  else
+    raise notice 'Миграция 0016 не применена — бригады шага 17 пропущены.';
+  end if;
 
   -- 6. Визиты
   -- Колонки: vn — номер (часть id); n — заявка; off — минут от начала работы

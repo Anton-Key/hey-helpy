@@ -7,12 +7,15 @@ import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
 import '../../core/paging.dart';
+import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import '../floors/floor_models.dart';
 import '../floors/floor_repository.dart';
 import '../floors/order_plan_link.dart';
 import '../photos/photo_capture.dart';
+import '../ppr/ppr_logic.dart';
+import '../ppr/ppr_text.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
 import '../visits/visit_repository.dart';
@@ -80,10 +83,14 @@ class RequestsRepo {
   /// Заявки списка «Заявки» с условиями фильтра (на сервере, поверх RLS).
   /// Читает страницами: заявок может быть больше 1000.
   Future<List<WorkOrder>> listFiltered(List<ServerCond> conds) async {
-    final rows = await fetchAll(() => applyServerConds(
-            _c.from('work_orders').select(WorkOrder.listColumns), conds)
-        .order('created_at', ascending: false)
-        .order('id'));
+    // С полями ППР (0015); без миграции — прежние колонки.
+    Future<List<Map<String, dynamic>>> read(String columns) => fetchAll(() =>
+        applyServerConds(_c.from('work_orders').select(columns), conds)
+            .order('created_at', ascending: false)
+            .order('id'));
+    final rows = await SchemaCompat.run(
+        '0015', () => read(WorkOrder.listColumns0015),
+        legacy: () => read(WorkOrder.listColumns));
     return rows.map(WorkOrder.fromMap).toList();
   }
 
@@ -103,13 +110,18 @@ class RequestsRepo {
     return [for (final r in rows) r['id'] as String];
   }
 
-  Future<Map<String, dynamic>?> detail(String id) async {
-    return await _c
-        .from('work_orders')
-        .select('*,locations(name)')
-        .eq('id', id)
-        .maybeSingle();
-  }
+  Future<Map<String, dynamic>?> detail(String id) => SchemaCompat.run(
+      '0015',
+      () => _c
+          .from('work_orders')
+          .select('*,locations(name,code)')
+          .eq('id', id)
+          .maybeSingle(),
+      legacy: () => _c
+          .from('work_orders')
+          .select('*,locations(name)')
+          .eq('id', id)
+          .maybeSingle());
 
   Future<void> create(
       {required String companyId,
@@ -147,6 +159,7 @@ class RequestsRepo {
       required String priority,
       String? objectId,
       required bool recurring,
+      Object? keepRecurrence,
       bool setLocation = false,
       String? locationId}) async {
     await _c.from('work_orders').update({
@@ -157,7 +170,7 @@ class RequestsRepo {
       'layer_id': layer?.id,
       'priority': priority,
       'object_id': objectId,
-      'recurrence': recurring ? {'kind': 'regular'} : null,
+      'recurrence': keepRecurrence ?? (recurring ? {'kind': 'regular'} : null),
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }).eq('id', id);
   }
@@ -611,12 +624,22 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final status = (d['status'] ?? 'new') as String;
     final priority = (d['priority'] ?? 'normal') as String;
     final recurring = d['recurrence'] != null;
+    final ppr = isPprOrder(d);
+    final pprLine = ppr
+        ? pprTaskLine(l,
+            recurrence: d['recurrence'],
+            periodStart: d['period_start'],
+            periodEnd: d['period_end'])
+        : null;
     final title = (d['title'] ?? '') as String;
     final desc = (d['description'] ?? '') as String?;
     final workType = _workTypeLabel(widget.layers, context.localeCode,
         layerId: d['layer_id'] as String?, workType: d['work_type'] as String?);
     final objId = d['object_id'] as String?;
-    final place = (d['locations'] as Map<String, dynamic>?)?['name'] as String?;
+    final loc = d['locations'] as Map<String, dynamic>?;
+    final place = loc?['name'] == null
+        ? null
+        : placeLabel(loc!['name'] as String, loc['code'] as String?);
     final contractorId = d['assigned_contractor_id'] as String?;
     final created = DateTime.tryParse('${d['created_at']}');
     final createdText = created == null ? '—' : l.dateTime(created);
@@ -638,7 +661,11 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         if (overdue) StatusPill('overdue', label: l.statusOverdue, large: true),
       ]),
       const SizedBox(height: AppSpace.m),
-      Text(title + (recurring ? '  · ${l.requestRecurringTag}' : ''),
+      Text(
+          title +
+              (ppr
+                  ? '  · ${l.pprTag}'
+                  : (recurring ? '  · ${l.requestRecurringTag}' : '')),
           style: AppText.title),
       const SizedBox(height: AppSpace.xs),
       Text(
@@ -682,7 +709,18 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
               leading: const LeadingIcon(AppIcons.executor),
               title: l.fieldExecutor,
               value: _executorName!),
-        if (due != null)
+        // Задача ППР: «ППР · октябрь 2026 · до 31 окт.», исполнителю —
+        // «Выполнить в течение периода».
+        if (pprLine != null)
+          AppRow(
+            leading: overdue
+                ? const LeadingIcon.danger(AppIcons.calendar)
+                : const LeadingIcon(AppIcons.calendar),
+            title: pprLine,
+            subtitle: _isExecutor ? l.pprDoWithin : null,
+            chevron: false,
+          )
+        else if (due != null)
           AppRow(
             leading: overdue
                 ? const LeadingIcon.danger(AppIcons.clock)
@@ -703,7 +741,9 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       AppGroup(children: [
         AppRow(
             title: l.fieldKind,
-            value: recurring ? l.kindRecurring : l.kindOneOff),
+            value: ppr
+                ? l.pprKindOrder
+                : (recurring ? l.kindRecurring : l.kindOneOff)),
         AppRow(
             title: l.fieldPhotoProof,
             value: (d['requires_photo'] == true)
@@ -937,6 +977,9 @@ Future<bool?> showOrderForm({
   String? initialLocationId,
   String? initialAssetId,
   String? initialAssetName,
+
+  /// Вид работ заранее (заявка на оборудование — система оборудования, шаг 16).
+  String? initialLayerId,
 }) async {
   // Виды работ = слои компании из базы; ничего не зашито в приложение.
   List<Layer> layers = const [];
@@ -957,7 +1000,7 @@ Future<bool?> showOrderForm({
       ? Layer.find(layers,
           id: existing['layer_id'] as String?,
           name: existing['work_type'] as String?)
-      : null;
+      : Layer.find(layers, id: initialLayerId);
   String priority =
       isEdit ? (existing['priority'] ?? 'normal') as String : 'normal';
   String? objectId = isEdit
@@ -992,6 +1035,10 @@ Future<bool?> showOrderForm({
             priority: priority,
             objectId: objectId,
             recurring: recurring,
+            // Задача ППР остаётся задачей ППР (recurrence.kind = 'ppr').
+            keepRecurrence: isPprOrder(existing) && recurring
+                ? existing['recurrence']
+                : null,
             setLocation: locationId != initialLocation,
             locationId: locationId);
       } else {
@@ -1173,7 +1220,10 @@ class _PlaceFieldState extends State<PlaceField> {
       final items = [
         for (final i in r[0] as List<PlanItem>)
           if (i.isPlace)
-            (i.id, [i.name, if (floors[i.floorId] case final f?) f].join(' · '))
+            (
+              i.id,
+              [i.label, if (floors[i.floorId] case final f?) f].join(' · ')
+            )
       ];
       if (mounted) setState(() => _places = items);
     } catch (e) {

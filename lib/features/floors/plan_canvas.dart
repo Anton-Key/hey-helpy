@@ -48,7 +48,28 @@ class PlanCanvas extends StatefulWidget {
     this.labelOf,
     this.initialFocus,
     this.bottomInset = 0,
+    this.areas = const [],
+    this.draft,
+    this.draftRect = false,
+    this.onDraftTap,
+    this.onDraftRect,
+    this.onDraftMove,
   });
+
+  /// Помещения с областью на этом этаже (шаг 16): закрашены цветом статуса,
+  /// нажатие внутри области вне расстановки — как нажатие на маркер.
+  final List<PlanItem> areas;
+
+  /// Рисуемая область (режим «Обвести область»): вершины долями 0..1;
+  /// null — не рисуем. Нажатие на план добавляет вершину ([onDraftTap]),
+  /// вершины можно тянуть ([onDraftMove]).
+  final List<(double, double)>? draft;
+
+  /// Рисуем прямоугольником: протянуть пальцем / мышью ([onDraftRect]).
+  final bool draftRect;
+  final void Function(double fx, double fy)? onDraftTap;
+  final void Function((double, double) a, (double, double) b)? onDraftRect;
+  final void Function(int index, double fx, double fy)? onDraftMove;
 
   /// Сколько снизу закрыто панелью (телефон): «вписать» и центрирование —
   /// в видимой части.
@@ -109,6 +130,12 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
   /// Перетаскиваемый маркер и его точка (пиксели плана).
   String? _dragKey;
   Offset? _dragPos;
+
+  /// Прямоугольник области, который сейчас тянут (пиксели плана).
+  Offset? _rectFrom;
+  Offset? _rectTo;
+
+  bool get _drawing => widget.draft != null;
 
   Size get _plan => planSize(widget.floor);
 
@@ -208,6 +235,9 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
     _animateTo(_matrix(_viewport.center(Offset.zero) - c * s1, s1));
   }
 
+  /// Приблизить к маркеру: на телефоне 1,8 × «весь план», на ПК 1,25 × —
+  /// этаж почти целиком, маркер в центре (было 2,5 × — на ПК 1920 в кадре
+  /// оставался угол одной комнаты; шаг 18).
   void _centerOn(PlanItem i) {
     if (!i.placed) return;
     if (_viewport.isEmpty || !_fitted) {
@@ -216,7 +246,8 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
     }
     _touched = true;
     final p = fractionToPixels(i.x!, i.y!, _plan);
-    final s = math.max(_scale, _fitScale * 2.5).clamp(_minScale, _maxScale);
+    final zoom = _viewport.width >= 900 ? 1.25 : 1.8;
+    final s = math.max(_scale, _fitScale * zoom).clamp(_minScale, _maxScale);
     _animateTo(_matrix(planCenterOn(p, s.toDouble(), _visible), s.toDouble()));
   }
 
@@ -275,17 +306,32 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
                 boundaryMargin: EdgeInsets.all(math.max(vp.width, vp.height)),
                 minScale: _minScale,
                 maxScale: _maxScale,
+                panEnabled: !(_drawing && widget.draftRect),
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTapUp: widget.editing && widget.onEmptyTap != null
-                      ? (d) {
-                          final (fx, fy) =
-                              pixelsToFraction(d.localPosition, plan);
-                          widget.onEmptyTap!(fx, fy);
+                  onTapUp: (d) => _tapPlan(d.localPosition, plan),
+                  onPanStart: _drawing && widget.draftRect
+                      ? (d) => setState(() {
+                            _rectFrom = d.localPosition;
+                            _rectTo = d.localPosition;
+                          })
+                      : null,
+                  onPanUpdate: _drawing && widget.draftRect
+                      ? (d) => setState(() => _rectTo = d.localPosition)
+                      : null,
+                  onPanEnd: _drawing && widget.draftRect
+                      ? (_) {
+                          final a = _rectFrom, b = _rectTo;
+                          setState(() {
+                            _rectFrom = null;
+                            _rectTo = null;
+                          });
+                          if (a == null || b == null) return;
+                          if ((a - b).distance * _scale < 12) return;
+                          widget.onDraftRect?.call(pixelsToFraction(a, plan),
+                              pixelsToFraction(b, plan));
                         }
-                      : (!widget.editing && widget.onClear != null
-                          ? (_) => widget.onClear!()
-                          : null),
+                      : null,
                   child: SizedBox(
                     width: plan.width,
                     height: plan.height,
@@ -310,6 +356,133 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
         ),
       );
     });
+  }
+
+  /// Нажатие на план (координаты плана, px).
+  void _tapPlan(Offset local, Size plan) {
+    final (fx, fy) = pixelsToFraction(local, plan);
+    if (_drawing) {
+      if (!widget.draftRect) widget.onDraftTap?.call(fx, fy);
+      return;
+    }
+    if (widget.editing) {
+      widget.onEmptyTap?.call(fx, fy);
+      return;
+    }
+    // Нажатие в области помещения — как нажатие на его маркер.
+    final hit = areaAt(widget.areas, widget.floor.id, fx, fy, plan);
+    if (hit != null) {
+      widget.onMarkerTap(hit);
+      return;
+    }
+    widget.onClear?.call();
+  }
+
+  /// Области помещений и рисуемая область — под маркерами, без нажатий
+  /// (нажатие проходит к плану: [_tapPlan]).
+  List<Widget> _areaLayer(Size plan, double scale, double fit) {
+    final out = <Widget>[];
+    final shapes = <(List<Offset>, Color, bool)>[];
+    for (final i in widget.areas) {
+      if (!i.hasAreaOn(widget.floor.id)) continue;
+      final tone = markerTone(widget.stats[i.key] ?? ObjectStats.empty);
+      final pts = [
+        for (final (x, y) in i.shape!) _toScreen(fractionToPixels(x, y, plan))
+      ];
+      shapes.add((pts, markerGlowColor(tone), i.key == widget.highlight));
+      if (!_drawing && areaLabelVisible(i.shape!, plan, scale, fit)) {
+        final (cx, cy) = polygonCentroid(i.shape!);
+        var c = _toScreen(fractionToPixels(cx, cy, plan));
+        // Маркер помещения обычно в центре области — подпись под ним.
+        if (i.placed) {
+          final m = _toScreen(fractionToPixels(i.x!, i.y!, plan));
+          if ((m - c).distance < 34) c = m + const Offset(0, 34);
+        }
+        out.add(Positioned(
+          left: c.dx - PlanMarker.boxWidth / 2,
+          top: c.dy - 10,
+          width: PlanMarker.boxWidth,
+          child: IgnorePointer(
+            child: Text(i.label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: AppText.caption.copyWith(
+                    color: AppColors.ink, fontWeight: FontWeight.w700)),
+          ),
+        ));
+      }
+    }
+    final draft = widget.draft;
+    List<Offset>? draftPts;
+    if (draft != null) {
+      draftPts = [
+        for (final (x, y) in draft) _toScreen(fractionToPixels(x, y, plan))
+      ];
+    }
+    final a = _rectFrom, b = _rectTo;
+    List<Offset>? rectPts;
+    if (a != null && b != null) {
+      final ra = pixelsToFraction(a, plan), rb = pixelsToFraction(b, plan);
+      rectPts = [
+        for (final (x, y) in rectShape(ra, rb))
+          _toScreen(fractionToPixels(x, y, plan))
+      ];
+    }
+    out.insert(
+        0,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+                painter:
+                    AreaPainter(areas: shapes, draft: rectPts ?? draftPts)),
+          ),
+        ));
+    // Вершины рисуемой области можно тянуть.
+    if (draftPts != null && widget.onDraftMove != null && rectPts == null) {
+      for (var k = 0; k < draftPts.length; k++) {
+        out.add(_vertex(k, draftPts[k], plan));
+      }
+    }
+    return out;
+  }
+
+  Widget _vertex(int k, Offset p, Size plan) {
+    Offset? pos;
+    void move(Offset screenDelta) {
+      final d = widget.draft!;
+      final start = pos ?? fractionToPixels(d[k].$1, d[k].$2, plan);
+      pos = start + screenDelta / _scale;
+      final (fx, fy) = pixelsToFraction(pos!, plan);
+      widget.onDraftMove!(k, fx, fy);
+    }
+
+    return Positioned(
+      left: p.dx - PlanMarker.hit / 2,
+      top: p.dy - PlanMarker.hit / 2,
+      width: PlanMarker.hit,
+      height: PlanMarker.hit,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.move,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanStart: (_) => pos = null,
+          onPanUpdate: (d) => move(d.delta),
+          child: Center(
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.accent, width: 3),
+                boxShadow: AppShadows.floating,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _markers(Size plan) {
@@ -344,22 +517,31 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
           reduceMotion: reduceMotion);
       shown.add((i, px, p, fx, hi));
     }
+    // Помещения с видимой подписью области — без подписи у маркера.
+    final areaLabeled = {
+      for (final a in widget.areas)
+        if (!_drawing &&
+            a.hasAreaOn(widget.floor.id) &&
+            areaLabelVisible(a.shape!, plan, scale, fit))
+          a.key
+    };
     _syncClock(planNeedsTicker(shown.map((e) => e.$4)));
     // Подписи: выбранная / наведённая — всегда, остальные — без наездов на
     // соседние маркеры и подписи (по порядку: сначала оборудование).
     final labels = planLabelLayout([
       for (final (i, _, p, _, hi) in shown.reversed)
-        PlanLabelBox(i.key, p, i.name,
+        PlanLabelBox(i.key, p, i.label,
             priority: hi || i.key == _hover,
-            wanted: planLabelWanted(
-                isPlace: i.isPlace,
-                selected: hi,
-                hovered: i.key == _hover,
-                scale: scale,
-                fitScale: fit)),
+            wanted: !areaLabeled.contains(i.key) &&
+                planLabelWanted(
+                    isPlace: i.isPlace,
+                    selected: hi,
+                    hovered: i.key == _hover,
+                    scale: scale,
+                    fitScale: fit)),
     ]);
     final canHover = !widget.editing;
-    final children = <Widget>[];
+    final children = <Widget>[..._areaLayer(plan, scale, fit)];
     for (final (i, px, p, fx, hi) in shown) {
       final stats = widget.stats[i.key] ?? ObjectStats.empty;
       Widget marker = PlanMarker(
@@ -367,7 +549,7 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
         stats: stats,
         highlighted: hi,
         showLabel: labels.contains(i.key),
-        movable: widget.editing && widget.onMoved != null,
+        movable: widget.editing && widget.onMoved != null && !_drawing,
         semanticLabel: widget.labelOf?.call(i) ?? i.name,
         fx: fx,
         clock: _clock,
@@ -382,9 +564,11 @@ class _PlanCanvasState extends State<PlanCanvas> with TickerProviderStateMixin {
             : null,
         onTap: () => widget.onMarkerTap(i),
       );
-      if (widget.editing && widget.onMoved != null) {
+      if (widget.editing && widget.onMoved != null && !_drawing) {
         marker = _draggable(i, px, _Hop(child: marker));
       }
+      // Пока рисуем область, маркеры не мешают нажатиям по плану.
+      if (_drawing) marker = IgnorePointer(child: marker);
       children.add(Positioned(
         left: p.dx - PlanMarker.boxWidth / 2,
         top: p.dy - PlanMarker.hit / 2,
@@ -640,7 +824,7 @@ class PlanMarker extends StatelessWidget {
                       .withValues(alpha: highlighted ? 0.97 : 0.92),
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                   boxShadow: highlighted ? AppShadows.floating : null),
-              child: Text(item.name,
+              child: Text(item.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
@@ -731,6 +915,68 @@ class _GlowPainter extends CustomPainter {
       old.circle != circle ||
       old.side != side ||
       old.clock != clock;
+}
+
+/// Области помещений (заливка 16 % и контур цвета статуса; выбранная —
+/// плотнее) и рисуемая область (контур и вершины акцента). Точки — экранные.
+class AreaPainter extends CustomPainter {
+  AreaPainter({required this.areas, this.draft});
+
+  final List<(List<Offset>, Color, bool)> areas;
+  final List<Offset>? draft;
+
+  Path _path(List<Offset> pts, {bool close = true}) {
+    final p = Path()..moveTo(pts.first.dx, pts.first.dy);
+    for (final o in pts.skip(1)) {
+      p.lineTo(o.dx, o.dy);
+    }
+    if (close) p.close();
+    return p;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final (pts, color, selected) in areas) {
+      if (pts.length < 3) continue;
+      final path = _path(pts);
+      canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.fill
+            ..color = color.withValues(alpha: selected ? 0.28 : 0.16));
+      canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = selected ? 3 : 1.5
+            ..strokeJoin = StrokeJoin.round
+            ..color = color.withValues(alpha: selected ? 0.9 : 0.55));
+    }
+    final d = draft;
+    if (d != null && d.isNotEmpty) {
+      final stroke = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5
+        ..strokeJoin = StrokeJoin.round
+        ..color = AppColors.accentText;
+      if (d.length >= 3) {
+        canvas.drawPath(
+            _path(d),
+            Paint()
+              ..style = PaintingStyle.fill
+              ..color = AppColors.accent.withValues(alpha: 0.18));
+      }
+      if (d.length >= 2) {
+        canvas.drawPath(_path(d, close: d.length >= 3), stroke);
+      }
+      for (final o in d) {
+        canvas.drawCircle(o, 4, Paint()..color = AppColors.accentText);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(AreaPainter old) => true;
 }
 
 /// Значок оборудования: по виду (assets.meta.kind), иначе по категории.

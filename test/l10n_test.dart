@@ -20,8 +20,8 @@ void main() {
     expect(ru.requestsCount(3), '3 заявки');
     expect(ru.requestsCount(5), '5 заявок');
     expect(ru.requestsCount(21), '21 заявка');
-    expect(en.requestsCount(1), '1 request');
-    expect(en.requestsCount(2), '2 requests');
+    expect(en.requestsCount(1), '1 work order');
+    expect(en.requestsCount(2), '2 work orders');
   });
 
   test('коды из базы переводятся', () {

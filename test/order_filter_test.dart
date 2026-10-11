@@ -200,9 +200,24 @@ void main() {
 
     test('«Ещё»: тип, источник, фото, возвраты, создал я', () {
       const rec = OrderFilter(recurrence: RecurrenceFilter.recurring);
-      expect(conds(rec), ['recurrence=not.is.null']);
+      expect(conds(rec), ['recurrence=not.is.null', 'recurrence->>kind=neq.ppr']);
       expect(rec.matches(wo('a', recurring: true), now: now), isTrue);
       expect(rec.matches(wo('b'), now: now), isFalse);
+
+      // Шаг 16: задача ППР — не «повторяющаяся», а отдельный тип «ППР».
+      final pprTask = WorkOrder(
+          id: 'p',
+          title: 'ТО — октябрь 2026',
+          priority: 'normal',
+          status: 'assigned',
+          recurring: true,
+          recurrenceKind: 'ppr',
+          planId: 'plan1');
+      expect(rec.matches(pprTask, now: now), isFalse);
+      const ppr = OrderFilter(recurrence: RecurrenceFilter.ppr);
+      expect(conds(ppr), ['recurrence->>kind=eq.ppr']);
+      expect(ppr.matches(pprTask, now: now), isTrue);
+      expect(ppr.matches(wo('a', recurring: true), now: now), isFalse);
 
       const once = OrderFilter(recurrence: RecurrenceFilter.once);
       expect(conds(once), ['recurrence=is.null']);

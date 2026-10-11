@@ -227,7 +227,8 @@ class DeviceSpeechInput implements SpeechInput {
 /// Имитация распознавания без микрофона (флаг [voiceMock]): «произносит»
 /// заготовленную фразу по словам и ждёт «Готово». Фразы — пример того, что
 /// мог сказать пользователь, а не строки интерфейса, поэтому они не в
-/// файлах перевода. Разбор дальше — настоящий ([TextIntake]).
+/// файлах перевода. Разбор дальше — настоящий ([TextIntake]). В вебе фразу
+/// можно задать в адресе: `?voice=…` (сквозные тесты, видео демо).
 class MockVoiceIntake implements SpeechInput {
   static const phrases = {
     'ru':
@@ -257,7 +258,13 @@ class MockVoiceIntake implements SpeechInput {
     void Function(bool silent)? onMicSilent,
   }) async {
     _onDone = onDone;
-    final words = phrases[localeId.substring(0, 2)]!.split(' ');
+    // Сквозные тесты и запись видео (только VOICE_MOCK): своя фраза — в
+    // адресе страницы `?voice=…`.
+    final custom = Uri.base.queryParameters['voice'];
+    final words = (custom != null && custom.trim().isNotEmpty
+            ? custom.trim()
+            : phrases[localeId.substring(0, 2)]!)
+        .split(' ');
     var shown = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 120), (t) {
       shown++;

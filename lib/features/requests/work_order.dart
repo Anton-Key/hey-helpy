@@ -15,6 +15,9 @@ class WorkOrder {
   final DateTime? createdAt;
   final String? placeName;
 
+  /// Номер помещения («305», 0015).
+  final String? placeCode;
+
   /// Этаж помещения (планы этажей, 0013): название и номер.
   final String? floorName;
   final int? floorLevel;
@@ -28,6 +31,14 @@ class WorkOrder {
   final bool requiresPhoto;
   final int returnCount;
 
+  /// ППР (0015): вид повторения (recurrence.kind: 'regular' / 'ppr'),
+  /// план и границы периода ('2026-10-01'). До 0015 — null.
+  final String? recurrenceKind;
+  final Object? recurrence;
+  final String? planId;
+  final String? periodStart;
+  final String? periodEnd;
+
   WorkOrder(
       {required this.id,
       required this.title,
@@ -40,6 +51,7 @@ class WorkOrder {
       this.dueAt,
       this.createdAt,
       this.placeName,
+      this.placeCode,
       this.floorName,
       this.floorLevel,
       this.locationId,
@@ -48,7 +60,15 @@ class WorkOrder {
       this.createdBy,
       this.inputChannel,
       this.requiresPhoto = false,
-      this.returnCount = 0});
+      this.returnCount = 0,
+      this.recurrenceKind,
+      this.recurrence,
+      this.planId,
+      this.periodStart,
+      this.periodEnd});
+
+  /// Задача периода ППР.
+  bool get isPpr => planId != null || recurrenceKind == 'ppr';
 
   /// Колонки для [WorkOrder.fromMap] в запросе списка.
   static const listColumns =
@@ -56,6 +76,14 @@ class WorkOrder {
       'location_id,assigned_contractor_id,assigned_executor_id,created_by,'
       'input_channel,requires_photo,return_count,due_at,created_at,'
       'locations(name,floors(name,level))';
+
+  /// То же + поля ППР и номер помещения (нужна миграция 0015).
+  static const listColumns0015 =
+      'id,title,work_type,layer_id,priority,status,recurrence,object_id,'
+      'location_id,assigned_contractor_id,assigned_executor_id,created_by,'
+      'input_channel,requires_photo,return_count,due_at,created_at,'
+      'plan_id,period_start,period_end,'
+      'locations(name,code,floors(name,level))';
 
   factory WorkOrder.fromMap(Map<String, dynamic> m) {
     return WorkOrder(
@@ -70,6 +98,7 @@ class WorkOrder {
       dueAt: DateTime.tryParse('${m['due_at'] ?? ''}')?.toLocal(),
       createdAt: DateTime.tryParse('${m['created_at'] ?? ''}')?.toLocal(),
       placeName: (m['locations'] as Map<String, dynamic>?)?['name'] as String?,
+      placeCode: (m['locations'] as Map<String, dynamic>?)?['code'] as String?,
       floorName: _floor(m)?['name'] as String?,
       floorLevel: (_floor(m)?['level'] as num?)?.toInt(),
       locationId: m['location_id'] as String?,
@@ -79,6 +108,13 @@ class WorkOrder {
       inputChannel: m['input_channel'] as String?,
       requiresPhoto: m['requires_photo'] == true,
       returnCount: (m['return_count'] as num?)?.toInt() ?? 0,
+      recurrence: m['recurrence'],
+      recurrenceKind: (m['recurrence'] is Map)
+          ? (m['recurrence'] as Map)['kind'] as String?
+          : null,
+      planId: m['plan_id'] as String?,
+      periodStart: m['period_start'] as String?,
+      periodEnd: m['period_end'] as String?,
     );
   }
 

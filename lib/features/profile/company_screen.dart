@@ -7,9 +7,12 @@ import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/profile.dart';
 import '../../models/user_role.dart';
+import '../access/zone_editor.dart';
 import '../directory/directory.dart';
 import '../onboarding/onboarding_repository.dart';
 import '../onboarding/onboarding_screen.dart';
+import '../access/audit_screen.dart';
+import '../regions/regions_screen.dart';
 import 'profile_repository.dart';
 import '../../core/app_message.dart';
 
@@ -431,6 +434,30 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                   title: l.tabLocations,
                   onTap: () => Navigator.pop(context, companyTabObjects),
                 ),
+                // Регионы компании (шаг 16): общий список, без дублей.
+                AppRow(
+                  leading: const LeadingIcon(AppIcons.map),
+                  title: l.regionManage,
+                  onTap: () => Navigator.push(
+                      context,
+                      appRoute(
+                          (_) => RegionsScreen(
+                              isManager: _canManage,
+                              companyId: _me.companyId),
+                          title: l.profileMyCompany)),
+                ),
+                // Журнал изменений доступа (шаг 18): только администратор.
+                if (_me.role == UserRole.admin && _me.companyId != null)
+                  AppRow(
+                    leading: const LeadingIcon(AppIcons.key),
+                    title: l.auditMenu,
+                    subtitle: l.auditMenuHint,
+                    onTap: () => Navigator.push(
+                        context,
+                        appRoute(
+                            (_) => AuditScreen(companyId: _me.companyId!),
+                            title: l.profileMyCompany)),
+                  ),
               ]),
             ],
           ]),
@@ -456,8 +483,62 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
         ),
       ]);
 
+  /// Администратор: у менеджера — выбор «Сменить роль» / «Зона доступа».
+  bool _canSetZone(Member m) =>
+      _me.role == UserRole.admin && m.role == UserRole.manager && m.id != _me.id;
+
+  Future<void> _memberTap(Member m) async {
+    if (!_canSetZone(m)) {
+      if (_canChangeRole(m)) await _changeRole(m);
+      return;
+    }
+    final l = context.l10n;
+    final a = await showAppSheet<int>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        top: false,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SheetHeader(
+              title: _memberName(l, m),
+              doneLabel: l.commonCancel,
+              onDone: () => Navigator.pop(ctx)),
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpace.screen, AppSpace.s, AppSpace.screen, AppSpace.xl),
+            child: AppGroup(margin: EdgeInsets.zero, children: [
+              AppRow(
+                  leading: const LeadingIcon(AppIcons.user),
+                  title: l.zoneMenuRole,
+                  value: l.role(m.role),
+                  onTap: () => Navigator.pop(ctx, 0)),
+              AppRow(
+                  leading: const LeadingIcon(AppIcons.lock),
+                  title: l.zoneTitle,
+                  onTap: () => Navigator.pop(ctx, 1)),
+            ]),
+          ),
+        ]),
+      ),
+    );
+    if (!mounted) return;
+    if (a == 0) {
+      await _changeRole(m);
+      return;
+    }
+    if (a == 1 && _me.companyId != null) {
+      await Navigator.push(
+          context,
+          appRoute(
+              (_) => AccessZoneScreen(
+                  profileId: m.id,
+                  memberName: _memberName(l, m),
+                  companyId: _me.companyId!),
+              title: l.profileMyCompany));
+    }
+  }
+
   Widget _memberRow(AppLocalizations l, Member m) {
-    final canChange = _canChangeRole(m);
+    final canChange = _canChangeRole(m) || _canSetZone(m);
     final phone =
         (m.phone == null || m.phone!.isEmpty) ? l.companyNoPhone : m.phone!;
     return AppRow(
@@ -473,7 +554,7 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
           style: AppText.footnote.copyWith(
               color: canChange ? AppColors.accentText : AppColors.secondary,
               fontWeight: FontWeight.w600)),
-      onTap: canChange ? () => _changeRole(m) : null,
+      onTap: canChange ? () => _memberTap(m) : null,
     );
   }
 }

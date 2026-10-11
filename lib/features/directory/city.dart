@@ -1,3 +1,5 @@
+import '../regions/countries.dart';
+import '../regions/region.dart';
 import 'directory.dart';
 
 /// Города объектов (шаг 13d). Отдельного поля «город» в базе нет: город —
@@ -22,8 +24,10 @@ String objectLabel(String name, String? address, {bool withCity = true}) {
 
 /// Название объекта для показа: везде, где нет контекста города, —
 /// «Москва · Офис 3» (в разных городах бывают одинаковые «Офис 1»).
-String objectDisplayName(Obj object, {bool withCity = true}) =>
-    objectLabel(object.name, object.address, withCity: withCity);
+String objectDisplayName(Obj object, {bool withCity = true}) {
+  final c = withCity ? object.cityName : '';
+  return c.isEmpty ? object.name : '$c · ${object.name}';
+}
 
 String _key(String s) => s.toLowerCase().replaceAll('ё', 'е');
 
@@ -45,12 +49,19 @@ class CityGroup<T> {
 /// Делит на города: города по алфавиту («без города» — в конце), внутри —
 /// по названию.
 List<CityGroup<T>> groupByCity<T>(Iterable<T> items,
-    {required String? Function(T) address, required String Function(T) name}) {
+        {required String? Function(T) address,
+        required String Function(T) name}) =>
+    groupByCityName(items, city: (i) => cityOf(address(i)), name: name);
+
+/// То же по готовому названию города ('' — без города).
+List<CityGroup<T>> groupByCityName<T>(Iterable<T> items,
+    {required String Function(T) city, required String Function(T) name}) {
+  final cityFn = city;
   // Регистр не важен: «москва» и «Москва» — один город (подпись — первая).
   final map = <String, List<T>>{};
   final shown = <String, String>{};
   for (final i in items) {
-    final city = cityOf(address(i));
+    final city = cityFn(i).trim();
     shown.putIfAbsent(_key(city), () => city);
     map.putIfAbsent(_key(city), () => []).add(i);
   }
@@ -64,9 +75,68 @@ List<CityGroup<T>> groupByCity<T>(Iterable<T> items,
   ];
 }
 
-/// Объекты по городам.
+/// Объекты по городам: поле города (0015), иначе часть адреса до запятой.
 List<CityGroup<Obj>> groupObjectsByCity(Iterable<Obj> objects) =>
-    groupByCity(objects, address: (o) => o.address, name: (o) => o.name);
+    groupByCityName(objects, city: (o) => o.cityName, name: (o) => o.name);
+
+/// Страна внутри региона: код ISO ('' — страна не указана) и её города.
+class CountryGroup {
+  const CountryGroup(this.code, this.cities);
+  final String code;
+  final List<CityGroup<Obj>> cities;
+  int get count => cities.fold(0, (n, c) => n + c.items.length);
+  List<Obj> get objects => [for (final c in cities) ...c.items];
+}
+
+/// Регион ([region] null — «Без региона») и его страны.
+class RegionGroup {
+  const RegionGroup(this.region, this.countries);
+  final Region? region;
+  final List<CountryGroup> countries;
+  int get count => countries.fold(0, (n, c) => n + c.count);
+  List<Obj> get objects => [for (final c in countries) ...c.objects];
+}
+
+/// Регион → страна → город (шаг 16). Регионы — в порядке списка компании
+/// ([sortRegions]), «Без региона» — в конце; страны — по названию на языке
+/// [localeCode], «без страны» — в конце; города — как [groupObjectsByCity].
+/// null — у компании нет регионов или ни один объект не привязан к региону:
+/// тогда группируем, как раньше, только по городам.
+List<RegionGroup>? groupObjectsByRegion(
+    Iterable<Obj> objects, List<Region> regions, String localeCode) {
+  if (regions.isEmpty) return null;
+  final byId = {for (final r in regions) r.id: r};
+  final list = objects.toList();
+  if (!list.any((o) => byId.containsKey(o.regionId))) return null;
+  final byRegion = <String?, List<Obj>>{};
+  for (final o in list) {
+    final rid = byId.containsKey(o.regionId) ? o.regionId : null;
+    byRegion.putIfAbsent(rid, () => []).add(o);
+  }
+  String countryKey(String code) => code.isEmpty
+      ? '\uFFFF'
+      : _key(countryLabel(code, localeCode, flag: false));
+  List<CountryGroup> countries(List<Obj> items) {
+    final byCountry = <String, List<Obj>>{};
+    for (final o in items) {
+      final c = (o.countryCode ?? '').trim().toUpperCase();
+      byCountry.putIfAbsent(c, () => []).add(o);
+    }
+    final codes = byCountry.keys.toList()
+      ..sort((a, b) => countryKey(a).compareTo(countryKey(b)));
+    return [
+      for (final c in codes) CountryGroup(c, groupObjectsByCity(byCountry[c]!))
+    ];
+  }
+
+  return [
+    for (final r in sortRegions(regions))
+      if (byRegion.containsKey(r.id))
+        RegionGroup(r, countries(byRegion[r.id]!)),
+    if (byRegion.containsKey(null))
+      RegionGroup(null, countries(byRegion[null]!)),
+  ];
+}
 
 /// Города без повторов (регистр не важен), по алфавиту (без «без города»).
 List<String> citiesOf(Iterable<String?> addresses) {

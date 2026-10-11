@@ -523,3 +523,33 @@ double fitZoom(GeoRect bounds, double width, double height,
   final z = math.log(math.min(sx, sy)) / math.ln2;
   return z.clamp(mapMinZoom, maxZoom).toDouble();
 }
+
+/// Чип над картой (шаг 16): регион и его объекты.
+class RegionChip<T> {
+  const RegionChip(this.id, this.name, this.items);
+
+  /// id региона.
+  final String id;
+  final String name;
+  final List<T> items;
+}
+
+/// Чипы регионов над картой — в порядке [regions] (id, название), только
+/// регионы с объектами. null — регионов нет или ни один объект к ним не
+/// привязан: тогда чипы, как раньше, по городам. Объекты без региона в чипы
+/// не попадают (их видно в «Все»).
+List<RegionChip<T>>? regionChips<T>(List<T> items,
+    {required String? Function(T value) regionOf,
+    required List<({String id, String name})> regions}) {
+  if (regions.isEmpty) return null;
+  final by = <String, List<T>>{};
+  for (final i in items) {
+    final r = regionOf(i);
+    if (r != null) by.putIfAbsent(r, () => []).add(i);
+  }
+  final out = [
+    for (final r in regions)
+      if (by.containsKey(r.id)) RegionChip(r.id, r.name, by[r.id]!),
+  ];
+  return out.isEmpty ? null : out;
+}

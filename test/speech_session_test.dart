@@ -202,4 +202,23 @@ void main() {
     expect(isMobileUserAgent(chrome), isFalse);
     expect(isMobileUserAgent('Mozilla/5.0 (Linux; Android 14) Mobile'), isTrue);
   });
+
+  test('браузер без распознавания речи → сразу ввод текстом', () {
+    const chrome =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36';
+    expect(isNoSpeechBrowser(chrome), isFalse);
+    expect(isNoSpeechBrowser('$chrome Edg/129.0.0.0'), isFalse);
+    expect(isNoSpeechBrowser('$chrome YaBrowser/24.7.0.0'), isTrue);
+    expect(isNoSpeechBrowser('$chrome OPR/113.0.0.0'), isTrue);
+    expect(isNoSpeechBrowser(chrome, brave: true), isTrue);
+    expect(
+        isNoSpeechBrowser(
+            'Mozilla/5.0 (Windows NT 10.0; rv:131.0) Gecko/20100101 Firefox/131.0'),
+        isTrue);
+    // Samsung Internet — только совет, попытка разрешена.
+    expect(
+        isNoSpeechBrowser(
+            'Mozilla/5.0 (Linux; Android 14) SamsungBrowser/26.0 Chrome/122 Mobile Safari/537.36'),
+        isFalse);
+  });
 }

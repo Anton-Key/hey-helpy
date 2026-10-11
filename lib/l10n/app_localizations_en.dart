@@ -1431,6 +1431,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The microphone doesn\'t hear any sound — check which microphone is selected';
 
   @override
+  String get voiceOnlyChromeEdge =>
+      'Voice input works in Chrome and Edge. Type the work order — AI will parse it just the same.';
+
+  @override
   String get voiceBrowserHint =>
       'For voice input, it\'s best to open this in Google Chrome or Microsoft Edge';
 

@@ -21,9 +21,15 @@ enum _Phase { starting, listening, processing, error, typing }
 /// Возвращает true, если заявка создана.
 class VoiceRecordScreen extends StatefulWidget {
   const VoiceRecordScreen(
-      {super.key, required this.companyId, required this.objects});
+      {super.key,
+      required this.companyId,
+      required this.objects,
+      @visibleForTesting this.speech});
   final String companyId;
   final List<Obj> objects;
+
+  /// Распознаватель для тестов; по умолчанию — [createSpeechInput].
+  final SpeechInput? speech;
 
   static const listenFor = Duration(seconds: 30);
   static const pauseFor = Duration(seconds: 3);
@@ -34,12 +40,13 @@ class VoiceRecordScreen extends StatefulWidget {
 
 class _VoiceRecordScreenState extends State<VoiceRecordScreen>
     with SingleTickerProviderStateMixin {
-  final _speech = createSpeechInput();
+  late final _speech = widget.speech ?? createSpeechInput();
   final _client = createVoiceIntakeClient();
   final _typeC = TextEditingController();
   final _typeFocus = FocusNode();
-  late final _pulse = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 1200));
+  // Создаётся сразу: если микрофон так и не включался (ввод текстом),
+  // ленивое создание в dispose() упало бы.
+  late final AnimationController _pulse;
   late final Future<IntakeCatalog> _catalog = _loadCatalog();
 
   _Phase _phase = _Phase.starting;
@@ -63,9 +70,19 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
   /// Номер попытки: «Ввести текстом» во время запуска отменяет её.
   int _attempt = 0;
 
+  /// Браузер без распознавания речи (Firefox, Яндекс Браузер, Opera):
+  /// сразу ввод текстом с подсказкой, без ошибки и без «Ещё раз».
+  late final bool _noVoice = _speech.voiceUnavailable;
+
   @override
   void initState() {
     super.initState();
+    _pulse = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1200));
+    if (_noVoice) {
+      _phase = _Phase.typing;
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) => _start());
   }
 
@@ -400,6 +417,12 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (_noVoice) ...[
+            _Notice(
+                key: const ValueKey('voice-only-chrome'),
+                text: l.voiceOnlyChromeEdge),
+            const SizedBox(height: AppSpace.m),
+          ],
           Text(l.voiceTypeTitle, style: AppText.title2),
           const SizedBox(height: AppSpace.m),
           AppCard(
@@ -430,9 +453,11 @@ class _VoiceRecordScreenState extends State<VoiceRecordScreen>
                     child: Text(l.formWhatRequired, style: AppText.footnote))
                 : const SizedBox.shrink(),
           ),
-          const SizedBox(height: AppSpace.l),
-          AppButton.secondary(
-              label: l.voiceAgain, icon: AppIcons.mic, onPressed: _start),
+          if (!_noVoice) ...[
+            const SizedBox(height: AppSpace.l),
+            AppButton.secondary(
+                label: l.voiceAgain, icon: AppIcons.mic, onPressed: _start),
+          ],
         ]);
   }
 
@@ -475,7 +500,7 @@ class _LiveText extends StatelessWidget {
 
 /// Подсказка: совет открыть в Chrome / Edge, «микрофон молчит».
 class _Notice extends StatelessWidget {
-  const _Notice({required this.text});
+  const _Notice({super.key, required this.text});
   final String text;
 
   @override

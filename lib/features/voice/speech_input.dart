@@ -59,6 +59,10 @@ abstract class SpeechInput {
   /// Chrome или Edge.
   bool get weakBrowser;
 
+  /// Голосом здесь заявку не создать (браузер без распознавания речи):
+  /// экран сразу открывает ввод текстом с подсказкой.
+  bool get voiceUnavailable;
+
   /// Остановить и дождаться последнего результата (придёт [onDone]).
   Future<void> stop();
 
@@ -86,6 +90,9 @@ class DeviceSpeechInput implements SpeechInput {
 
   @override
   bool get weakBrowser => false;
+
+  @override
+  bool get voiceUnavailable => false;
 
   @override
   Future<SpeechProblem?> init() async {
@@ -242,6 +249,9 @@ class MockVoiceIntake implements SpeechInput {
 
   @override
   bool get weakBrowser => false;
+
+  @override
+  bool get voiceUnavailable => false;
 
   @override
   Future<SpeechProblem?> init() async => null;

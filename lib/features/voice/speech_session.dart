@@ -201,6 +201,16 @@ bool isWeakSpeechBrowser(String userAgent, {bool brave = false}) {
       .hasMatch(userAgent);
 }
 
+/// Браузер, где распознавание речи не работает совсем: в Firefox нет
+/// Web Speech API, а Яндекс Браузер, Opera и Brave его объявляют, но сервис
+/// распознавания им недоступен (сразу `network` / `not-allowed`). В них «Эй,
+/// Helpy» сразу открывает «Ввести текстом» с подсказкой про Chrome и Edge.
+/// Samsung Internet сюда не входит — там попытка иногда работает.
+bool isNoSpeechBrowser(String userAgent, {bool brave = false}) {
+  if (brave) return true;
+  return RegExp(r'YaBrowser|OPR/|Opera|Firefox/|FxiOS').hasMatch(userAgent);
+}
+
 /// Телефон или планшет. На них браузер отдаёт микрофон только одному
 /// потребителю, поэтому индикатор громкости там не включаем.
 bool isMobileUserAgent(String userAgent) =>

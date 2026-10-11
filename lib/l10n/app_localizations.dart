@@ -2547,6 +2547,12 @@ abstract class AppLocalizations {
   /// **'Микрофон не слышит звук — проверьте, какой микрофон выбран'**
   String get voiceMicSilent;
 
+  /// No description provided for @voiceOnlyChromeEdge.
+  ///
+  /// In ru, this message translates to:
+  /// **'Голосовой ввод работает в Chrome и Edge. Напишите заявку — ИИ разберёт её так же.'**
+  String get voiceOnlyChromeEdge;
+
   /// No description provided for @voiceBrowserHint.
   ///
   /// In ru, this message translates to:

@@ -68,6 +68,17 @@ class WebSpeechInput implements SpeechInput {
   }
 
   @override
+  bool get voiceUnavailable {
+    if (_recognitionClass == null) return true;
+    try {
+      return isNoSpeechBrowser(_userAgent,
+          brave: web.window.navigator.has('brave'));
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
   Future<SpeechProblem?> init() async =>
       _recognitionClass == null ? SpeechProblem.unsupported : null;
 

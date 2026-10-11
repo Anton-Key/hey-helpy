@@ -71,7 +71,7 @@ List<CityGroup<T>> groupByCityName<T>(Iterable<T> items,
       CityGroup(
           c,
           map[_key(c)]!
-            ..sort((a, b) => _naturalCompare(_key(name(a)), _key(name(b))))),
+            ..sort((a, b) => naturalCompare(_key(name(a)), _key(name(b))))),
   ];
 }
 
@@ -149,7 +149,7 @@ List<String> citiesOf(Iterable<String?> addresses) {
 }
 
 /// Сравнение с числами по значению: «Офис 2» < «Офис 10».
-int _naturalCompare(String a, String b) {
+int naturalCompare(String a, String b) {
   final re = RegExp(r'\d+|\D+');
   final pa = re.allMatches(a).map((m) => m[0]!).toList();
   final pb = re.allMatches(b).map((m) => m[0]!).toList();

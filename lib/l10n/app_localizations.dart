@@ -4065,6 +4065,18 @@ abstract class AppLocalizations {
   /// **'Без помещения'**
   String get formChoosePlace;
 
+  /// Поиск в окне выбора помещения новой заявки (шаг 21)
+  ///
+  /// In ru, this message translates to:
+  /// **'Номер или название'**
+  String get placeSearchHint;
+
+  /// No description provided for @placeNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ничего не найдено'**
+  String get placeNotFound;
+
   /// No description provided for @formAsset.
   ///
   /// In ru, this message translates to:
@@ -4182,13 +4194,13 @@ abstract class AppLocalizations {
   /// Вкладка и пункт меню «ППР» — планово-предупредительные (регламентные) работы (шаг 16)
   ///
   /// In ru, this message translates to:
-  /// **'ППР'**
+  /// **'Плановое ТО'**
   String get tabPpr;
 
   /// No description provided for @pprTitle.
   ///
   /// In ru, this message translates to:
-  /// **'Регламентные работы'**
+  /// **'Плановое обслуживание'**
   String get pprTitle;
 
   /// No description provided for @pprSummary.
@@ -4200,7 +4212,7 @@ abstract class AppLocalizations {
   /// No description provided for @pprEmpty.
   ///
   /// In ru, this message translates to:
-  /// **'Планов ППР пока нет. Менеджер добавляет их кнопкой «+».'**
+  /// **'Планов обслуживания пока нет. Менеджер добавляет их кнопкой «+».'**
   String get pprEmpty;
 
   /// No description provided for @pprEmptyFiltered.
@@ -4212,7 +4224,7 @@ abstract class AppLocalizations {
   /// No description provided for @pprLoadFailed.
   ///
   /// In ru, this message translates to:
-  /// **'Не удалось загрузить планы ППР. Проверьте интернет и попробуйте ещё раз.'**
+  /// **'Не удалось загрузить планы обслуживания. Проверьте интернет и попробуйте ещё раз.'**
   String get pprLoadFailed;
 
   /// No description provided for @pprStateDone.
@@ -4326,7 +4338,7 @@ abstract class AppLocalizations {
   /// No description provided for @pprTaskLine.
   ///
   /// In ru, this message translates to:
-  /// **'ППР · {period} · до {due}'**
+  /// **'Плановое ТО · {period} · до {due}'**
   String pprTaskLine(String period, String due);
 
   /// No description provided for @pprDoWithin.
@@ -4338,25 +4350,25 @@ abstract class AppLocalizations {
   /// No description provided for @pprPeriodRow.
   ///
   /// In ru, this message translates to:
-  /// **'Период ППР'**
+  /// **'Период обслуживания'**
   String get pprPeriodRow;
 
   /// No description provided for @pprTag.
   ///
   /// In ru, this message translates to:
-  /// **'ППР'**
+  /// **'Плановое ТО'**
   String get pprTag;
 
   /// No description provided for @pprKindOrder.
   ///
   /// In ru, this message translates to:
-  /// **'ППР'**
+  /// **'Плановое ТО'**
   String get pprKindOrder;
 
   /// No description provided for @filterPpr.
   ///
   /// In ru, this message translates to:
-  /// **'ППР'**
+  /// **'Плановое ТО'**
   String get filterPpr;
 
   /// No description provided for @pprFilters.
@@ -4530,19 +4542,19 @@ abstract class AppLocalizations {
   /// No description provided for @pprGenerated.
   ///
   /// In ru, this message translates to:
-  /// **'{count, plural, one{Создана {count} задача ППР} few{Созданы {count} задачи ППР} other{Создано {count} задач ППР}}'**
+  /// **'{count, plural, one{Создана {count} задача планового ТО} few{Созданы {count} задачи планового ТО} other{Создано {count} задач планового ТО}}'**
   String pprGenerated(int count);
 
   /// No description provided for @pprFormNew.
   ///
   /// In ru, this message translates to:
-  /// **'Новый план ППР'**
+  /// **'Новый план обслуживания'**
   String get pprFormNew;
 
   /// No description provided for @pprFormEdit.
   ///
   /// In ru, this message translates to:
-  /// **'План ППР'**
+  /// **'План обслуживания'**
   String get pprFormEdit;
 
   /// No description provided for @pprFormTitle.
@@ -4662,7 +4674,7 @@ abstract class AppLocalizations {
   /// No description provided for @pprInfoTitle.
   ///
   /// In ru, this message translates to:
-  /// **'ППР — регламентные работы'**
+  /// **'Плановое обслуживание'**
   String get pprInfoTitle;
 
   /// No description provided for @pprInfo1.
@@ -4758,7 +4770,7 @@ abstract class AppLocalizations {
   /// Шаг 16 (E): отчёты, PDF
   ///
   /// In ru, this message translates to:
-  /// **'ППР'**
+  /// **'Плановое ТО'**
   String get reportKindPpr;
 
   /// Шаг 16 (E): отчёты, PDF
@@ -4800,7 +4812,7 @@ abstract class AppLocalizations {
   /// Шаг 16 (E): отчёты, PDF
   ///
   /// In ru, this message translates to:
-  /// **'ППР выполнено'**
+  /// **'Плановое ТО выполнено'**
   String get reportPprDone;
 
   /// Шаг 16 (E): отчёты, PDF
@@ -5562,13 +5574,13 @@ abstract class AppLocalizations {
   /// Реестр оборудования (шаг 16)
   ///
   /// In ru, this message translates to:
-  /// **'Планы ППР'**
+  /// **'Планы обслуживания'**
   String get assetCardPlans;
 
   /// Реестр оборудования (шаг 16)
   ///
   /// In ru, this message translates to:
-  /// **'Нет планов ППР'**
+  /// **'Нет планов обслуживания'**
   String get assetCardPlansEmpty;
 
   /// Реестр оборудования (шаг 16)

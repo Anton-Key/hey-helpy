@@ -234,7 +234,7 @@ class _PprPlanCardScreenState extends State<PprPlanCardScreen> {
       ];
     }
     return AppScaffold(
-      title: _plan?.title ?? l.tabPpr,
+      title: _plan?.title ?? l.pprTitle,
       eyebrow: v?.objectLabel,
       onRefresh: _load,
       actions: [

@@ -334,8 +334,10 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
             AppRow(
               leading: PriorityDot((r['priority'] ?? 'normal') as String),
               title: (r['title'] ?? '') as String,
+              place: ctx.placeOf(l, r['object_id'] as String?),
               subtitle: [
-                ctx.placeLine(context, r),
+                if (ctx.placeRest(context, r).isNotEmpty)
+                  ctx.placeRest(context, r),
                 l.dateTime(DateTime.parse('${r['created_at']}')),
               ].join('\n'),
               trailing: StatusPill((r['status'] ?? 'new') as String),

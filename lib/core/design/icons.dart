@@ -51,6 +51,9 @@ class AppIcons {
   static const success = LucideIcons.circleCheck300;
   static const error = LucideIcons.circleAlert300;
   static const warning = LucideIcons.triangleAlert300;
+
+  /// Критичная заявка — красный «!» (шаг 21), жирнее остальных значков.
+  static const critical = LucideIcons.circleAlert600;
   static const info = LucideIcons.info300;
   static const offline = LucideIcons.wifiOff300;
   static const imageBroken = LucideIcons.imageOff300;

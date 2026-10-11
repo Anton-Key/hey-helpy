@@ -137,7 +137,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       final refs = await ZoneRefs.load(rows);
       if (!mounted) return;
-      setState(() => _zoneText = zonesShortText(rows, refs.names(context.l10n)));
+      setState(
+          () => _zoneText = zonesShortText(rows, refs.names(context.l10n)));
     } catch (e) {
       debugPrint('Zone: $e');
     }
@@ -247,51 +248,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _accountMenu(BuildContext anchor) async {
-    final l = context.l10n;
-    final a = await showFilterPicker<int>(
-      context: anchor,
-      builder: (ctx) => AppGroup(margin: EdgeInsets.zero, children: [
-        AppRow(
-            leading: const LeadingIcon(AppIcons.profile),
-            title: l.navProfile,
-            chevron: false,
-            onTap: () => Navigator.pop(ctx, 0)),
-        AppRow(
-            leading: const LeadingIcon(AppIcons.building),
-            title: l.profileMyCompany,
-            chevron: false,
-            onTap: () => Navigator.pop(ctx, 1)),
-        AppRow(
-            leading: const LeadingIcon(AppIcons.settings),
-            title: l.profileSettings,
-            chevron: false,
-            onTap: () => Navigator.pop(ctx, 2)),
-        AppRow(
-            leading: const LeadingIcon.danger(AppIcons.signOut),
-            title: l.profileSignOut,
-            destructive: true,
-            chevron: false,
-            onTap: () => Navigator.pop(ctx, 3)),
-      ]),
-    );
-    switch (a) {
-      case 0:
-        _goSection(3);
-      case 1:
-        await _openCompany();
-      case 2:
-        await _openSettings();
-      case 3:
-        await _auth.signOut();
-    }
-  }
-
-  /// Служебные кнопки ПК после «Обновить»: язык, уведомления, справка,
-  /// аватар.
+  /// Служебные кнопки ПК после «Обновить»: язык, уведомления, справка.
+  /// Аватара «Меню профиля» нет (шаг 21): «Профиль» — в боковом меню,
+  /// там же «Моя компания», «Настройки» и «Выйти».
   List<Widget> _utilityTail() {
     final l = context.l10n;
-    final name = _profile?.displayName ?? l.profileDefaultName;
     return [
       AppLangSwitch(
           codes: [for (final x in LocaleController.supported) x.languageCode],
@@ -311,21 +272,6 @@ class _HomeScreenState extends State<HomeScreen> {
           size: 40,
           tooltip: true,
           onPressed: _showHelp),
-      Builder(
-        builder: (anchor) => Tooltip(
-          message: l.navAccount,
-          excludeFromSemantics: true,
-          child: Pressable(
-            semanticLabel: l.navAccount,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            onTap: () => _accountMenu(anchor),
-            child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Center(child: InitialsTile(name, size: 36))),
-          ),
-        ),
-      ),
     ];
   }
 

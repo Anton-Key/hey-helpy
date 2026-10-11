@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../l10n_ext.dart';
 import 'icons.dart';
 import 'pressable.dart';
 import 'tokens.dart';
@@ -222,13 +223,59 @@ class PriorityDot extends StatelessWidget {
   final String priority;
   final double size;
 
+  /// Размер значка «!» у критичной заявки — чуть больше точки.
+  static const criticalSize = 15.0;
+
   @override
-  Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-            color: AppColors.priority(priority), shape: BoxShape.circle),
-      );
+  Widget build(BuildContext context) {
+    // Шаг 21: критичная — красный «!» с подсказкой «Критичный»; ширина
+    // места одна для всех, чтобы названия в списке стояли ровно.
+    final Widget mark = priority == 'critical'
+        ? Tooltip(
+            message: context.l10n.priority(priority),
+            child: Icon(AppIcons.critical,
+                size: criticalSize,
+                color: AppColors.priorityCritical,
+                semanticLabel: context.l10n.priority(priority)),
+          )
+        : Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+                color: AppColors.priority(priority), shape: BoxShape.circle),
+          );
+    return SizedBox(
+        width: math.max(size, criticalSize), child: Center(child: mark));
+  }
+}
+
+/// Строка места в списке заявок (шаг 21): **объект** жирным основным
+/// цветом, « · город» — обычным серым. Одна строка: не помещается — первым
+/// скрывается город, затем название объекта обрезается многоточием.
+class ObjectPlaceLine extends StatelessWidget {
+  const ObjectPlaceLine(this.object, {super.key, this.city});
+  final String object;
+  final String? city;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = city ?? '';
+    return Text.rich(
+      TextSpan(children: [
+        TextSpan(
+            text: object,
+            style: AppText.footnote
+                .copyWith(color: AppColors.ink, fontWeight: FontWeight.w600)),
+        if (c.isNotEmpty)
+          TextSpan(
+              text: ' · $c',
+              style: AppText.footnote.copyWith(color: AppColors.secondary)),
+      ]),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      softWrap: false,
+    );
+  }
 }
 
 /// Строка сгруппированного списка.
@@ -253,6 +300,7 @@ class AppRow extends StatelessWidget {
     this.titleStyle,
     this.subtitleMaxLines = 2,
     this.extra,
+    this.place,
   });
 
   final String title;
@@ -271,6 +319,9 @@ class AppRow extends StatelessWidget {
 
   /// Дополнительное содержимое под подзаголовком (полоска, пометки).
   final Widget? extra;
+
+  /// Строка места между названием и подзаголовком ([ObjectPlaceLine]).
+  final Widget? place;
 
   @override
   Widget build(BuildContext context) {
@@ -296,6 +347,11 @@ class AppRow extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           titleText,
+                          if (place != null)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(top: 2),
+                              child: place!,
+                            ),
                           if (subtitle != null && subtitle!.isNotEmpty)
                             Padding(
                               padding: const EdgeInsetsDirectional.only(top: 2),

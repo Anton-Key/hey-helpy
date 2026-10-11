@@ -137,7 +137,7 @@ void main() {
           recurrence: const {'kind': 'ppr', 'period': 'month'},
           periodStart: '2026-10-01',
           periodEnd: '2026-10-31');
-      expect(line, startsWith('ППР · октябрь 2026 · до 31'));
+      expect(line, startsWith('Плановое ТО · октябрь 2026 · до 31'));
       // Без recurrence вид периода угадывается по границам.
       expect(
           pprTaskLine(en,

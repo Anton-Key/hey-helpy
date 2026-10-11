@@ -10,9 +10,13 @@ import 'region.dart';
 import 'region_flows.dart';
 
 /// Шторка со списком и поиском: высота — до 75 % экрана.
-class _ListSheet extends StatelessWidget {
-  const _ListSheet(
-      {required this.title, required this.search, required this.children});
+/// Шторка выбора из списка: заголовок, поиск, прокручиваемый список.
+class ListPickerSheet extends StatelessWidget {
+  const ListPickerSheet(
+      {super.key,
+      required this.title,
+      required this.search,
+      required this.children});
   final String title;
   final Widget? search;
   final List<Widget> children;
@@ -75,7 +79,7 @@ class _CountryPickerState extends State<_CountryPicker> {
     final l = context.l10n;
     final loc = context.localeCode;
     final list = searchCountries(_q, loc);
-    return _ListSheet(
+    return ListPickerSheet(
       title: l.countryTitle,
       search: AppSearchField(
           hint: l.countrySearchHint,
@@ -126,7 +130,7 @@ Future<RegionChoice?> showRegionPicker(
   final l = context.l10n;
   return showAppSheet<RegionChoice>(
     context: context,
-    builder: (ctx) => _ListSheet(
+    builder: (ctx) => ListPickerSheet(
       title: l.regionPickTitle,
       search: null,
       children: [

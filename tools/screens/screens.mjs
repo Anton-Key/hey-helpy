@@ -1460,8 +1460,24 @@ async function capturePdf(page) {
   await settle(page, 3000);
   // Первая кнопка с этим словом — ⓘ «Печать отчёта», вторая — сам принтер.
   const print = page.getByRole('button', { name: /Печать|Распечатать|PDF/ });
-  await ((await print.count()) > 1 ? print.nth(1) : print.first()).click();
-  for (let i = 0; i < 120 && !(await page.evaluate(() => !!window.__pdfBlob)); i++) await page.waitForTimeout(500);
+  const logs = [];
+  const onLog = (m) => { if (m.type() !== 'debug') logs.push(m.text().slice(0, 400)); };
+  page.on('console', onLog);
+  page.on('pageerror', (e) => logs.push('pageerror: ' + String(e.message).slice(0, 160)));
+  const n = await print.count();
+  // Клик мышью по центру кнопки: нажатие через узел доступности Flutter
+  // до этой кнопки не доходит (окно печати не открывается).
+  const box = await (n > 1 ? print.nth(1) : print.first()).boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(1500);
+  if (process.env.PDF_DEBUG) await page.screenshot({ path: join(OUT, 'pdf-after-click.png') });
+  for (let i = 0; i < 240 && !(await page.evaluate(() => !!window.__pdfBlob)); i++) await page.waitForTimeout(500);
+  page.off('console', onLog);
+  if (!(await page.evaluate(() => !!window.__pdfBlob))) {
+    const types = await page.evaluate(() => JSON.stringify(window.__blobTypes ?? []));
+    const frames = await page.evaluate(() => document.querySelectorAll('iframe').length);
+    console.log(`  PDF: кнопок ${n}; Blob: ${types}; iframe: ${frames}; консоль: ${logs.join(' | ') || '—'}`);
+  }
   const b64 = await page.evaluate(async () => {
     const blob = window.__pdfBlob;
     if (!blob) return null;
@@ -1470,7 +1486,10 @@ async function capturePdf(page) {
     for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
     return btoa(s);
   });
-  if (!b64) throw new Error('PDF не получен');
+  if (!b64) {
+    await page.screenshot({ path: join(OUT, 'pdf-error.png') }).catch(() => {});
+    throw new Error('PDF не получен (снимок экрана — pdf-error.png, в git не коммитить)');
+  }
   const pdf = join(OUT, '.report.pdf');
   writeFileSync(pdf, Buffer.from(b64, 'base64'));
   return pdf;
@@ -1488,7 +1507,10 @@ if (PITCH_MODE) {
       await ctx.addInitScript(() => {
         const orig = URL.createObjectURL;
         URL.createObjectURL = function (obj) {
-          try { if (obj && obj.type === 'application/pdf') window.__pdfBlob = obj; } catch {}
+          try {
+            (window.__blobTypes ??= []).push(obj?.type ?? typeof obj);
+            if (obj && obj.type === 'application/pdf') window.__pdfBlob = obj;
+          } catch {}
           return orig.call(URL, obj);
         };
         window.print = () => {};

@@ -12,6 +12,7 @@ import '../directory/city.dart';
 import '../directory/directory.dart';
 import 'equipment_form.dart';
 import 'equipment_import.dart';
+import 'equipment_xlsx.dart';
 import 'equipment_models.dart';
 import 'equipment_repository.dart';
 

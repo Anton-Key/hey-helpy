@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'icons.dart';
@@ -280,52 +282,57 @@ class AppRow extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(
             horizontal: AppSpace.rowH, vertical: AppSpace.rowV - 1),
-        child: Row(children: [
-          if (leading != null) ...[
-            leading!,
-            const SizedBox(width: AppSpace.m),
-          ],
-          Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  titleText,
-                  if (subtitle != null && subtitle!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(top: 2),
-                      child: Text(subtitle!,
-                          maxLines: subtitleMaxLines,
+        // Значение справа — не шире половины строки: иначе на узком экране
+        // (360) заголовок слева сжимался до переносов по буквам («Адре/с»).
+        child: LayoutBuilder(
+            builder: (context, box) => Row(children: [
+                  if (leading != null) ...[
+                    leading!,
+                    const SizedBox(width: AppSpace.m),
+                  ],
+                  Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          titleText,
+                          if (subtitle != null && subtitle!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(top: 2),
+                              child: Text(subtitle!,
+                                  maxLines: subtitleMaxLines,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppText.footnote),
+                            ),
+                          if (extra != null)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(top: 6),
+                              child: extra!,
+                            ),
+                        ]),
+                  ),
+                  if (value != null) ...[
+                    const SizedBox(width: AppSpace.s),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                          maxWidth: math.min(200, box.maxWidth * 0.5)),
+                      child: Text(value!,
+                          textAlign: TextAlign.end,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: AppText.footnote),
+                          style: AppText.body
+                              .copyWith(color: AppColors.secondary)),
                     ),
-                  if (extra != null)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(top: 6),
-                      child: extra!,
-                    ),
-                ]),
-          ),
-          if (value != null) ...[
-            const SizedBox(width: AppSpace.s),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 200),
-              child: Text(value!,
-                  textAlign: TextAlign.end,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.body.copyWith(color: AppColors.secondary)),
-            ),
-          ],
-          if (trailing != null) ...[
-            const SizedBox(width: AppSpace.s),
-            trailing!,
-          ],
-          if (onTap != null && chevron) ...[
-            const SizedBox(width: AppSpace.xs),
-            const ChevronEnd(),
-          ],
-        ]),
+                  ],
+                  if (trailing != null) ...[
+                    const SizedBox(width: AppSpace.s),
+                    trailing!,
+                  ],
+                  if (onTap != null && chevron) ...[
+                    const SizedBox(width: AppSpace.xs),
+                    const ChevronEnd(),
+                  ],
+                ])),
       ),
     );
     if (onTap == null && onLongPress == null) {

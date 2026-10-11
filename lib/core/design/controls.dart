@@ -138,9 +138,13 @@ class SegmentedControl<T> extends StatelessWidget {
               Icon(s.icon, size: 16, color: AppColors.ink),
               const SizedBox(width: 5),
             ],
+            // Узкий экран (360): подпись чуть уменьшается, а не обрезается
+            // («Просрочено · 10», а не «Просрочено · …»).
             Flexible(
-              child: Text(s.label,
-                  maxLines: 1, overflow: TextOverflow.ellipsis, style: style),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(s.label, maxLines: 1, style: style),
+              ),
             ),
           ]),
         ),

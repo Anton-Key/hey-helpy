@@ -8,7 +8,8 @@ import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import 'asset_card.dart';
 import 'equipment_form.dart';
-import 'equipment_import_screen.dart';
+// Отложенно: экран импорта тянет пакет excel (шаг 18, скорость веб-версии).
+import 'equipment_import_screen.dart' deferred as import_screen;
 import 'equipment_models.dart';
 import 'equipment_repository.dart';
 
@@ -111,10 +112,12 @@ class _EquipmentSectionState extends State<EquipmentSection> {
       showAppMessage(context, l.migrationNeeded('0015'));
       return;
     }
+    await import_screen.loadLibrary();
+    if (!mounted) return;
     final done = await Navigator.push<bool>(
         context,
         appRoute(
-            (_) => EquipmentImportScreen(
+            (_) => import_screen.EquipmentImportScreen(
                 object: widget.object, places: widget.places, layers: _layers),
             title: widget.object.name));
     if (done == true) {

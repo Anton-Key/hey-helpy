@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hey_helpy/features/directory/directory.dart';
 import 'package:hey_helpy/features/equipment/equipment_import.dart';
+import 'package:hey_helpy/features/equipment/equipment_xlsx.dart';
 
 void main() {
   final places = [

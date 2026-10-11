@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,7 +15,8 @@ import '../requests/requests.dart';
 import 'report_repository.dart';
 import '../directory/city.dart';
 import '../directory/object_picker.dart';
-import 'report_pdf.dart';
+// Отложенно: PDF (пакеты pdf / printing, шрифт) — только по кнопке печати.
+import 'report_pdf.dart' deferred as pdf;
 
 /// Вкладка «Отчёты» (только менеджер и администратор): период, фильтры,
 /// четыре главные цифры по компании и показатели по каждому подрядчику.
@@ -318,9 +317,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final header = await _repo.header();
       final places = await _dir.places();
       final placeNames = {for (final p in places) p.id: p.label};
-      final fonts = await loadReportFonts();
-      final out = await buildReportPdf(
-        ReportPdfData(
+      await pdf.loadLibrary();
+      final fonts = await pdf.loadReportFonts();
+      final out = await pdf.buildReportPdf(
+        pdf.ReportPdfData(
           l: l,
           report: report,
           company: header.company,
@@ -349,12 +349,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ),
         fonts,
       );
-      final name = reportPdfFileName(l, range.from, range.to);
-      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-        await Printing.sharePdf(bytes: out.bytes, filename: name);
-      } else {
-        await Printing.layoutPdf(onLayout: (_) async => out.bytes, name: name);
-      }
+      final name = pdf.reportPdfFileName(l, range.from, range.to);
+      await pdf.outputReportPdf(out.bytes, name);
     } catch (e) {
       debugPrint('Report PDF: $e');
       if (mounted) {

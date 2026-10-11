@@ -1,8 +1,9 @@
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../core/l10n_ext.dart';
@@ -379,4 +380,15 @@ Future<({Uint8List bytes, int pages})> buildReportPdf(
 
   final bytes = await doc.save();
   return (bytes: bytes, pages: doc.document.pdfPageList.pages.length);
+}
+
+/// Отдать готовый PDF: на Android — «Поделиться», в браузере — окно печати
+/// (там же «Сохранить как PDF»). Здесь, а не на экране отчётов: файл
+/// грузится отложенно вместе с пакетами pdf / printing (шаг 18).
+Future<void> outputReportPdf(Uint8List bytes, String name) async {
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    await Printing.sharePdf(bytes: bytes, filename: name);
+  } else {
+    await Printing.layoutPdf(onLayout: (_) async => bytes, name: name);
+  }
 }

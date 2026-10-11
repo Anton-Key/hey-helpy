@@ -1191,8 +1191,8 @@ async function toBottom(page) {
 /** Раздел «ППР»: на ПК — пункт бокового меню, на телефоне — сегмент. */
 async function openPpr(page) {
   await home(page);
-  await page.getByRole('tab', { name: /^ППР/ }).or(page.getByRole('button', { name: /^ППР$/ }))
-    .or(page.getByText(/^ППР$/)).first().click();
+  await page.getByRole('tab', { name: /^Плановое ТО/ }).or(page.getByRole('button', { name: /^Плановое ТО$/ }))
+    .or(page.getByText(/^Плановое ТО$/)).first().click();
   await see(page, /выполнено \d+ из \d+/).waitFor({ timeout: 20000 });
   await settle(page, 1500);
 }
@@ -1273,7 +1273,7 @@ function NEW_SCREENS() {
       } },
     { key: 'ppr-task', title: 'Задача периода — карточка заявки «ППР · октябрь 2026 · до 31 окт.»', run: async (p) => {
         await openPlanCard(p, 'ТО кондиционеров');
-        await btn(p, /ППР · .* · до/).click();
+        await btn(p, /Плановое ТО · .* · до/).click();
         await see(p, /Подрядчик/).waitFor({ timeout: 20000 });
         await settle(p, 1500);
       } },

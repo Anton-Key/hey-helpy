@@ -165,7 +165,7 @@ export const SCENARIOS = [
       const m = await ctx.page();
       await login(m, base, USERS.admin);
       await home(m, base);
-      await section(m, /^ППР/);
+      await section(m, /^Плановое ТО/);
       const summary = async () => {
         await see(m, /выполнено \d+ из \d+/).waitFor({ timeout: 20000 });
         const t = await screenText(m);
@@ -180,7 +180,7 @@ export const SCENARIOS = [
       ctx.notes.push(`задача: ${row}`);
       assert(row.startsWith('assigned|МосКлимат'), `задача должна уйти МосКлимат: ${row}`);
       await home(m, base);
-      await section(m, /^ППР/);
+      await section(m, /^Плановое ТО/);
       const before = await summary();
       await ctx.shot(m, 'ppr-before');
 
@@ -198,17 +198,17 @@ export const SCENARIOS = [
       await waitDb(`select status from work_orders where id = '${task}'`, 'on_review');
 
       await home(m, base);
-      await section(m, /^ППР/);
+      await section(m, /^Плановое ТО/);
       await btn(m, /^ТО кондиционеров/).click();
       await see(m, /История периодов/).waitFor({ timeout: 20000 });
       await settle(m, 1200);
-      await btn(m, /ППР · .* · до/).click();
+      await btn(m, /Плановое ТО · .* · до/).click();
       await clickAction(m, /^Принять работу/);
       const confirm = btn(m, /^Принять$/);
       if (await confirm.isVisible().catch(() => false)) await confirm.click();
       await waitDb(`select status from work_orders where id = '${task}'`, 'done');
       await home(m, base);
-      await section(m, /^ППР/);
+      await section(m, /^Плановое ТО/);
       const after = await summary();
       ctx.notes.push(`сводка: выполнено ${before.done} из ${before.total} → ${after.done} из ${after.total}`);
       assert(after.done === before.done + 1 && after.total === before.total, 'сводка ППР не изменилась');
@@ -575,7 +575,7 @@ export const SCENARIOS = [
       const pdf = await capturePdf(m);
       const text = execFileSync('pdftotext', ['-layout', pdf, '-'], { encoding: 'utf8' });
       for (const w of ['Белград', 'Дубай', 'ЭлектроПро', 'КлиматСервис']) assert(!text.includes(w), `в PDF второго менеджера есть «${w}»`);
-      await section(m, /^ППР/);
+      await section(m, /^Плановое ТО/);
       await settle(m, 1500);
       const t5 = await screenText(m);
       assert(!/Дубай|Абиджан|БЦ «Демо»/.test(t5), 'в ППР второго менеджера чужие объекты');
@@ -622,7 +622,7 @@ export const SCENARIOS = [
       await login(m, base, USERS.admin);
       const visit = [
         async () => home(m, base),
-        async () => section(m, /^ППР/),
+        async () => section(m, /^Плановое ТО/),
         async () => { await home(m, base); await section(m, /^Подрядчики/); },
         async () => { await home(m, base); await section(m, /^Локации/); },
         async () => { const b = m.getByRole('button', { name: /^Карта/ }).or(m.getByText(/^Карта$/)).first();
@@ -658,7 +658,7 @@ export const SCENARIOS = [
       const t0 = await check('Заявки');
       assert(/Протечка|кондиционер|Не работает|\d+ из \d+/i.test(t0) || t0.length > 200, 'список заявок пуст');
       await ctx.shot(m, 'requests');
-      await section(m, /^ППР/);
+      await section(m, /^Плановое ТО/);
       const t1 = await screenText(m);
       assert(/Нужна миграция 0015|миграци/i.test(t1), 'ППР: нет «Нужна миграция 0015»');
       ctx.notes.push('ППР: «Нужна миграция 0015»');

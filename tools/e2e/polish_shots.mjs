@@ -20,7 +20,7 @@ const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] }); //
 const base = web.base;
 
 const T = {
-  ru: { home: /^Главная/, ppr: /^ППР/, loc: /^Локации/, map: /^Карта/, list: /^Список/, contr: /^Подрядчики/, rep: /^Отчёты/,
+  ru: { home: /^Главная/, ppr: /^Плановое ТО/, loc: /^Локации/, map: /^Карта/, list: /^Список/, contr: /^Подрядчики/, rep: /^Отчёты/,
     hist: /^История/, prof: /^Профиль/, company: /^Моя компания/, regions: /Регионы компании/, audit: /Журнал изменений доступа/,
     zone: /^Зона доступа/, m2: /Менеджер Москва/, bc: /^БЦ «Демо»/, show: /Показать на плане/, settings: /^Настройки/ },
   en: { home: /^Home/, ppr: /^(PPM|Preventive|PM)/, loc: /^Locations/, map: /^Map/, list: /^List/, contr: /^Contractors/, rep: /^Reports/,

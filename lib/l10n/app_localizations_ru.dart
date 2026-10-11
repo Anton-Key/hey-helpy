@@ -2470,10 +2470,10 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get tabPpr => 'ППР';
+  String get tabPpr => 'Плановое ТО';
 
   @override
-  String get pprTitle => 'Регламентные работы';
+  String get pprTitle => 'Плановое обслуживание';
 
   @override
   String pprSummary(String month, int done, int total) {
@@ -2482,14 +2482,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get pprEmpty =>
-      'Планов ППР пока нет. Менеджер добавляет их кнопкой «+».';
+      'Планов обслуживания пока нет. Менеджер добавляет их кнопкой «+».';
 
   @override
   String get pprEmptyFiltered => 'Нет планов по выбранным фильтрам';
 
   @override
   String get pprLoadFailed =>
-      'Не удалось загрузить планы ППР. Проверьте интернет и попробуйте ещё раз.';
+      'Не удалось загрузить планы обслуживания. Проверьте интернет и попробуйте ещё раз.';
 
   @override
   String get pprStateDone => 'Выполнено';
@@ -2562,23 +2562,23 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String pprTaskLine(String period, String due) {
-    return 'ППР · $period · до $due';
+    return 'Плановое ТО · $period · до $due';
   }
 
   @override
   String get pprDoWithin => 'Выполнить в течение периода';
 
   @override
-  String get pprPeriodRow => 'Период ППР';
+  String get pprPeriodRow => 'Период обслуживания';
 
   @override
-  String get pprTag => 'ППР';
+  String get pprTag => 'Плановое ТО';
 
   @override
-  String get pprKindOrder => 'ППР';
+  String get pprKindOrder => 'Плановое ТО';
 
   @override
-  String get filterPpr => 'ППР';
+  String get filterPpr => 'Плановое ТО';
 
   @override
   String get pprFilters => 'Фильтры';
@@ -2690,18 +2690,18 @@ class AppLocalizationsRu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Создано $count задач ППР',
-      few: 'Созданы $count задачи ППР',
-      one: 'Создана $count задача ППР',
+      other: 'Создано $count задач планового ТО',
+      few: 'Созданы $count задачи планового ТО',
+      one: 'Создана $count задача планового ТО',
     );
     return '$_temp0';
   }
 
   @override
-  String get pprFormNew => 'Новый план ППР';
+  String get pprFormNew => 'Новый план обслуживания';
 
   @override
-  String get pprFormEdit => 'План ППР';
+  String get pprFormEdit => 'План обслуживания';
 
   @override
   String get pprFormTitle => 'Название';
@@ -2761,7 +2761,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pprChooseObject => 'Выберите объект';
 
   @override
-  String get pprInfoTitle => 'ППР — регламентные работы';
+  String get pprInfoTitle => 'Плановое обслуживание';
 
   @override
   String get pprInfo1 =>
@@ -2818,7 +2818,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reportKindRecurring => 'Повторяющиеся';
 
   @override
-  String get reportKindPpr => 'ППР';
+  String get reportKindPpr => 'Плановое ТО';
 
   @override
   String get reportRegionsGroup => 'Регионы';
@@ -2839,7 +2839,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reportNoCity => 'Без города';
 
   @override
-  String get reportPprDone => 'ППР выполнено';
+  String get reportPprDone => 'Плановое ТО выполнено';
 
   @override
   String reportPprOf(String done, String total) {
@@ -3275,10 +3275,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get assetCardFloor => 'Этаж';
 
   @override
-  String get assetCardPlans => 'Планы ППР';
+  String get assetCardPlans => 'Планы обслуживания';
 
   @override
-  String get assetCardPlansEmpty => 'Нет планов ППР';
+  String get assetCardPlansEmpty => 'Нет планов обслуживания';
 
   @override
   String assetCardOrders(int count) {

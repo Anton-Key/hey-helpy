@@ -81,6 +81,8 @@ void main() {
         for (final p
             in t.renderObjectList<RenderParagraph>(find.byType(RichText))) {
           expect(p.didExceedMaxLines, isFalse, reason: p.text.toPlainText());
+          // Шаг 21: в русском интерфейсе нет аббревиатуры «ППР».
+          expect(p.text.toPlainText(), isNot(contains('ППР')));
         }
       });
     }

@@ -163,7 +163,7 @@ class _PprTabState extends State<PprTab> {
     await Navigator.push(
         context,
         appRoute((_) => PprPlanCardScreen(planId: v.plan.id, data: d),
-            title: context.l10n.tabPpr));
+            title: context.l10n.pprTitle));
     if (mounted) await _load();
   }
 
@@ -173,7 +173,7 @@ class _PprTabState extends State<PprTab> {
     final saved = await Navigator.push<bool>(
         context,
         appRoute((_) => PprPlanFormScreen(data: d),
-            title: context.l10n.tabPpr));
+            title: context.l10n.pprTitle));
     if (saved == true && mounted) {
       showAppMessage(context, context.l10n.pprSaved,
           type: AppMessageType.success);
@@ -187,7 +187,7 @@ class _PprTabState extends State<PprTab> {
     final d = _data;
     return CustomScrollView(slivers: [
       HomeHeader(
-        title: l.tabPpr,
+        title: l.pprTitle,
         onRefresh: () => _load(generate: true),
         actions: [
           AppIconButton(

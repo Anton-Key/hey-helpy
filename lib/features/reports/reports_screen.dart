@@ -11,6 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import '../regions/countries.dart';
 import '../home/home_chrome.dart';
+import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'report_repository.dart';
 import '../directory/city.dart';
@@ -1083,14 +1084,6 @@ class ContractorOrdersScreen extends StatelessWidget {
   final String? role;
   final String? companyId;
 
-  String _objectName(AppLocalizations l, String? id) {
-    if (id == null) return l.objectNone;
-    for (final o in objects) {
-      if (o.id == id) return objectDisplayName(o);
-    }
-    return l.objectUnknown;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
@@ -1125,10 +1118,8 @@ class ContractorOrdersScreen extends StatelessWidget {
     return AppRow(
       leading: PriorityDot(o.priority),
       title: o.title,
-      subtitle: [
-        _objectName(l, o.objectId),
-        if (workType != null && workType.isNotEmpty) workType,
-      ].join(' · '),
+      place: objectPlaceLine(l, objects, o.objectId),
+      subtitle: workType,
       trailing: StatusPill(o.status),
       extra: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(l.dateTime(o.createdAt), style: AppText.caption),

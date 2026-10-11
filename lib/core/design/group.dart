@@ -231,6 +231,35 @@ class PriorityDot extends StatelessWidget {
       );
 }
 
+/// Строка места в списке заявок (шаг 21): **объект** жирным основным
+/// цветом, « · город» — обычным серым. Одна строка: не помещается — первым
+/// скрывается город, затем название объекта обрезается многоточием.
+class ObjectPlaceLine extends StatelessWidget {
+  const ObjectPlaceLine(this.object, {super.key, this.city});
+  final String object;
+  final String? city;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = city ?? '';
+    return Text.rich(
+      TextSpan(children: [
+        TextSpan(
+            text: object,
+            style: AppText.footnote
+                .copyWith(color: AppColors.ink, fontWeight: FontWeight.w600)),
+        if (c.isNotEmpty)
+          TextSpan(
+              text: ' · $c',
+              style: AppText.footnote.copyWith(color: AppColors.secondary)),
+      ]),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      softWrap: false,
+    );
+  }
+}
+
 /// Строка сгруппированного списка.
 ///
 /// [leading] — [LeadingIcon], [PriorityDot] или [InitialsTile];
@@ -253,6 +282,7 @@ class AppRow extends StatelessWidget {
     this.titleStyle,
     this.subtitleMaxLines = 2,
     this.extra,
+    this.place,
   });
 
   final String title;
@@ -271,6 +301,9 @@ class AppRow extends StatelessWidget {
 
   /// Дополнительное содержимое под подзаголовком (полоска, пометки).
   final Widget? extra;
+
+  /// Строка места между названием и подзаголовком ([ObjectPlaceLine]).
+  final Widget? place;
 
   @override
   Widget build(BuildContext context) {
@@ -296,6 +329,11 @@ class AppRow extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           titleText,
+                          if (place != null)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(top: 2),
+                              child: place!,
+                            ),
                           if (subtitle != null && subtitle!.isNotEmpty)
                             Padding(
                               padding: const EdgeInsetsDirectional.only(top: 2),

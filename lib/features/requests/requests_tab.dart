@@ -17,6 +17,7 @@ import 'order_filter.dart';
 import 'order_filter_bar.dart';
 import 'order_filter_store.dart';
 import 'order_filters_panel.dart';
+import 'order_list.dart';
 import 'requests.dart';
 
 /// Ширина колонки вкладки «Заявки» на ПК: рядом с поиском помещаются
@@ -503,7 +504,6 @@ class _RequestsTabState extends State<RequestsTab> {
       final workType = _workType(w);
       // «Москва · Офис 3 · Лобби · Климат» — объект всегда с городом.
       final place = [
-        _objName(l, w.objectId),
         if (w.placeName != null && w.placeName!.isNotEmpty)
           placeWithFloor(placeLabel(w.placeName!, w.placeCode), w.floorName,
               w.floorLevel == null ? null : l.floorShort(w.floorLevel!)),
@@ -529,10 +529,12 @@ class _RequestsTabState extends State<RequestsTab> {
             (w.isPpr
                 ? '  · ${l.pprTag}'
                 : (w.recurring ? '  · ${l.requestRecurringTag}' : '')),
+        place: objectPlaceLine(l, _objects, w.objectId),
         subtitle: [
-          [place, if (workType != null) workType].join(' · '),
+          [if (place.isNotEmpty) place, if (workType != null) workType]
+              .join(' · '),
           if (due != null) due,
-        ].join('\n'),
+        ].where((s) => s.isNotEmpty).join('\n'),
         subtitleMaxLines: due == null ? 2 : 3,
         // Капсула — всегда настоящий статус; просрочка — красной подписью
         // под строкой (иначе не видно, новая заявка или уже в работе).

@@ -69,6 +69,23 @@ class OrderContext {
     return (workType == null || workType.isEmpty) ? null : workType;
   }
 
+  /// «**Объект** · Город» для строки списка (шаг 21).
+  ObjectPlaceLine placeOf(AppLocalizations l, String? id) =>
+      objectPlaceLine(l, objects, id);
+
+  /// «Помещение · вид работ» — под строкой объекта; пусто, если нечего.
+  String placeRest(BuildContext context, Map<String, dynamic> row) {
+    final place =
+        (row['locations'] as Map<String, dynamic>?)?['name'] as String?;
+    final work = layerLabel(context.localeCode,
+        layerId: row['layer_id'] as String?,
+        workType: row['work_type'] as String?);
+    return [
+      if (place != null && place.isNotEmpty) place,
+      if (work != null) work,
+    ].join(' · ');
+  }
+
   /// «Объект · помещение · вид работ» для строки списка.
   String placeLine(BuildContext context, Map<String, dynamic> row) {
     final l = context.l10n;
@@ -105,6 +122,16 @@ class OrderContext {
 
 /// Строка заявки в списке (внутри [AppGroup]): точка приоритета, название,
 /// серые подписи, красные пометки, статус и стрелка.
+/// «**Объект** · Город» по id объекта; объекта нет — «Без объекта» и т. п.
+ObjectPlaceLine objectPlaceLine(
+    AppLocalizations l, List<Obj> objects, String? id) {
+  if (id == null) return ObjectPlaceLine(l.objectNone);
+  for (final o in objects) {
+    if (o.id == id) return ObjectPlaceLine(o.name, city: o.cityName);
+  }
+  return ObjectPlaceLine(l.objectUnknown);
+}
+
 class OrderTile extends StatelessWidget {
   const OrderTile(
       {super.key,
@@ -113,7 +140,8 @@ class OrderTile extends StatelessWidget {
       required this.onTap,
       this.priority = 'normal',
       this.lines = const [],
-      this.alerts = const []});
+      this.alerts = const [],
+      this.place});
 
   final String title;
   final String status;
@@ -126,11 +154,15 @@ class OrderTile extends StatelessWidget {
   /// Красные пометки («Просрочена», «возвращали 2 раза»…).
   final List<String> alerts;
 
+  /// Строка «**Объект** · Город» под названием.
+  final Widget? place;
+
   @override
   Widget build(BuildContext context) {
     return AppRow(
       leading: PriorityDot(priority),
       title: title,
+      place: place,
       subtitle: lines.join('\n'),
       subtitleMaxLines: 3,
       extra: alerts.isEmpty
@@ -243,8 +275,10 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
               title: (r['title'] ?? '') as String,
               status: (r['status'] ?? 'new') as String,
               priority: (r['priority'] ?? 'normal') as String,
+              place: ctx.placeOf(l, r['object_id'] as String?),
               lines: [
-                ctx.placeLine(context, r),
+                if (ctx.placeRest(context, r).isNotEmpty)
+                  ctx.placeRest(context, r),
                 l.dateTime(DateTime.parse('${r['created_at']}')),
               ],
               alerts: [

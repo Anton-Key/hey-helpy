@@ -226,7 +226,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return AppRow(
       leading: PriorityDot((r['priority'] ?? 'normal') as String),
       title: (r['title'] ?? '') as String,
-      subtitle: ctx.placeLine(context, r),
+      place: ctx.placeOf(l, r['object_id'] as String?),
+      subtitle: ctx.placeRest(context, r),
       trailing: StatusPill(i.status),
       extra: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         for (final line in lines) Text(line, style: AppText.caption),

@@ -317,8 +317,17 @@ async function openMap(page, preview) {
 const previewNote = (text) => text;
 
 // Чип города над картой («Белград · 3» или «Белград») — приблизить к городу.
+// После 0015 над картой — чипы регионов, а не городов (если регионы заданы).
+// В демо в «СНГ» только Москва, в «Европе» — только Белград.
+const REGION_OF_CITY = { 'Москва': 'СНГ', 'Белград': 'Европа' };
 async function openCity(page, city) {
-  await page.getByRole('button', { name: new RegExp(`^${city}( · \\d+)?$`) }).first().click();
+  const cityChip = page.getByRole('button', { name: new RegExp(`^${city}( · \\d+)?$`) }).first();
+  const region = REGION_OF_CITY[city];
+  const regionChip = region ? page.getByRole('button', { name: new RegExp(`^${region}( · \\d+)?$`) }).first() : null;
+  await settle(page, 800);
+  if (regionChip && !(await cityChip.isVisible().catch(() => false))
+      && await regionChip.isVisible().catch(() => false)) await regionChip.click();
+  else await cityChip.click();
   await settle(page, 1500);
   await waitTiles(page);
 }
@@ -909,10 +918,10 @@ const SCREENS = [
       return previewNote('все объекты, маркер — число открытых заявок');
     }, after: async (p) => { await unrouteMapPreview(p); } },
   // Чип «Москва» над картой: карта плавно приближается к объектам города.
-  { key: 'map-city', jpeg: true, title: 'Локации — карта, выбран город «Москва»', managerOnly: true, run: async (p) => {
+  { key: 'map-city', jpeg: true, title: 'Локации — карта, выбран регион «СНГ» (Москва)', managerOnly: true, run: async (p) => {
       await openMap(p, true);
       await openCity(p, 'Москва');
-      return 'чип «Москва» — объекты города; список — секции по городам';
+      return 'чип региона «СНГ» (в нём только Москва) — объекты города; список — секции по городам';
     } },
   { key: 'map-selected', jpeg: true, title: 'Локации — карта, выбранный объект', managerOnly: true, run: async (p) => {
       await openMap(p, true);
@@ -1472,7 +1481,7 @@ if (PITCH_MODE) {
   const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
   const failed = [];
   try {
-    for (const width of [412, 1920].filter((w) => PITCH.some((x) => x.width === w && (!ONLY || x.file.startsWith(ONLY))))) {
+    for (const width of [412, 1920].filter((w) => PITCH.some((x) => x.width === w && (!ONLY || ONLY.split(",").some((o) => x.file.startsWith(o)))))) {
       const ctx = await browser.newContext({ viewport: { width, height: width > 600 ? 1080 : 915 },
         locale: 'ru-RU', deviceScaleFactor: width > 600 ? 1 : 2 });
       // PDF отчёта: запомнить Blob для окна печати, само окно не открывать.
@@ -1488,7 +1497,7 @@ if (PITCH_MODE) {
       trackTiles(page);
       page.role = 'manager';
       await login(page, env.DEMO_MANAGER_EMAIL, env.DEMO_MANAGER_PASSWORD);
-      for (const f of PITCH.filter((x) => x.width === width && (!ONLY || x.file.startsWith(ONLY)))) {
+      for (const f of PITCH.filter((x) => x.width === width && (!ONLY || ONLY.split(",").some((o) => x.file.startsWith(o))))) {
         const s = SCREENS.find((x) => x.key === f.key);
         const name = `${f.file}.png`;
         try {

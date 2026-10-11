@@ -114,10 +114,22 @@ void main() {
 
   group('Места', () {
     test('выбор объектов → регион, страна, город, объект', () {
+      // Регион «Азия» = страна CN, «СНГ» = город Москва: берётся более
+      // узкое место (шаг 18: «Весь город: Москва» не становится регионом).
       expect(placesFromSelection({'b1', 's1', 's2'}, objects, regions),
-          [const ZonePlace(ZoneScope.region, 'asia')]);
+          [const ZonePlace(ZoneScope.country, 'CN')]);
       expect(placesFromSelection({'m1', 'm2'}, objects, regions),
-          [const ZonePlace(ZoneScope.region, 'cis')]);
+          [const ZonePlace(ZoneScope.city, 'Москва')]);
+      // Регион из двух стран — регион.
+      final me = [
+        ...objects,
+        obj('d1', 'Офис 1', 'Дубай', 'AE', 'me'),
+        obj('i1', 'Офис 1', 'Стамбул', 'TR', 'me'),
+      ];
+      expect(
+          placesFromSelection({'d1', 'i1'}, me,
+              [...regions, Region(id: 'me', name: 'Ближний Восток', sort: 4)]),
+          [const ZonePlace(ZoneScope.region, 'me')]);
       expect(placesFromSelection({'s1', 's2'}, objects, regions),
           [const ZonePlace(ZoneScope.city, 'Шэньчжэнь')]);
       expect(placesFromSelection({'s1', 'b1'}, objects, regions), [

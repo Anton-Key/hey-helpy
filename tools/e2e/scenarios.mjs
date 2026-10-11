@@ -482,4 +482,161 @@ export const SCENARIOS = [
       sql(`delete from assets where inventory_no like 'E2E-%'`);
     },
   },
+  {
+    id: 7,
+    title: 'Доступ: администратор задаёт зону «Климат + Сантехника · Москва» → второй менеджер не видит лишнего (списки, карта, отчёты, PDF); бригада «Пекин» не видит Шэньчжэнь',
+    async run(ctx) {
+      const { base } = ctx;
+      const m2 = 'd0000000-0000-4000-8000-000000000004';
+      sql(`delete from access_zones where profile_id = '${m2}'`);
+      const a = await ctx.page();
+      await login(a, base, USERS.admin);
+      await home(a, base);
+      await profileTab(a).click();
+      await settle(a, 1000);
+      await btn(a, /^Моя компания/).click();
+      await settle(a, 1500);
+      await scrollTo(a, /Менеджер Москва/);
+      await btn(a, /Менеджер Москва/).click();
+      await settle(a, 800);
+      await clickAction(a, /^Зона доступа/);
+      await see(a, /Вся компания/).waitFor({ timeout: 20000 });
+      await ctx.shot(a, 'zone-empty');
+      // Выключить «Вся компания» (переключатель), добавить правило.
+      const sw = a.getByRole('switch').or(a.getByRole('checkbox')).first();
+      if (await sw.isVisible().catch(() => false)) await sw.click(); else await btn(a, /^Вся компания/).click();
+      await settle(a, 800);
+      await clickAction(a, /Добавить правило/);
+      await ctx.shot(a, 'rule');
+      for (const sys of ['Климат', 'Сантехника']) {
+        await a.getByRole('button', { name: new RegExp(`^${sys}$`) }).or(a.getByRole('checkbox', { name: new RegExp(`^${sys}$`) }))
+          .or(a.getByText(new RegExp(`^${sys}$`))).last().click();
+        await settle(a, 400);
+      }
+      await clickAction(a, /Выбрать места/);
+      await scrollTo(a, /Весь город: Москва/);
+      await see(a, /Весь город: Москва/).click();
+      await settle(a, 600);
+      await ctx.shot(a, 'picker');
+      await clickAction(a, /^Применить|^Показать|^Готово|^Выбрать/);
+      await ctx.shot(a, 'rule-filled');
+      for (let i = 0; i < 2; i++) {
+        const save = btn(a, /^Сохранить|^Готово/);
+        if (await save.isVisible().catch(() => false)) { await save.click(); await settle(a, 1500); }
+      }
+      const zone = await waitDb(`select z.scope_kind || ':' || z.scope_ref || ':' ||
+          (select string_agg(l.name, '+' order by l.name) from layers l where l.id = any(z.layer_ids))
+        from access_zones z where z.profile_id = '${m2}'`, (v) => v.length > 0, 15000);
+      ctx.notes.push(`зона в базе: ${zone}`);
+      assert(/^city:Москва:Климат\+Сантехника$/.test(zone), `зона сохранилась не так: ${zone}`);
+
+      // Что второму менеджеру видеть нельзя: объекты не в Москве, заявки других систем, чужие подрядчики.
+      const ids = (q) => new Set(sql(q).split('\n').filter(Boolean));
+      const C = uuid(1);
+      const badObjects = ids(`select id from objects where company_id = '${C}' and coalesce(city, '') <> 'Москва'`);
+      const badOrders = ids(`select w.id from work_orders w left join layers l on l.id = w.layer_id left join objects o on o.id = w.object_id
+        where w.company_id = '${C}' and (coalesce(o.city, '') <> 'Москва' or coalesce(l.name, '') not in ('Климат', 'Сантехника'))
+          and w.created_by is distinct from '${m2}'`);
+      const okContractors = ids(`select distinct cl.contractor_id from contractor_layers cl join layers l on l.id = cl.layer_id
+        left join objects o on o.id = cl.object_id where l.name in ('Климат', 'Сантехника') and (cl.object_id is null or o.city = 'Москва')
+          and l.company_id = '${C}'`);
+      const badContractors = new Set([...ids(`select id from contractors where company_id = '${C}'`)].filter((x) => !okContractors.has(x)));
+      const m = await ctx.page();
+      const seen = new Map();
+      m.on('response', async (r) => {
+        if (!r.url().includes('/rest/v1/')) return;
+        try {
+          const body = await r.text();
+          for (const id of body.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g) ?? []) {
+            if (!seen.has(id)) seen.set(id, r.url().split('/rest/v1/')[1].split('?')[0]);
+          }
+        } catch { /* ответ без тела */ }
+      });
+      await login(m, base, USERS.manager2);
+      await home(m, base);
+      await ctx.shot(m, 'm2-requests');
+      const t1 = await screenText(m);
+      for (const w of ['Белград', 'Дубай', 'Пекин', 'Электрика']) assert(!t1.includes(w), `в заявках второго менеджера есть «${w}»`);
+      await section(m, /^Локации/);
+      const mapBtn = m.getByRole('button', { name: /^Карта/ }).or(m.getByText(/^Карта$/)).first();
+      if (await mapBtn.isVisible().catch(() => false)) { await mapBtn.click(); await settle(m, 3000); }
+      await ctx.shot(m, 'm2-map');
+      await section(m, /^Подрядчики/);
+      await ctx.shot(m, 'm2-contractors');
+      const t3 = await screenText(m);
+      for (const w of ['ЭлектроПро', 'Gulf FM', 'Huaxin']) assert(!t3.includes(w), `в подрядчиках второго менеджера есть «${w}»`);
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await see(m, /приняты с первого раза/).waitFor({ timeout: 20000 });
+      await settle(m, 1500);
+      await ctx.shot(m, 'm2-reports');
+      const t4 = await screenText(m);
+      for (const w of ['Европа', 'Азия', 'ЭлектроПро', 'КлиматСервис']) assert(!t4.includes(w), `в отчётах второго менеджера есть «${w}»`);
+      const pdf = await capturePdf(m);
+      const text = execFileSync('pdftotext', ['-layout', pdf, '-'], { encoding: 'utf8' });
+      for (const w of ['Белград', 'Дубай', 'ЭлектроПро', 'КлиматСервис']) assert(!text.includes(w), `в PDF второго менеджера есть «${w}»`);
+      await section(m, /^ППР/);
+      await settle(m, 1500);
+      const t5 = await screenText(m);
+      assert(!/Дубай|Абиджан|БЦ «Демо»/.test(t5), 'в ППР второго менеджера чужие объекты');
+      const leaks = [...seen].filter(([id]) => badObjects.has(id) || badOrders.has(id) || badContractors.has(id));
+      ctx.notes.push(`ответов сервера: ${seen.size} id, запрещённых: ${leaks.length}`);
+      assert(leaks.length === 0, `сервер отдал запрещённое: ${leaks.slice(0, 3).map(([id, t]) => `${t}:${id.slice(-3)}`).join(', ')}`);
+
+      // Бригада «Пекин» Huaxin FM: исполнитель не видит Шэньчжэнь.
+      const e = await ctx.page({ width: 412, height: 915 });
+      const eSeen = new Set();
+      e.on('response', async (r) => {
+        if (!r.url().includes('/rest/v1/work_orders')) return;
+        try { for (const id of (await r.text()).match(/[0-9a-f-]{36}/g) ?? []) eSeen.add(id); } catch { /* */ }
+      });
+      await login(e, base, 'beijing@example.com');
+      await home(e, base);
+      await ctx.shot(e, 'crew-beijing');
+      const szOrders = ids(`select w.id from work_orders w join objects o on o.id = w.object_id where o.city = 'Шэньчжэнь'`);
+      const bjOrders = ids(`select w.id from work_orders w join objects o on o.id = w.object_id
+        where o.city = 'Пекин' and w.assigned_contractor_id = '${uuid(509)}'`);
+      const te = await screenText(e);
+      assert(!te.includes('Шэньчжэнь'), 'исполнитель бригады «Пекин» видит Шэньчжэнь');
+      assert(![...szOrders].some((x) => eSeen.has(x)), 'сервер отдал бригаде «Пекин» заявки Шэньчжэня');
+      ctx.notes.push(`бригада «Пекин»: заявок Пекина видно ${[...bjOrders].filter((x) => eSeen.has(x)).length} из ${bjOrders.size}, Шэньчжэня — 0`);
+    },
+  },
+  {
+    id: 8,
+    title: 'Изоляция компаний: вторая компания с теми же названиями — ни один экран не показывает её данные',
+    async run(ctx) {
+      const { base } = ctx;
+      // В локальной базе две тестовые компании «Демо БЦ» (id c1…/c2…) — с теми же
+      // названиями объектов, регионов, подрядчиков. Любой их id в ответах сервера — утечка.
+      const m = await ctx.page();
+      const foreign = [];
+      m.on('response', async (r) => {
+        if (!r.url().includes('/rest/v1/') && !r.url().includes('/storage/v1/')) return;
+        try {
+          const b = await r.text();
+          const hit = b.match(/c[12]000000-0000-4000-8000-\d{12}/);
+          if (hit) foreign.push(`${r.url().split('/v1/')[1].split('?')[0]}:${hit[0]}`);
+        } catch { /* */ }
+      });
+      await login(m, base, USERS.admin);
+      const visit = [
+        async () => home(m, base),
+        async () => section(m, /^ППР/),
+        async () => { await home(m, base); await section(m, /^Подрядчики/); },
+        async () => { await home(m, base); await section(m, /^Локации/); },
+        async () => { const b = m.getByRole('button', { name: /^Карта/ }).or(m.getByText(/^Карта$/)).first();
+          if (await b.isVisible().catch(() => false)) { await b.click(); await settle(m, 2500); } },
+        async () => { await home(m, base); await section(m, /^История/); },
+        async () => { await home(m, base); await section(m, /^Отчёты/); await settle(m, 2000); },
+        async () => { await home(m, base); await profileTab(m).click(); await settle(m, 800);
+          await btn(m, /^Моя компания/).click(); await settle(m, 2000); },
+        async () => { await openApp(m, base, `#/objects/${uuid(10)}/floors/${uuid(601)}`); await settle(m, 3000); },
+      ];
+      for (const v of visit) await v();
+      await ctx.shot(m, 'last');
+      ctx.notes.push(`экранов: ${visit.length}, чужих id в ответах: ${foreign.length}`);
+      assert(foreign.length === 0, `утечка: ${foreign.slice(0, 3).join(', ')}`);
+    },
+  },
 ];

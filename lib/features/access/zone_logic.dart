@@ -198,6 +198,11 @@ int coveredObjects(Iterable<ZonePlace> places, Iterable<Obj> objects,
 /// Выбор в окне объектов → места: целый регион, затем целая страна, целый
 /// город, иначе отдельные объекты. Регион / страна / город берутся, только
 /// если в них больше одного объекта (один объект — просто объект).
+/// Если регион состоит ровно из объектов одной страны или одного города
+/// (или страна — из одного города), берётся более узкое место: окно выбора
+/// отдаёт только объекты, и «Весь город: Москва» в регионе «СНГ» из одной
+/// Москвы не должен стать регионом — иначе новый объект региона в другом
+/// городе окажется в зоне без ведома администратора (шаг 18).
 List<ZonePlace> placesFromSelection(
     Set<String> ids, List<Obj> objects, List<Region> regions) {
   final chosen = [
@@ -215,10 +220,29 @@ List<ZonePlace> placesFromSelection(
     return g.length > 1 && g.every((o) => left.contains(o.id));
   }
 
+  final cityGroups = [
+    for (final g in groupObjectsByCity(objects))
+      if (g.city.isNotEmpty) {for (final o in g.items) o.id}
+  ];
+  final countryGroups = [
+    for (final c in {
+      for (final o in objects)
+        if ((o.countryCode ?? '').isNotEmpty) o.countryCode!.toUpperCase()
+    })
+      {
+        for (final o in objects)
+          if ((o.countryCode ?? '').toUpperCase() == c) o.id
+      }
+  ];
+  bool sameAsAny(Iterable<Obj> group, List<Set<String>> narrower) {
+    final ids = {for (final o in group) o.id};
+    return narrower.any((n) => n.length == ids.length && n.containsAll(ids));
+  }
+
   // регионы
   for (final r in regions) {
     final g = objects.where((o) => o.regionId == r.id);
-    if (whole(g)) {
+    if (whole(g) && !sameAsAny(g, [...countryGroups, ...cityGroups])) {
       out.add(ZonePlace(ZoneScope.region, r.id));
       left.removeAll(g.map((o) => o.id));
     }
@@ -231,7 +255,7 @@ List<ZonePlace> placesFromSelection(
     ..sort();
   for (final c in codes) {
     final g = objects.where((o) => (o.countryCode ?? '').toUpperCase() == c);
-    if (whole(g)) {
+    if (whole(g) && !sameAsAny(g, cityGroups)) {
       out.add(ZonePlace(ZoneScope.country, c));
       left.removeAll(g.map((o) => o.id));
     }

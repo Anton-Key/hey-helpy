@@ -1215,7 +1215,7 @@ const PITCH = [
 
 if (PITCH_MODE) {
   mkdirSync(OUT, { recursive: true });
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
   const failed = [];
   try {
     for (const width of [412, 1920].filter((w) => PITCH.some((x) => x.width === w && (!ONLY || x.file.startsWith(ONLY))))) {
@@ -1257,7 +1257,7 @@ if (PITCH_MODE) {
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 const results = [];
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
 try {
   for (const r of RUNS) {
     if (WIDTH && r.width !== WIDTH) continue;

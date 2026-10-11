@@ -289,38 +289,8 @@ class _PprTabState extends State<PprTab> {
     ];
   }
 
-  Widget _row(AppLocalizations l, PlanView v) {
-    final narrow = MediaQuery.sizeOf(context).width < kSegmentOfFrom;
-    final layer = v.layer?.label(l.localeName);
-    final period = pprPeriodText(l, v.plan.kind, v.period);
-    return AppRow(
-      leading: const LeadingIcon(AppIcons.calendar),
-      title: v.plan.title,
-      subtitle: [
-        [v.objectLabel, if (layer != null) layer].join(' · '),
-        [
-          pprEvery(l, v.plan.kind, v.plan.days),
-          period,
-          v.contractor?.orgName ?? l.filterNoContractor,
-        ].join(' · '),
-      ].join('\n'),
-      subtitleMaxLines: 3,
-      // Узкий телефон: статус — под названием, название во всю ширину
-      // (как в списке заявок).
-      extra: narrow
-          ? Padding(
-              padding: const EdgeInsetsDirectional.only(top: AppSpace.xxs),
-              child: StatusPill(periodStateStatus(v.state),
-                  label: pprStateLabel(l, v.state)),
-            )
-          : null,
-      trailing: narrow
-          ? null
-          : StatusPill(periodStateStatus(v.state),
-              label: pprStateLabel(l, v.state)),
-      onTap: () => _openCard(v),
-    );
-  }
+  Widget _row(AppLocalizations l, PlanView v) =>
+      PprPlanRow(view: v, onTap: () => _openCard(v));
 
   Widget _filterRow(AppLocalizations l, PprData d, List<PlanView> all) {
     final n = _filter.activeCount;
@@ -489,5 +459,53 @@ class _PprTabState extends State<PprTab> {
       }),
     );
     if (result != null && mounted) _setFilter(result);
+  }
+}
+
+/// Строка плана в разделе «ППР»: название, «город · объект · система»,
+/// «периодичность · период · подрядчик», статус периода.
+class PprPlanRow extends StatelessWidget {
+  const PprPlanRow({super.key, required this.view, this.onTap});
+  final PlanView view;
+  final VoidCallback? onTap;
+
+  /// Подпись — до 5 строк: на телефоне 412 со статусом справа обе строки
+  /// подписи переносятся, при 3 строках обрезался подрядчик («октябрь 2…»).
+  static const subtitleLines = 5;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final v = view;
+    final narrow = MediaQuery.sizeOf(context).width < kSegmentOfFrom;
+    final layer = v.layer?.label(l.localeName);
+    final period = pprPeriodText(l, v.plan.kind, v.period);
+    return AppRow(
+      leading: const LeadingIcon(AppIcons.calendar),
+      title: v.plan.title,
+      subtitle: [
+        [v.objectLabel, if (layer != null) layer].join(' · '),
+        [
+          pprEvery(l, v.plan.kind, v.plan.days),
+          period,
+          v.contractor?.orgName ?? l.filterNoContractor,
+        ].join(' · '),
+      ].join('\n'),
+      subtitleMaxLines: subtitleLines,
+      // Узкий телефон: статус — под названием, название во всю ширину
+      // (как в списке заявок).
+      extra: narrow
+          ? Padding(
+              padding: const EdgeInsetsDirectional.only(top: AppSpace.xxs),
+              child: StatusPill(periodStateStatus(v.state),
+                  label: pprStateLabel(l, v.state)),
+            )
+          : null,
+      trailing: narrow
+          ? null
+          : StatusPill(periodStateStatus(v.state),
+              label: pprStateLabel(l, v.state)),
+      onTap: onTap,
+    );
   }
 }

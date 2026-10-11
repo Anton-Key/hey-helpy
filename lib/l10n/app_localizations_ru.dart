@@ -1440,6 +1440,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Микрофон не слышит звук — проверьте, какой микрофон выбран';
 
   @override
+  String get voiceOnlyChromeEdge =>
+      'Голосовой ввод работает в Chrome и Edge. Напишите заявку — ИИ разберёт её так же.';
+
+  @override
   String get voiceBrowserHint =>
       'Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge';
 

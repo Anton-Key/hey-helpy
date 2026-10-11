@@ -646,6 +646,7 @@
   "voiceErrorCode": "код: {code}",
   "@voiceErrorCode": {"placeholders": {"code": {"type": "String"}}},
   "voiceMicSilent": "Микрофон не слышит звук — проверьте, какой микрофон выбран",
+  "voiceOnlyChromeEdge": "Голосовой ввод работает в Chrome и Edge. Напишите заявку — ИИ разберёт её так же.",
   "voiceBrowserHint": "Для голосового ввода лучше открыть в Google Chrome или Microsoft Edge",
   "detailMore": "Ещё",
   "actionDelete": "Удалить",

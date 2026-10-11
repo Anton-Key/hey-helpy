@@ -2,16 +2,21 @@
 //
 // POST { text, locale: "ru" | "en", objectId? }
 //   200 { source: "ai", title, description, layer_id, layer, location_id,
-//         location_hint, priority, confidence, transcript }
+//         location_hint, priority, confidence, transcript, model: "pro"|"lite" }
 //   400 { error: "bad_request" | "bad_text" | "bad_locale" | "bad_object" }
 //   401 { error: "unauthorized" }        — не вошедший пользователь
 //   500 { error: "not_configured" }      — не заданы секреты
 //   502 { error: "ai_unavailable" }      — модель недоступна или ответила не JSON
 //
+// YandexGPT: основная модель ждёт 7 с, затем один повтор на запасной
+// (yandexgpt-lite/latest, секрет YANDEX_MODEL_LITE — заменить, "-" — без
+// повтора), всего не дольше 14 с (yandex.ts).
+//
 // Справочники (слои, помещения) читаются ОТ ИМЕНИ ПОЛЬЗОВАТЕЛЯ, под RLS —
 // service_role не используется. Ключи Yandex — только в секретах функции
-// (YANDEX_API_KEY, YANDEX_FOLDER_ID, необязательный YANDEX_MODEL).
-// В логи — только служебное: длина текста, время, код ошибки, токены.
+// (YANDEX_API_KEY, YANDEX_FOLDER_ID, необязательные YANDEX_MODEL и
+// YANDEX_MODEL_LITE). В логи — только служебное: длина текста, время, код
+// ошибки, токены, какая модель ответила (model) и почему не основная (first).
 
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import {
@@ -24,7 +29,7 @@ import {
   type PlaceRef,
   PLACES_MAX,
 } from "./schema.ts";
-import { AiError, complete, DEFAULT_MODEL } from "./yandex.ts";
+import { AiError, complete, DEFAULT_MODEL, LITE_MODEL } from "./yandex.ts";
 
 const ALLOWED_ORIGIN = "https://anton-key.github.io";
 const LOCALHOST = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
@@ -70,6 +75,8 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get("YANDEX_API_KEY")?.trim();
   const folderId = Deno.env.get("YANDEX_FOLDER_ID")?.trim();
   const model = Deno.env.get("YANDEX_MODEL")?.trim() || DEFAULT_MODEL;
+  const liteEnv = Deno.env.get("YANDEX_MODEL_LITE")?.trim();
+  const liteModel = liteEnv === "-" ? "" : (liteEnv || LITE_MODEL);
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   if (!apiKey || !folderId || !supabaseUrl || !anonKey) {
@@ -109,19 +116,22 @@ Deno.serve(async (req) => {
 
   try {
     const ai = await complete(
-      { apiKey, folderId, model },
+      { apiKey, folderId, model, liteModel },
       buildMessages(input, catalog),
     );
+    const which = { model: ai.model, first: ai.primaryError };
     const raw = parseModelJson(ai.content);
     if (!raw) {
       return reply(502, { error: "ai_unavailable" }, {
         code: "invalid_json",
         len: input.text.length,
         tokens: ai.totalTokens,
+        ...which,
       });
     }
     const result = normalize(raw, catalog, input.text);
-    return reply(200, result, {
+    return reply(200, { ...result, model: ai.model }, {
+      ...which,
       len: input.text.length,
       tokens: ai.totalTokens,
       layers: catalog.layers.length,
@@ -149,11 +159,16 @@ async function loadCatalog(
       "name",
     ),
     (() => {
-      let q = supabase.from("locations").select(
-        "id,object_id,name,objects(name)",
+      // Номер помещения и город объекта — с 0015; без неё — как раньше.
+      const query = (cols: string) => {
+        let q = supabase.from("locations").select(cols);
+        if (objectId) q = q.eq("object_id", objectId);
+        return q.order("name").limit(PLACES_MAX);
+      };
+      return query("id,object_id,name,code,objects(name,city)").then(
+        // deno-lint-ignore no-explicit-any
+        (r: any) => r.error ? query("id,object_id,name,objects(name)") : r,
       );
-      if (objectId) q = q.eq("object_id", objectId);
-      return q.order("name").limit(PLACES_MAX);
     })(),
   ]);
   if (layersRes.error) log({ code: "layers_failed" });
@@ -168,13 +183,16 @@ async function loadCatalog(
       id: string;
       object_id: string;
       name: string;
-      objects?: { name?: string } | null;
+      code?: string | null;
+      objects?: { name?: string; city?: string | null } | null;
     },
   ) => ({
     id: r.id,
     object_id: r.object_id,
     name: r.name ?? "",
     object_name: r.objects?.name ?? null,
+    object_city: r.objects?.city ?? null,
+    code: r.code ?? null,
   }));
   return { layers, places };
 }

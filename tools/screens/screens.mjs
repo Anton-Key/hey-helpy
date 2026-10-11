@@ -414,9 +414,9 @@ const see = (page, text) => page.getByRole('tab', { name: ci(text) })
   .or(page.getByLabel(ci(text))).first();
 // Пункт «Профиль»: вкладка нижней панели (телефон) или пункт бокового меню (ПК,
 // подпись с бейджем — «Профиль, 1»).
-const profileTab = (page) => page.getByRole('tab', { name: /^Профиль/ })
-  .or(page.getByRole('button', { name: /^Профиль/ }))
-  .or(page.getByLabel(/^Профиль(, \d+)?$/)).first();
+const profileTab = (page) => page.getByRole('tab', { name: /^(Профиль|Profile)/ })
+  .or(page.getByRole('button', { name: /^(Профиль|Profile)/ }))
+  .or(page.getByLabel(/^(Профиль|Profile)(, \d+)?$/)).first();
 
 async function login(page, email, password) {
   await openApp(page);
@@ -481,7 +481,7 @@ async function openOrder(page, title) {
   const row = page.getByRole('button', { name: title }).first();
   if (!(await row.isVisible().catch(() => false))) {
     // На ширине < 400 подсказка поля — «Поиск».
-    const box = page.getByRole('textbox', { name: /^Поиск( по заявкам)?$/ }).first();
+    const box = page.getByRole('textbox', { name: /^(Поиск( по заявкам)?|Search( work orders)?)$/ }).first();
     await box.click();
     await page.waitForTimeout(400);
     await page.keyboard.type(title.split(' ').slice(0, 2).join(' '), { delay: 30 });
@@ -1147,7 +1147,219 @@ const SCREENS = [
       await see(p, /За последние 14 дней|Уведомлений нет/).waitFor({ timeout: 20000 });
       await settle(p, 2500);
     } },
+  // ---- Разделы шагов 16–17 на рабочей базе (после 0015 и 0016, шаг 19).
+  // Снимаются у менеджера (в «Демо БЦ» он администратор) на ширинах NEW_WIDTHS.
+  ...NEW_SCREENS(),
 ];
+
+/** Прокрутить экран, пока не станет виден текст (Flutter строит дальние строки по мере прокрутки). */
+async function scrollTo(page, text) {
+  const el = see(page, text);
+  const vp = page.viewportSize();
+  await page.mouse.move(vp.width / 2, vp.height / 2);
+  for (let i = 0; i < 25; i++) {
+    if (await el.isVisible().catch(() => false)) {
+      await el.scrollIntoViewIfNeeded().catch(() => {});
+      return;
+    }
+    await page.mouse.wheel(0, 450);
+    await page.waitForTimeout(300);
+  }
+  throw new Error(`Не найдено при прокрутке: ${text}`);
+}
+
+/** Прокрутить экран до конца. */
+async function toBottom(page) {
+  const vp = page.viewportSize();
+  await page.mouse.move(vp.width / 2, vp.height / 2);
+  for (let i = 0; i < 6; i++) {
+    await page.mouse.wheel(0, 1500);
+    await page.waitForTimeout(300);
+  }
+  await settle(page, 1000);
+}
+
+/** Раздел «ППР»: на ПК — пункт бокового меню, на телефоне — сегмент. */
+async function openPpr(page) {
+  await home(page);
+  await page.getByRole('tab', { name: /^ППР/ }).or(page.getByRole('button', { name: /^ППР$/ }))
+    .or(page.getByText(/^ППР$/)).first().click();
+  await see(page, /выполнено \d+ из \d+/).waitFor({ timeout: 20000 });
+  await settle(page, 1500);
+}
+
+async function openPlanCard(page, title) {
+  await openPpr(page);
+  await btn(page, new RegExp('^' + title)).click();
+  await see(page, /История периодов/).waitFor({ timeout: 20000 });
+  await settle(page, 1500);
+}
+
+async function openLocationsList(page) {
+  await home(page);
+  await nav(page, 'Локации').click();
+  await settle(page, 1500);
+  await page.getByRole('button', { name: 'Список', exact: true }).first().click().catch(() => {});
+  await settle(page, 1500);
+}
+
+async function openObjectCard(page, name = 'БЦ «Демо»') {
+  await openLocationsList(page);
+  await page.getByRole('button', { name: new RegExp(name) }).first().click();
+  await see(page, /Этажи · \d|Адрес/).waitFor({ timeout: 20000 });
+  await settle(page, 2000);
+}
+
+async function openCompany(page) {
+  await home(page);
+  await profileTab(page).click();
+  await settle(page, 1000);
+  await btn(page, /^Моя компания/).click();
+  await see(page, /Сотрудники|СОТРУДНИКИ/).waitFor({ timeout: 20000 });
+  await settle(page, 1500);
+}
+
+async function openContractor(page, name) {
+  await home(page);
+  await nav(page, 'Подрядчики').click();
+  await settle(page, 1500);
+  await scrollTo(page, new RegExp(name));
+  await page.getByRole('button', { name: new RegExp(name) }).first().click();
+  await see(page, /Виды работ/).waitFor({ timeout: 15000 });
+  await settle(page, 1500);
+}
+
+
+async function openAsset(page) {
+  const DEMO_ASSET = DEMO_ASSET_NAME();
+  await openObjectCard(page);
+  await scrollTo(page, new RegExp('^' + DEMO_ASSET));
+  await page.getByRole('button', { name: new RegExp('^' + DEMO_ASSET) }).first().click();
+  await see(page, /Создать заявку/).waitFor({ timeout: 20000 });
+  await settle(page, 1500);
+}
+
+/** Бригада подрядчика: карточка подрядчика → «Бригады» → бригада. */
+async function openCrew(page, contractor, crew) {
+  await openContractor(page, contractor);
+  await toBottom(page);
+  await page.getByRole('button', { name: new RegExp('^' + crew) }).first().click();
+  await see(page, /Исполнители|ИСПОЛНИТЕЛИ/).waitFor({ timeout: 15000 });
+  await settle(page, 1500);
+}
+
+// Функции, а не константы: NEW_SCREENS() вызывается при создании SCREENS (выше).
+function NEW_WIDTHS() { return [1920, 1280, 412]; }
+// Оборудование с заявками в демо: кондиционер серверной («Течёт конденсат…»).
+function DEMO_ASSET_NAME() { return 'Кондиционер серверной'; }
+function NEW_SCREENS() {
+  const DEMO_ASSET = DEMO_ASSET_NAME();
+  const list = [
+    { key: 'ppr-list', title: 'ППР — список планов, сводка «Октябрь: выполнено N из 8»', run: async (p) => {
+        await openPpr(p);
+        return 'сводка — ' + ((await see(p, /выполнено \d+ из \d+/).textContent().catch(() => '')) || 'есть');
+      } },
+    { key: 'ppr-card', title: 'ППР — карточка плана «ТО кондиционеров» (история периодов)', run: async (p) => {
+        await openPlanCard(p, 'ТО кондиционеров');
+      } },
+    { key: 'ppr-task', title: 'Задача периода — карточка заявки «ППР · октябрь 2026 · до 31 окт.»', run: async (p) => {
+        await openPlanCard(p, 'ТО кондиционеров');
+        await btn(p, /ППР · .* · до/).click();
+        await see(p, /Подрядчик/).waitFor({ timeout: 20000 });
+        await settle(p, 1500);
+      } },
+    { key: 'locations-regions', title: 'Локации по регионам → страна → город', run: async (p) => {
+        await openLocationsList(p);
+        await see(p, /Европа/).waitFor({ timeout: 20000 });
+      } },
+    { key: 'object-picker', title: 'Окно выбора объектов: «Весь регион», «Вся страна», «Весь город»', run: async (p) => {
+        await home(p);
+        await openFilterKind(p, 'Объект');
+        await see(p, /Весь регион|Вся страна/).waitFor({ timeout: 20000 });
+        await settle(p, 1000);
+        return 'закрыто без применения';
+      }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
+    { key: 'reports-regions', title: 'Отчёты: блок «По регионам»', run: async (p) => {
+        await home(p);
+        await nav(p, 'Отчёты').click();
+        await see(p, '30 дней').waitFor({ timeout: 20000 });
+        await settle(p, 3000);
+        await scrollTo(p, /По регионам/);
+        await settle(p, 800);
+      } },
+    { key: 'equipment', title: 'Карточка объекта: «Оборудование · N» по системам', run: async (p) => {
+        await openObjectCard(p);
+        await scrollTo(p, /Оборудование · \d+/);
+        await p.mouse.wheel(0, 300);
+        await settle(p, 1000);
+      } },
+    { key: 'asset-card', title: `Карточка оборудования «${DEMO_ASSET}»: паспорт, план, ППР, заявки`, run: openAsset },
+    { key: 'plan-areas', title: 'План этажа «3 этаж»: области и номера помещений', run: async (p) => {
+        await openPlan(p, 10, 602);
+      } },
+    { key: 'audit', title: '«Моя компания» → «Журнал изменений доступа»', run: async (p) => {
+        await openCompany(p);
+        await scrollTo(p, /Журнал изменений доступа/);
+        await btn(p, /Журнал изменений доступа/).click();
+        await settle(p, 3000);
+      } },
+    { key: 'crews', title: 'Карточка подрядчика Huaxin FM → «Бригады»', run: async (p) => {
+        await openContractor(p, 'Huaxin FM');
+        // «Бригады» — последний раздел карточки.
+        await toBottom(p);
+      } },
+    { key: 'crew-zone', title: 'Бригада «Пекин» у Huaxin FM: исполнители и зона (как «Зона доступа»)', run: async (p) => {
+        await openCrew(p, 'Huaxin FM', 'Пекин');
+        return 'закрыто без сохранения';
+      } },
+  ];
+  return list.map((x) => ({ ...x, managerOnly: true, widths: NEW_WIDTHS() }));
+}
+
+// Английский интерфейс (шаг 19): язык профиля подменяется на «en» только в
+// браузере Playwright (ответ сервера на чтение profiles), в базе не меняется.
+const EN_SCREENS = [
+  { key: 'en-requests', title: 'EN — Work orders', run: async (p) => { await home(p); } },
+  { key: 'en-ppr', title: 'EN — Preventive maintenance (PM)', run: async (p) => {
+      await home(p);
+      await p.getByRole('tab', { name: /^PM/ }).or(p.getByRole('button', { name: /^PM$/ }))
+        .or(p.getByText(/^PM$/)).first().click();
+      await see(p, /\d+ of \d+ done/).waitFor({ timeout: 20000 });
+      await settle(p, 1500);
+    } },
+  { key: 'en-locations', title: 'EN — Locations by region', run: async (p) => {
+      await home(p);
+      await nav(p, 'Locations').click();
+      await settle(p, 1500);
+      await p.getByRole('button', { name: 'List', exact: true }).first().click().catch(() => {});
+      await settle(p, 1500);
+    } },
+  { key: 'en-reports', title: 'EN — Reports', run: async (p) => {
+      await home(p);
+      await nav(p, 'Reports').click();
+      await see(p, '30 days').waitFor({ timeout: 20000 });
+      await settle(p, 3000);
+    } },
+  { key: 'en-order', title: `EN — карточка заявки «${DEMO_ORDER}»`, run: async (p) => {
+      await home(p);
+      await openOrder(p, DEMO_ORDER);
+      await see(p, 'Contractor').waitFor({ timeout: 20000 });
+      await settle(p);
+    } },
+  { key: 'en-plan', title: 'EN — план этажа', run: async (p) => { await openPlan(p, 10, 602); } },
+];
+
+async function routeEnglishProfile(page) {
+  await page.route('**/rest/v1/profiles*', async (route) => {
+    if (route.request().method() !== 'GET') return route.fallback();
+    const res = await route.fetch();
+    let body;
+    try { body = JSON.parse(await res.text()); } catch { return route.fulfill({ response: res }); }
+    const en = (r) => (r && typeof r === 'object' && 'locale' in r ? { ...r, locale: 'en' } : r);
+    body = Array.isArray(body) ? body.map(en) : en(body);
+    return route.fulfill({ response: res, body: JSON.stringify(body) });
+  });
+}
 
 // --only=map — снять только экраны, чей ключ начинается с «map» (для отладки;
 // README тогда содержит только их).
@@ -1165,6 +1377,9 @@ const RUNS = [
   { role: 'manager', label: 'Менеджер', width: 360, height: 780 },
   { role: 'executor', label: 'Исполнитель', width: 412, height: 915 },
   { role: 'requester', label: 'Заявитель', width: 412, height: 915 },
+  // Английский интерфейс — главные экраны (шаг 19).
+  { role: 'manager', label: 'Менеджер (EN)', width: 1280, height: 800, en: true },
+  { role: 'manager', label: 'Менеджер (EN)', width: 412, height: 915, en: true },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1211,7 +1426,40 @@ const PITCH = [
       await settle(p, 1200);
     } },
   { file: '12-home-desktop', width: 1920, key: 'requests' },
+  // Шаг 19 — разделы после 0015/0016 (рабочая база).
+  { file: '13-ppr-desktop', width: 1920, key: 'ppr-list' },
+  { file: '14-locations-regions-desktop', width: 1920, key: 'locations-regions' },
+  // Первая страница PDF-отчёта: файл, который веб-версия отдаёт в окно печати,
+  // отрисован в PNG (pdftoppm), без окна печати.
+  { file: '15-report-pdf-page1', width: 1920, key: 'report-pdf', pdf: true },
+  { file: '16-equipment-card-desktop', width: 1920, key: 'asset-card' },
+  // Второго менеджера в рабочей базе нет — та же модель зоны у бригады «Пекин».
+  { file: '17-crew-zone-desktop', width: 1920, key: 'crew-zone' },
 ];
+
+/** PDF отчёта за 30 дней: перехватываем Blob, который веб-версия отдаёт в окно печати. */
+async function capturePdf(page) {
+  await home(page);
+  await nav(page, 'Отчёты').click();
+  await see(page, '30 дней').waitFor({ timeout: 20000 });
+  await settle(page, 3000);
+  // Первая кнопка с этим словом — ⓘ «Печать отчёта», вторая — сам принтер.
+  const print = page.getByRole('button', { name: /Печать|Распечатать|PDF/ });
+  await ((await print.count()) > 1 ? print.nth(1) : print.first()).click();
+  for (let i = 0; i < 120 && !(await page.evaluate(() => !!window.__pdfBlob)); i++) await page.waitForTimeout(500);
+  const b64 = await page.evaluate(async () => {
+    const blob = window.__pdfBlob;
+    if (!blob) return null;
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let s = '';
+    for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+    return btoa(s);
+  });
+  if (!b64) throw new Error('PDF не получен');
+  const pdf = join(OUT, '.report.pdf');
+  writeFileSync(pdf, Buffer.from(b64, 'base64'));
+  return pdf;
+}
 
 if (PITCH_MODE) {
   mkdirSync(OUT, { recursive: true });
@@ -1221,6 +1469,15 @@ if (PITCH_MODE) {
     for (const width of [412, 1920].filter((w) => PITCH.some((x) => x.width === w && (!ONLY || x.file.startsWith(ONLY))))) {
       const ctx = await browser.newContext({ viewport: { width, height: width > 600 ? 1080 : 915 },
         locale: 'ru-RU', deviceScaleFactor: width > 600 ? 1 : 2 });
+      // PDF отчёта: запомнить Blob для окна печати, само окно не открывать.
+      await ctx.addInitScript(() => {
+        const orig = URL.createObjectURL;
+        URL.createObjectURL = function (obj) {
+          try { if (obj && obj.type === 'application/pdf') window.__pdfBlob = obj; } catch {}
+          return orig.call(URL, obj);
+        };
+        window.print = () => {};
+      });
       const page = await ctx.newPage();
       trackTiles(page);
       page.role = 'manager';
@@ -1229,6 +1486,13 @@ if (PITCH_MODE) {
         const s = SCREENS.find((x) => x.key === f.key);
         const name = `${f.file}.png`;
         try {
+          if (f.pdf) {
+            const pdf = await capturePdf(page);
+            execFileSync('pdftoppm', ['-png', '-r', '110', '-f', '1', '-l', '1', '-singlefile', pdf, join(OUT, f.file)]);
+            rmSync(pdf, { force: true });
+            console.log(`  ✅ ${name}`);
+            continue;
+          }
           await (f.run ?? s.run)(page);
           await page.screenshot({ path: join(OUT, name) });
           console.log(`  ✅ ${name}`);
@@ -1286,10 +1550,12 @@ try {
       await routeWorldPreview(page);
       if (r.role !== 'manager') page.worldPreview = 'off';
     }
-    for (const s of SCREENS) {
+    if (loggedIn && r.en) await routeEnglishProfile(page);
+    for (const s of (r.en ? EN_SCREENS : SCREENS)) {
       if (!loggedIn) break;
+      if (s.widths && !s.widths.includes(r.width)) continue;
       page.previewUsed = false;
-      if (ONLY && !s.key.startsWith(ONLY)) continue;
+      if (ONLY && !ONLY.split(",").some((o) => s.key.startsWith(o))) continue;
       if (s.managerOnly && r.role !== 'manager') {
         results.push({ ...r, key: s.key, title: s.title, ok: null, note: 'Нет у этой роли (так задумано)' });
         continue;

@@ -325,6 +325,10 @@ class AppSizes {
   /// Главная кнопка.
   static const buttonHeight = 52.0;
 
+  /// Наибольшая ширина кнопки «‹ Назад» в шапке: «‹ Моя компания» и
+  /// «‹ Подрядчики» помещаются целиком (при 140 было «Моя компан…»).
+  static const backButtonMax = 168.0;
+
   /// Маленькая кнопка-капсула (TintedButton в строке).
   static const buttonSmallHeight = 32.0;
 

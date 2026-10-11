@@ -264,7 +264,8 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
                   child: Row(children: [
                     if (leading != null) ...[
                       ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 140),
+                          constraints: const BoxConstraints(
+                              maxWidth: AppSizes.backButtonMax),
                           child: leading),
                       const SizedBox(width: AppSpace.s),
                     ],
@@ -329,7 +330,8 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
                     : Padding(
                         padding: const EdgeInsetsDirectional.only(start: 6),
                         child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 140),
+                            constraints: const BoxConstraints(
+                                maxWidth: AppSizes.backButtonMax),
                             child: leading),
                       ),
                 middle: Opacity(
@@ -452,7 +454,8 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
                 : Padding(
                     padding: const EdgeInsetsDirectional.only(start: 6),
                     child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 140),
+                        constraints: const BoxConstraints(
+                            maxWidth: AppSizes.backButtonMax),
                         child: lead),
                   ),
             middle: title == null

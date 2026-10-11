@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hey_helpy/core/design/design.dart';
@@ -587,5 +589,22 @@ void main() {
       final box = t.widget<Container>(find.byType(Container).first);
       expect((box.decoration as BoxDecoration).color, AppColors.accent);
     });
+  });
+
+  testWidgets('«‹ Моя компания» в шапке — без обрезки', (t) async {
+    // Настоящий шрифт: тестовый по умолчанию шире (каждая буква — квадрат).
+    final onest = FontLoader('Onest')
+      ..addFont(rootBundle.load('assets/fonts/Onest-Regular.ttf'));
+    await onest.load();
+    for (final label in ['Моя компания', 'Подрядчики', 'My company']) {
+      await t.pumpWidget(_app(Align(
+        alignment: AlignmentDirectional.topStart,
+        child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: AppSizes.backButtonMax),
+            child: AppBackButton(label: label)),
+      )));
+      final p = t.renderObject<RenderParagraph>(find.text(label));
+      expect(p.didExceedMaxLines, isFalse, reason: label);
+    }
   });
 }

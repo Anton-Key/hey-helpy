@@ -211,6 +211,41 @@ void main() {
           isNull);
     });
 
+    test('исполнитель видит только планы своего подрядчика (шаг 18)', () {
+      final contractors = [
+        Contractor(id: 'mine', orgName: 'МосКлимат'),
+        Contractor(id: 'other', orgName: 'Gulf FM'),
+      ];
+      const hvac = Layer(id: 'hvac', name: 'Климат');
+      final bindings = [
+        const Binding(id: 'b1', contractorId: 'mine', layer: hvac, objectId: 'o1'),
+        const Binding(id: 'b2', contractorId: 'other', layer: hvac, objectId: 'o2'),
+      ];
+      final period = PeriodBounds(d(2026, 10, 1), d(2026, 10, 31));
+      final plans = [
+        plan('p1'),
+        plan('p2', object: 'o2'),
+        plan('p3', object: 'o3'),
+        plan('p4', object: 'o2'),
+      ];
+      final seen = plansOfExecutor(
+          plans: plans,
+          // Задача p4 ему видна (назначена его подрядчику вручную).
+          tasks: [task('p4', 'assigned', period)],
+          bindings: bindings,
+          contractors: contractors,
+          myContractorIds: {'mine'});
+      expect(seen.map((p) => p.id), ['p1', 'p4']);
+      expect(
+          plansOfExecutor(
+              plans: plans,
+              tasks: const [],
+              bindings: bindings,
+              contractors: contractors,
+              myContractorIds: const {}),
+          isEmpty);
+    });
+
     test('список: состояние, порядок, фильтр, сводка', () {
       final views = buildPlanViews(
         plans: [

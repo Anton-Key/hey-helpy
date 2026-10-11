@@ -53,14 +53,25 @@ class PprData {
       dir.amIManager(),
       dir.myCompanyId(),
     ]);
+    final isManager = res[6] as bool;
+    var plans = res[0] as List<MaintenancePlan>;
+    if (!isManager) {
+      plans = plansOfExecutor(
+          plans: plans,
+          tasks: res[1] as List<PlanTask>,
+          bindings: res[5] as List<Binding>,
+          contractors: res[4] as List<Contractor>,
+          myContractorIds:
+              await dir.myContractorIds().catchError((_) => <String>{}));
+    }
     return PprData(
-      plans: res[0] as List<MaintenancePlan>,
+      plans: plans,
       tasks: res[1] as List<PlanTask>,
       objects: res[2] as List<Obj>,
       layers: res[3] as List<Layer>,
       contractors: res[4] as List<Contractor>,
       bindings: res[5] as List<Binding>,
-      isManager: res[6] as bool,
+      isManager: isManager,
       companyId: res[7] as String?,
     );
   }

@@ -27,3 +27,14 @@ insert into public.crew_members(company_id, crew_id, executor_id)
 values ('de300000-0000-4000-8000-000000000001', 'de300000-0000-4000-8000-000000000950',
         'de300000-0000-4000-8000-000000000960')
 on conflict do nothing;
+
+-- Исполнитель «МосКлимат» (сценарий ППР «ТО кондиционеров», Москва · Офис 1).
+insert into auth.users(id, email) values ('d0000000-0000-4000-8000-000000000006', 'mosklimat@example.com')
+  on conflict do nothing;
+update public.profiles set company_id = 'de300000-0000-4000-8000-000000000001', role = 'executor',
+       full_name = 'Исполнитель МосКлимат'
+ where id = 'd0000000-0000-4000-8000-000000000006';
+insert into public.executors(id, profile_id, contractor_id)
+values ('de300000-0000-4000-8000-000000000961', 'd0000000-0000-4000-8000-000000000006',
+        'de300000-0000-4000-8000-000000000501')
+on conflict (id) do nothing;

@@ -51,6 +51,27 @@ Contractor? planContractor(
   return null;
 }
 
+/// Планы, которые видит исполнитель: его подрядчик по закреплениям или
+/// у плана есть задача, видимая ему (база показывает только заявки своего
+/// подрядчика). Иначе в «ППР» исполнителя были бы чужие планы со
+/// статусом «Не начато» и неверной сводкой.
+List<MaintenancePlan> plansOfExecutor({
+  required List<MaintenancePlan> plans,
+  required List<PlanTask> tasks,
+  required List<Binding> bindings,
+  required List<Contractor> contractors,
+  required Set<String> myContractorIds,
+}) {
+  final withTasks = {for (final t in tasks) t.planId};
+  return [
+    for (final p in plans)
+      if (withTasks.contains(p.id) ||
+          myContractorIds
+              .contains(planContractor(p, bindings, contractors)?.id))
+        p
+  ];
+}
+
 /// Собрать строки списка: текущий период, его задача и состояние.
 List<PlanView> buildPlanViews({
   required List<MaintenancePlan> plans,

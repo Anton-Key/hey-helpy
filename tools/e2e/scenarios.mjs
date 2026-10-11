@@ -132,4 +132,68 @@ export const SCENARIOS = [
       await ctx.shot(m, 'report');
     },
   },
+  {
+    id: 2,
+    title: 'ППР: «ТО кондиционеров» → генерация задачи → исполнитель → принятие → «выполнено N из M»',
+    async run(ctx) {
+      const { base } = ctx;
+      const plan = uuid(801);
+      // Задача текущего периода ещё не создана (в демо она уже есть — убираем).
+      sql(`delete from work_orders where plan_id = '${plan}' and period_end >= current_date`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await section(m, /^ППР/);
+      const summary = async () => {
+        await see(m, /выполнено \d+ из \d+/).waitFor({ timeout: 20000 });
+        const t = await screenText(m);
+        const x = t.match(/выполнено (\d+) из (\d+)/);
+        return { done: +x[1], total: +x[2] };
+      };
+      // Генерация — при входе менеджера; «Обновить» на всякий случай.
+      const task = await waitDb(`select id from work_orders where plan_id = '${plan}' and period_end >= current_date`,
+        (v) => v.length > 0, 20000);
+      const row = sql(`select w.status || '|' || coalesce(c.org_name, '-') || '|' || w.title from work_orders w
+        left join contractors c on c.id = w.assigned_contractor_id where w.id = '${task}'`);
+      ctx.notes.push(`задача: ${row}`);
+      assert(row.startsWith('assigned|МосКлимат'), `задача должна уйти МосКлимат: ${row}`);
+      await home(m, base);
+      await section(m, /^ППР/);
+      const before = await summary();
+      await ctx.shot(m, 'ppr-before');
+
+      const e = await ctx.page({ width: 412, height: 915, geo: { latitude: 55.749, longitude: 37.537, accuracy: 10 } });
+      await login(e, base, 'mosklimat@example.com');
+      await openOrder(e, base, 'ТО кондиционеров');
+      await clickAction(e, /^Начать работу/);
+      await waitDb(`select status from work_orders where id = '${task}'`, 'in_progress');
+      const chooser = e.waitForEvent('filechooser', { timeout: 15000 });
+      await clickAction(e, /Сфотографировать результат/);
+      await (await chooser).setFiles(photoFile());
+      await waitDb(`select count(*) from attachments where work_order_id = '${task}' and stage = 'after'`, '1', 20000);
+      await settle(e, 1500);
+      await clickAction(e, /Выполнено, на проверку/);
+      await waitDb(`select status from work_orders where id = '${task}'`, 'on_review');
+
+      await home(m, base);
+      await section(m, /^ППР/);
+      await btn(m, /^ТО кондиционеров/).click();
+      await see(m, /История периодов/).waitFor({ timeout: 20000 });
+      await settle(m, 1200);
+      await btn(m, /ППР · .* · до/).click();
+      await clickAction(m, /^Принять работу/);
+      const confirm = btn(m, /^Принять$/);
+      if (await confirm.isVisible().catch(() => false)) await confirm.click();
+      await waitDb(`select status from work_orders where id = '${task}'`, 'done');
+      await home(m, base);
+      await section(m, /^ППР/);
+      const after = await summary();
+      ctx.notes.push(`сводка: выполнено ${before.done} из ${before.total} → ${after.done} из ${after.total}`);
+      assert(after.done === before.done + 1 && after.total === before.total, 'сводка ППР не изменилась');
+      await btn(m, /^ТО кондиционеров/).click();
+      await see(m, /История периодов/).waitFor({ timeout: 20000 });
+      await see(m, /Выполнено/).waitFor({ timeout: 10000 });
+      await ctx.shot(m, 'ppr-card-done');
+    },
+  },
 ];

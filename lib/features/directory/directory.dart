@@ -364,6 +364,20 @@ class DirectoryRepo {
         .toList();
   }
 
+  /// Подрядчики, исполнителем которых записан текущий пользователь.
+  Future<Set<String>> myContractorIds() async {
+    final uid = _c.auth.currentUser?.id;
+    if (uid == null) return const {};
+    final rows = await _c
+        .from('executors')
+        .select('contractor_id')
+        .eq('profile_id', uid);
+    return {
+      for (final r in rows as List)
+        (r as Map<String, dynamic>)['contractor_id'] as String
+    };
+  }
+
   /// Сколько исполнителей у каждого подрядчика компании.
   Future<Map<String, int>> executorCounts() async {
     final rows = await _c.from('executors').select('contractor_id');

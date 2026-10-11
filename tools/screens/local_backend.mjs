@@ -13,7 +13,12 @@
 //   • /storage/v1/* — картинки планов: этажам демо в локальной базе
 //     прописывается plan_path = preview/<файл>, файл отдаётся из
 //     assets/demo_plans (это ДЕМО-СХЕМЫ, не реальные планы);
-//   • /functions/v1/* — 503 (голосовой разбор уходит в словарь).
+//   • /storage/v1/* — фото заявок (work-photos) и новые планы (floor-plans):
+//     запись в storage.objects — под пользователем (те же политики RLS),
+//     файлы — во временной папке;
+//   • /functions/v1/* — 503 (голосовой разбор уходит в словарь); с
+//     HH_MOCK_AI=1 — подменённый ответ «ИИ» voice-intake (без сети, по
+//     справочникам компании пользователя, задержка HH_MOCK_AI_MS, 1200 мс).
 //
 // Запуск: node local_backend.mjs [--port=54321]
 // Печатает адрес и анонимный ключ для сборки:
@@ -54,6 +59,45 @@ function readJwt(token) {
 function psql(sql) {
   return execFileSync('sudo', ['-u', 'postgres', 'psql', '-X', '-At', '-d', DB, '-c', sql],
     { encoding: 'utf8' }).trim();
+}
+
+const lit = (v) => (v == null ? 'null' : `'${String(v).replace(/'/g, "''")}'`);
+
+/** SQL под пользователем: роль authenticated, auth.uid() = uid — политики RLS действуют. */
+function psqlAs(uid, sql) {
+  return execFileSync('sudo', ['-u', 'postgres', 'psql', '-X', '-q', '-At', '-v', 'ON_ERROR_STOP=1', '-d', DB],
+    { encoding: 'utf8', input: `begin;\nset local role authenticated;\n` +
+      `select set_config('request.jwt.claims', ${lit(JSON.stringify({ sub: uid, role: 'authenticated' }))}, true) \\g /dev/null\n` +
+      `${sql};\ncommit;\n`, stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+}
+
+/** Подменённый «ИИ» voice-intake: слой по ключевым словам, помещение по номеру или названию. */
+export function mockAi(uid, text) {
+  const company = psql(`select company_id from public.profiles where id = ${lit(uid)}`);
+  const layers = psql(`select id || '|' || name from public.layers where company_id = ${lit(company)}`)
+    .split('\n').filter(Boolean).map((l) => { const [id, name] = l.split('|'); return { id, name }; });
+  const t = text.toLowerCase();
+  const rules = [[/кондиц|жарко|холодно|air con|hot|cold/, 'Климат'], [/свет|ламп|розет|light|power/, 'Электрика'],
+    [/теч|кран|вода|унитаз|leak|water/, 'Сантехника'], [/убор|грязн|clean/, 'Клининг']];
+  const layerName = rules.find(([re]) => re.test(t))?.[1];
+  const layer = layers.find((l) => l.name === layerName) ?? null;
+  const code = t.match(/(\d{3,4})/)?.[1];
+  let loc = null;
+  if (code) {
+    loc = psqlAs(uid, `select id || '|' || name from public.locations where code = ${lit(code)} order by name limit 1`) || null;
+  }
+  if (!loc && /переговор|meeting/.test(t)) {
+    loc = psqlAs(uid, `select l.id || '|' || l.name from public.locations l join public.objects o on o.id = l.object_id
+      where l.name ilike 'Переговорная%' order by (o.id = 'de300000-0000-4000-8000-000000000010') desc, l.name limit 1`) || null;
+  }
+  const [locId, locName] = loc ? loc.split('|') : [null, null];
+  const clean = text.replace(/^\s*(эй,?\s*хелпи|hey,?\s*helpy)[,!.]?\s*/i, '');
+  const title = (layerName === 'Климат' ? 'Не работает кондиционер' : layerName === 'Электрика' ? 'Не работает свет'
+    : clean.split(/[,.]/)[0]).slice(0, 60);
+  return { source: 'ai', title: locName ? `${title} — ${locName}`.slice(0, 60) : title,
+    description: clean.charAt(0).toUpperCase() + clean.slice(1), layer_id: layer?.id ?? null, layer: layer?.name ?? null,
+    location_id: locId, location_hint: locName, priority: /жарко|очень|срочно|urgent/.test(t) ? 'high' : 'normal',
+    confidence: 0.92, transcript: text };
 }
 
 /** Пользователи локальной базы: email → id. */
@@ -107,6 +151,57 @@ function linkDemoPlans() {
   }
 }
 
+// Файлы, загруженные через локальный «Storage»: bucket/path → { type, data }.
+const files = new Map();
+
+/** Фото заявок и новые планы: запись в storage.objects под пользователем. */
+async function storageRequest(req, url, path) {
+  const uid = readJwt((req.headers.authorization ?? '').replace(/^Bearer /, ''))?.sub;
+  const fail = (e) => ({ status: 400, body: { statusCode: '403', error: 'Unauthorized',
+    message: /row-level security|violates/.test(String(e.stderr ?? e)) ? 'new row violates row-level security policy' : String(e.stderr ?? e).slice(0, 200) } });
+  let m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans)\/(.+)$/);
+  if (m && (req.method === 'POST' || req.method === 'PUT') && !m[2].startsWith('preview/')) {
+    const body = await readBody(req);
+    const name = decodeURIComponent(m[2]);
+    if (!uid) return { status: 401, body: { message: 'unauthorized' } };
+    try {
+      psqlAs(uid, `insert into storage.objects(bucket_id, name, owner) values (${lit(m[1])}, ${lit(name)}, ${lit(uid)})`);
+    } catch (e) { return fail(e); }
+    files.set(`${m[1]}/${name}`, { type: req.headers['content-type'] ?? 'application/octet-stream', data: body });
+    return { status: 200, body: { Key: `${m[1]}/${name}`, Id: name } };
+  }
+  m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans)$/);
+  if (m && req.method === 'DELETE') {
+    const b = JSON.parse((await readBody(req)).toString() || '{}');
+    const out = [];
+    for (const name of b.prefixes ?? []) {
+      try {
+        const n = psqlAs(uid, `with d as (delete from storage.objects where bucket_id = ${lit(m[1])} and name = ${lit(name)} returning 1) select count(*) from d`);
+        if (n.trim().endsWith('1')) { files.delete(`${m[1]}/${name}`); out.push({ name }); }
+      } catch { /* нет прав — как в Supabase, просто не удаляется */ }
+    }
+    return { status: 200, body: out };
+  }
+  m = path.match(/^\/storage\/v1\/object\/sign\/(work-photos|floor-plans)(?:\/(.+))?$/);
+  if (m && req.method === 'POST') {
+    const b = JSON.parse((await readBody(req)).toString() || '{}');
+    const sign = (p) => (files.has(`${m[1]}/${p}`) ? `/object/sign/${m[1]}/${p}?token=local` : null);
+    if (m[2]) {
+      const name = decodeURIComponent(m[2]);
+      if (name.startsWith('preview/')) return null;
+      const s = sign(name);
+      return s ? { status: 200, body: { signedURL: s } } : { status: 400, body: { statusCode: '404', error: 'not_found', message: 'Object not found' } };
+    }
+    return { status: 200, body: (b.paths ?? []).map((p) => ({ path: p, signedURL: sign(p), error: sign(p) ? null : 'Either the object does not exist or you do not have access to it' })) };
+  }
+  m = path.match(/^\/storage\/v1\/object\/(?:sign|authenticated|public)?\/?(work-photos|floor-plans)\/(.+)$/);
+  if (m && (req.method === 'GET' || req.method === 'HEAD')) {
+    const f = files.get(`${m[1]}/${decodeURIComponent(m[2])}`);
+    if (f) return { status: 200, body: req.method === 'HEAD' ? null : f.data, headers: { 'content-type': f.type } };
+  }
+  return null;
+}
+
 export async function startLocalBackend({ port = 54321, postgrest = process.env.POSTGREST ?? 'postgrest' } = {}) {
   linkDemoPlans();
   const pgPort = port + 1;
@@ -120,7 +215,7 @@ export async function startLocalBackend({ port = 54321, postgrest = process.env.
     `server-port = ${pgPort}`,
     'server-host = "127.0.0.1"',
     'db-max-rows = 1000',
-    'log-level = "error"',
+    'log-level = "crit"',
   ].join('\n'));
   const pg = spawn(postgrest, [conf], { stdio: ['ignore', 'inherit', 'inherit'] });
   // Ждём, пока PostgREST поднимется.
@@ -186,6 +281,8 @@ export async function startLocalBackend({ port = 54321, postgrest = process.env.
     }
 
     if (path.startsWith('/storage/v1/')) {
+      const r = await storageRequest(req, url, path);
+      if (r) return send(res, r.status, r.body, r.headers);
       const m = path.match(/floor-plans\/(preview\/[\w.-]+\.png)$/);
       if (m && path.includes('/object/sign/') && req.method === 'POST') {
         return send(res, 200, { signedURL: `/object/sign/floor-plans/${m[1]}?token=local` });
@@ -201,6 +298,15 @@ export async function startLocalBackend({ port = 54321, postgrest = process.env.
     }
 
     if (path.startsWith('/functions/v1/')) {
+      if (process.env.HH_MOCK_AI === '1' && path === '/functions/v1/voice-intake' && req.method === 'POST') {
+        const p = readJwt((req.headers.authorization ?? '').replace(/^Bearer /, ''));
+        if (!p?.sub) return send(res, 401, { error: 'unauthorized' });
+        const b = JSON.parse((await readBody(req)).toString() || '{}');
+        const text = String(b.text ?? '').trim();
+        if (!text || text.length > 1000) return send(res, 400, { error: 'bad_request' });
+        await new Promise((d) => setTimeout(d, +(process.env.HH_MOCK_AI_MS ?? 1200)));
+        return send(res, 200, mockAi(p.sub, text));
+      }
       return send(res, 503, { error: 'ai_unavailable' });
     }
     return send(res, 404, { message: 'not found' });

@@ -6794,6 +6794,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'в среднем {seconds} с'**
   String photoStatsAvg(String seconds);
+
+  /// Шаг 22: неисправность в заглушке узнавания (VOICE_MOCK, /screens)
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтёк воды под блоком'**
+  String get photoMockDefect;
 }
 
 class _AppLocalizationsDelegate

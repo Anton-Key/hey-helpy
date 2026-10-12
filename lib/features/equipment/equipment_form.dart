@@ -329,6 +329,7 @@ String importIssuesText(AppLocalizations l, ImportRow r) => [
           ImportIssue.duplicateInDb => l.importIssueDupDb,
           ImportIssue.badDate => l.importIssueBadDate,
           ImportIssue.tooLong => l.importIssueTooLong,
+          ImportIssue.unknownKind => l.importIssueUnknownKind(r.kindText),
         }
     ].join(' · ');
 

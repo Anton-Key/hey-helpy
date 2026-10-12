@@ -39,6 +39,10 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  assets:
+    # Нарисованный «снимок» кондиционера для заглушки «Узнать по фото»
+    # (VOICE_MOCK, /screens) — tools/demo_photos/generate.mjs. Не фото объекта.
+    - assets/demo_photos/
   fonts:
     # Onest (SIL OFL 1.1, assets/fonts/OFL.txt) — локально, не из сети.
     - family: Onest

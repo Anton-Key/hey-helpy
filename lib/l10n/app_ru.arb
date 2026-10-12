@@ -1638,5 +1638,7 @@
   "photoStatsTop": "угадано с первого раза {percent}%",
   "@photoStatsTop": {"placeholders": {"percent": {"type": "int"}}, "description": "Шаг 22: узнать по фото"},
   "photoStatsAvg": "в среднем {seconds} с",
-  "@photoStatsAvg": {"placeholders": {"seconds": {"type": "String"}}, "description": "Шаг 22: узнать по фото"}
+  "@photoStatsAvg": {"placeholders": {"seconds": {"type": "String"}}, "description": "Шаг 22: узнать по фото"},
+  "photoMockDefect": "Подтёк воды под блоком",
+  "@photoMockDefect": {"description": "Шаг 22: неисправность в заглушке узнавания (VOICE_MOCK, /screens)"}
 }

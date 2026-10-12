@@ -4008,4 +4008,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String photoStatsAvg(String seconds) {
     return 'в среднем $seconds с';
   }
+
+  @override
+  String get photoMockDefect => 'Подтёк воды под блоком';
 }

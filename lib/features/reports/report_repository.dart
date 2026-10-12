@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/paging.dart';
@@ -448,6 +449,36 @@ List<ReportRegion> sortRegions(List<ReportRegion> list) => [...list]
     return s != 0 ? s : a.name.toLowerCase().compareTo(b.name.toLowerCase());
   });
 
+/// «Узнавание по фото» за период (photo_identify_stats, миграция 0017).
+class PhotoStats {
+  const PhotoStats(
+      {required this.total,
+      required this.decided,
+      required this.matchedTop,
+      this.topRate,
+      this.avgMs});
+  final int total;
+  final int decided;
+  final int matchedTop;
+
+  /// Доля «угадано с первого раза» среди узнаваний с выбором, 0..1.
+  final double? topRate;
+  final double? avgMs;
+
+  static PhotoStats? fromRow(Object? row) {
+    final r = row is List ? (row.isEmpty ? null : row.first) : row;
+    if (r is! Map) return null;
+    int n(String k) => (r[k] as num?)?.toInt() ?? 0;
+    double? d(String k) => (r[k] as num?)?.toDouble();
+    return PhotoStats(
+        total: n('total'),
+        decided: n('decided'),
+        matchedTop: n('matched_top'),
+        topRate: d('top_rate'),
+        avgMs: d('avg_ms'));
+  }
+}
+
 /// Данные отчёта. Все запросы идут под RLS: менеджер видит всю компанию,
 /// у остальных база отдаёт только их собственные заявки и визиты.
 class ReportRepository {
@@ -468,6 +499,21 @@ class ReportRepository {
         },
         legacy: () async => const <ReportRegion>[],
       );
+
+  /// Узнавание по фото за период. Без 0017 или при ошибке — null (блок в
+  /// отчёте просто не показывается).
+  Future<PhotoStats?> photoStats(DateTime from, DateTime to) async {
+    try {
+      final r = await _c.rpc('photo_identify_stats', params: {
+        'p_from': from.toUtc().toIso8601String(),
+        'p_to': to.toUtc().toIso8601String(),
+      });
+      return PhotoStats.fromRow(r);
+    } catch (e) {
+      debugPrint('photo_identify_stats: ${e.runtimeType}');
+      return null;
+    }
+  }
 
   /// Название компании и имя текущего пользователя — для шапки PDF.
   Future<({String? company, String? me})> header() async {

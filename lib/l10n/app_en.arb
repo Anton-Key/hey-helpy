@@ -1142,5 +1142,6 @@
   "photoStatsTop": "right on the first try {percent}%",
   "@photoStatsTop": {"placeholders": {"percent": {"type": "int"}}},
   "photoStatsAvg": "{seconds} s on average",
-  "@photoStatsAvg": {"placeholders": {"seconds": {"type": "String"}}}
+  "@photoStatsAvg": {"placeholders": {"seconds": {"type": "String"}}},
+  "photoMockDefect": "Water leak under the unit"
 }

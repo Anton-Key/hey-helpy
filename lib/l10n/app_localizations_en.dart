@@ -3977,4 +3977,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String photoStatsAvg(String seconds) {
     return '$seconds s on average';
   }
+
+  @override
+  String get photoMockDefect => 'Water leak under the unit';
 }

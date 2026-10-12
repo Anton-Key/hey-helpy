@@ -119,6 +119,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _fullName,
                           decoration: InputDecoration(
                             labelText: l.loginName,
+                            // Шаг 22: в группе подпись не всплывает над
+                            // полем — иначе её обрезает край карточки.
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
                             prefixIcon: const Icon(AppIcons.user,
                                 size: AppSizes.icon,
                                 color: AppColors.secondary),
@@ -130,6 +133,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         autofillHints: const [AutofillHints.email],
                         decoration: InputDecoration(
                           labelText: l.loginEmail,
+                          // Шаг 22: в группе подпись не всплывает над
+                          // полем — иначе её обрезает край карточки.
+                          floatingLabelBehavior: FloatingLabelBehavior.never,
                           prefixIcon: const Icon(AppIcons.mail,
                               size: AppSizes.icon, color: AppColors.secondary),
                         ),
@@ -142,6 +148,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: l.loginPassword,
+                          // Шаг 22: в группе подпись не всплывает над
+                          // полем — иначе её обрезает край карточки.
+                          floatingLabelBehavior: FloatingLabelBehavior.never,
                           prefixIcon: const Icon(AppIcons.lock,
                               size: AppSizes.icon, color: AppColors.secondary),
                         ),

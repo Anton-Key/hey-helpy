@@ -301,7 +301,8 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
             floorNames: _floorNames,
             place: _here,
             hvacLayerId: hvac?.id,
-            hvacLayerName: hvac?.label(locale));
+            hvacLayerName: hvac?.label(locale),
+            defect: context.l10n.photoMockDefect);
       } else {
         result = await PhotoIdentifyClient()
             .identify(photo, locale: locale, place: _here);

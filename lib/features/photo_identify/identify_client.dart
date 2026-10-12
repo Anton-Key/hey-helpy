@@ -109,13 +109,15 @@ class MockPhotoIdentify {
       required Map<String, String> floorNames,
       required IdentifyPlace place,
       String? hvacLayerId,
-      String? hvacLayerName}) async {
+      String? hvacLayerName,
+      String? defect}) async {
     await Future<void>.delayed(const Duration(milliseconds: 1200));
     return PhotoIdentification(
       kind: 'ac',
       layerId: hvacLayerId,
       layerName: hvacLayerName,
       confidence: 0.91,
+      defect: defect,
       candidates: mockCandidates('ac', items, floorNames, place),
       model: 'main',
       ms: 1200,

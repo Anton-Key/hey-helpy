@@ -3,8 +3,12 @@
 # Review deployments → production-db → Approve. Подробно — CLAUDE.md, «Edge Functions».
 #
 # Токен — секрет SUPABASE_ACCESS_TOKEN окружения production-db (в лог не печатается).
-# Секреты самой функции (YANDEX_API_KEY, YANDEX_FOLDER_ID) задаются в Supabase
-# (Edge Functions → Secrets) и этим workflow не трогаются.
+# Секреты самих функций (YANDEX_API_KEY, YANDEX_FOLDER_ID, необязательные
+# YANDEX_MODEL*, YANDEX_VISION_MODEL*) задаются в Supabase (Edge Functions →
+# Secrets) и этим workflow не трогаются.
+#
+# Выкладываются все функции из FUNCTIONS; общий код supabase/functions/_shared/
+# CLI подхватывает сам — по импортам каждой функции.
 #
 # Claude Code этот workflow НЕ запускает.
 name: Deploy functions
@@ -21,7 +25,8 @@ concurrency:
 
 env:
   PROJECT_REF: oguiwftspuzmffynkykl
-  FUNCTION: voice-intake
+  # Через пробел. Каждая проверяется: без токена → 401.
+  FUNCTIONS: voice-intake photo-identify
 
 jobs:
   # Без секретов: не с main — остановка ещё до запроса одобрения.
@@ -39,7 +44,7 @@ jobs:
           echo "Ветка main — можно одобрять."
 
   deploy:
-    name: Выкладка функции (после одобрения)
+    name: Выкладка функций (после одобрения)
     needs: guard
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -66,7 +71,7 @@ jobs:
         with:
           version: 2.117.0
 
-      - name: Выложить функцию
+      - name: Выложить функции
         id: deploy
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -76,26 +81,36 @@ jobs:
           supabase --version
           # --use-api: сборка на стороне Supabase, без Docker.
           # verify_jwt = true берётся из supabase/config.toml.
-          supabase functions deploy "$FUNCTION" --project-ref "$PROJECT_REF" --use-api
+          for fn in $FUNCTIONS; do
+            echo "::group::$fn"
+            supabase functions deploy "$fn" --project-ref "$PROJECT_REF" --use-api
+            echo "::endgroup::"
+          done
 
-      # Без токена пользователя функция должна ответить 401: значит, она
+      # Без токена пользователя каждая функция должна ответить 401: значит, она
       # развёрнута и закрыта для анонимов. Новая версия поднимается не сразу —
-      # до 6 попыток.
+      # до 6 попыток на функцию.
       - name: Проверка (запрос без токена → 401)
         id: verify
         run: |
-          url="https://$PROJECT_REF.supabase.co/functions/v1/$FUNCTION"
-          code=000
-          for i in 1 2 3 4 5 6; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
-              -X POST "$url" -H 'Content-Type: application/json' -d '{"text":"test","locale":"ru"}' || true)
-            echo "Попытка $i: HTTP $code"
-            [ "$code" = "401" ] && break
-            sleep 5
+          failed=""
+          codes=""
+          for fn in $FUNCTIONS; do
+            url="https://$PROJECT_REF.supabase.co/functions/v1/$fn"
+            code=000
+            for i in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
+                -X POST "$url" -H 'Content-Type: application/json' -d '{"locale":"ru"}' || true)
+              echo "$fn, попытка $i: HTTP $code"
+              [ "$code" = "401" ] && break
+              sleep 5
+            done
+            codes="$codes $fn=$code"
+            [ "$code" = "401" ] || failed="$failed $fn"
           done
-          echo "code=$code" >> "$GITHUB_OUTPUT"
-          if [ "$code" != "401" ]; then
-            echo "::error::Ожидался ответ 401 без токена, получен $code."
+          echo "codes=$codes" >> "$GITHUB_OUTPUT"
+          if [ -n "$failed" ]; then
+            echo "::error::Ожидался ответ 401 без токена:$failed"
             exit 1
           fi
 
@@ -106,13 +121,13 @@ jobs:
             echo "## Deploy functions"
             echo
             case "${{ steps.deploy.outcome }}" in
-              success) echo "✅ Функция \`$FUNCTION\` выложена в проект \`$PROJECT_REF\`." ;;
-              failure) echo "❌ Выкладка не удалась — текст ошибки в логе шага «Выложить функцию». Работает прежняя версия (если была)." ;;
+              success) echo "✅ Функции \`$FUNCTIONS\` выложены в проект \`$PROJECT_REF\`." ;;
+              failure) echo "❌ Выкладка не удалась — текст ошибки в логе шага «Выложить функции». Функции до упавшей выложены, остальные работают в прежней версии (если была)." ;;
               *)       echo "⚠️ Выкладка не выполнялась: остановлено раньше (см. шаг «Проверить секрет»)." ;;
             esac
             echo
             case "${{ steps.verify.outcome }}" in
-              success) echo "✅ Проверка: без токена пользователя — HTTP 401 (функция закрыта для анонимов)." ;;
-              failure) echo "❌ Проверка: ожидался HTTP 401, получен ${{ steps.verify.outputs.code }}." ;;
+              success) echo "✅ Проверка: без токена пользователя — HTTP 401 у каждой (${{ steps.verify.outputs.codes }})." ;;
+              failure) echo "❌ Проверка: ожидался HTTP 401, получено ${{ steps.verify.outputs.codes }}." ;;
             esac
           } >> "$GITHUB_STEP_SUMMARY"

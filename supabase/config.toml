@@ -7,3 +7,7 @@ project_id = "hey-helpy"
 # внутри она дополнительно проверяет, что это вошедший пользователь.
 [functions.voice-intake]
 verify_jwt = true
+
+# «Узнать по фото» (шаг 22): тот же порядок — JWT шлюзом и проверка внутри.
+[functions.photo-identify]
+verify_jwt = true

@@ -93,7 +93,10 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
   Timer? _ticker;
   PhotoIdentification? _result;
   IdentifyProblem? _problem;
-  String? _logId;
+
+  /// Строка журнала текущего узнавания (id или null — не записана). Выбор
+  /// дописывается после записи строки, даже если «Это он» нажали раньше.
+  Future<String?> _logRow = Future.value(null);
   bool _decided = false;
   bool _choosing = false;
 
@@ -106,9 +109,7 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
   @override
   void dispose() {
     _ticker?.cancel();
-    if (_result != null && !_decided) {
-      unawaited(_log.finish(_logId, IdentifyOutcome.dismissed));
-    }
+    if (_result != null && !_decided) _finishLog(IdentifyOutcome.dismissed);
     super.dispose();
   }
 
@@ -264,9 +265,7 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
       return;
     }
     // Прошлое узнавание без выбора — «никто не выбран».
-    if (_result != null && !_decided) {
-      unawaited(_log.finish(_logId, IdentifyOutcome.dismissed));
-    }
+    if (_result != null && !_decided) _finishLog(IdentifyOutcome.dismissed);
     setState(() {
       _photo = bytes;
       _takenAt = DateTime.now();
@@ -284,7 +283,7 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
       _startedAt = started;
       _result = null;
       _problem = null;
-      _logId = null;
+      _logRow = Future.value(null);
       _decided = false;
     });
     _ticker?.cancel();
@@ -324,10 +323,14 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
     final companyId = _companyId;
     if (r != null && companyId != null) {
       final ms = DateTime.now().difference(started).inMilliseconds;
-      final id =
-          await _log.add(companyId: companyId, place: _here, r: r, ms: ms);
-      if (mounted) setState(() => _logId = id);
+      _logRow = _log.add(companyId: companyId, place: _here, r: r, ms: ms);
     }
+  }
+
+  void _finishLog(IdentifyOutcome outcome, {String? chosenAssetId}) {
+    final row = _logRow;
+    unawaited(row
+        .then((id) => _log.finish(id, outcome, chosenAssetId: chosenAssetId)));
   }
 
   // ---------------------------------------------------------------------------
@@ -385,8 +388,8 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
     final obj = _objects.where((o) => o.id == _objectId).firstOrNull;
     if (obj == null) return l.photoWhereNoObject;
     final room = _place(_locationId);
-    final floor = floorPartIfNew(
-        _floorNames[room?.floorId ?? _floorId], [room?.name]);
+    final floor =
+        floorPartIfNew(_floorNames[room?.floorId ?? _floorId], [room?.name]);
     return [
       objectDisplayName(obj),
       if (floor != null) floor,
@@ -481,7 +484,7 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
     try {
       if (outcome != null) {
         _decided = true;
-        unawaited(_log.finish(_logId, outcome, chosenAssetId: assetId));
+        _finishLog(outcome, chosenAssetId: assetId);
       }
       if (widget.origin == PhotoIdentifyOrigin.equipment) {
         await _openAssetCard(assetId);

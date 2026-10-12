@@ -190,3 +190,19 @@ end $$;
 
 select t.make_company17(1);
 select t.make_company17(2);
+
+-- 0017 (шаг 22): журнал узнаваний по фото — по строке на автора-исполнителя
+-- и автора-менеджера в каждой компании.
+create or replace function t.make_company22(k int) returns void
+language plpgsql as $$
+begin
+  insert into public.photo_identifications(id, company_id, user_id, object_id, floor_id, location_id,
+                                           kind, confidence, top_asset_id, chosen_asset_id, outcome, model, ms) values
+    (t.id(k, 801), t.id(k, 1), t.id(k, 102), t.id(k, 10), t.id(k, 601), t.id(k, 21),
+       'ac', 0.91, t.id(k, 701), t.id(k, 701), 'matched_top', 'main', 4200),
+    (t.id(k, 802), t.id(k, 1), t.id(k, 100), t.id(k, 10), null, null,
+       'smoke', 0.7, t.id(k, 705), null, null, 'lite', 9100);
+end $$;
+
+select t.make_company22(1);
+select t.make_company22(2);

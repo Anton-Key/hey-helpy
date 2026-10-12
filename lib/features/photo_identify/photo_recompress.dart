@@ -12,7 +12,12 @@ Uint8List? recompressJpeg(Uint8List bytes,
     {int maxSide = kIdentifyMaxSide,
     int quality = kIdentifyQuality,
     int maxBytes = kIdentifyMaxBytes}) {
-  final src = img.decodeImage(bytes);
+  img.Image? src;
+  try {
+    src = img.decodeImage(bytes);
+  } catch (_) {
+    src = null; // битый или неизвестный формат
+  }
   if (src == null) return null;
   final oriented = img.bakeOrientation(src);
   final (w, h) = fitWithin(oriented.width, oriented.height, maxSide: maxSide);

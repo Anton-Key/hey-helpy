@@ -12,7 +12,6 @@ import '../directory/city.dart';
 import '../directory/directory.dart';
 import 'equipment_form.dart';
 import 'equipment_import.dart';
-import 'equipment_kinds.dart';
 import 'equipment_xlsx.dart';
 import 'equipment_models.dart';
 import 'equipment_repository.dart';
@@ -100,12 +99,7 @@ class _EquipmentImportScreenState extends State<EquipmentImportScreen> {
         _preview = validateImport(rows,
             places: widget.places,
             layers: widget.layers,
-            existingInventory: taken,
-            kindNames: kindNamesFor([
-              for (final code in const ['ru', 'en'])
-                (k) =>
-                    equipmentKindLabel(lookupAppLocalizations(Locale(code)), k)
-            ]));
+            existingInventory: taken);
       });
     } catch (e) {
       debugPrint('Import read: $e');

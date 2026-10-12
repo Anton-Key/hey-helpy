@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart' show Locale;
+
+import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import 'equipment_kinds.dart';
 import 'equipment_models.dart';
@@ -456,8 +459,8 @@ Place? findPlace(List<Place> places, String text) {
 
 /// Проверка строк файла. [rows] — все строки, первая — заголовок.
 /// [existingInventory] — инвентарные номера, уже занятые в компании.
-/// [kindNames] — подписи видов RU и EN → код ([kindNamesFor]); коды
-/// каталога (`ac`, `smoke`…) принимаются всегда.
+/// [kindNames] — подписи видов → код (по умолчанию RU и EN —
+/// [defaultKindNames]); коды каталога (`ac`, `smoke`…) принимаются всегда.
 ImportPreview validateImport(
   List<List<String>> rows, {
   required List<Place> places,
@@ -479,6 +482,7 @@ ImportPreview validateImport(
   if (missing.isNotEmpty) {
     return ImportPreview(rows: const [], missingColumns: missing);
   }
+  final names = kindNames.isEmpty ? defaultKindNames() : kindNames;
   final taken = {for (final i in existingInventory) _norm(i)};
   final inFile = <String, int>{};
   for (var i = 1; i < rows.length; i++) {
@@ -513,7 +517,7 @@ ImportPreview validateImport(
     final kindText = get(ImportColumn.kind);
     String? kind;
     if (kindText.isNotEmpty) {
-      kind = equipmentKind(kindText)?.code ?? kindNames[_norm(kindText)];
+      kind = equipmentKind(kindText)?.code ?? names[_norm(kindText)];
       if (kind == null) issues.add(ImportIssue.unknownKind);
     }
 
@@ -574,6 +578,13 @@ Map<String, String> kindNamesFor(
       for (final label in labels)
         for (final k in kEquipmentKinds) _norm(label(k.code)): k.code
     };
+
+/// Подписи видов на русском и английском (файл, скачанный на одном языке,
+/// читается и при другом языке интерфейса).
+Map<String, String> defaultKindNames() => kindNamesFor([
+      for (final code in const ['ru', 'en'])
+        (k) => equipmentKindLabel(lookupAppLocalizations(Locale(code)), k)
+    ]);
 
 /// Ключ для сравнения названий помещений при создании недостающих.
 String importRoomKey(String s) => _norm(s);

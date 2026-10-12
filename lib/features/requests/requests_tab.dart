@@ -10,6 +10,7 @@ import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../home/home_actions.dart';
 import '../home/home_chrome.dart';
+import '../photo_identify/photo_identify_screen.dart';
 import '../voice/voice_record_screen.dart';
 import '../voice/wake_word_service.dart';
 import '../ppr/ppr_text.dart';
@@ -103,6 +104,8 @@ class _RequestsTabState extends State<RequestsTab> {
         _wake.trigger();
       case HomeAction.search:
         a.searchFocus.requestFocus();
+      case HomeAction.photo:
+        _openPhoto();
       case null:
         break;
     }
@@ -447,6 +450,8 @@ class _RequestsTabState extends State<RequestsTab> {
             onVoice: _wake.trigger,
             addLabel: l.requestsCreate,
             onAdd: _openCreate,
+            photoLabel: l.photoEntryHint,
+            onPhoto: _openPhoto,
           ),
         ),
     ]);
@@ -583,7 +588,29 @@ class _RequestsTabState extends State<RequestsTab> {
         companyId: _companyId!,
         existing: null,
         initialObjectId:
-            _filter.objectIds.length == 1 ? _filter.objectIds.single : null);
+            _filter.objectIds.length == 1 ? _filter.objectIds.single : null,
+        onPhoto: _openPhoto);
+    if (ok == true) {
+      await _load(refs: false);
+      if (mounted) _snackOk(context.l10n.requestsCreated);
+    }
+  }
+
+  /// «По фото» (шаг 22): снимок → вид и единица оборудования → заявка.
+  Future<void> _openPhoto() async {
+    if (!mounted) return;
+    if (_companyId == null) {
+      _snack(context.l10n.requestsNoCompany, type: AppMessageType.error);
+      return;
+    }
+    final ok = await Navigator.push<bool>(
+        context,
+        appRoute(
+            (_) => PhotoIdentifyScreen(
+                objectId: _filter.objectIds.length == 1
+                    ? _filter.objectIds.single
+                    : null),
+            title: context.l10n.tabRequests));
     if (ok == true) {
       await _load(refs: false);
       if (mounted) _snackOk(context.l10n.requestsCreated);

@@ -92,6 +92,8 @@ class VoiceButton extends StatelessWidget {
     required this.onVoice,
     required this.addLabel,
     required this.onAdd,
+    this.photoLabel,
+    this.onPhoto,
   });
 
   /// Текст на капсуле (`appName`).
@@ -103,9 +105,22 @@ class VoiceButton extends StatelessWidget {
   final String addLabel;
   final VoidCallback? onAdd;
 
+  /// «По фото» — маленькая белая круглая кнопка с камерой (шаг 22).
+  final String? photoLabel;
+  final VoidCallback? onPhoto;
+
   @override
   Widget build(BuildContext context) {
     return Row(mainAxisSize: MainAxisSize.min, children: [
+      if (onPhoto != null) ...[
+        AppIconButton(
+            icon: AppIcons.camera,
+            label: photoLabel ?? '',
+            onPressed: onPhoto,
+            size: 48,
+            shadow: true),
+        const SizedBox(width: AppSpace.m),
+      ],
       if (onAdd != null) ...[
         AppIconButton(
             icon: AppIcons.add,

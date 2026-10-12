@@ -11,6 +11,7 @@ import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../map/map_logic.dart';
 import '../map/map_parts.dart';
+import '../photo_identify/photo_identify_screen.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'floor_models.dart';
@@ -58,7 +59,8 @@ enum _MarkerAction {
   area,
   clearArea,
   unplace,
-  delete
+  delete,
+  photo,
 }
 
 enum _EmptyAction { newPlace, newAsset, putHere }
@@ -415,6 +417,14 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                     icon: AppIcons.add,
                     label: l.planCreateHere,
                     onPressed: () => Navigator.pop(ctx, _MarkerAction.create)),
+              // Шаг 22: место берётся из помещения.
+              if (_ctx?.companyId != null && i.isPlace) ...[
+                const SizedBox(height: AppSpace.s),
+                AppButton.secondary(
+                    icon: AppIcons.camera,
+                    label: l.photoOnPlan,
+                    onPressed: () => Navigator.pop(ctx, _MarkerAction.photo)),
+              ],
               if (_editing) ...[
                 const SizedBox(height: AppSpace.group),
                 AppGroup(children: [
@@ -476,6 +486,19 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           initialAssetId: i.isPlace ? null : i.id,
           initialAssetName: i.isPlace ? null : i.name,
         );
+        if (ok == true) {
+          await _reloadItems();
+          _msg(l.requestsCreated, type: AppMessageType.success);
+        }
+      case _MarkerAction.photo:
+        final ok = await Navigator.push<bool>(
+            context,
+            appRoute(
+                (_) => PhotoIdentifyScreen(
+                    objectId: widget.objectId,
+                    floorId: _floorId,
+                    locationId: place?.id),
+                title: l.planTitle));
         if (ok == true) {
           await _reloadItems();
           _msg(l.requestsCreated, type: AppMessageType.success);

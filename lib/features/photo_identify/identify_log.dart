@@ -36,8 +36,8 @@ class IdentifyLog {
       : _c = client ?? Supabase.instance.client;
   final SupabaseClient _c;
 
-  static final _uuid = RegExp(
-      r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$');
+  static final _uuid =
+      RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$');
 
   /// Строка журнала (id создаёт приложение — дописать выбор можно без
   /// чтения строки после вставки).

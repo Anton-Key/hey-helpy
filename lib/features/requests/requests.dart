@@ -1336,10 +1336,14 @@ class PlacePickerSheet extends StatefulWidget {
       {super.key,
       required this.places,
       required this.floors,
-      required this.selected});
+      required this.selected,
+      this.noneLabel});
   final List<PlanItem> places;
   final Map<String, String> floors;
   final String? selected;
+
+  /// Подпись строки «без помещения» (по умолчанию «Выберите помещение»).
+  final String? noneLabel;
 
   @override
   State<PlacePickerSheet> createState() => _PlacePickerSheetState();
@@ -1366,7 +1370,7 @@ class _PlacePickerSheetState extends State<PlacePickerSheet> {
         AppGroup(margin: EdgeInsets.zero, children: [
           if (_q.trim().isEmpty)
             AppCheckRow(
-                title: l.formChoosePlace,
+                title: widget.noneLabel ?? l.formChoosePlace,
                 selected: widget.selected == null,
                 onTap: () => Navigator.pop(context, '')),
           for (final p in list)

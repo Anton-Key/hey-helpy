@@ -68,6 +68,8 @@ class AppSideNav extends StatelessWidget {
     required this.onVoice,
     required this.addLabel,
     required this.onAdd,
+    this.photoLabel = '',
+    this.onPhoto,
     required this.rail,
     required this.toggleLabel,
     required this.onToggle,
@@ -82,6 +84,10 @@ class AppSideNav extends StatelessWidget {
   final VoidCallback onVoice;
   final String addLabel;
   final VoidCallback? onAdd;
+
+  /// «По фото» (шаг 22): узнать оборудование по снимку.
+  final String photoLabel;
+  final VoidCallback? onPhoto;
   final bool rail;
 
   /// «Свернуть меню» / «Развернуть меню».
@@ -156,6 +162,18 @@ class AppSideNav extends StatelessWidget {
                         onPressed: onAdd),
                   ),
                 ],
+                if (onPhoto != null) ...[
+                  const SizedBox(height: AppSpace.m),
+                  Center(
+                    child: AppIconButton(
+                        icon: AppIcons.camera,
+                        label: photoLabel,
+                        filled: true,
+                        size: 44,
+                        tooltip: true,
+                        onPressed: onPhoto),
+                  ),
+                ],
               ] else ...[
                 Semantics(
                   button: true,
@@ -197,6 +215,14 @@ class AppSideNav extends StatelessWidget {
                       icon: AppIcons.add,
                       expand: true,
                       onPressed: onAdd),
+                ],
+                if (onPhoto != null) ...[
+                  const SizedBox(height: AppSpace.s),
+                  AppButton.secondary(
+                      label: photoLabel,
+                      icon: AppIcons.camera,
+                      expand: true,
+                      onPressed: onPhoto),
                 ],
               ],
               const Spacer(),

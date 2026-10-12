@@ -50,13 +50,15 @@
         { "id": 56, "code": "304", "name": "Кухня, 3 этаж", "new": true, "rect": [1760, 920, 520, 560], "door": ["top", 0.5] }
       ],
       "assets": [
-        { "id": 708, "name": "Кондиционер переговорной", "kind": "ac", "category": "equipment", "inv": "КЛ-3-001", "room": 21, "at": [260, 230] },
+        { "id": 708, "name": "Кондиционер КД-301", "kind": "ac", "category": "equipment", "inv": "КЛ-3-001", "room": 21, "at": [260, 230] },
         { "id": 709, "name": "Датчик дыма переговорной", "kind": "smoke", "category": "infra", "inv": "ПБ-3-001", "room": 21, "at": [640, 560] },
         { "id": 710, "name": "Фанкойл кабинета директора", "kind": "fancoil", "category": "equipment", "inv": "КЛ-3-002", "room": 54, "at": [2140, 240] },
         { "id": 711, "name": "Серверная стойка R1", "kind": "server", "category": "equipment", "inv": "ИТ-3-001", "room": 55, "at": [260, 1300] },
         { "id": 712, "name": "ИБП серверной 10 кВА", "kind": "ups", "category": "equipment", "inv": "ЭЛ-3-001", "room": 55, "at": [500, 1380] },
         { "id": 713, "name": "Кондиционер серверной", "kind": "ac", "category": "equipment", "inv": "КЛ-3-003", "room": 55, "at": [260, 1040] },
-        { "id": 714, "name": "Светильник кухни", "kind": "light", "category": "equipment", "inv": "ЭЛ-3-010", "room": 56, "at": [2020, 1300] }
+        { "id": 714, "name": "Светильник кухни", "kind": "light", "category": "equipment", "inv": "ЭЛ-3-010", "room": 56, "at": [2020, 1300] },
+        { "id": 736, "name": "Кондиционер КД-302", "kind": "ac", "category": "equipment", "inv": "КЛ-3-004", "room": 54, "at": [1900, 240] },
+        { "id": 737, "name": "Огнетушитель переговорной", "kind": "extinguisher", "category": "infra", "inv": "ПБ-3-002", "room": 21, "at": [180, 600] }
       ]
     },
     {

@@ -28,6 +28,7 @@ import {
   buildVisionMessages,
   normalizeVision,
   parseIdentifyInput,
+  stripThinking,
 } from "../_shared/identify.ts";
 import { parseModelJson } from "../_shared/intake.ts";
 import { corsHeaders, logFn } from "../_shared/http.ts";
@@ -117,7 +118,7 @@ Deno.serve(async (req) => {
       model: ai.model === "pro" ? "main" : "lite",
       first: ai.primaryError,
     };
-    const raw = parseModelJson(ai.content);
+    const raw = parseModelJson(stripThinking(ai.content));
     if (!raw) {
       return reply(502, { error: "ai_unavailable" }, {
         code: "invalid_json",

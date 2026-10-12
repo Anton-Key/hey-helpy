@@ -12,6 +12,7 @@ import {
   normalizeVision,
   parseIdentifyInput,
   sniffMime,
+  stripThinking,
   VISION_SCHEMA,
 } from "./schema.ts";
 import { callVision, visionModels, visionTiming } from "./vision.ts";
@@ -359,4 +360,18 @@ Deno.test("callVision: картинка и формат уходят в запр
   const rf = (seen[0] as any).response_format;
   assertEquals(rf.json_schema.name, "equipment_photo");
   assertEquals(r.totalTokens, 812);
+});
+
+Deno.test("рассуждения <think> не мешают разбору JSON", () => {
+  assertEquals(
+    stripThinking('<think>вид {ac} или {fancoil}?</think>\n{"kind":"ac"}'),
+    '{"kind":"ac"}',
+  );
+  assertEquals(stripThinking('{"kind":"ac"}'), '{"kind":"ac"}');
+  assertEquals(stripThinking("<think>не дописал"), "");
+  const msgs = buildVisionMessages(
+    { image: JPEG, mime: "image/jpeg", locale: "ru" },
+    layers,
+  );
+  assert(String(msgs[0].content).includes("/no_think"));
 });

@@ -24,7 +24,8 @@ export const DEFAULT_VISION_LITE = "";
 export const VISION_FORMAT: ReplyFormat = {
   name: "equipment_photo",
   schema: VISION_SCHEMA,
-  maxTokens: 300,
+  // С запасом: рассуждающая модель может потратить часть ответа на <think>.
+  maxTokens: 1000,
 };
 
 /** Модели из окружения: "-" в запасной — без повтора. */

@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import 'asset_card.dart';
 import 'equipment_form.dart';
+import 'equipment_kinds.dart';
 // Отложенно: экран импорта тянет пакет excel (шаг 18, скорость веб-версии).
 import 'equipment_import_screen.dart' deferred as import_screen;
 import 'equipment_models.dart';

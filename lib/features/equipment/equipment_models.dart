@@ -17,6 +17,7 @@ class Asset {
     this.installedAt,
     this.floorId,
     this.placed = false,
+    this.meta = const {},
   });
 
   final String id;
@@ -36,6 +37,9 @@ class Asset {
   /// Этаж и точка на плане (0013).
   final String? floorId;
   final bool placed;
+
+  /// assets.meta целиком: при правке вида остальные ключи сохраняются.
+  final Map<String, dynamic> meta;
 
   /// Колонки до 0015 и после.
   static const legacyColumns =
@@ -64,6 +68,7 @@ class Asset {
       installedAt: DateTime.tryParse('${m['installed_at'] ?? ''}'),
       floorId: m['floor_id'] as String?,
       placed: m['plan_x'] != null,
+      meta: meta is Map ? Map<String, dynamic>.from(meta) : const {},
     );
   }
 
@@ -85,6 +90,8 @@ class AssetDraft {
     this.model,
     this.serialNo,
     this.installedAt,
+    this.kind,
+    this.baseMeta,
   });
 
   final String name;
@@ -96,6 +103,22 @@ class AssetDraft {
   final String? serialNo;
   final DateTime? installedAt;
 
+  /// Вид (каталог `equipment_kinds.dart`); null — не указан.
+  final String? kind;
+
+  /// Прежний assets.meta (правка): другие ключи не теряются.
+  final Map<String, dynamic>? baseMeta;
+
+  Map<String, dynamic> get meta {
+    final m = Map<String, dynamic>.of(baseMeta ?? const {});
+    if (kind == null) {
+      m.remove('kind');
+    } else {
+      m['kind'] = kind;
+    }
+    return m;
+  }
+
   Map<String, dynamic> toRow() => {
         'name': name,
         'location_id': locationId,
@@ -106,6 +129,7 @@ class AssetDraft {
         'model': model,
         'serial_no': serialNo,
         'installed_at': installedAt == null ? null : isoDate(installedAt!),
+        'meta': meta,
       };
 }
 

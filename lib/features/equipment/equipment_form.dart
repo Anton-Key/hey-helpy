@@ -6,46 +6,11 @@ import '../../core/l10n_ext.dart';
 import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import '../regions/geo_pickers.dart';
 import 'equipment_import.dart';
+import 'equipment_kinds.dart';
 import 'equipment_models.dart';
 import 'equipment_repository.dart';
-
-/// Значок оборудования по виду (assets.meta.kind), иначе по категории —
-/// те же значки, что у маркеров на плане (floors/plan_canvas.dart).
-IconData assetIcon(String? kind, String category) {
-  switch (kind) {
-    case 'ac':
-      return AppIcons.eqAirCon;
-    case 'fancoil':
-    case 'vent':
-      return AppIcons.eqFan;
-    case 'panel':
-    case 'generator':
-      return AppIcons.eqPanel;
-    case 'light':
-      return AppIcons.eqLight;
-    case 'smoke':
-      return AppIcons.eqSmoke;
-    case 'ups':
-      return AppIcons.eqUps;
-    case 'sensor':
-      return AppIcons.eqSensor;
-    case 'camera':
-      return AppIcons.eqCamera;
-    case 'server':
-      return AppIcons.eqServer;
-    case 'water':
-      return AppIcons.eqWater;
-    case 'lift':
-      return AppIcons.eqInfra;
-  }
-  return switch (category) {
-    'furniture' => AppIcons.eqFurniture,
-    'infra' => AppIcons.eqInfra,
-    'other' => AppIcons.eqOther,
-    _ => AppIcons.wrench,
-  };
-}
 
 /// «каждый месяц», «каждый квартал», «каждые 10 дн.».
 String assetPeriodLabel(AppLocalizations l, String kind, int? days) =>
@@ -68,17 +33,35 @@ Future<bool> showAssetForm(
   required List<Place> places,
   required List<Layer> layers,
   Asset? existing,
+}) async =>
+    await showAssetFormForId(context,
+        objectId: objectId,
+        places: places,
+        layers: layers,
+        existing: existing) !=
+    null;
+
+/// То же, но возвращает id сохранённого оборудования (null — не сохранено).
+/// [prefill] — поля новой единицы заранее («Нет в реестре — добавить» после
+/// узнавания по фото: вид, система, шильдик, помещение).
+Future<String?> showAssetFormForId(
+  BuildContext context, {
+  required String objectId,
+  required List<Place> places,
+  required List<Layer> layers,
+  Asset? existing,
+  AssetDraft? prefill,
 }) async {
   final l = context.l10n;
   if (SchemaCompat.has('0015') == false) {
     showAppMessage(context, l.migrationNeeded('0015'));
-    return false;
+    return null;
   }
   if (places.isEmpty) {
     showAppMessage(context, l.assetNoPlaces);
-    return false;
+    return null;
   }
-  final saved = await showAppSheet<bool>(
+  return showAppSheet<String>(
     context: context,
     builder: (ctx) => Padding(
       padding: EdgeInsetsDirectional.only(
@@ -87,10 +70,10 @@ Future<bool> showAssetForm(
           objectId: objectId,
           places: places,
           layers: layers,
-          existing: existing),
+          existing: existing,
+          prefill: prefill),
     ),
   );
-  return saved == true;
 }
 
 class _AssetForm extends StatefulWidget {
@@ -98,24 +81,38 @@ class _AssetForm extends StatefulWidget {
       {required this.objectId,
       required this.places,
       required this.layers,
-      this.existing});
+      this.existing,
+      this.prefill});
   final String objectId;
   final List<Place> places;
   final List<Layer> layers;
   final Asset? existing;
+  final AssetDraft? prefill;
 
   @override
   State<_AssetForm> createState() => _AssetFormState();
 }
 
 class _AssetFormState extends State<_AssetForm> {
-  late final _name = TextEditingController(text: widget.existing?.name);
-  late final _inv = TextEditingController(text: widget.existing?.inventoryNo);
-  late final _mf = TextEditingController(text: widget.existing?.manufacturer);
-  late final _model = TextEditingController(text: widget.existing?.model);
-  late final _serial = TextEditingController(text: widget.existing?.serialNo);
-  late String? _layerId = widget.existing?.layerId;
+  late final _name = TextEditingController(
+      text: widget.existing?.name ?? widget.prefill?.name);
+  late final _inv = TextEditingController(
+      text: widget.existing?.inventoryNo ?? widget.prefill?.inventoryNo);
+  late final _mf = TextEditingController(
+      text: widget.existing?.manufacturer ?? widget.prefill?.manufacturer);
+  late final _model = TextEditingController(
+      text: widget.existing?.model ?? widget.prefill?.model);
+  late final _serial = TextEditingController(
+      text: widget.existing?.serialNo ?? widget.prefill?.serialNo);
+  late String? _layerId = widget.existing?.layerId ?? widget.prefill?.layerId;
+  late String? _kind = equipmentKind(widget.existing != null
+          ? widget.existing!.kind
+          : widget.prefill?.kind)
+      ?.code;
   late String? _placeId = widget.existing?.locationId ??
+      (widget.places.any((p) => p.id == widget.prefill?.locationId)
+          ? widget.prefill!.locationId
+          : null) ??
       (widget.places.length == 1 ? widget.places.first.id : null);
   late DateTime? _installed = widget.existing?.installedAt;
   bool _busy = false;
@@ -154,15 +151,19 @@ class _AssetFormState extends State<_AssetForm> {
       model: _t(_model),
       serialNo: _t(_serial),
       installedAt: _installed,
+      kind: _kind,
+      baseMeta: widget.existing?.meta,
     );
     try {
       final repo = EquipmentRepo();
+      final String id;
       if (widget.existing == null) {
-        await repo.add(draft);
+        id = await repo.add(draft);
       } else {
-        await repo.update(widget.existing!.id, draft);
+        id = widget.existing!.id;
+        await repo.update(id, draft);
       }
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) Navigator.pop(context, id);
     } on MigrationMissing {
       if (mounted) showAppMessage(context, l.migrationNeeded('0015'));
     } catch (e) {
@@ -173,6 +174,19 @@ class _AssetFormState extends State<_AssetForm> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _pickKind() async {
+    final picked = await showAppSheet<String>(
+      context: context,
+      builder: (_) => KindPickerSheet(selected: _kind),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _kind = picked.isEmpty ? null : picked;
+      // Система не выбрана — по умолчанию для вида.
+      _layerId ??= defaultLayerForKind(_kind, widget.layers)?.id;
+    });
   }
 
   Future<void> _pickDate() async {
@@ -251,6 +265,21 @@ class _AssetFormState extends State<_AssetForm> {
                     ),
                   ),
                 ]),
+                AppGroup(header: l.assetFieldKind, children: [
+                  AppRow(
+                    leading: Icon(
+                        equipmentKind(_kind)?.icon ?? AppIcons.eqOther,
+                        size: AppSizes.icon,
+                        color: AppColors.accentText),
+                    title: _kind == null
+                        ? l.assetKindNone
+                        : equipmentKindLabel(l, _kind!),
+                    titleStyle: _kind == null
+                        ? AppText.body.copyWith(color: AppColors.secondary)
+                        : null,
+                    onTap: _pickKind,
+                  ),
+                ]),
                 SectionHeader(l.assetFieldSystem),
                 Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
                   for (final y in widget.layers)
@@ -302,3 +331,35 @@ String importIssuesText(AppLocalizations l, ImportRow r) => [
           ImportIssue.tooLong => l.importIssueTooLong,
         }
     ].join(' · ');
+
+/// Окно выбора вида оборудования: «Не указан» и каталог со значками.
+/// Возвращает код; '' — не указан; null — закрыли.
+class KindPickerSheet extends StatelessWidget {
+  const KindPickerSheet({super.key, required this.selected});
+  final String? selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return ListPickerSheet(
+      title: l.assetFieldKind,
+      search: null,
+      children: [
+        AppGroup(margin: EdgeInsets.zero, children: [
+          AppCheckRow(
+              title: l.assetKindNone,
+              selected: selected == null,
+              onTap: () => Navigator.pop(context, '')),
+          for (final k in kEquipmentKinds)
+            AppCheckRow(
+              leading: Icon(k.icon,
+                  size: AppSizes.icon, color: AppColors.accentText),
+              title: equipmentKindLabel(l, k.code),
+              selected: k.code == selected,
+              onTap: () => Navigator.pop(context, k.code),
+            ),
+        ]),
+      ],
+    );
+  }
+}

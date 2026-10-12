@@ -15,6 +15,7 @@ import '../floors/order_plan_link.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'equipment_form.dart';
+import 'equipment_kinds.dart';
 import 'equipment_models.dart';
 import 'equipment_repository.dart';
 

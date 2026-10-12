@@ -20,6 +20,7 @@ import '../ppr/ppr_logic.dart';
 import '../ppr/ppr_text.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
+import '../photo_identify/identify_log.dart' show newUuid;
 import '../visits/visit_repository.dart';
 import '../visits/visit_section.dart';
 import 'contractor_picker.dart';
@@ -125,8 +126,11 @@ class RequestsRepo {
           .eq('id', id)
           .maybeSingle());
 
+  /// Новая заявка. [id] — заранее (узнавание по фото: к заявке сразу
+  /// прикладывается снимок; автор видит свою заявку по RLS).
   Future<void> create(
-      {required String companyId,
+      {String? id,
+      required String companyId,
       required String title,
       String? description,
       Layer? layer,
@@ -138,6 +142,7 @@ class RequestsRepo {
       String inputChannel = 'button'}) async {
     // Слой передаём явно: тогда назначение подрядчика не зависит от языка интерфейса.
     await _c.from('work_orders').insert({
+      if (id != null) 'id': id,
       'company_id': companyId,
       'title': title,
       'description': description,
@@ -982,6 +987,16 @@ Future<bool?> showOrderForm({
 
   /// Вид работ заранее (заявка на оборудование — система оборудования, шаг 16).
   String? initialLayerId,
+
+  /// Узнавание по фото (шаг 22): заголовок и описание заранее, снимок
+  /// прикладывается к новой заявке как фото «до», канал — camera.
+  String? initialTitle,
+  String? initialDescription,
+  CapturedPhoto? photo,
+
+  /// «Узнать оборудование по фото» вверху новой заявки: окно закрывается
+  /// и вызывается [onPhoto].
+  VoidCallback? onPhoto,
 }) async {
   // Виды работ = слои компании из базы; ничего не зашито в приложение.
   List<Layer> layers = const [];
@@ -995,9 +1010,11 @@ Future<bool?> showOrderForm({
 
   final isEdit = existing != null;
   final titleC = TextEditingController(
-      text: isEdit ? (existing['title'] ?? '') as String : '');
+      text: isEdit ? (existing['title'] ?? '') as String : initialTitle ?? '');
   final descC = TextEditingController(
-      text: isEdit ? (existing['description'] ?? '') as String? ?? '' : '');
+      text: isEdit
+          ? (existing['description'] ?? '') as String? ?? ''
+          : initialDescription ?? '');
   Layer? layer = isEdit
       ? Layer.find(layers,
           id: existing['layer_id'] as String?,
@@ -1044,7 +1061,10 @@ Future<bool?> showOrderForm({
             setLocation: locationId != initialLocation,
             locationId: locationId);
       } else {
+        final id = photo == null ? null : newUuid();
         await repo.create(
+            id: id,
+            inputChannel: photo == null ? 'button' : 'camera',
             companyId: companyId,
             title: titleC.text.trim(),
             description: descC.text.trim().isEmpty ? null : descC.text.trim(),
@@ -1054,6 +1074,21 @@ Future<bool?> showOrderForm({
             recurring: recurring,
             locationId: locationId,
             assetId: locationId == initialLocation ? assetId : null);
+        if (id != null && photo != null) {
+          try {
+            await PhotoRepository().upload(
+                companyId: companyId,
+                workOrderId: id,
+                stage: 'before',
+                photo: photo);
+          } catch (e) {
+            debugPrint('Order photo: ${e.runtimeType}');
+            if (ctx.mounted) {
+              showAppMessage(ctx, l.photoAttachFailed,
+                  type: AppMessageType.error);
+            }
+          }
+        }
       }
       if (ctx.mounted) Navigator.pop(ctx, true);
     } catch (_) {
@@ -1081,6 +1116,30 @@ Future<bool?> showOrderForm({
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (!isEdit && onPhoto != null && photo == null)
+                    AppGroup(children: [
+                      AppRow(
+                        leading: const LeadingIcon(AppIcons.camera),
+                        title: l.photoEntryHint,
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          onPhoto();
+                        },
+                      ),
+                    ]),
+                  if (photo != null)
+                    AppGroup(children: [
+                      AppRow(
+                        leading: ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(AppRadius.segmentThumb),
+                          child: Image.memory(photo.bytes,
+                              width: 44, height: 44, fit: BoxFit.cover),
+                        ),
+                        title: l.photoWillAttach,
+                        chevron: false,
+                      ),
+                    ]),
                   AppGroup(header: l.formWhat, children: [
                     _inp(titleC, l.formWhatHint),
                   ]),

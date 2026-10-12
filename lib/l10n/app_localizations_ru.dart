@@ -3761,4 +3761,251 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get auditFooter =>
       'Журнал ведёт база, его видит только администратор. Последние 500 записей.';
+
+  @override
+  String get eqKind_ac => 'Кондиционер, внутренний блок';
+
+  @override
+  String get eqKind_ac_outdoor => 'Кондиционер, наружный блок';
+
+  @override
+  String get eqKind_fancoil => 'Фанкойл';
+
+  @override
+  String get eqKind_vent_grille => 'Вентиляционная решётка';
+
+  @override
+  String get eqKind_radiator => 'Радиатор отопления';
+
+  @override
+  String get eqKind_sensor => 'Датчик температуры';
+
+  @override
+  String get eqKind_panel => 'Щит электрический';
+
+  @override
+  String get eqKind_light => 'Светильник';
+
+  @override
+  String get eqKind_socket => 'Розетка / выключатель';
+
+  @override
+  String get eqKind_ups => 'ИБП';
+
+  @override
+  String get eqKind_server => 'Серверная стойка';
+
+  @override
+  String get eqKind_smoke => 'Датчик дыма';
+
+  @override
+  String get eqKind_extinguisher => 'Огнетушитель';
+
+  @override
+  String get eqKind_camera => 'Камера видеонаблюдения';
+
+  @override
+  String get eqKind_access_reader => 'Считыватель СКУД';
+
+  @override
+  String get eqKind_door_lock => 'Замок / доводчик';
+
+  @override
+  String get eqKind_faucet => 'Кран / смеситель';
+
+  @override
+  String get eqKind_toilet => 'Унитаз / раковина';
+
+  @override
+  String get eqKind_water_heater => 'Водонагреватель';
+
+  @override
+  String get eqKind_water => 'Датчик протечки';
+
+  @override
+  String get eqKind_lift_panel => 'Панель лифта';
+
+  @override
+  String get eqKind_other => 'Другое';
+
+  @override
+  String get assetFieldKind => 'Вид';
+
+  @override
+  String get assetKindNone => 'Не указан';
+
+  @override
+  String importIssueUnknownKind(String text) {
+    return 'вид «$text» не найден';
+  }
+
+  @override
+  String get photoEntry => 'По фото';
+
+  @override
+  String get photoEntryHint => 'Узнать оборудование по фото';
+
+  @override
+  String get photoFindInSection => 'Найти по фото';
+
+  @override
+  String get photoOnPlan => 'Сфотографировать оборудование здесь';
+
+  @override
+  String get photoTitle => 'Узнать по фото';
+
+  @override
+  String get photoWhere => 'Где я';
+
+  @override
+  String get photoWhereWholeObject => 'весь объект';
+
+  @override
+  String get photoWhereChooseObject => 'Выберите объект';
+
+  @override
+  String get photoWhereNoObject => 'Без объекта — искать везде';
+
+  @override
+  String get photoTake => 'Сфотографировать';
+
+  @override
+  String get photoRetake => 'Снять ещё раз';
+
+  @override
+  String get photoIntro =>
+      'Наведите камеру на оборудование — ИИ определит вид и подскажет, какая это единица из реестра.';
+
+  @override
+  String get photoWaitLook => 'Смотрю на фото…';
+
+  @override
+  String get photoWaitAi => 'ИИ рассматривает оборудование…';
+
+  @override
+  String get photoWaitAlmost => 'Ещё немного…';
+
+  @override
+  String get photoNameplate => 'Шильдик';
+
+  @override
+  String get photoDefect => 'Видно';
+
+  @override
+  String get photoLikely => 'Скорее всего';
+
+  @override
+  String get photoThisOne => 'Это он';
+
+  @override
+  String get photoOther => 'Другое оборудование…';
+
+  @override
+  String get photoAddNew => 'Нет в реестре — добавить';
+
+  @override
+  String get photoNoCandidates =>
+      'Похожего оборудования в реестре не нашлось. Выберите вручную или добавьте новое.';
+
+  @override
+  String get photoFailed =>
+      'Не получилось распознать. Попробуйте подойти ближе или выбрать оборудование из списка.';
+
+  @override
+  String get photoTooLarge => 'Фото слишком большое. Снимите ещё раз.';
+
+  @override
+  String get photoNeedObject => 'Сначала выберите объект';
+
+  @override
+  String get photoPickAsset => 'Оборудование';
+
+  @override
+  String get photoAssetSearchHint => 'Название или инв. номер';
+
+  @override
+  String get photoNoAssets => 'На объекте нет оборудования';
+
+  @override
+  String get photoAiBadge => 'Распознано ИИ';
+
+  @override
+  String get photoChooseManually => 'Выбрать вручную';
+
+  @override
+  String photoOrderTitleCheck(String kind) {
+    return '$kind: проверить';
+  }
+
+  @override
+  String photoOrderDescKind(String kind) {
+    return 'По фото: $kind.';
+  }
+
+  @override
+  String photoOrderDescPlate(String text) {
+    return 'Шильдик: $text.';
+  }
+
+  @override
+  String photoOrderDescDefect(String text) {
+    return 'Видно: $text.';
+  }
+
+  @override
+  String get photoAttachFailed =>
+      'Заявка создана, но фото не приложилось — добавьте его в карточке заявки.';
+
+  @override
+  String get photoWillAttach => 'Снимок будет приложен к заявке';
+
+  @override
+  String get photoReasonSerial => 'серийный номер с шильдика';
+
+  @override
+  String get photoReasonModel => 'модель с шильдика';
+
+  @override
+  String get photoReasonKind => 'тот же вид';
+
+  @override
+  String get photoReasonLayer => 'та же система';
+
+  @override
+  String get photoReasonRoom => 'то же помещение';
+
+  @override
+  String get photoReasonFloor => 'тот же этаж';
+
+  @override
+  String get photoReasonObject => 'тот же объект';
+
+  @override
+  String get photoReasonOpenOrder => 'есть открытая заявка';
+
+  @override
+  String get photoStatsTitle => 'Узнавание по фото';
+
+  @override
+  String photoStatsShots(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count снимка',
+      many: '$count снимков',
+      few: '$count снимка',
+      one: '$count снимок',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String photoStatsTop(int percent) {
+    return 'угадано с первого раза $percent%';
+  }
+
+  @override
+  String photoStatsAvg(String seconds) {
+    return 'в среднем $seconds с';
+  }
 }

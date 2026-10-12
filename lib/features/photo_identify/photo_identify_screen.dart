@@ -385,7 +385,8 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
     final obj = _objects.where((o) => o.id == _objectId).firstOrNull;
     if (obj == null) return l.photoWhereNoObject;
     final room = _place(_locationId);
-    final floor = _floorNames[room?.floorId ?? _floorId];
+    final floor = floorPartIfNew(
+        _floorNames[room?.floorId ?? _floorId], [room?.name]);
     return [
       objectDisplayName(obj),
       if (floor != null) floor,
@@ -739,7 +740,7 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
       ];
 }
 
-/// Превью снимка: скруглённое, не выше 260; во время разбора — бледнее.
+/// Превью снимка: скруглённое, не выше 200 (кандидаты видны без прокрутки); во время разбора — бледнее.
 class _Preview extends StatelessWidget {
   const _Preview({required this.bytes, required this.dim});
   final Uint8List bytes;
@@ -750,7 +751,7 @@ class _Preview extends StatelessWidget {
         padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 260),
+            constraints: const BoxConstraints(maxHeight: 200),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.group),
               child: AnimatedOpacity(

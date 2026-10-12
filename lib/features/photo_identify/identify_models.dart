@@ -1,5 +1,6 @@
 import '../../l10n/app_localizations.dart';
 import '../equipment/equipment_kinds.dart';
+import '../floors/plan_logic.dart' show floorPartIfNew;
 
 /// Шильдик, прочитанный моделью (что прочиталось; ничего не выдумано).
 class Nameplate {
@@ -69,11 +70,12 @@ class IdentifyCandidate {
     );
   }
 
-  /// «301 Переговорная · 3 этаж».
-  String get placeText => [locationLabel, floorLabel]
-      .whereType<String>()
-      .where((s) => s.isNotEmpty)
-      .join(' · ');
+  /// «301 Переговорная · 3 этаж»; этаж — только если его нет в названии
+  /// помещения («Переговорная, 3 этаж» — без повтора).
+  String get placeText => [
+        locationLabel,
+        floorPartIfNew(floorLabel, [locationLabel]),
+      ].whereType<String>().where((s) => s.isNotEmpty).join(' · ');
 }
 
 /// Ответ функции photo-identify.

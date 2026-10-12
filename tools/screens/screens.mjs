@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, wri
 import { extname, join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '../..');
-// --pitch — 12 кадров для питча в docs/screens/pitch/ (см. PITCH ниже):
+// --pitch — 18 кадров для питча в docs/screens/pitch/ (см. PITCH ниже):
 // без служебных пометок, разбор голосовой заявки — настоящий ИИ (VOICE_MOCK_AI).
 const PITCH_MODE = process.argv.includes('--pitch');
 // --out=<папка> — снимать в другую папку (для отладки, не трогая docs/screens/latest).
@@ -1261,6 +1261,34 @@ async function openCrew(page, contractor, crew) {
 function NEW_WIDTHS() { return [1920, 1280, 412]; }
 // Оборудование с заявками в демо: кондиционер серверной («Течёт конденсат…»).
 function DEMO_ASSET_NAME() { return 'Кондиционер серверной'; }
+
+/**
+ * «Узнать по фото» (шаг 22): кнопка с камерой рядом с «+» (телефон) или
+ * «По фото» в боковом меню (ПК) → «Где я»: БЦ «Демо» · 301. Снимок — заглушка
+ * VOICE_MOCK: нарисованный кондиционер (assets/demo_photos), ответ без модели.
+ */
+async function openPhoto(page, { here = true } = {}) {
+  await home(page);
+  await page.getByRole('button', { name: /^(Узнать оборудование по фото|По фото)$/ }).first().click();
+  await see(page, 'Сфотографировать').waitFor({ timeout: 20000 });
+  await settle(page, 1200);
+  if (!here) return;
+  await page.getByRole('button', { name: /Без объекта|весь объект|Переговорная/ }).first().click();
+  await see(page, 'Выберите объект').waitFor({ timeout: 10000 });
+  await settle(page, 500);
+  await see(page, /Белград · БЦ «Демо»/).click();
+  await see(page, /301 · Переговорная/).waitFor({ timeout: 15000 });
+  await settle(page, 500);
+  await see(page, /301 · Переговорная/).click();
+  await settle(page, 1200);
+}
+
+async function photoResult(page) {
+  await openPhoto(page);
+  await btn(page, 'Сфотографировать').click();
+  await see(page, 'Это он').waitFor({ timeout: 20000 });
+  await settle(page, 1500);
+}
 function NEW_SCREENS() {
   const DEMO_ASSET = DEMO_ASSET_NAME();
   const list = [
@@ -1303,6 +1331,22 @@ function NEW_SCREENS() {
         await settle(p, 1000);
       } },
     { key: 'asset-card', title: `Карточка оборудования «${DEMO_ASSET}»: паспорт, план, ППР, заявки`, run: openAsset },
+    // Шаг 22 — «Узнать по фото» (заглушка ответа VOICE_MOCK, без модели).
+    { key: 'photo-start', title: '«Узнать по фото» — «Где я» и «Сфотографировать»', run: async (p) => {
+        await openPhoto(p);
+        return 'Где я: БЦ «Демо» · 3 этаж · 301; ответ — заглушка (ПРЕДПРОСМОТР)';
+      } },
+    { key: 'photo-result', title: '«Узнать по фото» — вид, система, «Скорее всего» и «Это он»', run: async (p) => {
+        await photoResult(p);
+        return 'нарисованный кондиционер; ответ — заглушка VOICE_MOCK (ПРЕДПРОСМОТР)';
+      } },
+    { key: 'photo-order', title: '«Это он» → новая заявка: объект, помещение, оборудование, система, снимок', run: async (p) => {
+        await photoResult(p);
+        await btn(p, 'Это он').click();
+        await see(p, 'Снимок будет приложен к заявке').waitFor({ timeout: 20000 });
+        await settle(p, 1500);
+        return '«Создать» не нажимали';
+      }, after: async (p) => { await p.keyboard.press('Escape').catch(() => {}); } },
     { key: 'plan-areas', title: 'План этажа «3 этаж»: области и номера помещений', run: async (p) => {
         await openPlan(p, 10, 602);
       } },
@@ -1450,6 +1494,8 @@ const PITCH = [
     } },
   // Второго менеджера в рабочей базе нет — та же модель зоны у бригады «Пекин».
   { file: '17-crew-zone-desktop', width: 1920, key: 'crew-zone' },
+  // Шаг 22: «Узнать по фото» — результат (нарисованный снимок, заглушка ответа).
+  { file: '18-photo-identify-phone', width: 412, key: 'photo-result' },
 ];
 
 /** PDF отчёта за 30 дней: перехватываем Blob, который веб-версия отдаёт в окно печати. */

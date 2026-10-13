@@ -14,10 +14,10 @@ const RU = {
     "Это бот «Эй, Helpy» — сообщить о неисправности на объекте текстом, голосом или фото.\n\n" +
     "Чтобы начать, нужна ссылка от работодателя:\n" +
     "• отсканируйте QR-код на плакате объекта или откройте ссылку компании из рабочего чата;\n" +
-    "• если у вас есть аккаунт в приложении — «Профиль → Telegram → Подключить».",
+    "• если у вас есть аккаунт в приложении — «Профиль → Настройки → Telegram → Подключить Telegram».",
   linked: "Готово, {name}. Теперь можно писать заявки сюда — текстом, голосом или фото.",
   linkedNoName: "Готово. Теперь можно писать заявки сюда — текстом, голосом или фото.",
-  badCode: "Код не подошёл или устарел (он действует 15 минут). Получите новый в приложении: «Профиль → Telegram».",
+  badCode: "Код не подошёл или устарел (он действует 15 минут). Получите новый в приложении: «Профиль → Настройки → Telegram».",
   guestObject: "Вы в {object}. Опишите, что случилось, — текстом, голосом или фото.",
   guestCompany: "Вы подключены к «{company}». Опишите, что и где случилось, — текстом, голосом или фото.",
   badLink: "Ссылка не работает: её отключили или пересоздали. Попросите новую у администратора объекта.",
@@ -98,10 +98,10 @@ const EN: Record<TextKey, string> = {
     "This is the Hey Helpy bot — report a problem at a site by text, voice or photo.\n\n" +
     "To start you need a link from your employer:\n" +
     "• scan the QR code on the site's poster or open the company link from your work chat;\n" +
-    "• if you have an account in the app — “Profile → Telegram → Connect”.",
+    "• if you have an account in the app — “Profile → Settings → Telegram → Connect Telegram”.",
   linked: "Done, {name}. You can now send work orders here — by text, voice or photo.",
   linkedNoName: "Done. You can now send work orders here — by text, voice or photo.",
-  badCode: "The code is wrong or expired (it lasts 15 minutes). Get a new one in the app: “Profile → Telegram”.",
+  badCode: "The code is wrong or expired (it lasts 15 minutes). Get a new one in the app: “Profile → Settings → Telegram”.",
   guestObject: "You are at {object}. Describe what happened — by text, voice or photo.",
   guestCompany: "You are connected to “{company}”. Describe what happened and where — by text, voice or photo.",
   badLink: "This link doesn't work: it was disabled or replaced. Ask the site administrator for a new one.",

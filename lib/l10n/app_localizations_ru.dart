@@ -4166,7 +4166,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String tgGroupCodeHowTo(String bot, String code) {
-    return 'Откройте ссылку на телефоне и выберите группу объекта — бот подключит её сам. Или добавьте @$bot в группу и отправьте там: /connect $code. Код действует 15 минут.';
+    return 'Откройте ссылку на телефоне и выберите группу объекта — бот подключит её сам. Или добавьте @$bot в группу и отправьте там: /⁠connect $code. Код действует 15 минут.';
   }
 
   @override

@@ -113,7 +113,7 @@ void main() {
   test('строки Telegram есть на обоих языках', () {
     expect(ru.tgPosterTitle, isNot(en.tgPosterTitle));
     expect(ru.tgGroupCodeHowTo(kTelegramBot, 'ABCD2345'),
-        contains('/connect ABCD2345'));
+        contains('connect\u00a0ABCD2345'));
     expect(en.tgSettingsHint(kTelegramBot), contains('@HeyHelpy_bot'));
   });
 }

@@ -1194,7 +1194,7 @@
   "tgGroupsEmpty": "No groups connected.",
   "tgGroupAdd": "Connect a group",
   "tgGroupCodeTitle": "Connect a group",
-  "tgGroupCodeHowTo": "Open the link on your phone and pick the site's group — the bot connects it by itself. Or add @{bot} to the group and send there: /connect {code}. The code is valid for 15 minutes.",
+  "tgGroupCodeHowTo": "Open the link on your phone and pick the site's group — the bot connects it by itself. Or add @{bot} to the group and send there: /\u2060connect\u00a0{code}. The code is valid for 15 minutes.",
   "@tgGroupCodeHowTo": {"placeholders": {"bot": {"type": "String"}, "code": {"type": "String"}}},
   "tgGroupNoTitle": "Untitled group",
   "tgGroupRemoveConfirm": "Disconnect the group “{title}”? The bot will stop accepting work orders from it.",

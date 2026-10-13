@@ -7068,7 +7068,7 @@ abstract class AppLocalizations {
   /// Шаг 23: Telegram-бот
   ///
   /// In ru, this message translates to:
-  /// **'Откройте ссылку на телефоне и выберите группу объекта — бот подключит её сам. Или добавьте @{bot} в группу и отправьте там: /connect {code}. Код действует 15 минут.'**
+  /// **'Откройте ссылку на телефоне и выберите группу объекта — бот подключит её сам. Или добавьте @{bot} в группу и отправьте там: /⁠connect {code}. Код действует 15 минут.'**
   String tgGroupCodeHowTo(String bot, String code);
 
   /// Шаг 23: Telegram-бот

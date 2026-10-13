@@ -1729,7 +1729,7 @@
   "@tgGroupAdd": {"description": "Шаг 23: Telegram-бот"},
   "tgGroupCodeTitle": "Подключение группы",
   "@tgGroupCodeTitle": {"description": "Шаг 23: Telegram-бот"},
-  "tgGroupCodeHowTo": "Откройте ссылку на телефоне и выберите группу объекта — бот подключит её сам. Или добавьте @{bot} в группу и отправьте там: /connect {code}. Код действует 15 минут.",
+  "tgGroupCodeHowTo": "Откройте ссылку на телефоне и выберите группу объекта — бот подключит её сам. Или добавьте @{bot} в группу и отправьте там: /\u2060connect\u00a0{code}. Код действует 15 минут.",
   "@tgGroupCodeHowTo": {"placeholders": {"bot": {"type": "String"}, "code": {"type": "String"}}, "description": "Шаг 23: Telegram-бот"},
   "tgGroupNoTitle": "Группа без названия",
   "@tgGroupNoTitle": {"description": "Шаг 23: Telegram-бот"},

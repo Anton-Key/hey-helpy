@@ -21,11 +21,13 @@ import { startLocalBackend } from './local_backend.mjs';
 
 const ROOT = resolve(import.meta.dirname, '../..');
 const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6)
-  ?? join(ROOT, process.argv.includes('--step=17') ? 'docs/screens/preview17' : 'docs/screens/preview'));
+  ?? join(ROOT, process.argv.includes('--step=17') ? 'docs/screens/preview17'
+    : process.argv.includes('--step=23') ? 'docs/screens/preview23' : 'docs/screens/preview'));
 const WEB = join(ROOT, 'build/web_local');
 const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
 const STEP = process.argv.find((a) => a.startsWith('--step='))?.slice(7) ?? '16';
-const PREVIEW_NOTE = `ПРЕДПРОСМОТР: локальная база с миграциями 0001–${STEP === '17' ? '0016' : '0015'} и демо-данными (demo.sql + demo_history.sql), не рабочая база`;
+const LAST_MIGRATION = { '17': '0016', '23': '0018' }[STEP] ?? '0015';
+const PREVIEW_NOTE = `ПРЕДПРОСМОТР: локальная база с миграциями 0001–${LAST_MIGRATION} и демо-данными (demo.sql + demo_history.sql), не рабочая база`;
 const USERS = { manager: 'manager@example.com', admin: 'manager@example.com', manager2: 'manager2@example.com',
   executor: 'executor@example.com', requester: 'requester@example.com' };
 const uuid = (n) => 'de300000-0000-4000-8000-' + String(n).padStart(12, '0');
@@ -364,6 +366,94 @@ const SCREENS17 = [
   } },
 ];
 
+// ---------------------------------------------------------------------------
+// Экраны шага 23: Telegram-бот (0018)
+// ---------------------------------------------------------------------------
+async function openSettingsTelegram(page) {
+  await home(page);
+  await profileTab(page).click();
+  await settle(page, 1000);
+  await btn(page, /^Настройки/).click();
+  await scrollTo(page, /Telegram/);
+  await btn(page, /^Telegram/).click();
+  await see(page, /Не подключён|Подключён/).waitFor({ timeout: 20000 });
+  await settle(page, 1000);
+}
+
+async function openObjectTelegram(page) {
+  await openObjectCard(page);
+  await btn(page, /^Заявки через Telegram/).click();
+  await see(page, /Повесьте плакат/).waitFor({ timeout: 20000 });
+  const create = btn(page, /^Создать ссылку и QR-код/);
+  if (await create.isVisible().catch(() => false)) {
+    await create.click();
+    await see(page, /Плакат для печати/).waitFor({ timeout: 20000 });
+  }
+  await settle(page, 1500);
+}
+
+const SCREENS23 = [
+  { key: 'tg-settings', title: 'Настройки → Telegram (не подключён)', run: openSettingsTelegram },
+  { key: 'tg-code', title: 'Telegram → «Подключить»: код, QR, «Открыть Telegram»', run: async (page) => {
+      await openSettingsTelegram(page);
+      await btn(page, /^Подключить Telegram/).click();
+      await see(page, /Код действует 15 минут/).waitFor({ timeout: 20000 });
+      await settle(page, 1200);
+    } },
+  { key: 'tg-object', title: 'Карточка объекта → «Заявки через Telegram»: QR-код, плакат, группы', run: openObjectTelegram },
+  { key: 'tg-group-code', title: '«Подключить группу»: код и ссылка «добавить в группу»', run: async (page) => {
+      await openObjectTelegram(page);
+      await scrollTo(page, /Подключить группу/);
+      await btn(page, /^Подключить группу/).click();
+      await see(page, /\/connect/).waitFor({ timeout: 20000 });
+      await settle(page, 1200);
+    } },
+  { key: 'tg-company', title: '«Моя компания» → «Ссылка компании для Telegram»', run: async (page) => {
+      await home(page);
+      await profileTab(page).click();
+      await settle(page, 1000);
+      await btn(page, /^Моя компания/).click();
+      await scrollTo(page, /Ссылка компании для Telegram/);
+      await btn(page, /^Ссылка компании для Telegram/).click();
+      await see(page, /рабочий чат компании/).waitFor({ timeout: 20000 });
+      await settle(page, 1500);
+    } },
+  { key: 'tg-orders', title: 'Заявки: пометка «Telegram» в строке', run: async (page) => {
+      await home(page);
+      await page.getByRole('textbox').first().click();
+      await page.keyboard.type('Капает вода', { delay: 20 });
+      await settle(page, 2000);
+    } },
+  { key: 'tg-order-card', title: 'Карточка заявки из Telegram: «через Telegram», «Написал в Telegram · гость»', run: async (page) => {
+      // Ссылка «Открыть в приложении» из бота: вкладок нет, сразу карточка.
+      // Та же вкладка: меняется только «#…» — страница не перезагружается.
+      await home(page);
+      await page.evaluate((h) => { location.hash = h; }, `/orders/${uuid(277)}`);
+      await see(page, /Написал в Telegram/).waitFor({ timeout: 20000 });
+      await settle(page, 1500);
+    } },
+];
+
+/** Плакат с QR-кодом объекта: тот же перехват Blob, что у PDF отчёта. */
+async function capturePoster(page) {
+  await page.evaluate(() => { window.__pdfBlob = null; });
+  await openObjectTelegram(page);
+  await btn(page, /^Плакат для печати/).click();
+  for (let i = 0; i < 120 && !(await page.evaluate(() => !!window.__pdfBlob)); i++) await page.waitForTimeout(500);
+  const b64 = await page.evaluate(async () => {
+    const blob = window.__pdfBlob;
+    if (!blob) return null;
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let s = '';
+    for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+    return btoa(s);
+  });
+  if (!b64) throw new Error('PDF плаката не получен');
+  const pdf = join(tmpdir(), 'hh-poster.pdf');
+  writeFileSync(pdf, Buffer.from(b64, 'base64'));
+  return pdf;
+}
+
 /** PDF отчёта: перехватываем Blob, который веб-версия отдаёт в окно печати. */
 async function capturePdf(page) {
   await home(page);
@@ -394,7 +484,11 @@ async function capturePdf(page) {
   return pdf;
 }
 
-const RUNS = STEP === '17' ? [
+const RUNS = STEP === '23' ? [
+  { role: 'admin', label: 'Администратор', width: 1280, height: 800 },
+  { role: 'admin', label: 'Администратор', width: 412, height: 915 },
+  { role: 'requester', label: 'Заявитель', width: 412, height: 915, only: ['tg-settings', 'tg-code'] },
+] : STEP === '17' ? [
   // После 0016 демо-менеджер — администратор «Демо БЦ» (в компании не было администратора).
   { role: 'admin', label: 'Администратор', width: 1280, height: 800 },
   { role: 'admin', label: 'Администратор', width: 412, height: 915 },
@@ -406,8 +500,8 @@ const RUNS = STEP === '17' ? [
   { role: 'manager', label: 'Менеджер', width: 360, height: 780, only: ['ppr-list', 'locations-regions'] },
   { role: 'executor', label: 'Исполнитель', width: 412, height: 915, only: ['ppr-list', 'ppr-orders'] },
 ];
-const SCREENS = STEP === '17' ? SCREENS17 : SCREENS16;
-if (STEP === '17') {
+const SCREENS = { '17': SCREENS17, '23': SCREENS23 }[STEP] ?? SCREENS16;
+if (STEP === '17' || STEP === '23') {
   execFileSync('sudo', ['-u', 'postgres', 'psql', '-X', '-q', '-v', 'ON_ERROR_STOP=1', '-d',
     process.env.HH_TEST_DB ?? 'hh_test', '-c', PREP17], { stdio: 'inherit' });
 }
@@ -464,6 +558,17 @@ try {
           note: `страниц в PDF: ${pages ?? '?'}` });
       } catch (e) {
         results.push({ ...r, title: 'PDF отчёта — первая страница', ok: false, note: String(e.message).split('\n')[0] });
+      }
+    }
+    // Плакат с QR (шаг 23) — один раз, у администратора на ПК.
+    if (STEP === '23' && r.width === 1280 && (!ONLY || 'tg-poster'.startsWith(ONLY))) {
+      const name = 'admin-tg-poster.png';
+      try {
+        const pdf = await capturePoster(page);
+        execFileSync('pdftoppm', ['-png', '-r', '80', '-f', '1', '-l', '1', '-singlefile', pdf, join(OUT, 'admin-tg-poster')]);
+        results.push({ ...r, title: 'Плакат с QR-кодом объекта (PDF, страница 1)', ok: true, file: name });
+      } catch (e) {
+        results.push({ ...r, title: 'Плакат с QR-кодом объекта', ok: false, note: String(e.message).split('\n')[0] });
       }
     }
     if (errors.length) results.push({ ...r, title: 'Ошибки JavaScript', ok: false, note: errors.join(' | ') });

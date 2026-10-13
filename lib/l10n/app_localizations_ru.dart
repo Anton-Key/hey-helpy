@@ -4204,4 +4204,62 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get orderLinkNotFound =>
       'Заявка не найдена или у вас нет к ней доступа.';
+
+  @override
+  String get photoInZone => 'в геозоне';
+
+  @override
+  String photoOutOfZone(int meters) {
+    return 'вне геозоны · $meters м';
+  }
+
+  @override
+  String photoCounter(int n, int total) {
+    return '$n из $total';
+  }
+
+  @override
+  String get photoPrev => 'Предыдущее фото';
+
+  @override
+  String get photoNext => 'Следующее фото';
+
+  @override
+  String get fileDownload => 'Скачать';
+
+  @override
+  String get fileShare => 'Поделиться';
+
+  @override
+  String get fileOpenFailed =>
+      'Не удалось открыть файл. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get formFromObjectCard => 'из карточки объекта';
+
+  @override
+  String get formFromMap => 'с карты';
+
+  @override
+  String get formFromPlan => 'с плана этажа';
+
+  @override
+  String get formFromEquipment => 'из карточки оборудования';
+
+  @override
+  String get formFromPhoto => 'из «Узнать по фото»';
+
+  @override
+  String get formFromOrder => 'из заявки';
+
+  @override
+  String formNearby(int meters) {
+    return 'Рядом с вами · $meters м';
+  }
+
+  @override
+  String get formOtherObject => 'Другой объект';
+
+  @override
+  String get formRecent => 'Недавние:';
 }

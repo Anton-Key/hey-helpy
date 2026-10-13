@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../directory/directory.dart';
+import '../../core/location.dart';
+import '../requests/order_form_place.dart';
 import '../requests/requests.dart';
 import 'voice_draft.dart';
 import 'voice_intake_client.dart';
@@ -50,6 +52,9 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
 
   /// 'o:<id>' — объект целиком, 'p:<id>' — помещение.
   String? _where;
+
+  /// Объект подставлен по GPS (ИИ и словарь места не нашли): «Рядом с вами».
+  int? _nearbyM;
   bool _loading = true;
   bool _saving = false;
 
@@ -88,6 +93,18 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
       _where = _initialWhere(widget.draft, places, widget.objects);
       _loading = false;
     });
+    // Место — из того, что сказали; иначе ближайший объект по GPS ≤ 200 м
+    // (без помещения); иначе пусто. Прошлая заявка не используется (шаг 24).
+    if (_where == null) {
+      final pos = await quickPosition();
+      if (pos == null || !mounted || _where != null) return;
+      final near = nearestObject(widget.objects, pos.lat, pos.lng);
+      if (near == null) return;
+      setState(() {
+        _where = 'o:${near.object.id}';
+        _nearbyM = near.distanceM;
+      });
+    }
   }
 
   /// Место из разбора: точное помещение или объект, иначе — по подсказке.
@@ -236,7 +253,10 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
       ),
     );
     if (picked == null || !mounted) return;
-    setState(() => _where = picked.isEmpty ? null : picked);
+    setState(() {
+      _where = picked.isEmpty ? null : picked;
+      _nearbyM = null;
+    });
   }
 
   /// Поле внутри белой группы: без рамки, подпись — имя поля для диктора.
@@ -377,9 +397,11 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
           AppRow(
             leading: const LeadingIcon(AppIcons.place),
             title: _whereName(),
-            subtitle: widget.draft.locationHint == null
-                ? null
-                : l.voiceHeard(widget.draft.locationHint!),
+            subtitle: _nearbyM != null
+                ? l.formNearby(_nearbyM!)
+                : (widget.draft.locationHint == null
+                    ? null
+                    : l.voiceHeard(widget.draft.locationHint!)),
             onTap: _pickWhere,
           ),
         ]),

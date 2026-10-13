@@ -25,6 +25,7 @@ import '../requests/requests.dart';
 import 'map_config.dart';
 import 'map_logic.dart';
 import 'map_parts.dart';
+import '../requests/order_form_place.dart';
 
 /// С какой ширины список стоит слева от карты, а не в выдвижной панели.
 const mapWideBreakpoint = 900.0;
@@ -509,7 +510,8 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
         repo: _requests,
         objects: widget.objects,
         companyId: companyId,
-        initialObjectId: o.id);
+        initialObjectId: o.id,
+        origin: PlaceOrigin.objectCard);
     if (ok == true && mounted) {
       showAppMessage(context, l.requestsCreated, type: AppMessageType.success);
       await _loadStats();

@@ -142,6 +142,22 @@ class AppIcons {
   // «Узнать по фото» (шаг 22).
   static const scan = LucideIcons.scanSearch300;
 
+  // Файлы, системы, акты (шаг 24)
+  static const share = LucideIcons.share2300;
+  static const attach = LucideIcons.paperclip300;
+  static const file = LucideIcons.file300;
+  static const fileText = LucideIcons.fileText300;
+  static const fileImage = LucideIcons.fileImage300;
+  static const fileCheck = LucideIcons.fileCheck300;
+  static const externalLink = LucideIcons.externalLink300;
+  static const archive = LucideIcons.archive300;
+  static const unarchive = LucideIcons.archiveRestore300;
+  static const systems = LucideIcons.layers300;
+  static const palette = LucideIcons.palette300;
+  static const chevronUp = LucideIcons.chevronUp300;
+  static const act = LucideIcons.receipt300;
+  static const money = LucideIcons.banknote300;
+
   // Активная вкладка нижнего меню — те же значки с линией толще (штрих 2):
   // Lucide не делает залитых значков, поэтому активную вкладку выделяют
   // толщина линии и цвет.

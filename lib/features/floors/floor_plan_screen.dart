@@ -20,6 +20,7 @@ import 'floors_section.dart';
 import 'plan_canvas.dart';
 import 'plan_logic.dart';
 import 'plan_sheets.dart';
+import '../requests/order_form_place.dart';
 
 /// Экран «План этажа»: картинка плана с масштабом, маркеры помещений и
 /// оборудования, фильтр, список «На плане / Не размещены», шторка маркера
@@ -482,6 +483,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           objects: _ctx!.objects,
           companyId: _ctx!.companyId!,
           initialObjectId: widget.objectId,
+          origin: PlaceOrigin.plan,
           initialLocationId: place?.id,
           initialAssetId: i.isPlace ? null : i.id,
           initialAssetName: i.isPlace ? null : i.name,

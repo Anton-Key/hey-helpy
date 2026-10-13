@@ -1207,5 +1207,22 @@
   "tgGroupChat": "from a group",
   "reqViaTelegram": "via Telegram",
   "filterChannelTelegram": "Telegram",
-  "orderLinkNotFound": "The work order wasn't found or you don't have access to it."
+  "orderLinkNotFound": "The work order wasn't found or you don't have access to it.",
+  "photoInZone": "inside geofence",
+  "photoOutOfZone": "outside geofence · {meters} m",
+  "photoCounter": "{n} of {total}",
+  "photoPrev": "Previous photo",
+  "photoNext": "Next photo",
+  "fileDownload": "Download",
+  "fileShare": "Share",
+  "fileOpenFailed": "Couldn't open the file. Check your connection and try again.",
+  "formFromObjectCard": "from the site card",
+  "formFromMap": "from the map",
+  "formFromPlan": "from the floor plan",
+  "formFromEquipment": "from the equipment card",
+  "formFromPhoto": "from “Identify by photo”",
+  "formFromOrder": "from the work order",
+  "formNearby": "Near you · {meters} m",
+  "formOtherObject": "Other site",
+  "formRecent": "Recent:"
 }

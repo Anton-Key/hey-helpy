@@ -30,6 +30,7 @@ import 'identify_log.dart';
 import 'identify_models.dart';
 import 'photo_compress.dart';
 import 'photo_recompress.dart' deferred as recompress;
+import '../requests/order_form_place.dart';
 
 /// Нарисованный снимок кондиционера для заглушки (`VOICE_MOCK`): в браузере
 /// Playwright нет камеры. Не фото реального объекта.
@@ -529,6 +530,7 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
       objects: _objects,
       companyId: companyId,
       initialObjectId: objectId,
+      origin: PlaceOrigin.photo,
       initialLocationId: locationId ?? asset?.locationId,
       initialAssetId: assetId,
       initialAssetName: assetName,

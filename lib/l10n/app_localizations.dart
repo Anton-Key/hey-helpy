@@ -7136,6 +7136,108 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Заявка не найдена или у вас нет к ней доступа.'**
   String get orderLinkNotFound;
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'в геозоне'**
+  String get photoInZone;
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'вне геозоны · {meters} м'**
+  String photoOutOfZone(int meters);
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} из {total}'**
+  String photoCounter(int n, int total);
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Предыдущее фото'**
+  String get photoPrev;
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Следующее фото'**
+  String get photoNext;
+
+  /// Шаг 24: файлы
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать'**
+  String get fileDownload;
+
+  /// Шаг 24: файлы
+  ///
+  /// In ru, this message translates to:
+  /// **'Поделиться'**
+  String get fileShare;
+
+  /// Шаг 24: файлы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось открыть файл. Проверьте интернет и попробуйте ещё раз.'**
+  String get fileOpenFailed;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'из карточки объекта'**
+  String get formFromObjectCard;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'с карты'**
+  String get formFromMap;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'с плана этажа'**
+  String get formFromPlan;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'из карточки оборудования'**
+  String get formFromEquipment;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'из «Узнать по фото»'**
+  String get formFromPhoto;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'из заявки'**
+  String get formFromOrder;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'Рядом с вами · {meters} м'**
+  String formNearby(int meters);
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'Другой объект'**
+  String get formOtherObject;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'Недавние:'**
+  String get formRecent;
 }
 
 class _AppLocalizationsDelegate

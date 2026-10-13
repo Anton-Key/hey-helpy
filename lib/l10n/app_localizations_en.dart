@@ -4174,4 +4174,62 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get orderLinkNotFound =>
       'The work order wasn\'t found or you don\'t have access to it.';
+
+  @override
+  String get photoInZone => 'inside geofence';
+
+  @override
+  String photoOutOfZone(int meters) {
+    return 'outside geofence · $meters m';
+  }
+
+  @override
+  String photoCounter(int n, int total) {
+    return '$n of $total';
+  }
+
+  @override
+  String get photoPrev => 'Previous photo';
+
+  @override
+  String get photoNext => 'Next photo';
+
+  @override
+  String get fileDownload => 'Download';
+
+  @override
+  String get fileShare => 'Share';
+
+  @override
+  String get fileOpenFailed =>
+      'Couldn\'t open the file. Check your connection and try again.';
+
+  @override
+  String get formFromObjectCard => 'from the location card';
+
+  @override
+  String get formFromMap => 'from the map';
+
+  @override
+  String get formFromPlan => 'from the floor plan';
+
+  @override
+  String get formFromEquipment => 'from the equipment card';
+
+  @override
+  String get formFromPhoto => 'from “Identify by photo”';
+
+  @override
+  String get formFromOrder => 'from the work order';
+
+  @override
+  String formNearby(int meters) {
+    return 'Near you · $meters m';
+  }
+
+  @override
+  String get formOtherObject => 'Other location';
+
+  @override
+  String get formRecent => 'Recent:';
 }

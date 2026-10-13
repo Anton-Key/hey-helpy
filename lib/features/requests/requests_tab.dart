@@ -20,6 +20,7 @@ import 'order_filter_store.dart';
 import 'order_filters_panel.dart';
 import 'order_list.dart';
 import 'requests.dart';
+import 'order_form_place.dart';
 
 /// Ширина колонки вкладки «Заявки» на ПК: рядом с поиском помещаются
 /// таблетки главных фильтров.
@@ -611,8 +612,10 @@ class _RequestsTabState extends State<RequestsTab> {
         objects: _objects,
         companyId: _companyId!,
         existing: null,
-        initialObjectId:
-            _filter.objectIds.length == 1 ? _filter.objectIds.single : null,
+        // Фильтр списка — не контекст: объект прошлой заявки или фильтра
+        // не подставляется (шаг 24). Только объект, с которого пришли.
+        initialObjectId: widget.objectFilter?.id,
+        origin: widget.objectFilter == null ? null : PlaceOrigin.objectCard,
         onPhoto: _openPhoto);
     if (ok == true) {
       await _load(refs: false);
@@ -630,10 +633,7 @@ class _RequestsTabState extends State<RequestsTab> {
     final ok = await Navigator.push<bool>(
         context,
         appRoute(
-            (_) => PhotoIdentifyScreen(
-                objectId: _filter.objectIds.length == 1
-                    ? _filter.objectIds.single
-                    : null),
+            (_) => PhotoIdentifyScreen(objectId: widget.objectFilter?.id),
             title: context.l10n.tabRequests));
     if (ok == true) {
       await _load(refs: false);

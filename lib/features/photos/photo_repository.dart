@@ -12,11 +12,16 @@ class WorkPhoto {
   final double? lng;
   final bool mockLocation;
   final String? url; // временная ссылка на файл
+  final String? uploaderName; // кто снял (profiles.full_name)
 
   const WorkPhoto({required this.id, required this.stage, required this.storagePath,
-      this.takenAt, this.lat, this.lng, this.mockLocation = false, this.url});
+      this.takenAt, this.lat, this.lng, this.mockLocation = false, this.url,
+      this.uploaderName});
 
   bool get hasLocation => lat != null && lng != null;
+
+  /// Имя файла для «Скачать» / «Поделиться»: before_1791926088871.jpg.
+  String get fileName => storagePath.split('/').last;
 }
 
 /// Снимок с камеры и метаданные, готовые к загрузке.
@@ -36,7 +41,8 @@ class PhotoRepository {
   Future<List<WorkPhoto>> list(String workOrderId) async {
     final rows = await _c
         .from('attachments')
-        .select('id,stage,storage_path,taken_at,lat,lng,mock_location')
+        .select('id,stage,storage_path,taken_at,lat,lng,mock_location,'
+            'uploader:profiles!attachments_uploaded_by_fkey(full_name)')
         .eq('work_order_id', workOrderId)
         .eq('kind', 'photo')
         .order('created_at');
@@ -63,9 +69,13 @@ class PhotoRepository {
           lng: (r['lng'] as num?)?.toDouble(),
           mockLocation: r['mock_location'] == true,
           url: urls[r['storage_path']],
+          uploaderName: (r['uploader'] as Map<String, dynamic>?)?['full_name'] as String?,
         ),
     ];
   }
+
+  /// Байты файла — для «Поделиться» на телефоне.
+  Future<Uint8List> download(String path) => _c.storage.from(bucket).download(path);
 
   /// Загружает снимок в Storage и записывает его во вложения заявки.
   /// Путь <company_id>/<work_order_id>/<стадия>_<время>.jpg — по нему

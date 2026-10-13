@@ -1273,6 +1273,9 @@ async function openPhoto(page, { here = true } = {}) {
   await see(page, 'Сфотографировать').waitFor({ timeout: 20000 });
   await settle(page, 1200);
   if (!here) return;
+  // «Где я» запоминается на устройстве: уже выбрано (второй экран подряд) —
+  // не открываем окно, иначе нажатие на отмеченный объект его не закрывает.
+  if (await see(page, /БЦ «Демо» · 301 · Переговорная/).isVisible().catch(() => false)) return;
   await page.getByRole('button', { name: /Без объекта|весь объект|Переговорная/ }).first().click();
   await see(page, 'Выберите объект').waitFor({ timeout: 10000 });
   await settle(page, 500);

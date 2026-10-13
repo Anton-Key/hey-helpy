@@ -64,7 +64,7 @@ const kStatusOrder = [
 const kPriorityOrder = ['critical', 'high', 'normal', 'low'];
 
 /// Источник заявки (work_orders.input_channel).
-const kChannels = ['voice', 'text', 'button'];
+const kChannels = ['voice', 'text', 'telegram', 'button'];
 
 /// Одно условие запроса PostgREST: `column=op.value`; для [column] = `or` —
 /// `or=(value)`. Строки, а не вызовы клиента, — чтобы проверять тестами.

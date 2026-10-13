@@ -12,6 +12,7 @@ export 'icons.dart';
 export 'info.dart';
 export 'nav_bar.dart';
 export 'pressable.dart';
+export 'qr_code.dart';
 export 'side_nav.dart';
 export 'surfaces.dart';
 export 'tokens.dart';

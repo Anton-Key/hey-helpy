@@ -6800,6 +6800,336 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Подтёк воды под блоком'**
   String get photoMockDefect;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Telegram'**
+  String get tgTitle;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Пишите заявки боту @{bot} текстом, голосом или фото — они появятся в приложении от вашего имени.'**
+  String tgSettingsHint(String bot);
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Подключён: {who}'**
+  String tgConnectedAs(String who);
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'с {date}'**
+  String tgConnectedSince(String date);
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Не подключён'**
+  String get tgNotConnected;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Подключить Telegram'**
+  String get tgConnect;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Отключить Telegram'**
+  String get tgDisconnect;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Бот перестанет принимать от вас заявки, пока вы не подключите Telegram снова.'**
+  String get tgDisconnectConfirm;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Telegram отключён'**
+  String get tgDisconnected;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Подключение Telegram'**
+  String get tgCodeTitle;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Откройте ссылку на телефоне с Telegram и нажмите «Запустить» — или наведите на QR-код камеру телефона. Код действует 15 минут, использовать можно один раз.'**
+  String get tgCodeHowTo;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Код'**
+  String get tgCodeLabel;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка'**
+  String get tgLinkLabel;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть Telegram'**
+  String get tgOpenTelegram;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Скопировать ссылку'**
+  String get tgCopyLink;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка скопирована'**
+  String get tgLinkCopied;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово, проверить'**
+  String get tgCheck;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Пока не подключено: нажмите «Запустить» в чате с ботом.'**
+  String get tgStillNotConnected;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявки через Telegram'**
+  String get tgObjectRow;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'QR-код для плаката, рабочие группы'**
+  String get tgObjectRowHint;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка компании для Telegram'**
+  String get tgCompanyRow;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Для рабочего чата: сотрудники без аккаунта'**
+  String get tgCompanyRowHint;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Повесьте плакат с QR-кодом на объекте: любой сотрудник — уборщица, охранник, арендатор — отсканирует его и напишет боту о проблеме, без регистрации. Заявка сразу появится в приложении с пометкой «Telegram».'**
+  String get tgLinkObjectHint;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправьте ссылку в рабочий чат компании: по ней сотрудник без аккаунта пишет заявки на любой объект компании — бот спросит, на каком.'**
+  String get tgLinkCompanyHint;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылки пока нет.'**
+  String get tgLinkNone;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать ссылку и QR-код'**
+  String get tgLinkCreate;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка создана'**
+  String get tgLinkCreated;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать новую ссылку'**
+  String get tgLinkRotate;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Старая ссылка и её QR-код перестанут работать, плакат придётся распечатать заново.'**
+  String get tgLinkRotateConfirm;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Отключить ссылку'**
+  String get tgLinkDisable;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Сотрудники, подключившиеся по этой ссылке, больше не смогут писать заявки.'**
+  String get tgLinkDisableConfirm;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка отключена'**
+  String get tgLinkDisabled;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Создана {date}'**
+  String tgLinkSince(String date);
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Плакат для печати (PDF)'**
+  String get tgPoster;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Что-то сломалось?'**
+  String get tgPosterTitle;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Наведите камеру телефона на QR-код'**
+  String get tgPosterStep1;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Опишите проблему в Telegram — текстом, голосом или фото'**
+  String get tgPosterStep2;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка сразу уйдёт в службу эксплуатации'**
+  String get tgPosterStep3;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Telegram-бот @{bot} · без регистрации'**
+  String tgPosterFooter(String bot);
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Группы Telegram'**
+  String get tgGroupsTitle;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'В рабочем чате объекта упомяните @{bot} в сообщении о неисправности — заявка создастся прямо из группы. Остальную переписку бот не читает.'**
+  String tgGroupsHint(String bot);
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Группы не подключены.'**
+  String get tgGroupsEmpty;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Подключить группу'**
+  String get tgGroupAdd;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Подключение группы'**
+  String get tgGroupCodeTitle;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Откройте ссылку на телефоне и выберите группу объекта — бот подключит её сам. Или добавьте @{bot} в группу и отправьте там: /connect {code}. Код действует 15 минут.'**
+  String tgGroupCodeHowTo(String bot, String code);
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Группа без названия'**
+  String get tgGroupNoTitle;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Отключить группу «{title}»? Бот перестанет принимать из неё заявки.'**
+  String tgGroupRemoveConfirm(String title);
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Отключить'**
+  String get tgGroupRemove;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Группа отключена'**
+  String get tgGroupRemoved;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Написал в Telegram'**
+  String get tgReporter;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'гость'**
+  String get tgGuest;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'из группы'**
+  String get tgGroupChat;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'через Telegram'**
+  String get reqViaTelegram;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Telegram'**
+  String get filterChannelTelegram;
+
+  /// Шаг 23: Telegram-бот
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка не найдена или у вас нет к ней доступа.'**
+  String get orderLinkNotFound;
 }
 
 class _AppLocalizationsDelegate

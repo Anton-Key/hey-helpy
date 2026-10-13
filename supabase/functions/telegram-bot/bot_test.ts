@@ -647,6 +647,11 @@ Deno.test("команды: привязка кодом, /reset, /connect, /cance
   assertEquals(w.sent.at(-1)!.html, TEXTS.ru.connectInPrivate);
   await handleUpdate(msg({ chatType: "group", text: "/connect ABC" }), w.deps);
   assertStringIncludes(w.sent.at(-1)!.html, "Группа подключена");
+  // Ссылка «добавить в группу»: /start grp_<код>.
+  await handleUpdate(msg({ chatType: "group", text: "/start@HeyHelpy_bot grp_ABC" }), w.deps);
+  assertStringIncludes(w.sent.at(-1)!.html, "Группа подключена");
+  await handleUpdate(msg({ chatType: "group", text: "/start grp_XYZ" }), w.deps);
+  assertEquals(w.sent.at(-1)!.html, TEXTS.ru.badCode);
   await handleUpdate(msg({ text: "/cancel" }), w.deps);
   assertEquals(w.sent.at(-1)!.html, TEXTS.ru.nothingToCancel);
   w.setWho({ kind: "user", company_id: CO });

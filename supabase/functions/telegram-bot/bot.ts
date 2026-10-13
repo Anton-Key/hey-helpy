@@ -455,6 +455,8 @@ async function handleCommand(name: string, arg: string, m: TgMessage, turn: Turn
   const from = m.from;
   switch (name) {
     case "start": {
+      // Ссылка «Добавить бота в группу» (?startgroup=grp_<код>) — как /connect <код>.
+      if (group && arg.startsWith("grp_")) return void await handleCommand("connect", arg.slice(4), m, turn, bot);
       if (!group && arg.startsWith("link_")) {
         const r = await deps.db.linkChat(arg.slice(5), chat, from?.username ?? null, reporterName(from), lang);
         turn.log.result = r.ok ? "linked" : "bad_code";

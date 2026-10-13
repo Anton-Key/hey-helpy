@@ -72,12 +72,29 @@ class _RequestsTabState extends State<RequestsTab> {
   /// Номер последнего запроса: ответы старых запросов не показываем.
   int _req = 0;
 
+  /// Автообновление (шаг 23): заявки из Telegram-бота появляются сами.
+  Timer? _poll;
+  static const _pollEvery = Duration(seconds: 15);
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _init());
     _wakeSub = _wake.detections.listen((_) => _openVoice());
     _wake.start();
+    _poll = Timer.periodic(_pollEvery, (_) => _autoRefresh());
+  }
+
+  /// Тихо перечитать список: только когда вкладка на экране (не под
+  /// карточкой заявки), приложение открыто и предыдущий запрос завершён.
+  void _autoRefresh() {
+    if (!mounted || _loading || !_refsLoaded) return;
+    if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    if (!TickerMode.valuesOf(context).enabled) return;
+    _load(refs: false, silent: true);
   }
 
   HomeActions? _homeActions;
@@ -123,6 +140,7 @@ class _RequestsTabState extends State<RequestsTab> {
   @override
   void dispose() {
     _homeActions?.removeListener(_onHomeAction);
+    _poll?.cancel();
     _wakeSub?.cancel();
     _wake.dispose();
     _search.dispose();
@@ -152,12 +170,14 @@ class _RequestsTabState extends State<RequestsTab> {
   }
 
   /// Справочники (один раз и по «Обновить») и заявки по фильтру.
-  Future<void> _load({bool refs = true}) async {
+  Future<void> _load({bool refs = true, bool silent = false}) async {
     final req = ++_req;
-    setState(() {
-      if (_items.isEmpty) _loading = true;
-      _error = null;
-    });
+    if (!silent) {
+      setState(() {
+        if (_items.isEmpty) _loading = true;
+        _error = null;
+      });
+    }
     try {
       if (refs || !_refsLoaded) {
         _companyId ??= await _dir.myCompanyId();
@@ -192,7 +212,8 @@ class _RequestsTabState extends State<RequestsTab> {
       _onHomeAction();
     } catch (e) {
       debugPrint('RequestsTab: $e');
-      if (!mounted || req != _req) return;
+      // Тихое обновление не прячет список из-за пропавшей на миг сети.
+      if (!mounted || req != _req || silent) return;
       setState(() {
         _error = '$e';
         _loading = false;
@@ -536,8 +557,11 @@ class _RequestsTabState extends State<RequestsTab> {
                 : (w.recurring ? '  · ${l.requestRecurringTag}' : '')),
         place: objectPlaceLine(l, _objects, w.objectId),
         subtitle: [
-          [if (place.isNotEmpty) place, if (workType != null) workType]
-              .join(' · '),
+          [
+            if (place.isNotEmpty) place,
+            if (workType != null) workType,
+            if (w.inputChannel == 'telegram') l.filterChannelTelegram,
+          ].join(' · '),
           if (due != null) due,
         ].where((s) => s.isNotEmpty).join('\n'),
         subtitleMaxLines: due == null ? 2 : 3,

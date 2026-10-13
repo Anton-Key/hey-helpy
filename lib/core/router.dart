@@ -4,6 +4,7 @@ import '../features/auth/login_screen.dart';
 import '../features/floors/floor_plan_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/requests/order_link_screen.dart';
 import 'session_controller.dart';
 import 'splash_screen.dart';
 
@@ -57,6 +58,14 @@ GoRouter createRouter(SessionController session) {
       GoRoute(
         path: '/',
         builder: (_, __) => const HomeScreen(),
+        routes: [
+          // Заявка по ссылке из Telegram-бота (шаг 23): …/#/orders/<id>.
+          GoRoute(
+            path: 'orders/:orderId',
+            builder: (_, state) =>
+                OrderLinkScreen(orderId: state.pathParameters['orderId']!),
+          ),
+        ],
       ),
       // План этажа (шаг 14b): ссылкой можно поделиться.
       GoRoute(

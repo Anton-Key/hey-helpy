@@ -6,7 +6,7 @@
 - [x] 1. Миграция `0018_telegram.sql` (ссылки, гости, группы, привязка, функции `tg_*`, лимиты) + тесты базы
 - [x] 2. Edge Function `telegram-bot` (вебхук: текст, подтверждение, ссылки объекта и компании, гости, голос, фото, группы) + `deno test`
 - [x] 3. Workflow «Telegram webhook»
-- [ ] 4. Приложение: Профиль → Telegram, QR объекта и плакат, ссылка компании, группа объекта, пометка «Telegram» в заявках, автообновление
+- [x] 4. Приложение: Профиль → Telegram, QR объекта и плакат, ссылка компании, группа объекта, пометка «Telegram» в заявках, автообновление
 - [ ] 5. Демо-данные, `CLAUDE.md`, `docs/DEMO_SCRIPT.md`, `/screens`, кадр питча 19
 
 ## Что сделано
@@ -20,7 +20,8 @@
 | 13.10 | Черновой PR #21 | — |
 | 13.10 | Блок 2 (часть): `telegram-bot` — texts.ts, telegram.ts, stt.ts, bot.ts, index.ts; `deno check` ✅, тестов ещё нет | d7a1267 |
 | 13.10 | Блок 2: `bot_test.ts` (30 тестов без сети), `config.toml` (`verify_jwt = false`), `telegram-bot` в «Deploy functions»; `deno test` 67 ✅ | 8b6baa6 |
-| 13.10 | Блок 3: `.github/workflows/telegram-webhook.yml` (set / info / delete, команды из `texts.ts`) | (этот) |
+| 13.10 | Блок 3: `.github/workflows/telegram-webhook.yml` (set / info / delete, команды из `texts.ts`) | 0e8a56f |
+| 13.10 | Блок 4: приложение — `lib/features/telegram/` (Настройки → Telegram, QR и плакат объекта, ссылка компании, группы), `AppQrCode`, маршрут `/orders/:id`, канал `telegram`, автор из Telegram в карточке, автообновление списка 15 с; бот: `/start grp_<код>`; flutter test 372 ✅ | (этот) |
 
 ## Где остановился
 Сессия остановлена по просьбе пользователя посреди блока 2.

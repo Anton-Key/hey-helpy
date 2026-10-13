@@ -29,6 +29,7 @@ import 'order_menu.dart';
 import 'work_order.dart';
 import '../../core/app_message.dart';
 import '../directory/city.dart';
+import '../telegram/telegram_repository.dart';
 
 export 'requests_tab.dart';
 export 'work_order.dart';
@@ -656,10 +657,12 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final channel = switch (d['input_channel']) {
       'voice' => l.reqViaVoice,
       'text' => l.reqViaText,
+      'telegram' => l.reqViaTelegram,
       _ => null,
     };
     final noDesc = desc == null || desc.isEmpty;
     final actions = _actions(status);
+    final reporter = telegramReporterLabel(l, d['reporter']);
 
     return [
       Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
@@ -683,6 +686,12 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
           style: AppText.footnote),
       const SizedBox(height: AppSpace.l),
       AppGroup(children: [
+        // Кто написал в Telegram (шаг 23): «Мария К. · гость».
+        if (reporter != null)
+          AppRow(
+              leading: const LeadingIcon(AppIcons.telegram),
+              title: l.tgReporter,
+              value: reporter),
         AppRow(
             leading: const LeadingIcon(AppIcons.building),
             title: l.fieldObject,

@@ -98,6 +98,7 @@ class OrderFilterLabels {
   String channel(String c) => switch (c) {
         'voice' => l.filterChannelVoice,
         'text' => l.filterChannelText,
+        'telegram' => l.filterChannelTelegram,
         _ => l.filterChannelButton,
       };
 

@@ -35,6 +35,8 @@
 --     в кабинете 302 (сценарий «Узнать по фото»).
 --   • шаг 17 (блок 5f, если применена 0016): бригады «Пекин» и «Шэньчжэнь»
 --     подрядчика Huaxin FM (950–951) с зонами по городу (970–971).
+--   • шаг 23 (блок 5g, если применена 0018): заявки из Telegram-бота 277
+--     (гость по QR-коду) и 278 (сотрудник с привязанным аккаунтом).
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
 -- и миграций 0001–0015. Подробно: docs/DEMO_SETUP.md, шаг 4.
@@ -1167,6 +1169,55 @@ begin
       layer_ids = excluded.layer_ids, scope_kind = excluded.scope_kind, scope_ref = excluded.scope_ref;
   else
     raise notice 'Миграция 0016 не применена — бригады шага 17 пропущены.';
+  end if;
+
+  -- 5g. Шаг 23 (миграция 0018, если применена): две заявки из Telegram-бота
+  --     на «БЦ «Демо»» — 277 от гостя по QR-коду объекта (уборщица, без
+  --     аккаунта; автор — демо-заявитель, как у бота: created_by = автор
+  --     ссылки) и 278 от сотрудника с привязанным аккаунтом. В reporter —
+  --     только имя (без телефона и chat_id), как пишет бот.
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'work_orders' and column_name = 'reporter') then
+    insert into public.work_orders (
+      id, company_id, object_id, location_id, title, description, work_type, layer_id,
+      priority, status, requires_photo, input_channel, created_by, reporter,
+      assigned_contractor_id, assigned_by, due_at, created_at, updated_at, started_at)
+    select
+      ('de300000-0000-4000-8000-' || lpad(t.n::text, 12, '0'))::uuid,
+      c_company, c_object, ('de300000-0000-4000-8000-' || lpad(t.loc::text, 12, '0'))::uuid,
+      t.title, t.descr, ly.name, ly.id, t.priority, t.status, ly.requires_photo, 'telegram',
+      v_requester, t.reporter,
+      ('de300000-0000-4000-8000-' || lpad(t.c::text, 12, '0'))::uuid, 'rule',
+      v_today + make_interval(hours => t.h + 24), v_today + make_interval(hours => t.h),
+      v_today + make_interval(hours => t.h, mins => coalesce(t.r, 0)),
+      case when t.r is not null then v_today + make_interval(hours => t.h, mins => t.r) end
+    from (values
+      (277, 'hvac', 21, 31, 'Капает вода с кондиционера',
+       'В переговорной 301 с кондиционера капает вода на ковёр. На фото: кондиционер, видно подтёк под блоком.',
+       'high', 'assigned', '{"name":"Ольга С.","guest":true}'::jsonb, 9, null::int),
+      (278, 'elec', 24, 32, 'Не работает розетка у стойки ресепшена',
+       'Холл: розетка слева от стойки ресепшена не даёт питания, зарядка не работает.',
+       'normal', 'in_progress', '{"name":"Анна Д.","username":"anna_demo","guest":false}'::jsonb, 8, 40)
+    ) as t(n, layer, loc, c, title, descr, priority, status, reporter, h, r)
+    join public.layers ly on ly.id = case t.layer when 'hvac' then v_layer_hvac else v_layer_elec end
+    on conflict (id) do update set
+      company_id = excluded.company_id, object_id = excluded.object_id,
+      location_id = excluded.location_id, asset_id = null,
+      title = excluded.title, description = excluded.description,
+      work_type = excluded.work_type, layer_id = excluded.layer_id,
+      priority = excluded.priority, status = excluded.status, recurrence = null,
+      requires_photo = excluded.requires_photo, input_channel = excluded.input_channel,
+      created_by = excluded.created_by, reporter = excluded.reporter,
+      assigned_contractor_id = excluded.assigned_contractor_id,
+      assigned_executor_id = null, assigned_by = excluded.assigned_by,
+      due_at = excluded.due_at, created_at = excluded.created_at,
+      updated_at = excluded.updated_at, started_at = excluded.started_at,
+      submitted_at = null, accepted_at = null, accepted_by = null,
+      return_reason = null, return_count = 0;
+    get diagnostics v_world_orders = row_count;
+    v_orders := v_orders + v_world_orders;
+  else
+    raise notice 'Миграция 0018 не применена — заявки из Telegram (шаг 23) пропущены.';
   end if;
 
   -- 6. Визиты

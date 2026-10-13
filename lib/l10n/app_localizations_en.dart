@@ -3438,6 +3438,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importTemplateFileName => 'HeyHelpy_Equipment_template';
 
   @override
+  String get importTemplateSheetName => 'Equipment';
+
+  @override
   String get assetFieldInventoryHint => 'E.g. AC-3-001';
 
   @override
@@ -3980,4 +3983,195 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoMockDefect => 'Water leak under the unit';
+
+  @override
+  String get tgTitle => 'Telegram';
+
+  @override
+  String tgSettingsHint(String bot) {
+    return 'Send work orders to @$bot by text, voice or photo — they appear in the app under your name.';
+  }
+
+  @override
+  String tgConnectedAs(String who) {
+    return 'Connected: $who';
+  }
+
+  @override
+  String tgConnectedSince(String date) {
+    return 'since $date';
+  }
+
+  @override
+  String get tgNotConnected => 'Not connected';
+
+  @override
+  String get tgConnect => 'Connect Telegram';
+
+  @override
+  String get tgDisconnect => 'Disconnect Telegram';
+
+  @override
+  String get tgDisconnectConfirm =>
+      'The bot will stop accepting work orders from you until you connect Telegram again.';
+
+  @override
+  String get tgDisconnected => 'Telegram disconnected';
+
+  @override
+  String get tgCodeTitle => 'Connect Telegram';
+
+  @override
+  String get tgCodeHowTo =>
+      'Open the link on a phone with Telegram and tap “Start” — or point the phone camera at the QR code. The code is valid for 15 minutes and works once.';
+
+  @override
+  String get tgCodeLabel => 'Code';
+
+  @override
+  String get tgLinkLabel => 'Link';
+
+  @override
+  String get tgOpenTelegram => 'Open Telegram';
+
+  @override
+  String get tgCopyLink => 'Copy link';
+
+  @override
+  String get tgLinkCopied => 'Link copied';
+
+  @override
+  String get tgCheck => 'Done, check';
+
+  @override
+  String get tgStillNotConnected =>
+      'Not connected yet: tap “Start” in the chat with the bot.';
+
+  @override
+  String get tgObjectRow => 'Work orders via Telegram';
+
+  @override
+  String get tgObjectRowHint => 'QR code for a poster, work groups';
+
+  @override
+  String get tgCompanyRow => 'Company link for Telegram';
+
+  @override
+  String get tgCompanyRowHint => 'For the work chat: staff without an account';
+
+  @override
+  String get tgLinkObjectHint =>
+      'Put up a poster with the QR code at the site: any staff member — cleaner, guard, tenant — scans it and tells the bot about the problem, no sign-up needed. The work order appears in the app right away, marked “Telegram”.';
+
+  @override
+  String get tgLinkCompanyHint =>
+      'Post the link in the company work chat: staff without an account can send work orders for any company site — the bot asks which one.';
+
+  @override
+  String get tgLinkNone => 'No link yet.';
+
+  @override
+  String get tgLinkCreate => 'Create link and QR code';
+
+  @override
+  String get tgLinkCreated => 'Link created';
+
+  @override
+  String get tgLinkRotate => 'Create a new link';
+
+  @override
+  String get tgLinkRotateConfirm =>
+      'The old link and its QR code will stop working; the poster has to be printed again.';
+
+  @override
+  String get tgLinkDisable => 'Disable link';
+
+  @override
+  String get tgLinkDisableConfirm =>
+      'Staff who joined with this link will no longer be able to send work orders.';
+
+  @override
+  String get tgLinkDisabled => 'Link disabled';
+
+  @override
+  String tgLinkSince(String date) {
+    return 'Created $date';
+  }
+
+  @override
+  String get tgPoster => 'Poster to print (PDF)';
+
+  @override
+  String get tgPosterTitle => 'Something broken?';
+
+  @override
+  String get tgPosterStep1 => 'Point your phone camera at the QR code';
+
+  @override
+  String get tgPosterStep2 =>
+      'Describe the problem in Telegram — by text, voice or photo';
+
+  @override
+  String get tgPosterStep3 =>
+      'The work order goes straight to facility management';
+
+  @override
+  String tgPosterFooter(String bot) {
+    return 'Telegram bot @$bot · no sign-up';
+  }
+
+  @override
+  String get tgGroupsTitle => 'Telegram groups';
+
+  @override
+  String tgGroupsHint(String bot) {
+    return 'In the site\'s work chat, mention @$bot in a message about a problem — the work order is created right from the group. The bot doesn\'t read the rest of the chat.';
+  }
+
+  @override
+  String get tgGroupsEmpty => 'No groups connected.';
+
+  @override
+  String get tgGroupAdd => 'Connect a group';
+
+  @override
+  String get tgGroupCodeTitle => 'Connect a group';
+
+  @override
+  String tgGroupCodeHowTo(String bot, String code) {
+    return 'Open the link on your phone and pick the site\'s group — the bot connects it by itself. Or add @$bot to the group and send there: /⁠connect $code. The code is valid for 15 minutes.';
+  }
+
+  @override
+  String get tgGroupNoTitle => 'Untitled group';
+
+  @override
+  String tgGroupRemoveConfirm(String title) {
+    return 'Disconnect the group “$title”? The bot will stop accepting work orders from it.';
+  }
+
+  @override
+  String get tgGroupRemove => 'Disconnect';
+
+  @override
+  String get tgGroupRemoved => 'Group disconnected';
+
+  @override
+  String get tgReporter => 'Reported in Telegram';
+
+  @override
+  String get tgGuest => 'guest';
+
+  @override
+  String get tgGroupChat => 'from a group';
+
+  @override
+  String get reqViaTelegram => 'via Telegram';
+
+  @override
+  String get filterChannelTelegram => 'Telegram';
+
+  @override
+  String get orderLinkNotFound =>
+      'The work order wasn\'t found or you don\'t have access to it.';
 }

@@ -7,6 +7,8 @@ import '../../core/l10n_ext.dart';
 import '../../models/profile.dart';
 import 'profile_repository.dart';
 import '../../core/app_message.dart';
+import '../../core/app_links.dart';
+import '../telegram/telegram_screens.dart';
 
 /// Пароль Supabase Auth — не короче 6 символов (настройка проекта по умолчанию).
 const _minPassword = 6;
@@ -164,6 +166,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: l.profileLanguage,
                   value: currentLanguageName(context),
                   onTap: () => pickLanguage(context),
+                ),
+              ]),
+              // Telegram-бот (шаг 23): заявки от своего имени.
+              AppGroup(header: l.tgTitle, children: [
+                AppRow(
+                  leading: const LeadingIcon(AppIcons.telegram),
+                  title: l.tgTitle,
+                  subtitle: l.tgSettingsHint(kTelegramBot),
+                  onTap: () => Navigator.push(
+                      context,
+                      appRoute((_) => const TelegramAccountScreen(),
+                          title: l.profileSettings)),
                 ),
               ]),
               AppGroup(header: l.settingsAbout, children: [

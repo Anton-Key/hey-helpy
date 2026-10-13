@@ -197,9 +197,10 @@ export function buildVisionMessages(
     `Виды: ${kinds.join("; ")}`,
     `Системы: ${systems.length ? systems.join("; ") : "(нет)"}`,
   ].join("\n");
+  // Как в официальном примере AI Studio: одно сообщение system (правила и
+  // справочники вместе), затем одно user — текст и картинка.
   return [
-    { role: "system", content: VISION_PROMPT },
-    { role: "system", content: reference },
+    { role: "system", content: `${VISION_PROMPT}\n\n${reference}` },
     {
       role: "user",
       content: [

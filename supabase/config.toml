@@ -11,3 +11,9 @@ verify_jwt = true
 # «Узнать по фото» (шаг 22): тот же порядок — JWT шлюзом и проверка внутри.
 [functions.photo-identify]
 verify_jwt = true
+
+# Telegram-бот (шаг 23): Telegram не присылает JWT, поэтому шлюз пропускает
+# запрос, а функция сама сверяет заголовок X-Telegram-Bot-Api-Secret-Token с
+# секретом TELEGRAM_WEBHOOK_SECRET (не совпал → 401, ничего не делает).
+[functions.telegram-bot]
+verify_jwt = false

@@ -15,6 +15,7 @@ import '../access/audit_screen.dart';
 import '../regions/regions_screen.dart';
 import 'profile_repository.dart';
 import '../../core/app_message.dart';
+import '../telegram/telegram_screens.dart';
 
 /// Сроки приглашения на выбор (дней). Больше 7 не даём: так решено в 0008.
 const _inviteDays = [1, 3, 7];
@@ -446,6 +447,19 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                               companyId: _me.companyId),
                           title: l.profileMyCompany)),
                 ),
+                // Ссылка компании для Telegram-бота (шаг 23): администратор.
+                if (_me.role == UserRole.admin)
+                  AppRow(
+                    leading: const LeadingIcon(AppIcons.telegram),
+                    title: l.tgCompanyRow,
+                    subtitle: l.tgCompanyRowHint,
+                    onTap: () => Navigator.push(
+                        context,
+                        appRoute(
+                            (_) => ReportLinkScreen(
+                                objectId: null, placeName: _name ?? ''),
+                            title: l.profileMyCompany)),
+                  ),
                 // Журнал изменений доступа (шаг 18): только администратор.
                 if (_me.role == UserRole.admin && _me.companyId != null)
                   AppRow(

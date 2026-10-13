@@ -3466,6 +3466,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get importTemplateFileName => 'HeyHelpy_Оборудование_шаблон';
 
   @override
+  String get importTemplateSheetName => 'Оборудование';
+
+  @override
   String get assetFieldInventoryHint => 'Например, КЛ-3-001';
 
   @override
@@ -4011,4 +4014,194 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get photoMockDefect => 'Подтёк воды под блоком';
+
+  @override
+  String get tgTitle => 'Telegram';
+
+  @override
+  String tgSettingsHint(String bot) {
+    return 'Пишите заявки боту @$bot текстом, голосом или фото — они появятся в приложении от вашего имени.';
+  }
+
+  @override
+  String tgConnectedAs(String who) {
+    return 'Подключён: $who';
+  }
+
+  @override
+  String tgConnectedSince(String date) {
+    return 'с $date';
+  }
+
+  @override
+  String get tgNotConnected => 'Не подключён';
+
+  @override
+  String get tgConnect => 'Подключить Telegram';
+
+  @override
+  String get tgDisconnect => 'Отключить Telegram';
+
+  @override
+  String get tgDisconnectConfirm =>
+      'Бот перестанет принимать от вас заявки, пока вы не подключите Telegram снова.';
+
+  @override
+  String get tgDisconnected => 'Telegram отключён';
+
+  @override
+  String get tgCodeTitle => 'Подключение Telegram';
+
+  @override
+  String get tgCodeHowTo =>
+      'Откройте ссылку на телефоне с Telegram и нажмите «Запустить» — или наведите на QR-код камеру телефона. Код действует 15 минут, использовать можно один раз.';
+
+  @override
+  String get tgCodeLabel => 'Код';
+
+  @override
+  String get tgLinkLabel => 'Ссылка';
+
+  @override
+  String get tgOpenTelegram => 'Открыть Telegram';
+
+  @override
+  String get tgCopyLink => 'Скопировать ссылку';
+
+  @override
+  String get tgLinkCopied => 'Ссылка скопирована';
+
+  @override
+  String get tgCheck => 'Готово, проверить';
+
+  @override
+  String get tgStillNotConnected =>
+      'Пока не подключено: нажмите «Запустить» в чате с ботом.';
+
+  @override
+  String get tgObjectRow => 'Заявки через Telegram';
+
+  @override
+  String get tgObjectRowHint => 'QR-код для плаката, рабочие группы';
+
+  @override
+  String get tgCompanyRow => 'Ссылка компании для Telegram';
+
+  @override
+  String get tgCompanyRowHint => 'Для рабочего чата: сотрудники без аккаунта';
+
+  @override
+  String get tgLinkObjectHint =>
+      'Повесьте плакат с QR-кодом на объекте: любой сотрудник — уборщица, охранник, арендатор — отсканирует его и напишет боту о проблеме, без регистрации. Заявка сразу появится в приложении с пометкой «Telegram».';
+
+  @override
+  String get tgLinkCompanyHint =>
+      'Отправьте ссылку в рабочий чат компании: по ней сотрудник без аккаунта пишет заявки на любой объект компании — бот спросит, на каком.';
+
+  @override
+  String get tgLinkNone => 'Ссылки пока нет.';
+
+  @override
+  String get tgLinkCreate => 'Создать ссылку и QR-код';
+
+  @override
+  String get tgLinkCreated => 'Ссылка создана';
+
+  @override
+  String get tgLinkRotate => 'Создать новую ссылку';
+
+  @override
+  String get tgLinkRotateConfirm =>
+      'Старая ссылка и её QR-код перестанут работать, плакат придётся распечатать заново.';
+
+  @override
+  String get tgLinkDisable => 'Отключить ссылку';
+
+  @override
+  String get tgLinkDisableConfirm =>
+      'Сотрудники, подключившиеся по этой ссылке, больше не смогут писать заявки.';
+
+  @override
+  String get tgLinkDisabled => 'Ссылка отключена';
+
+  @override
+  String tgLinkSince(String date) {
+    return 'Создана $date';
+  }
+
+  @override
+  String get tgPoster => 'Плакат для печати (PDF)';
+
+  @override
+  String get tgPosterTitle => 'Что-то сломалось?';
+
+  @override
+  String get tgPosterStep1 => 'Наведите камеру телефона на QR-код';
+
+  @override
+  String get tgPosterStep2 =>
+      'Опишите проблему в Telegram — текстом, голосом или фото';
+
+  @override
+  String get tgPosterStep3 => 'Заявка сразу уйдёт в службу эксплуатации';
+
+  @override
+  String tgPosterFooter(String bot) {
+    return 'Telegram-бот @$bot · без регистрации';
+  }
+
+  @override
+  String get tgGroupsTitle => 'Группы Telegram';
+
+  @override
+  String tgGroupsHint(String bot) {
+    return 'В рабочем чате объекта упомяните @$bot в сообщении о неисправности — заявка создастся прямо из группы. Остальную переписку бот не читает.';
+  }
+
+  @override
+  String get tgGroupsEmpty => 'Группы не подключены.';
+
+  @override
+  String get tgGroupAdd => 'Подключить группу';
+
+  @override
+  String get tgGroupCodeTitle => 'Подключение группы';
+
+  @override
+  String tgGroupCodeHowTo(String bot, String code) {
+    return 'Откройте ссылку на телефоне и выберите группу объекта — бот подключит её сам. Или добавьте @$bot в группу и отправьте там: /⁠connect $code. Код действует 15 минут.';
+  }
+
+  @override
+  String get tgGroupNoTitle => 'Группа без названия';
+
+  @override
+  String tgGroupRemoveConfirm(String title) {
+    return 'Отключить группу «$title»? Бот перестанет принимать из неё заявки.';
+  }
+
+  @override
+  String get tgGroupRemove => 'Отключить';
+
+  @override
+  String get tgGroupRemoved => 'Группа отключена';
+
+  @override
+  String get tgReporter => 'Написал в Telegram';
+
+  @override
+  String get tgGuest => 'гость';
+
+  @override
+  String get tgGroupChat => 'из группы';
+
+  @override
+  String get reqViaTelegram => 'через Telegram';
+
+  @override
+  String get filterChannelTelegram => 'Telegram';
+
+  @override
+  String get orderLinkNotFound =>
+      'Заявка не найдена или у вас нет к ней доступа.';
 }

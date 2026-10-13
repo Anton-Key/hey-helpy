@@ -18,6 +18,7 @@ import 'contractor_card.dart';
 import 'city.dart';
 import 'directory.dart';
 import '../../core/app_message.dart';
+import '../telegram/telegram_screens.dart';
 
 /// Карточка объекта: тип, адрес, координаты и радиус геозоны (меняет только
 /// менеджер — проверяет база), помещения, подрядчики по видам работ,
@@ -261,6 +262,23 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
           child: AppButton.tinted(
               icon: AppIcons.placeEdit, label: l.cardEditGeo, onPressed: _edit),
         ),
+
+      // Заявки через Telegram (шаг 23): QR-код объекта и группы — менеджеру.
+      if (ctx.isManager)
+        AppGroup(children: [
+          AppRow(
+            leading: const LeadingIcon(AppIcons.telegram),
+            title: l.tgObjectRow,
+            subtitle: l.tgObjectRowHint,
+            onTap: () => Navigator.push(
+                context,
+                appRoute(
+                    (_) => ReportLinkScreen(
+                        objectId: _obj.id,
+                        placeName: objectDisplayName(_obj)),
+                    title: _obj.name)),
+          ),
+        ]),
 
       // Этажи и планы (шаг 14b)
       FloorsSection(

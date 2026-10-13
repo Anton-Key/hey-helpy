@@ -31,11 +31,12 @@ String _cellText(CellValue? v) => switch (v) {
       _ => v.toString().trim(),
     };
 
-/// Шаблон .xlsx: заголовки и строка-пример на языке [locale].
-Uint8List buildTemplateXlsx(String locale) {
+/// Шаблон .xlsx: заголовки и строка-пример на языке [locale],
+/// лист называется [sheetName] (`l10n.importTemplateSheetName`).
+Uint8List buildTemplateXlsx(String locale, {String sheetName = 'Equipment'}) {
   final lang = templateHeaders.containsKey(locale) ? locale : 'en';
   final book = Excel.createExcel();
-  final name = lang == 'ru' ? 'Оборудование' : 'Equipment';
+  final name = sheetName;
   final first = book.getDefaultSheet() ?? book.tables.keys.first;
   book.rename(first, name);
   final sheet = book[name];
@@ -49,4 +50,3 @@ Uint8List buildTemplateXlsx(String locale) {
   }
   return Uint8List.fromList(book.encode()!);
 }
-

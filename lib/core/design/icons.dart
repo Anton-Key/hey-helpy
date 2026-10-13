@@ -33,6 +33,10 @@ class AppIcons {
   static const copy = LucideIcons.copy300;
   static const link = LucideIcons.link300;
   static const send = LucideIcons.sendHorizontal300;
+  /// Telegram (шаг 23): бренд-значков в Lucide нет — «бумажный самолётик».
+  static const telegram = LucideIcons.send300;
+  static const qr = LucideIcons.qrCode300;
+  static const chats = LucideIcons.messagesSquare300;
   static const undo = LucideIcons.undo2300;
   static const play = LucideIcons.play300;
   static const swap = LucideIcons.arrowLeftRight300;

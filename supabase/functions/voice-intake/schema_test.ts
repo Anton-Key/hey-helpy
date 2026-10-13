@@ -348,7 +348,12 @@ Deno.test("yandex: запрос — модель с каталогом, заго
     return Promise.resolve(okBody('{"title":"x"}'));
   }) as unknown as typeof fetch;
   const r = await complete(cfg, [{ role: "user", content: "hi" }], fake);
-  assertEquals(r, { content: '{"title":"x"}', totalTokens: 321, model: "pro" });
+  assertEquals(r, {
+    content: '{"title":"x"}',
+    totalTokens: 321,
+    model: "pro",
+    format: "schema",
+  });
   const body = JSON.parse(seen!.init.body as string);
   assertEquals(body.model, "gpt://test-folder/yandexgpt/latest");
   assertEquals(body.temperature, 0.1);

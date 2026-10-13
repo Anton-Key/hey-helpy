@@ -206,3 +206,23 @@ end $$;
 
 select t.make_company22(1);
 select t.make_company22(2);
+
+-- 0018 (шаг 23): Telegram — ссылки объекта и компании, привязка аккаунта
+-- исполнителя, гость и группа объекта в каждой компании. chat_id разные:
+-- компания k — k·10⁶ + n.
+create or replace function t.make_company23(k int) returns void
+language plpgsql as $$
+begin
+  insert into public.report_links(id, company_id, object_id, token, created_by) values
+    (t.id(k, 451), t.id(k, 1), t.id(k, 10), format('fixtureObjToken%s_abcdef', k), t.id(k, 100)),
+    (t.id(k, 452), t.id(k, 1), null, format('fixtureCoToken%s_abcdefg', k), t.id(k, 101));
+  insert into public.telegram_links(profile_id, chat_id, tg_username, tg_name, language, last_object_id)
+  values (t.id(k, 102), k * 1000000 + 102, 'exec' || k, 'Исполнитель', 'ru', t.id(k, 10));
+  insert into public.telegram_guests(chat_id, link_id, company_id, last_object_id, tg_name, language)
+  values (k * 1000000 + 7, t.id(k, 451), t.id(k, 1), t.id(k, 10), 'Гость', 'ru');
+  insert into public.telegram_groups(chat_id, id, object_id, company_id, title, connected_by)
+  values (-(k * 1000000 + 9), t.id(k, 453), t.id(k, 10), t.id(k, 1), 'Охрана', t.id(k, 100));
+end $$;
+
+select t.make_company23(1);
+select t.make_company23(2);

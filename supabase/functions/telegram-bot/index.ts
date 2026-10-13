@@ -32,7 +32,7 @@ import {
 } from "../_shared/identify.ts";
 import { logFn } from "../_shared/http.ts";
 import { callVision, visionModels } from "../_shared/vision.ts";
-import { complete, DEFAULT_MODEL, LITE_MODEL } from "../_shared/yandex.ts";
+import { AiError, complete, DEFAULT_MODEL, LITE_MODEL } from "../_shared/yandex.ts";
 import { type Ai, type Ctx, type Db, type Deps, handleUpdate, type Session, type Storage, type Who } from "./bot.ts";
 import { recognize } from "./stt.ts";
 import { parseUpdate, secretMatches, telegramApi } from "./telegram.ts";
@@ -96,6 +96,14 @@ Deno.serve(async (req) => {
   }
   return ok();
 });
+
+/** Ошибка ИИ — в лог код и `ai_error` (без base64 и текста запроса), дальше как раньше. */
+function logAiError(ai: "text" | "vision") {
+  return (e: unknown): never => {
+    if (e instanceof AiError) log({ ai, code: e.code, ai_error: e.detail, tried: e.tried });
+    throw e;
+  };
+}
 
 function codeOf(e: unknown): string {
   const c = (e as { code?: unknown })?.code;
@@ -171,7 +179,8 @@ function makeDeps(): Deps | null {
   const ai: Ai = {
     async text(text, lang, catalog) {
       if (!aiReady) return null;
-      const r = await complete({ apiKey, folderId, model, liteModel }, buildMessages({ text, locale: lang }, catalog));
+      const r = await complete({ apiKey, folderId, model, liteModel }, buildMessages({ text, locale: lang }, catalog))
+        .catch(logAiError("text"));
       const raw = parseModelJson(r.content);
       return raw ? { result: normalize(raw, catalog, text), model: r.model } : null;
     },
@@ -180,7 +189,7 @@ function makeDeps(): Deps | null {
       const r = await callVision(
         { apiKey, folderId, ...vision },
         buildVisionMessages({ image, mime: "image/jpeg", locale: lang }, layers),
-      );
+      ).catch(logAiError("vision"));
       const raw = parseModelJson(stripThinking(r.content));
       return raw ? { vision: normalizeVision(raw, layers), model: r.model === "pro" ? "main" : "lite" } : null;
     },

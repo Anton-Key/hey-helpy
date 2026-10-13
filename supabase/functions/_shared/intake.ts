@@ -289,10 +289,11 @@ export function parseModelJson(
   content: unknown,
 ): Record<string, unknown> | null {
   if (typeof content !== "string") return null;
-  let s = content.trim().replace(/^```(?:json)?\s*/i, "").replace(
-    /\s*```$/,
-    "",
-  );
+  // Без строгого формата модель может обернуть JSON в ```json … ``` посреди
+  // текста — берём содержимое блока, иначе весь текст.
+  const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(content);
+  let s = (fenced && fenced[1].includes("{") ? fenced[1] : content).trim()
+    .replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
   const start = s.indexOf("{");
   const end = s.lastIndexOf("}");
   if (start < 0 || end <= start) return null;

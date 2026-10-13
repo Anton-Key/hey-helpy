@@ -101,7 +101,12 @@ Deno.serve(async (req) => {
       { apiKey, folderId, model, liteModel },
       buildMessages(input, catalog),
     );
-    const which = { model: ai.model, first: ai.primaryError };
+    const which = {
+      model: ai.model,
+      first: ai.primaryError,
+      first_error: ai.primaryDetail,
+      format: ai.format,
+    };
     const raw = parseModelJson(ai.content);
     if (!raw) {
       return reply(502, { error: "ai_unavailable" }, {
@@ -126,6 +131,9 @@ Deno.serve(async (req) => {
     return reply(502, { error: "ai_unavailable" }, {
       code,
       len: input.text.length,
+      // Только error.code / error.message ответа API, без base64 (≤ 300).
+      ai_error: e instanceof AiError ? e.detail : undefined,
+      tried: e instanceof AiError ? e.tried : undefined,
     });
   }
 });

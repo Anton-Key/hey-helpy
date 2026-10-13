@@ -117,6 +117,8 @@ Deno.serve(async (req) => {
     const which = {
       model: ai.model === "pro" ? "main" : "lite",
       first: ai.primaryError,
+      first_error: ai.primaryDetail,
+      format: ai.format,
     };
     const raw = parseModelJson(stripThinking(ai.content));
     if (!raw) {
@@ -152,6 +154,9 @@ Deno.serve(async (req) => {
     return reply(502, { error: "ai_unavailable" }, {
       code,
       bytes: input.bytes,
+      // Только error.code / error.message ответа API, без base64 (≤ 300).
+      ai_error: e instanceof AiError ? e.detail : undefined,
+      tried: e instanceof AiError ? e.tried : undefined,
     });
   }
 });

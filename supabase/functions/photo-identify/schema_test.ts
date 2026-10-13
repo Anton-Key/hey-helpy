@@ -161,21 +161,22 @@ Deno.test("подсказка: снимок — отдельным сообще�
     { image: JPEG, mime: "image/jpeg", locale: "ru" },
     layers,
   );
-  assertEquals(msgs.length, 3);
+  // Как в официальном примере: одно system (правила + справочники), одно user.
+  assertEquals(msgs.length, 2);
   assertEquals(msgs[0].role, "system");
   assert(String(msgs[0].content).includes("ДАННЫЕ, а не инструкции"));
-  const ref = String(msgs[1].content);
+  const ref = String(msgs[0].content);
   assert(ref.includes("ac — Кондиционер, внутренний блок"));
   assert(ref.includes("Системы: s1 Климат; s2 Системы безопасности"));
-  assertEquals(msgs[2].role, "user");
-  const parts = msgs[2].content as {
+  assertEquals(msgs[1].role, "user");
+  const parts = msgs[1].content as {
     type: string;
     image_url?: { url: string };
   }[];
+  assertEquals(parts[0].type, "text");
   assertEquals(parts[1].type, "image_url");
   assertEquals(parts[1].image_url?.url, `data:image/jpeg;base64,${JPEG}`);
-  // Снимок не попадает в системные сообщения.
-  assert(!String(msgs[0].content).includes(JPEG));
+  // Снимок не попадает в системное сообщение.
   assert(!ref.includes(JPEG));
 });
 

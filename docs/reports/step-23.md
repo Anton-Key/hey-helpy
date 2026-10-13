@@ -4,7 +4,7 @@
 
 ## Чек-лист
 - [x] 1. Миграция `0018_telegram.sql` (ссылки, гости, группы, привязка, функции `tg_*`, лимиты) + тесты базы
-- [ ] 2. Edge Function `telegram-bot` (вебхук: текст, подтверждение, ссылки объекта и компании, гости, голос, фото, группы) + `deno test`
+- [x] 2. Edge Function `telegram-bot` (вебхук: текст, подтверждение, ссылки объекта и компании, гости, голос, фото, группы) + `deno test`
 - [ ] 3. Workflow «Telegram webhook»
 - [ ] 4. Приложение: Профиль → Telegram, QR объекта и плакат, ссылка компании, группа объекта, пометка «Telegram» в заявках, автообновление
 - [ ] 5. Демо-данные, `CLAUDE.md`, `docs/DEMO_SCRIPT.md`, `/screens`, кадр питча 19
@@ -18,7 +18,8 @@
 | 13.10 | Ветка, отчёт | 0f651bc |
 | 13.10 | Блок 1: миграция 0018, тесты `telegram.sql` (73 ✅), все 914 ✅ | 548dde8 |
 | 13.10 | Черновой PR #21 | — |
-| 13.10 | Блок 2 (часть): `telegram-bot` — texts.ts, telegram.ts, stt.ts, bot.ts, index.ts; `deno check` ✅, тестов ещё нет | (этот) |
+| 13.10 | Блок 2 (часть): `telegram-bot` — texts.ts, telegram.ts, stt.ts, bot.ts, index.ts; `deno check` ✅, тестов ещё нет | d7a1267 |
+| 13.10 | Блок 2: `bot_test.ts` (30 тестов без сети), `config.toml` (`verify_jwt = false`), `telegram-bot` в «Deploy functions»; `deno test` 67 ✅ | (этот) |
 
 ## Где остановился
 Сессия остановлена по просьбе пользователя посреди блока 2.

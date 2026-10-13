@@ -4,7 +4,8 @@
 #
 # Токен — секрет SUPABASE_ACCESS_TOKEN окружения production-db (в лог не печатается).
 # Секреты самих функций (YANDEX_API_KEY, YANDEX_FOLDER_ID, необязательные
-# YANDEX_MODEL*, YANDEX_VISION_MODEL*) задаются в Supabase (Edge Functions →
+# YANDEX_MODEL*, YANDEX_VISION_MODEL*, TELEGRAM_BOT_TOKEN,
+# TELEGRAM_WEBHOOK_SECRET) задаются в Supabase (Edge Functions →
 # Secrets) и этим workflow не трогаются.
 #
 # Выкладываются все функции из FUNCTIONS; общий код supabase/functions/_shared/
@@ -25,8 +26,9 @@ concurrency:
 
 env:
   PROJECT_REF: oguiwftspuzmffynkykl
-  # Через пробел. Каждая проверяется: без токена → 401.
-  FUNCTIONS: voice-intake photo-identify
+  # Через пробел. Каждая проверяется: без токена → 401 (telegram-bot — без
+  # секрета вебхука → 401, его проверяет сама функция).
+  FUNCTIONS: voice-intake photo-identify telegram-bot
 
 jobs:
   # Без секретов: не с main — остановка ещё до запроса одобрения.

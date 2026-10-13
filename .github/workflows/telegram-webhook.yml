@@ -1,0 +1,150 @@
+# Подключение Telegram-бота @HeyHelpy_bot к Edge Function telegram-bot (шаг 23):
+# setWebhook (адрес функции + секрет), команды бота (RU и EN), проверка.
+# Только вручную и только с ветки main: Actions → "Telegram webhook" → Run workflow →
+# Review deployments → production-db → Approve. Подробно — CLAUDE.md, «Telegram-бот».
+#
+# Секреты окружения production-db (в лог не печатаются):
+#   TELEGRAM_BOT_TOKEN      — токен от @BotFather;
+#   TELEGRAM_WEBHOOK_SECRET — тот же, что в Supabase → Edge Functions → Secrets
+#                             (A–Z, a–z, 0–9, _ и -, 1–256 символов).
+# Запускать после «Deploy functions» (функция уже выложена) и после того, как
+# оба секрета заданы и в Supabase. Повторный запуск безопасен.
+#
+# Claude Code этот workflow НЕ запускает.
+name: Telegram webhook
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "set — подключить (или обновить); info — только проверить; delete — отключить бота"
+        type: choice
+        options: [set, info, delete]
+        default: set
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telegram-webhook
+  cancel-in-progress: false
+
+env:
+  PROJECT_REF: oguiwftspuzmffynkykl
+
+jobs:
+  guard:
+    name: Проверка ветки
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Только main
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Telegram webhook запускается только с ветки main (сейчас: $GITHUB_REF)."
+            exit 1
+          fi
+          echo "Ветка main — можно одобрять."
+
+  webhook:
+    name: Вебхук бота (после одобрения)
+    needs: guard
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production-db
+    permissions:
+      contents: read
+    env:
+      ACTION: ${{ inputs.action }}
+      TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Проверить секреты
+        run: |
+          echo "::add-mask::$TOKEN"
+          echo "::add-mask::$SECRET"
+          if [ -z "${TOKEN//[[:space:]]/}" ]; then
+            echo "::error::В окружении production-db не задан секрет TELEGRAM_BOT_TOKEN."
+            exit 1
+          fi
+          if [ "$ACTION" = "set" ] && ! [[ "$SECRET" =~ ^[A-Za-z0-9_-]{1,256}$ ]]; then
+            echo "::error::Секрет TELEGRAM_WEBHOOK_SECRET не задан или содержит недопустимые символы (можно A–Z, a–z, 0–9, _ и -)."
+            exit 1
+          fi
+          echo "Секреты на месте."
+
+      - uses: denoland/setup-deno@v2.0.5
+        if: inputs.action == 'set'
+        with:
+          deno-version: 2.x
+
+      # Команды — из одного места: COMMANDS в supabase/functions/telegram-bot/texts.ts.
+      - name: Подключить вебхук и команды
+        id: set
+        if: inputs.action == 'set'
+        run: |
+          set -euo pipefail
+          echo "::add-mask::$TOKEN"
+          echo "::add-mask::$SECRET"
+          api="https://api.telegram.org/bot$TOKEN"
+          url="https://$PROJECT_REF.supabase.co/functions/v1/telegram-bot"
+          call() { # метод, JSON — ответ проверяется на "ok":true
+            local out
+            out=$(curl -sS --max-time 20 -X POST "$api/$1" -H 'Content-Type: application/json' -d "$2")
+            if ! echo "$out" | jq -e '.ok == true' >/dev/null; then
+              echo "::error::$1: $(echo "$out" | jq -r '.description // "нет ответа"')"
+              exit 1
+            fi
+            echo "$1: ok"
+          }
+          body=$(jq -n --arg url "$url" --arg secret "$SECRET" '{
+            url: $url, secret_token: $secret,
+            allowed_updates: ["message", "callback_query"],
+            max_connections: 10, drop_pending_updates: true }')
+          call setWebhook "$body"
+          cmds=$(deno eval 'import { COMMANDS } from "./supabase/functions/telegram-bot/texts.ts"; console.log(JSON.stringify(COMMANDS));')
+          call setMyCommands "$(echo "$cmds" | jq -c '{commands: .en}')"
+          call setMyCommands "$(echo "$cmds" | jq -c '{commands: .ru, language_code: "ru"}')"
+          call setMyDescription '{"description":"Report a problem at a site by text, voice or photo. You need a link or QR code from your employer."}'
+          call setMyDescription '{"description":"Сообщить о неисправности на объекте текстом, голосом или фото. Нужна ссылка или QR-код от работодателя.","language_code":"ru"}'
+
+      - name: Отключить бота
+        id: delete
+        if: inputs.action == 'delete'
+        run: |
+          set -euo pipefail
+          echo "::add-mask::$TOKEN"
+          out=$(curl -sS --max-time 20 -X POST "https://api.telegram.org/bot$TOKEN/deleteWebhook" \
+            -H 'Content-Type: application/json' -d '{"drop_pending_updates":true}')
+          echo "$out" | jq -e '.ok == true' >/dev/null || { echo "::error::deleteWebhook: $(echo "$out" | jq -r '.description // "нет ответа"')"; exit 1; }
+          echo "deleteWebhook: ok"
+
+      # Адрес, число ожидающих обновлений и последняя ошибка доставки — без токена и секрета.
+      - name: Проверка
+        id: info
+        if: always()
+        run: |
+          echo "::add-mask::$TOKEN"
+          me=$(curl -sS --max-time 20 "https://api.telegram.org/bot$TOKEN/getMe" || true)
+          info=$(curl -sS --max-time 20 "https://api.telegram.org/bot$TOKEN/getWebhookInfo" || true)
+          {
+            echo "## Telegram webhook ($ACTION)"
+            echo
+            echo "- Бот: @$(echo "$me" | jq -r '.result.username // "?"')"
+            echo "- Адрес: \`$(echo "$info" | jq -r '.result.url // "" | if . == "" then "не задан" else . end')\`"
+            echo "- Ждут доставки: $(echo "$info" | jq -r '.result.pending_update_count // "?"')"
+            echo "- Обновления: $(echo "$info" | jq -r '(.result.allowed_updates // []) | join(", ")')"
+            err=$(echo "$info" | jq -r '.result.last_error_message // ""')
+            if [ -n "$err" ]; then
+              when=$(echo "$info" | jq -r '.result.last_error_date // 0')
+              echo "- ⚠️ Последняя ошибка доставки ($(date -u -d "@$when" '+%d.%m.%Y %H:%M UTC')): $err"
+            else
+              echo "- Ошибок доставки нет ✅"
+            fi
+            case "${{ steps.set.outcome }}${{ steps.delete.outcome }}" in
+              *failure*) echo; echo "❌ Не получилось — текст ошибки в логе шага." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"

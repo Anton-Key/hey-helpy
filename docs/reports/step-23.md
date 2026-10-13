@@ -16,7 +16,20 @@
 | Время | Что сделано | Коммит |
 |---|---|---|
 | 13.10 | Ветка, отчёт | 0f651bc |
-| 13.10 | Блок 1: миграция 0018, тесты `telegram.sql` (73 ✅), все 914 ✅ | (этот) |
+| 13.10 | Блок 1: миграция 0018, тесты `telegram.sql` (73 ✅), все 914 ✅ | 548dde8 |
+| 13.10 | Черновой PR #21 | — |
+| 13.10 | Блок 2 (часть): `telegram-bot` — texts.ts, telegram.ts, stt.ts, bot.ts, index.ts; `deno check` ✅, тестов ещё нет | (этот) |
 
 ## Где остановился
-Блок 1 готов (0018 + тесты). Следующим — блок 2: `supabase/functions/telegram-bot/` (index.ts, bot.ts — логика, texts.ts, telegram.ts — API, stt.ts — SpeechKit), тесты без сети.
+Сессия остановлена по просьбе пользователя посреди блока 2.
+
+**Готово:** блок 1 (0018 + тесты базы, 914 ✅); черновой PR #21. Блок 2: код функции `supabase/functions/telegram-bot/` — `texts.ts` (RU/EN), `telegram.ts` (разбор обновлений, команды, упоминания, секрет, клиент API), `stt.ts` (SpeechKit v1, документация: https://aistudio.yandex.ru/docs/ru/speechkit/stt/api/request-api.html), `bot.ts` (разговор: текст / голос / фото → черновик → карточка с кнопками → `tg_create_order`), `index.ts` (вебхук, секрет, service_role только для `tg_*` и фото). `deno check` проходит.
+
+**Следующим:**
+1. `supabase/functions/telegram-bot/bot_test.ts` — тесты без сети (заглушки Telegram, базы, ИИ, SpeechKit): секрет, команды, повторы, незнакомый чат без списка объектов, гость → карточка → «Создать», ИИ недоступен, выбор объекта, голос (длинный / ошибка stt), фото с кандидатом, лимиты, группа (без упоминания — тишина, чужие кнопки), RU/EN, в логе нет текста и chat_id. Затем `deno test supabase/functions`.
+2. `supabase/config.toml` — `[functions.telegram-bot] verify_jwt = false`; `deploy-functions.yml` — добавить `telegram-bot` в `FUNCTIONS` (правка — только через Edit, не Bash: хук).
+3. Блок 3 — `.github/workflows/telegram-webhook.yml`.
+4. Блок 4 — приложение (маршрут `/orders/:id` для ссылки из бота, Профиль → Telegram, QR объекта и плакат, ссылка компании, группа, пометка Telegram, канал `telegram` в `kChannels`, автообновление списка раз в 15 с).
+5. Блок 5 — демо-данные, `CLAUDE.md`, `DEMO_SCRIPT.md`, `/screens`, кадр питча 19; итоговый отчёт; `gh pr ready 21`.
+
+⚠️ Решения (перенести в итоговый отчёт): таблица ссылок — `report_links` (объект или вся компания); служебные таблицы бота — в схеме `telegram` (через API не видны); личность в `tg_*` — всегда по chat_id, а не по profile_id от бота; фото до «Создать» хранится как `file_id` Telegram (во временную папку ничего не кладётся, удалять нечего); заявки гостей — без шага подтверждения менеджером, с пометкой «Гость» (`reporter.guest`); в группе один черновик на группу, кнопки жмёт только его автор.

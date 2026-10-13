@@ -5865,6 +5865,12 @@ abstract class AppLocalizations {
   /// **'HeyHelpy_Оборудование_шаблон'**
   String get importTemplateFileName;
 
+  /// Название листа в шаблоне импорта .xlsx
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get importTemplateSheetName;
+
   /// Реестр оборудования (шаг 16)
   ///
   /// In ru, this message translates to:

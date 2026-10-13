@@ -3438,6 +3438,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importTemplateFileName => 'HeyHelpy_Equipment_template';
 
   @override
+  String get importTemplateSheetName => 'Equipment';
+
+  @override
   String get assetFieldInventoryHint => 'E.g. AC-3-001';
 
   @override

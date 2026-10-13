@@ -3466,6 +3466,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get importTemplateFileName => 'HeyHelpy_Оборудование_шаблон';
 
   @override
+  String get importTemplateSheetName => 'Оборудование';
+
+  @override
   String get assetFieldInventoryHint => 'Например, КЛ-3-001';
 
   @override

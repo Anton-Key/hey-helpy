@@ -6356,6 +6356,450 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Журнал ведёт база, его видит только администратор. Последние 500 записей.'**
   String get auditFooter;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Кондиционер, внутренний блок'**
+  String get eqKind_ac;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Кондиционер, наружный блок'**
+  String get eqKind_ac_outdoor;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Фанкойл'**
+  String get eqKind_fancoil;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Вентиляционная решётка'**
+  String get eqKind_vent_grille;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Радиатор отопления'**
+  String get eqKind_radiator;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Датчик температуры'**
+  String get eqKind_sensor;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Щит электрический'**
+  String get eqKind_panel;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Светильник'**
+  String get eqKind_light;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Розетка / выключатель'**
+  String get eqKind_socket;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'ИБП'**
+  String get eqKind_ups;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Серверная стойка'**
+  String get eqKind_server;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Датчик дыма'**
+  String get eqKind_smoke;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Огнетушитель'**
+  String get eqKind_extinguisher;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Камера видеонаблюдения'**
+  String get eqKind_camera;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Считыватель СКУД'**
+  String get eqKind_access_reader;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Замок / доводчик'**
+  String get eqKind_door_lock;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Кран / смеситель'**
+  String get eqKind_faucet;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Унитаз / раковина'**
+  String get eqKind_toilet;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Водонагреватель'**
+  String get eqKind_water_heater;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Датчик протечки'**
+  String get eqKind_water;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Панель лифта'**
+  String get eqKind_lift_panel;
+
+  /// Шаг 22: вид оборудования (каталог _shared/kinds.ts)
+  ///
+  /// In ru, this message translates to:
+  /// **'Другое'**
+  String get eqKind_other;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Вид'**
+  String get assetFieldKind;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Не указан'**
+  String get assetKindNone;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'вид «{text}» не найден'**
+  String importIssueUnknownKind(String text);
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'По фото'**
+  String get photoEntry;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Узнать оборудование по фото'**
+  String get photoEntryHint;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Найти по фото'**
+  String get photoFindInSection;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографировать оборудование здесь'**
+  String get photoOnPlan;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Узнать по фото'**
+  String get photoTitle;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Где я'**
+  String get photoWhere;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'весь объект'**
+  String get photoWhereWholeObject;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите объект'**
+  String get photoWhereChooseObject;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Без объекта — искать везде'**
+  String get photoWhereNoObject;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографировать'**
+  String get photoTake;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Снять ещё раз'**
+  String get photoRetake;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Наведите камеру на оборудование — ИИ определит вид и подскажет, какая это единица из реестра.'**
+  String get photoIntro;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Смотрю на фото…'**
+  String get photoWaitLook;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'ИИ рассматривает оборудование…'**
+  String get photoWaitAi;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё немного…'**
+  String get photoWaitAlmost;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Шильдик'**
+  String get photoNameplate;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Видно'**
+  String get photoDefect;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Скорее всего'**
+  String get photoLikely;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Это он'**
+  String get photoThisOne;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Другое оборудование…'**
+  String get photoOther;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет в реестре — добавить'**
+  String get photoAddNew;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожего оборудования в реестре не нашлось. Выберите вручную или добавьте новое.'**
+  String get photoNoCandidates;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Не получилось распознать. Попробуйте подойти ближе или выбрать оборудование из списка.'**
+  String get photoFailed;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото слишком большое. Снимите ещё раз.'**
+  String get photoTooLarge;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала выберите объект'**
+  String get photoNeedObject;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get photoPickAsset;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Название или инв. номер'**
+  String get photoAssetSearchHint;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'На объекте нет оборудования'**
+  String get photoNoAssets;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Распознано ИИ'**
+  String get photoAiBadge;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать вручную'**
+  String get photoChooseManually;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'{kind}: проверить'**
+  String photoOrderTitleCheck(String kind);
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'По фото: {kind}.'**
+  String photoOrderDescKind(String kind);
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Шильдик: {text}.'**
+  String photoOrderDescPlate(String text);
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Видно: {text}.'**
+  String photoOrderDescDefect(String text);
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка создана, но фото не приложилось — добавьте его в карточке заявки.'**
+  String get photoAttachFailed;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Снимок будет приложен к заявке'**
+  String get photoWillAttach;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'серийный номер с шильдика'**
+  String get photoReasonSerial;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'модель с шильдика'**
+  String get photoReasonModel;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'тот же вид'**
+  String get photoReasonKind;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'та же система'**
+  String get photoReasonLayer;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'то же помещение'**
+  String get photoReasonRoom;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'тот же этаж'**
+  String get photoReasonFloor;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'тот же объект'**
+  String get photoReasonObject;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'есть открытая заявка'**
+  String get photoReasonOpenOrder;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Узнавание по фото'**
+  String get photoStatsTitle;
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} снимок} few{{count} снимка} many{{count} снимков} other{{count} снимка}}'**
+  String photoStatsShots(int count);
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'угадано с первого раза {percent}%'**
+  String photoStatsTop(int percent);
+
+  /// Шаг 22: узнать по фото
+  ///
+  /// In ru, this message translates to:
+  /// **'в среднем {seconds} с'**
+  String photoStatsAvg(String seconds);
+
+  /// Шаг 22: неисправность в заглушке узнавания (VOICE_MOCK, /screens)
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтёк воды под блоком'**
+  String get photoMockDefect;
 }
 
 class _AppLocalizationsDelegate

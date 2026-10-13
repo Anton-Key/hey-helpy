@@ -3732,4 +3732,252 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get auditFooter =>
       'The database keeps this log; only the administrator can see it. Last 500 records.';
+
+  @override
+  String get eqKind_ac => 'Air conditioner, indoor unit';
+
+  @override
+  String get eqKind_ac_outdoor => 'Air conditioner, outdoor unit';
+
+  @override
+  String get eqKind_fancoil => 'Fan coil unit';
+
+  @override
+  String get eqKind_vent_grille => 'Ventilation grille';
+
+  @override
+  String get eqKind_radiator => 'Radiator';
+
+  @override
+  String get eqKind_sensor => 'Temperature sensor';
+
+  @override
+  String get eqKind_panel => 'Electrical panel';
+
+  @override
+  String get eqKind_light => 'Light fixture';
+
+  @override
+  String get eqKind_socket => 'Socket / switch';
+
+  @override
+  String get eqKind_ups => 'UPS';
+
+  @override
+  String get eqKind_server => 'Server rack';
+
+  @override
+  String get eqKind_smoke => 'Smoke detector';
+
+  @override
+  String get eqKind_extinguisher => 'Fire extinguisher';
+
+  @override
+  String get eqKind_camera => 'CCTV camera';
+
+  @override
+  String get eqKind_access_reader => 'Access control reader';
+
+  @override
+  String get eqKind_door_lock => 'Lock / door closer';
+
+  @override
+  String get eqKind_faucet => 'Faucet / mixer';
+
+  @override
+  String get eqKind_toilet => 'Toilet / sink';
+
+  @override
+  String get eqKind_water_heater => 'Water heater';
+
+  @override
+  String get eqKind_water => 'Leak sensor';
+
+  @override
+  String get eqKind_lift_panel => 'Elevator panel';
+
+  @override
+  String get eqKind_other => 'Other';
+
+  @override
+  String get assetFieldKind => 'Type';
+
+  @override
+  String get assetKindNone => 'Not specified';
+
+  @override
+  String importIssueUnknownKind(String text) {
+    return 'type “$text” not found';
+  }
+
+  @override
+  String get photoEntry => 'By photo';
+
+  @override
+  String get photoEntryHint => 'Identify equipment from a photo';
+
+  @override
+  String get photoFindInSection => 'Find by photo';
+
+  @override
+  String get photoOnPlan => 'Photograph equipment here';
+
+  @override
+  String get photoTitle => 'Identify by photo';
+
+  @override
+  String get photoWhere => 'Where I am';
+
+  @override
+  String get photoWhereWholeObject => 'whole site';
+
+  @override
+  String get photoWhereChooseObject => 'Choose a site';
+
+  @override
+  String get photoWhereNoObject => 'No site — search everywhere';
+
+  @override
+  String get photoTake => 'Take a photo';
+
+  @override
+  String get photoRetake => 'Retake';
+
+  @override
+  String get photoIntro =>
+      'Point the camera at the equipment — AI will tell its type and which registry item it is.';
+
+  @override
+  String get photoWaitLook => 'Looking at the photo…';
+
+  @override
+  String get photoWaitAi => 'AI is examining the equipment…';
+
+  @override
+  String get photoWaitAlmost => 'Almost there…';
+
+  @override
+  String get photoNameplate => 'Nameplate';
+
+  @override
+  String get photoDefect => 'Visible issue';
+
+  @override
+  String get photoLikely => 'Most likely';
+
+  @override
+  String get photoThisOne => 'This one';
+
+  @override
+  String get photoOther => 'Other equipment…';
+
+  @override
+  String get photoAddNew => 'Not in the registry — add';
+
+  @override
+  String get photoNoCandidates =>
+      'No similar equipment in the registry. Choose manually or add a new one.';
+
+  @override
+  String get photoFailed =>
+      'Could not recognize it. Try moving closer or choose the equipment from the list.';
+
+  @override
+  String get photoTooLarge => 'The photo is too large. Please retake it.';
+
+  @override
+  String get photoNeedObject => 'Choose a site first';
+
+  @override
+  String get photoPickAsset => 'Equipment';
+
+  @override
+  String get photoAssetSearchHint => 'Name or inventory no.';
+
+  @override
+  String get photoNoAssets => 'No equipment on this site';
+
+  @override
+  String get photoAiBadge => 'Recognized by AI';
+
+  @override
+  String get photoChooseManually => 'Choose manually';
+
+  @override
+  String photoOrderTitleCheck(String kind) {
+    return '$kind: check';
+  }
+
+  @override
+  String photoOrderDescKind(String kind) {
+    return 'From photo: $kind.';
+  }
+
+  @override
+  String photoOrderDescPlate(String text) {
+    return 'Nameplate: $text.';
+  }
+
+  @override
+  String photoOrderDescDefect(String text) {
+    return 'Visible: $text.';
+  }
+
+  @override
+  String get photoAttachFailed =>
+      'The work order is created, but the photo was not attached — add it on the work order card.';
+
+  @override
+  String get photoWillAttach => 'The photo will be attached to the work order';
+
+  @override
+  String get photoReasonSerial => 'serial number from the nameplate';
+
+  @override
+  String get photoReasonModel => 'model from the nameplate';
+
+  @override
+  String get photoReasonKind => 'same type';
+
+  @override
+  String get photoReasonLayer => 'same system';
+
+  @override
+  String get photoReasonRoom => 'same room';
+
+  @override
+  String get photoReasonFloor => 'same floor';
+
+  @override
+  String get photoReasonObject => 'same site';
+
+  @override
+  String get photoReasonOpenOrder => 'has an open work order';
+
+  @override
+  String get photoStatsTitle => 'Photo identification';
+
+  @override
+  String photoStatsShots(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '$count photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String photoStatsTop(int percent) {
+    return 'right on the first try $percent%';
+  }
+
+  @override
+  String photoStatsAvg(String seconds) {
+    return '$seconds s on average';
+  }
+
+  @override
+  String get photoMockDefect => 'Water leak under the unit';
 }

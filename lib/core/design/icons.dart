@@ -123,6 +123,20 @@ class AppIcons {
   static const eqFurniture = LucideIcons.armchair300;
   static const eqInfra = LucideIcons.cable300;
   static const eqOther = LucideIcons.box300;
+  // Каталог видов оборудования (шаг 22, equipment_kinds.dart).
+  static const eqAcOutdoor = LucideIcons.fan300;
+  static const eqVent = LucideIcons.wind300;
+  static const eqRadiator = LucideIcons.heater300;
+  static const eqSocket = LucideIcons.plug300;
+  static const eqExtinguisher = LucideIcons.fireExtinguisher300;
+  static const eqAccessReader = LucideIcons.idCard300;
+  static const eqLock = LucideIcons.lockKeyhole300;
+  static const eqFaucet = LucideIcons.showerHead300;
+  static const eqToilet = LucideIcons.toilet300;
+  static const eqWaterHeater = LucideIcons.thermometerSun300;
+  static const eqLift = LucideIcons.arrowUpDown300;
+  // «Узнать по фото» (шаг 22).
+  static const scan = LucideIcons.scanSearch300;
 
   // Активная вкладка нижнего меню — те же значки с линией толще (штрих 2):
   // Lucide не делает залитых значков, поэтому активную вкладку выделяют

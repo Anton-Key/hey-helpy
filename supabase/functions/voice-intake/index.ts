@@ -30,27 +30,9 @@ import {
   PLACES_MAX,
 } from "./schema.ts";
 import { AiError, complete, DEFAULT_MODEL, LITE_MODEL } from "./yandex.ts";
+import { corsHeaders, logFn } from "../_shared/http.ts";
 
-const ALLOWED_ORIGIN = "https://anton-key.github.io";
-const LOCALHOST = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
-
-function corsHeaders(origin: string | null): Record<string, string> {
-  const h: Record<string, string> = {
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "authorization, apikey, content-type, x-client-info",
-    "Access-Control-Max-Age": "86400",
-    "Vary": "Origin",
-  };
-  if (origin && (origin === ALLOWED_ORIGIN || LOCALHOST.test(origin))) {
-    h["Access-Control-Allow-Origin"] = origin;
-  }
-  return h;
-}
-
-function log(fields: Record<string, unknown>) {
-  console.log(JSON.stringify({ fn: "voice-intake", ...fields }));
-}
+const log = logFn("voice-intake");
 
 Deno.serve(async (req) => {
   const started = Date.now();

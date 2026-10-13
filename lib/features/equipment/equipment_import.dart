@@ -1,7 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart' show Locale;
+
+import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import 'equipment_kinds.dart';
 import 'equipment_models.dart';
 
 /// Импорт оборудования из Excel / CSV (шаг 16): чтение файла, разбор
@@ -18,6 +22,9 @@ enum ImportColumn {
   model,
   serialNo,
   installedAt,
+
+  /// Вид оборудования (шаг 22): код каталога или подпись RU / EN.
+  kind,
 }
 
 /// Заголовки шаблона по языку интерфейса. Это формат файла (данные для
@@ -33,6 +40,7 @@ const templateHeaders = {
     ImportColumn.model: 'Модель',
     ImportColumn.serialNo: 'Серийный номер',
     ImportColumn.installedAt: 'Дата ввода',
+    ImportColumn.kind: 'Вид',
   },
   'en': {
     ImportColumn.name: 'Name*',
@@ -43,6 +51,7 @@ const templateHeaders = {
     ImportColumn.model: 'Model',
     ImportColumn.serialNo: 'Serial number',
     ImportColumn.installedAt: 'Installed on',
+    ImportColumn.kind: 'Type',
   },
 };
 
@@ -56,7 +65,8 @@ const templateExample = {
     'Daikin',
     'FTXM35R',
     'DK-E0412233',
-    '2024-05-01'
+    '2024-05-01',
+    'Кондиционер, внутренний блок'
   ],
   'en': [
     'Meeting room air conditioner',
@@ -66,7 +76,8 @@ const templateExample = {
     'Daikin',
     'FTXM35R',
     'DK-E0412233',
-    '2024-05-01'
+    '2024-05-01',
+    'Air conditioner, indoor unit'
   ],
 };
 
@@ -131,6 +142,15 @@ const _synonyms = {
     'installed',
     'install date',
     'installation date'
+  ],
+  ImportColumn.kind: [
+    'вид',
+    'вид оборудования',
+    'тип',
+    'тип оборудования',
+    'type',
+    'kind',
+    'equipment type'
   ],
 };
 
@@ -306,6 +326,9 @@ enum ImportIssue {
 
   /// Слишком длинное значение (больше 120 символов).
   tooLong,
+
+  /// Вид не найден в каталоге (шаг 22).
+  unknownKind,
 }
 
 /// Строка импорта после проверки.
@@ -322,6 +345,8 @@ class ImportRow {
     this.model,
     this.serialNo,
     this.installedAt,
+    this.kind,
+    this.kindText = '',
     required this.issues,
   });
 
@@ -337,6 +362,10 @@ class ImportRow {
   final String? model;
   final String? serialNo;
   final DateTime? installedAt;
+
+  /// Код вида из каталога; [kindText] — как написано в файле.
+  final String? kind;
+  final String kindText;
   final Set<ImportIssue> issues;
 
   /// Можно импортировать: ошибок нет, кроме «нет помещения», если
@@ -356,6 +385,7 @@ class ImportRow {
         model: model,
         serialNo: serialNo,
         installedAt: installedAt,
+        kind: kind,
       );
 }
 
@@ -429,11 +459,14 @@ Place? findPlace(List<Place> places, String text) {
 
 /// Проверка строк файла. [rows] — все строки, первая — заголовок.
 /// [existingInventory] — инвентарные номера, уже занятые в компании.
+/// [kindNames] — подписи видов → код (по умолчанию RU и EN —
+/// [defaultKindNames]); коды каталога (`ac`, `smoke`…) принимаются всегда.
 ImportPreview validateImport(
   List<List<String>> rows, {
   required List<Place> places,
   required List<Layer> layers,
   Set<String> existingInventory = const {},
+  Map<String, String> kindNames = const {},
 }) {
   if (rows.isEmpty) {
     return const ImportPreview(
@@ -449,6 +482,7 @@ ImportPreview validateImport(
   if (missing.isNotEmpty) {
     return ImportPreview(rows: const [], missingColumns: missing);
   }
+  final names = kindNames.isEmpty ? defaultKindNames() : kindNames;
   final taken = {for (final i in existingInventory) _norm(i)};
   final inFile = <String, int>{};
   for (var i = 1; i < rows.length; i++) {
@@ -478,6 +512,13 @@ ImportPreview validateImport(
     if (system.isNotEmpty) {
       layerId = Layer.find(layers, name: system)?.id;
       if (layerId == null) issues.add(ImportIssue.unknownSystem);
+    }
+
+    final kindText = get(ImportColumn.kind);
+    String? kind;
+    if (kindText.isNotEmpty) {
+      kind = equipmentKind(kindText)?.code ?? names[_norm(kindText)];
+      if (kind == null) issues.add(ImportIssue.unknownKind);
     }
 
     final inv = get(ImportColumn.inventoryNo);
@@ -518,6 +559,8 @@ ImportPreview validateImport(
       model: opt(ImportColumn.model),
       serialNo: opt(ImportColumn.serialNo),
       installedAt: date,
+      kind: kind,
+      kindText: kindText,
       issues: issues,
     ));
   }
@@ -526,6 +569,22 @@ ImportPreview validateImport(
 
 String _get(List<String> row, int? i) =>
     i == null || i >= row.length ? '' : row[i].trim();
+
+/// Подписи видов → код для [validateImport]: [labels] — подпись вида на
+/// каждом языке (например `equipmentKindLabel` с `AppLocalizations` RU и EN).
+Map<String, String> kindNamesFor(
+        Iterable<String Function(String code)> labels) =>
+    {
+      for (final label in labels)
+        for (final k in kEquipmentKinds) _norm(label(k.code)): k.code
+    };
+
+/// Подписи видов на русском и английском (файл, скачанный на одном языке,
+/// читается и при другом языке интерфейса).
+Map<String, String> defaultKindNames() => kindNamesFor([
+      for (final code in const ['ru', 'en'])
+        (k) => equipmentKindLabel(lookupAppLocalizations(Locale(code)), k)
+    ]);
 
 /// Ключ для сравнения названий помещений при создании недостающих.
 String importRoomKey(String s) => _norm(s);

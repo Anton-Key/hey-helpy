@@ -446,6 +446,8 @@ class _HomeScreenState extends State<HomeScreen> {
             onVoice: () => _requestAction(HomeAction.voice),
             addLabel: l.navAddOrder,
             onAdd: () => _requestAction(HomeAction.create),
+            photoLabel: l.photoEntry,
+            onPhoto: () => _requestAction(HomeAction.photo),
             toggleLabel: rail ? l.navExpand : l.navCollapse,
             onToggle: () => _toggleRail(layout),
           ),

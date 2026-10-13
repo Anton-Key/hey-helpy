@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/design.dart';
 import '../../core/scrolling.dart';
+import '../equipment/equipment_kinds.dart';
 import '../map/map_logic.dart';
 import '../map/map_parts.dart';
 import 'floor_models.dart';
@@ -980,35 +981,5 @@ class AreaPainter extends CustomPainter {
 }
 
 /// Значок оборудования: по виду (assets.meta.kind), иначе по категории.
-IconData equipmentIcon(PlanItem i) {
-  if (i.isPlace) return AppIcons.room;
-  switch (i.equipmentKind) {
-    case 'ac':
-      return AppIcons.eqAirCon;
-    case 'fancoil':
-    case 'vent':
-      return AppIcons.eqFan;
-    case 'panel':
-      return AppIcons.eqPanel;
-    case 'light':
-      return AppIcons.eqLight;
-    case 'smoke':
-      return AppIcons.eqSmoke;
-    case 'ups':
-      return AppIcons.eqUps;
-    case 'sensor':
-      return AppIcons.eqSensor;
-    case 'camera':
-      return AppIcons.eqCamera;
-    case 'server':
-      return AppIcons.eqServer;
-    case 'water':
-      return AppIcons.eqWater;
-  }
-  return switch (i.category) {
-    'furniture' => AppIcons.eqFurniture,
-    'infra' => AppIcons.eqInfra,
-    'other' => AppIcons.eqOther,
-    _ => AppIcons.wrench,
-  };
-}
+IconData equipmentIcon(PlanItem i) =>
+    i.isPlace ? AppIcons.room : assetIcon(i.equipmentKind, i.category ?? '');

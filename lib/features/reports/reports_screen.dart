@@ -109,6 +109,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
+  /// «Узнавание по фото» за период (0017); null — нет данных.
+  PhotoStats? _photo;
+
   Future<void> _load() async {
     final seq = ++_seq;
     final r = _period.range();
@@ -127,9 +130,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
             kind: _kind),
         contractorOrder: [for (final c in _contractors) c.id],
       );
+      final photo = await _repo.photoStats(r.from, r.to);
       if (!mounted || seq != _seq) return;
       setState(() {
         _report = report;
+        _photo = photo;
         _loading = false;
       });
     } catch (e) {
@@ -611,6 +616,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ],
         ]);
       }),
+      ..._photoBlock(l),
       ..._regionBlock(l, f, report),
       SectionHeader(l.reportsByContractor),
       if (report.contractors.isEmpty)
@@ -645,6 +651,31 @@ class _ReportsScreenState extends State<ReportsScreen> {
             AppSpace.rowH, AppSpace.s, AppSpace.rowH, 0),
         child: Text(l.reportsHelp, style: AppText.footnote),
       ),
+    ];
+  }
+
+  /// «Узнавание по фото: N снимков, угадано с первого раза X%, в среднем
+  /// Y с» — только если узнавания были (шаг 22).
+  List<Widget> _photoBlock(AppLocalizations l) {
+    final p = _photo;
+    if (p == null || p.total == 0) return const [];
+    final secs = p.avgMs == null
+        ? null
+        : NumberFormat('0.0', l.localeName).format(p.avgMs! / 1000);
+    return [
+      SectionHeader(l.photoStatsTitle),
+      AppGroup(children: [
+        AppRow(
+          leading: const LeadingIcon(AppIcons.camera),
+          title: [
+            l.photoStatsShots(p.total),
+            if (p.topRate != null) l.photoStatsTop((p.topRate! * 100).round()),
+            if (secs != null) l.photoStatsAvg(secs),
+          ].join(', '),
+          subtitleMaxLines: 3,
+          chevron: false,
+        ),
+      ]),
     ];
   }
 

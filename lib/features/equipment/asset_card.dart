@@ -15,6 +15,7 @@ import '../floors/order_plan_link.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'equipment_form.dart';
+import 'equipment_kinds.dart';
 import 'equipment_models.dart';
 import 'equipment_repository.dart';
 
@@ -193,6 +194,12 @@ class _AssetCardScreenState extends State<AssetCardScreen> {
         children: [
           AppRow(
               leading: LeadingIcon(assetIcon(_asset.kind, _asset.category)),
+              title: l.assetFieldKind,
+              value: _asset.kind == null
+                  ? none
+                  : equipmentKindLabel(l, _asset.kind!),
+              chevron: false),
+          AppRow(
               title: l.assetFieldSystem,
               value: _layer?.label(locale) ?? none,
               chevron: false),

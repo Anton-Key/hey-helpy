@@ -7,7 +7,9 @@ import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
 import 'asset_card.dart';
+import '../photo_identify/photo_identify_screen.dart';
 import 'equipment_form.dart';
+import 'equipment_kinds.dart';
 // Отложенно: экран импорта тянет пакет excel (шаг 18, скорость веб-версии).
 import 'equipment_import_screen.dart' deferred as import_screen;
 import 'equipment_models.dart';
@@ -126,6 +128,17 @@ class _EquipmentSectionState extends State<EquipmentSection> {
     }
   }
 
+  Future<void> _findByPhoto() async {
+    await Navigator.push<bool>(
+        context,
+        appRoute(
+            (_) => PhotoIdentifyScreen(
+                objectId: widget.object.id,
+                origin: PhotoIdentifyOrigin.equipment),
+            title: widget.object.name));
+    if (mounted) await _load();
+  }
+
   Future<void> _open(Asset a) async {
     final changed = await Navigator.push<bool>(
         context,
@@ -189,6 +202,15 @@ class _EquipmentSectionState extends State<EquipmentSection> {
                   title: l.equipEmpty,
                   titleStyle: AppText.callout,
                   chevron: false),
+            // Шаг 22: «Найти по фото» — всем, кто видит оборудование.
+            if (all.isNotEmpty)
+              AppRow(
+                leading: const LeadingIcon(AppIcons.camera),
+                title: l.photoFindInSection,
+                titleStyle:
+                    AppText.rowTitle.copyWith(color: AppColors.accentText),
+                onTap: _findByPhoto,
+              ),
             if (widget.isManager) ...[
               AppRow(
                 leading: const LeadingIcon(AppIcons.add),

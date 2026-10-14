@@ -19,7 +19,13 @@ import 'equipment_repository.dart';
 /// Подсказка ⓘ «Импорт оборудования».
 AppInfoButton importInfo(AppLocalizations l) => AppInfoButton(
       title: l.importInfoTitle,
-      lines: [l.importInfo1, l.importInfo2, l.importInfo3, l.importInfo4],
+      lines: [
+        l.importInfo1,
+        l.importInfo2,
+        l.importInfo3,
+        l.importInfo4,
+        l.eqExportReimportInfo,
+      ],
       closeLabel: l.commonGotIt,
       semanticLabel: l.infoShowHint(l.importInfoTitle),
     );
@@ -50,6 +56,9 @@ class _EquipmentImportScreenState extends State<EquipmentImportScreen> {
   ImportPreview? _preview;
   bool _createRooms = false;
   bool _busy = false;
+
+  /// Оборудование объекта: строки выгрузки с его ID обновляют его (шаг 27).
+  Map<String, Asset> _existing = const {};
 
   /// Сколько строк показывать в каждой группе (остальное — «И ещё N»).
   static const _shown = 50;
@@ -93,15 +102,24 @@ class _EquipmentImportScreenState extends State<EquipmentImportScreen> {
       setState(() => _busy = true);
       final bytes = await file.readAsBytes();
       final rows = _read(file.name, bytes);
-      final taken = await _repo.inventoryNumbers();
+      final r = await Future.wait<Object>(
+          [_repo.inventoryNumbers(), _repo.assetsOf(widget.object.id)]);
+      final taken = r[0] as Set<String>;
+      final existing = r[1] as List<Asset>;
       if (!mounted) return;
       setState(() {
         _fileName = file.name;
         _createRooms = false;
+        _existing = {for (final a in existing) a.id: a};
         _preview = validateImport(rows,
             places: widget.places,
             layers: widget.layers,
-            existingInventory: taken);
+            existingInventory: taken,
+            existing: existing,
+            objectNames: {
+              widget.object.name,
+              objectDisplayName(widget.object),
+            });
       });
     } catch (e) {
       debugPrint('Import read: $e');
@@ -142,11 +160,21 @@ class _EquipmentImportScreenState extends State<EquipmentImportScreen> {
           created[key] = await _repo.addPlace(widget.object.id, r.roomText);
         }
       }
+      String place(ImportRow r) =>
+          r.placeId ?? created[importRoomKey(r.roomText)]!;
+      // Новые — одним запросом; строки с ID (выгрузка) — обновление.
       final drafts = <AssetDraft>[
         for (final r in rows)
-          r.draft(r.placeId ?? created[importRoomKey(r.roomText)]!)
+          if (_existing[r.updateId] == null) r.draft(place(r))
       ];
-      final n = await _repo.addMany(drafts);
+      var n = await _repo.addMany(drafts);
+      for (final r in rows) {
+        final base = _existing[r.updateId];
+        if (base == null) continue;
+        await _repo.update(
+            base.id, r.draft(place(r), base: base, columns: p.columns));
+        n++;
+      }
       if (!mounted) return;
       showAppMessage(context, l.importDone(n), type: AppMessageType.success);
       Navigator.pop(context, true);
@@ -282,6 +310,7 @@ class _EquipmentImportScreenState extends State<EquipmentImportScreen> {
               leading: const LeadingIcon(AppIcons.check),
               title: title(r),
               subtitle: [
+                if (r.updateId != null) l.eqExportWillUpdate,
                 r.roomText,
                 if (r.inventoryNo != null) r.inventoryNo!,
                 [r.manufacturer, r.model].whereType<String>().join(' '),

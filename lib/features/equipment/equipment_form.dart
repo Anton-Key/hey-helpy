@@ -583,6 +583,9 @@ String importIssuesText(AppLocalizations l, ImportRow r) => [
           ImportIssue.badDate => l.importIssueBadDate,
           ImportIssue.tooLong => l.importIssueTooLong,
           ImportIssue.unknownKind => l.importIssueUnknownKind(r.kindText),
+          ImportIssue.badHeight => l.eqExportIssueBadHeight,
+          ImportIssue.unknownMount => l.eqExportIssueUnknownMount(r.mountText),
+          ImportIssue.otherObject => l.eqExportIssueOtherObject(r.objectText),
         }
     ].join(' · ');
 

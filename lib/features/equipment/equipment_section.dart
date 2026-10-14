@@ -6,8 +6,11 @@ import '../../core/l10n_ext.dart';
 import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import '../camera/camera_entry.dart';
+import '../directory/city.dart';
 import '../directory/directory.dart';
 import 'asset_card.dart';
+import 'equipment_export.dart';
+import 'equipment_export_action.dart';
 import '../photo_identify/photo_identify_screen.dart';
 import 'equipment_form.dart';
 import 'equipment_kinds.dart';
@@ -129,6 +132,22 @@ class _EquipmentSectionState extends State<EquipmentSection> {
     }
   }
 
+  /// «Выгрузить в Excel» (шаг 27): всё оборудование объекта (без
+  /// фильтра поиска) в формате шаблона импорта.
+  Future<void> _export() async {
+    final all = _assets ?? const <Asset>[];
+    await exportEquipmentXlsx(context,
+        items: [
+          for (final a in all)
+            ExportItem(
+                asset: a,
+                roomText: _place(a.locationId)?.label,
+                objectName: objectDisplayName(widget.object)),
+        ],
+        layers: _layers,
+        title: objectDisplayName(widget.object));
+  }
+
   Future<void> _findByPhoto() async {
     await openPhotoCamera(context,
         objectId: widget.object.id,
@@ -208,6 +227,15 @@ class _EquipmentSectionState extends State<EquipmentSection> {
                 titleStyle:
                     AppText.rowTitle.copyWith(color: AppColors.accentText),
                 onTap: _findByPhoto,
+              ),
+            if (all.isNotEmpty)
+              AppRow(
+                leading: const LeadingIcon(AppIcons.fileSheet),
+                title: l.eqExportButton,
+                titleStyle:
+                    AppText.rowTitle.copyWith(color: AppColors.accentText),
+                chevron: false,
+                onTap: _export,
               ),
             if (widget.isManager) ...[
               AppRow(

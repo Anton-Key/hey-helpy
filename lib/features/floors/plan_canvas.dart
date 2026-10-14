@@ -846,8 +846,8 @@ class PlanMarker extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: AppText.caption.copyWith(
-                          color: AppColors.secondary, fontSize: 10)),
+                      style: AppText.caption
+                          .copyWith(color: AppColors.secondary, fontSize: 10)),
               ]),
             ),
           ),

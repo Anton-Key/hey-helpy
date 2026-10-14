@@ -39,6 +39,10 @@ dependencies:
   share_plus: ^13.3.1
   # Живая камера «Камера-помощник» на Android (шаг 25); в вебе — свой <video>.
   camera: ^0.12.1
+  # Работа без сети (шаг 27): каталог приложения и SHA-256 снимка; уже
+  # приходили вместе с другими пакетами.
+  path_provider: ^2.1.4
+  crypto: ^3.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

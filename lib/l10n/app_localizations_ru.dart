@@ -4923,4 +4923,192 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get cameraNoEquipment =>
       'В кадре не видно оборудования — наведите камеру на прибор';
+
+  @override
+  String get stampNoGps => 'нет GPS';
+
+  @override
+  String get stampOffline => 'без сети';
+
+  @override
+  String offBannerQueued(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count действия',
+      many: '$count действий',
+      few: '$count действия',
+      one: '$count действие',
+    );
+    return 'Нет сети — сохранено на телефоне: $_temp0';
+  }
+
+  @override
+  String offBannerData(String time) {
+    return 'Нет сети · данные на $time';
+  }
+
+  @override
+  String get offBannerNoData => 'Нет сети';
+
+  @override
+  String get offBannerSending => 'Отправляю сохранённое…';
+
+  @override
+  String get offBannerSent => 'Отправлено ✓';
+
+  @override
+  String offBannerFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count действия',
+      many: '$count действий',
+      few: '$count действия',
+      one: '$count действие',
+    );
+    return 'Не удалось отправить $_temp0';
+  }
+
+  @override
+  String get offDetails => 'Подробнее';
+
+  @override
+  String get offFailuresTitle => 'Не отправлено';
+
+  @override
+  String get offFailuresClear => 'Понятно';
+
+  @override
+  String get offReasonCancelled => 'Заявку отменили, пока вы были без сети';
+
+  @override
+  String get offReasonReassigned =>
+      'Заявку передали другому подрядчику, пока вы были без сети';
+
+  @override
+  String get offReasonAccepted => 'Менеджер уже принял работу';
+
+  @override
+  String get offReasonOnReview => 'Работа уже на проверке';
+
+  @override
+  String get offReasonPhotoRequired =>
+      'Нужно фото «после» — без него на проверку нельзя';
+
+  @override
+  String get offReasonPhotoMismatch =>
+      'Фото повредилось при отправке — снимите заново';
+
+  @override
+  String get offReasonPhotoMissing => 'Файл фото не дошёл — снимите заново';
+
+  @override
+  String get offReasonNotFound => 'Заявка или пункт чек-листа не найдены';
+
+  @override
+  String get offReasonDenied => 'Нет прав на это действие';
+
+  @override
+  String get offReasonOther => 'Сервер не принял действие';
+
+  @override
+  String get offPhotoKept => 'Фото всё равно сохранено в заявке с пометкой';
+
+  @override
+  String get offKindStart => 'Начать работу';
+
+  @override
+  String get offKindVisit => 'Отметка визита';
+
+  @override
+  String get offKindCheck => 'Пункт чек-листа';
+
+  @override
+  String get offKindPhoto => 'Фото «после»';
+
+  @override
+  String get offKindSubmit => 'На проверку';
+
+  @override
+  String get offPendingBadge => 'ждёт отправки';
+
+  @override
+  String get offQueuedToast =>
+      'Нет сети — сохранено на телефоне, отправится само';
+
+  @override
+  String get offVisitInZone => '📍 В геозоне';
+
+  @override
+  String offVisitOutZone(int meters) {
+    return '📍 Вне геозоны · $meters м';
+  }
+
+  @override
+  String get offVisitNoGps => 'Нет GPS — визит без координат';
+
+  @override
+  String get checklistTitle => 'Чек-лист';
+
+  @override
+  String checklistProgress(int done, int total) {
+    return '$done из $total';
+  }
+
+  @override
+  String get checklistSaveFailed => 'Не удалось отметить пункт';
+
+  @override
+  String proofOffline(String taken, String trust, String sent) {
+    return 'Снято без сети в $taken · $trust · отправлено в $sent';
+  }
+
+  @override
+  String proofVisitOffline(String taken, String trust, String sent) {
+    return 'Визит без сети в $taken · $trust · отправлено в $sent';
+  }
+
+  @override
+  String get proofTrustGps => 'время по GPS ✓';
+
+  @override
+  String get proofTrustMono => 'время подтверждено ✓';
+
+  @override
+  String get proofTrustDevice => '⚠️ время только по часам телефона';
+
+  @override
+  String proofTrustUnverified(String drift) {
+    return '⚠️ время не подтверждено (часы телефона расходились на $drift)';
+  }
+
+  @override
+  String get proofNeedsDecision => 'решение при формировании акта';
+
+  @override
+  String get proofLateAfterCancel => 'прислано после отмены';
+
+  @override
+  String get proofLateAfterReassign =>
+      'прислано после передачи другому подрядчику';
+
+  @override
+  String get proofLateAfterClose => 'прислано после закрытия заявки';
+
+  @override
+  String get proofHashUnchecked => 'отпечаток фото не сверен';
+
+  @override
+  String durHours(int n) {
+    return '$n ч';
+  }
+
+  @override
+  String durMinutes(int n) {
+    return '$n мин';
+  }
+
+  @override
+  String get offTestNet => 'Сеть (тест)';
 }

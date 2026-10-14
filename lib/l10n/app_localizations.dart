@@ -8360,6 +8360,300 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'В кадре не видно оборудования — наведите камеру на прибор'**
   String get cameraNoEquipment;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'нет GPS'**
+  String get stampNoGps;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'без сети'**
+  String get stampOffline;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети — сохранено на телефоне: {count, plural, one{{count} действие} few{{count} действия} many{{count} действий} other{{count} действия}}'**
+  String offBannerQueued(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети · данные на {time}'**
+  String offBannerData(String time);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети'**
+  String get offBannerNoData;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправляю сохранённое…'**
+  String get offBannerSending;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправлено ✓'**
+  String get offBannerSent;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось отправить {count, plural, one{{count} действие} few{{count} действия} many{{count} действий} other{{count} действия}}'**
+  String offBannerFailed(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подробнее'**
+  String get offDetails;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не отправлено'**
+  String get offFailuresTitle;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Понятно'**
+  String get offFailuresClear;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявку отменили, пока вы были без сети'**
+  String get offReasonCancelled;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявку передали другому подрядчику, пока вы были без сети'**
+  String get offReasonReassigned;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Менеджер уже принял работу'**
+  String get offReasonAccepted;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа уже на проверке'**
+  String get offReasonOnReview;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужно фото «после» — без него на проверку нельзя'**
+  String get offReasonPhotoRequired;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото повредилось при отправке — снимите заново'**
+  String get offReasonPhotoMismatch;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Файл фото не дошёл — снимите заново'**
+  String get offReasonPhotoMissing;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка или пункт чек-листа не найдены'**
+  String get offReasonNotFound;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет прав на это действие'**
+  String get offReasonDenied;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сервер не принял действие'**
+  String get offReasonOther;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото всё равно сохранено в заявке с пометкой'**
+  String get offPhotoKept;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Начать работу'**
+  String get offKindStart;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Отметка визита'**
+  String get offKindVisit;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Пункт чек-листа'**
+  String get offKindCheck;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото «после»'**
+  String get offKindPhoto;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'На проверку'**
+  String get offKindSubmit;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'ждёт отправки'**
+  String get offPendingBadge;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети — сохранено на телефоне, отправится само'**
+  String get offQueuedToast;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'📍 В геозоне'**
+  String get offVisitInZone;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'📍 Вне геозоны · {meters} м'**
+  String offVisitOutZone(int meters);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет GPS — визит без координат'**
+  String get offVisitNoGps;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Чек-лист'**
+  String get checklistTitle;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{done} из {total}'**
+  String checklistProgress(int done, int total);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось отметить пункт'**
+  String get checklistSaveFailed;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Снято без сети в {taken} · {trust} · отправлено в {sent}'**
+  String proofOffline(String taken, String trust, String sent);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Визит без сети в {taken} · {trust} · отправлено в {sent}'**
+  String proofVisitOffline(String taken, String trust, String sent);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время по GPS ✓'**
+  String get proofTrustGps;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время подтверждено ✓'**
+  String get proofTrustMono;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'⚠️ время только по часам телефона'**
+  String get proofTrustDevice;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'⚠️ время не подтверждено (часы телефона расходились на {drift})'**
+  String proofTrustUnverified(String drift);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'решение при формировании акта'**
+  String get proofNeedsDecision;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'прислано после отмены'**
+  String get proofLateAfterCancel;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'прислано после передачи другому подрядчику'**
+  String get proofLateAfterReassign;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'прислано после закрытия заявки'**
+  String get proofLateAfterClose;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'отпечаток фото не сверен'**
+  String get proofHashUnchecked;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} ч'**
+  String durHours(int n);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} мин'**
+  String durMinutes(int n);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сеть (тест)'**
+  String get offTestNet;
 }
 
 class _AppLocalizationsDelegate

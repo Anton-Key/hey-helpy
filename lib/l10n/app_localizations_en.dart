@@ -4893,4 +4893,190 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cameraNoEquipment =>
       'No equipment in the frame — point the camera at a device';
+
+  @override
+  String get stampNoGps => 'no GPS';
+
+  @override
+  String get stampOffline => 'offline';
+
+  @override
+  String offBannerQueued(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count actions',
+      one: '$count action',
+    );
+    return 'No network — saved on the phone: $_temp0';
+  }
+
+  @override
+  String offBannerData(String time) {
+    return 'Offline · data as of $time';
+  }
+
+  @override
+  String get offBannerNoData => 'No network';
+
+  @override
+  String get offBannerSending => 'Sending saved actions…';
+
+  @override
+  String get offBannerSent => 'Sent ✓';
+
+  @override
+  String offBannerFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count actions',
+      one: '$count action',
+    );
+    return 'Couldn\'t send $_temp0';
+  }
+
+  @override
+  String get offDetails => 'Details';
+
+  @override
+  String get offFailuresTitle => 'Not sent';
+
+  @override
+  String get offFailuresClear => 'Got it';
+
+  @override
+  String get offReasonCancelled =>
+      'The work order was cancelled while you were offline';
+
+  @override
+  String get offReasonReassigned =>
+      'The work order was given to another contractor while you were offline';
+
+  @override
+  String get offReasonAccepted => 'The manager has already accepted the work';
+
+  @override
+  String get offReasonOnReview => 'The work is already under review';
+
+  @override
+  String get offReasonPhotoRequired =>
+      'An \"after\" photo is required before review';
+
+  @override
+  String get offReasonPhotoMismatch =>
+      'The photo was damaged in transfer — please retake it';
+
+  @override
+  String get offReasonPhotoMissing =>
+      'The photo file didn\'t arrive — please retake it';
+
+  @override
+  String get offReasonNotFound => 'Work order or checklist item not found';
+
+  @override
+  String get offReasonDenied => 'You can\'t do this';
+
+  @override
+  String get offReasonOther => 'The server didn\'t accept the action';
+
+  @override
+  String get offPhotoKept =>
+      'The photo was still saved in the work order with a note';
+
+  @override
+  String get offKindStart => 'Start work';
+
+  @override
+  String get offKindVisit => 'Visit check-in';
+
+  @override
+  String get offKindCheck => 'Checklist item';
+
+  @override
+  String get offKindPhoto => '\"After\" photo';
+
+  @override
+  String get offKindSubmit => 'Submit for review';
+
+  @override
+  String get offPendingBadge => 'waiting to send';
+
+  @override
+  String get offQueuedToast =>
+      'No network — saved on the phone, will be sent automatically';
+
+  @override
+  String get offVisitInZone => '📍 In the geofence';
+
+  @override
+  String offVisitOutZone(int meters) {
+    return '📍 Outside the geofence · $meters m';
+  }
+
+  @override
+  String get offVisitNoGps => 'No GPS — visit without coordinates';
+
+  @override
+  String get checklistTitle => 'Checklist';
+
+  @override
+  String checklistProgress(int done, int total) {
+    return '$done of $total';
+  }
+
+  @override
+  String get checklistSaveFailed => 'Couldn\'t update the item';
+
+  @override
+  String proofOffline(String taken, String trust, String sent) {
+    return 'Taken offline at $taken · $trust · sent at $sent';
+  }
+
+  @override
+  String proofVisitOffline(String taken, String trust, String sent) {
+    return 'Offline visit at $taken · $trust · sent at $sent';
+  }
+
+  @override
+  String get proofTrustGps => 'GPS time ✓';
+
+  @override
+  String get proofTrustMono => 'time verified ✓';
+
+  @override
+  String get proofTrustDevice => '⚠️ phone clock time only';
+
+  @override
+  String proofTrustUnverified(String drift) {
+    return '⚠️ time not verified (the phone clock was off by $drift)';
+  }
+
+  @override
+  String get proofNeedsDecision => 'to be decided when issuing the act';
+
+  @override
+  String get proofLateAfterCancel => 'sent after cancellation';
+
+  @override
+  String get proofLateAfterReassign => 'sent after reassignment';
+
+  @override
+  String get proofLateAfterClose => 'sent after the work order was closed';
+
+  @override
+  String get proofHashUnchecked => 'photo fingerprint not checked';
+
+  @override
+  String durHours(int n) {
+    return '$n h';
+  }
+
+  @override
+  String durMinutes(int n) {
+    return '$n min';
+  }
+
+  @override
+  String get offTestNet => 'Network (test)';
 }

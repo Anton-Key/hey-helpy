@@ -747,14 +747,14 @@ class _CameraScreenState extends State<CameraScreen>
     final color = found ? AppColors.accent : AppColors.cameraFrame;
     return Align(
       alignment: raise
-          ? const AlignmentDirectional(0, -0.55)
+          ? const AlignmentDirectional(0, -0.72)
           : const AlignmentDirectional(0, -0.1),
       child: AnimatedBuilder(
         animation: _breath,
         builder: (context, child) {
           final t = Curves.easeInOut.transform(_breath.value);
           return Transform.scale(
-              scale: (raise ? 0.7 : 1) * (1 + 0.05 * t),
+              scale: (raise ? 0.6 : 1) * (1 + 0.05 * t),
               child: Opacity(opacity: _busy ? 0.6 + 0.4 * t : 1, child: child));
         },
         child: Column(mainAxisSize: MainAxisSize.min, children: [

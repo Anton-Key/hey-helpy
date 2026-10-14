@@ -25,6 +25,7 @@ import {
 import { type AssetRef, buildResult, type Vision } from "../_shared/identify.ts";
 import { kindLabel } from "../_shared/kinds.ts";
 import {
+  NOTIFY_OFF,
   BOT_USERNAME,
   groupAddressed,
   type InlineButton,
@@ -92,6 +93,15 @@ export interface Db {
   createOrder(chat: number, group: boolean, id: string, order: J): Promise<J>;
   sessionGet(chat: number): Promise<Session | null>;
   sessionPut(chat: number, state: Session | null): Promise<void>;
+  /** «Не присылать уведомления» (true) / снова присылать (false) — 0022. */
+  notifyOptout?(chat: number, off: boolean): Promise<void>;
+}
+
+export { NOTIFY_OFF };
+
+/** Снова присылать уведомления; без 0022 — тихо ничего. */
+function notifyOn(deps: Deps, chat: number) {
+  return deps.db.notifyOptout?.(chat, false).catch(() => {}) ?? Promise.resolve();
 }
 
 export interface Storage {
@@ -453,7 +463,14 @@ async function handleMessage(m: TgMessage, turn: Turn, bot: string) {
 async function handleCommand(name: string, arg: string, m: TgMessage, turn: Turn, bot: string) {
   const { deps, chat, group, lang } = turn;
   const from = m.from;
+  // /start и новая заявка — уведомления снова включены (шаг 24).
+  if (name === "start" && !group) await notifyOn(deps, chat);
   switch (name) {
+    case "stop": {
+      await deps.db.notifyOptout?.(chat, true);
+      turn.log.result = "notify_off";
+      return void await say(turn, "notifyOff");
+    }
     case "start": {
       // Ссылка «Добавить бота в группу» (?startgroup=grp_<код>) — как /connect <код>.
       if (group && arg.startsWith("grp_")) return void await handleCommand("connect", arg.slice(4), m, turn, bot);
@@ -735,6 +752,12 @@ async function handleCallback(cb: TgCallback, deps: Deps, log: J) {
   const turn: Turn = { deps, chat, group, lang, from: cb.from, log };
   const data = cb.data ?? "";
   log.action = data.split(":")[0];
+  // Кнопка в уведомлении о статусе: черновик и привязка не нужны.
+  if (data === NOTIFY_OFF) {
+    await deps.db.notifyOptout?.(chat, true);
+    await deps.tg.answer(cb.id);
+    return void await say(turn, "notifyOff");
+  }
   const who = await deps.db.resolve(chat, group);
   log.who = who.kind;
   if (who.kind === "none" || who.kind === "guest_off") {
@@ -862,6 +885,7 @@ async function create(s: Session, who: Who, turn: Turn, cardId: number) {
   }
   turn.log.result = "created";
   turn.log.photo = !!r.photo;
+  await notifyOn(deps, chat);
   const html = [
     `✅ <b>${esc(t(lang, "created", { number: String(r.number) }))}</b>`,
     "",

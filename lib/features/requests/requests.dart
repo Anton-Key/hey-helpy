@@ -228,6 +228,17 @@ class RequestsRepo {
     await _c.from('work_orders').update({'status': status}).eq('id', id);
   }
 
+  /// Шаг 24: сообщить автору в Telegram о новом статусе (Edge Function
+  /// telegram-notify). Что и кому — решает функция по базе; ошибки и
+  /// «функция не выложена» — тихо, смена статуса уже сохранена.
+  void notifyTelegram(String id) {
+    unawaited(_c.functions
+        .invoke('telegram-notify', body: {'orderId': id})
+        .timeout(const Duration(seconds: 20))
+        .then((_) {},
+            onError: (e) => debugPrint('telegram-notify: ${e.runtimeType}')));
+  }
+
   /// Удалить заявку навсегда — только менеджер (политика `wo_delete`).
   /// Сначала файлы фото из Storage, затем сама заявка; визиты, вложения,
   /// чек-листы и история удаляются базой каскадом. Возвращает, сколько файлов
@@ -429,6 +440,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         _ok(l.statusError(e), type: AppMessageType.error);
         return;
       }
+      _notifyTelegram();
       var message = l.toastInProgress;
       if (recordVisit) {
         final position = await positionFuture;
@@ -494,6 +506,13 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     }
   }
 
+  /// Заявка из Telegram — автор узнает о новом статусе в чате (шаг 24).
+  void _notifyTelegram() {
+    if (_d?['input_channel'] == 'telegram') {
+      widget.repo.notifyTelegram(widget.order.id);
+    }
+  }
+
   bool get _isAuthor => widget.uid != null && _d?['created_by'] == widget.uid;
   bool get _isManager => widget.role == 'admin' || widget.role == 'manager';
   bool get _isExecutor =>
@@ -543,6 +562,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final l = context.l10n;
     try {
       await widget.repo.setStatus(widget.order.id, status);
+      _notifyTelegram();
       await _load();
       _ok(okText);
     } catch (e) {
@@ -577,6 +597,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     }
     try {
       await widget.repo.returnForRework(widget.order.id, reason);
+      _notifyTelegram();
       await _load();
       _ok(l.toastReturned);
     } catch (e) {

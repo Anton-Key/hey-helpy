@@ -155,6 +155,9 @@ function makeDeps(): Deps | null {
     sessionPut: async (chat, state) => {
       await rpc("tg_session_put", { p_chat: chat, p_state: state });
     },
+    notifyOptout: async (chat, off) => {
+      await rpc("tg_notify_optout", { p_chat: chat, p_off: off });
+    },
   };
 
   const storage: Storage = {

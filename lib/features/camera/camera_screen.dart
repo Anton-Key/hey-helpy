@@ -819,6 +819,21 @@ class _CameraScreenState extends State<CameraScreen>
                           AppText.headline.copyWith(color: AppColors.onCamera)),
                 ]),
               ),
+              const SizedBox(height: AppSpace.m),
+              // Готовый снимок из галереи / файла — прежний «Узнать по фото».
+              Pressable(
+                onTap: _pickPhoto,
+                child: _Bubble(
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(AppIcons.image,
+                        size: AppSizes.iconS, color: AppColors.onCamera),
+                    const SizedBox(width: AppSpace.xs),
+                    Text(l.cameraPickPhoto,
+                        style: AppText.footnote
+                            .copyWith(color: AppColors.onCamera)),
+                  ]),
+                ),
+              ),
             ]),
           ),
         ),

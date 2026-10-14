@@ -1430,6 +1430,22 @@ begin
     lat = excluded.lat, lng = excluded.lng, uploaded_by = excluded.uploaded_by,
     created_at = excluded.created_at;
 
+  -- Шаг 25: фото «до» у 111 (кадр питча «Заявка: фото «до/после»») —
+  -- нарисованный кондиционер demo/ac_indoor.jpg, автор — заявитель.
+  insert into public.attachments (id, work_order_id, kind, stage, storage_path, taken_at,
+                                  lat, lng, uploaded_by, mock_location, created_at)
+  select 'de300000-0000-4000-8000-00000000a201'::uuid, w.id, 'photo', 'before', 'demo/ac_indoor.jpg',
+         w.created_at + interval '2 minutes', o.lat, o.lng + 0.0001, v_requester, false,
+         w.created_at + interval '2 minutes'
+    from public.work_orders w
+    left join public.objects o on o.id = w.object_id
+   where w.id = 'de300000-0000-4000-8000-000000000111' and v_requester is not null
+  on conflict (id) do update set
+    work_order_id = excluded.work_order_id, stage = excluded.stage,
+    storage_path = excluded.storage_path, taken_at = excluded.taken_at,
+    lat = excluded.lat, lng = excluded.lng, uploaded_by = excluded.uploaded_by,
+    created_at = excluded.created_at;
+
   insert into public.checklist_items (id, work_order_id, text, is_done, done_at, done_by, created_at)
   select ('de300000-0000-4000-8000-00000000b' || lpad(v.k::text, 3, '0'))::uuid, w.id, v.txt, true,
          coalesce(w.submitted_at, w.updated_at) - interval '20 minutes', v_executor, w.created_at

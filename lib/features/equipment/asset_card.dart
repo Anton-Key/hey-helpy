@@ -18,6 +18,7 @@ import 'equipment_form.dart';
 import 'equipment_kinds.dart';
 import 'equipment_models.dart';
 import 'equipment_repository.dart';
+import '../requests/order_form_place.dart';
 
 /// Карточка оборудования (шаг 16): паспорт, где стоит (помещение, этаж,
 /// «Показать на плане»), планы ППР, история заявок, «Создать заявку»
@@ -127,6 +128,7 @@ class _AssetCardScreenState extends State<AssetCardScreen> {
       objects: ctx.objects,
       companyId: company,
       initialObjectId: widget.object.id,
+      origin: PlaceOrigin.equipment,
       initialLocationId: _asset.locationId,
       initialAssetId: _asset.id,
       initialAssetName: _asset.name,

@@ -706,4 +706,216 @@ export const SCENARIOS = [
       assert(js.length === 0, `ошибки JavaScript: ${js.slice(0, 2).join(' | ')}`);
     },
   },
+  {
+    id: 10,
+    title: '«Узнать по фото» (заглушка) → «Это он» → заявка с фото «до» → фото видно в карточке и на весь экран',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`delete from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
+        and id::text not like 'de300000-%'`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      // «Где я» запоминается на устройстве: сразу «БЦ «Демо»», без выбора.
+      const uid = sql(`select id from auth.users where email = '${USERS.admin}'`);
+      await m.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
+        [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|`]);
+      await home(m, base);
+      await section(m, /^По фото/);
+      await clickAction(m, /^Сфотографировать/);
+      await btn(m, /^Это он/).waitFor({ timeout: 30000 });
+      await ctx.shot(m, 'identified');
+      await clickAction(m, /^Это он/);
+      await see(m, /Снимок будет приложен/).waitFor({ timeout: 15000 });
+      await see(m, /из «Узнать по фото»/).waitFor({ timeout: 5000 });
+      await ctx.shot(m, 'form');
+      await clickAction(m, /^Создать/);
+      const id = await waitDb(`select id from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
+        and created_at > now() - interval '2 minutes' order by created_at desc limit 1`, (v) => v.length > 0, 20000);
+      await waitDb(`select count(*) from attachments where work_order_id = '${id}' and stage = 'before'`, '1', 20000);
+      const title = sql(`select title from work_orders where id = '${id}'`);
+      ctx.notes.push(`заявка: ${title}`);
+      // Карточка: ссылки на фото подписываются, миниатюра «До · 1» видна.
+      const signed = [];
+      m.on('response', (r) => { if (/\/object\/sign\/work-photos/.test(r.url())) signed.push(r.status()); });
+      await openOrder(m, base, title);
+      await see(m, /До · 1/).waitFor({ timeout: 15000 });
+      await settle(m, 1500);
+      assert(signed.includes(200), `подписанные ссылки на фото: ${signed.join(',') || 'не запрошены'}`);
+      await ctx.shot(m, 'card-photo');
+      // На весь экран: подпись «До · <кто> · <когда> · …».
+      await btn(m, /^До$/).click();
+      await settle(m, 2000);
+      const viewer = await screenText(m);
+      assert(/До · .+ · .+/.test(viewer), 'в просмотре нет подписи «До · кто · когда»');
+      await ctx.shot(m, 'viewer');
+      await m.keyboard.press('Escape');
+      await settle(m, 800);
+      ctx.notes.push('фото «до» в карточке и в просмотре видно');
+    },
+  },
+  {
+    id: 11,
+    title: 'Форма новой заявки: прошлое место не подставляется; GPS рядом с объектом → «Рядом с вами»',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`delete from work_orders where company_id = '${uuid(1)}' and title like 'E2E форма%'`);
+      // 1. Без геопозиции: создать заявку на «БЦ «Демо»», открыть форму снова — объект пуст.
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await clickAction(m, /^(\+ )?Заявка$/);
+      await see(m, /Новая заявка/).waitFor({ timeout: 10000 });
+      await typeInto(m, m.getByRole('textbox').first(), 'E2E форма 1');
+      await btn(m, /^Выберите объект/).click();
+      await settle(m, 800);
+      await m.getByRole('menuitem', { name: /БЦ «Демо»/ }).or(m.getByRole('option', { name: /БЦ «Демо»/ }))
+        .or(m.getByText(/БЦ «Демо»/)).first().click();
+      await settle(m, 800);
+      await clickAction(m, /^Создать заявку$/);
+      await waitDb(`select count(*) from work_orders where title = 'E2E форма 1'`, '1');
+      await settle(m, 1500);
+      await clickAction(m, /^(\+ )?Заявка$/);
+      await see(m, /Новая заявка/).waitFor({ timeout: 10000 });
+      await settle(m, 3800); // GPS ждём не дольше 3 с
+      await ctx.shot(m, 'form-empty');
+      assert(await btn(m, /^Выберите объект/).isVisible(), 'в новой форме подставился объект прошлой заявки');
+      await see(m, /Недавние/).waitFor({ timeout: 5000 });
+      ctx.notes.push('после заявки на «БЦ «Демо»» новая форма пустая, есть «Недавние»');
+      // 2. С геопозицией в 40 м от «БЦ «Демо»» — объект подставлен, без помещения.
+      const g = await ctx.page({ geo: { latitude: 44.80507, longitude: 20.44942, accuracy: 10 } });
+      await login(g, base, USERS.admin);
+      await home(g, base);
+      await clickAction(g, /^(\+ )?Заявка$/);
+      await see(g, /Рядом с вами · \d+ м/).waitFor({ timeout: 8000 });
+      await ctx.shot(g, 'form-gps');
+      const t = await screenText(g);
+      assert(/БЦ «Демо»/.test(t), 'по GPS не подставлен «БЦ «Демо»»');
+      ctx.notes.push(`GPS: ${t.match(/Рядом с вами · \d+ м/)?.[0]}`);
+    },
+  },
+  {
+    id: 12,
+    title: 'Документы: прикрепить PDF к заявке → строка «Документы · 1» → «Открыть» (новая вкладка)',
+    async run(ctx) {
+      const { base } = ctx;
+      const id = uuid(114);
+      sql(`delete from attachments where work_order_id = '${id}' and kind = 'document'`);
+      const f = join(TMP, 'akt-e2e.pdf');
+      // Простейший PDF из одной пустой страницы (сгенерирован, не реальный документ).
+      writeFileSync(f, '%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n');
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await m.evaluate((h) => { location.hash = h; }, `/orders/${id}`);
+      await see(m, /Создана/).waitFor({ timeout: 20000 });
+      await scrollTo(m, /Прикрепить файл/);
+      const chooser = m.waitForEvent('filechooser', { timeout: 15000 });
+      await btn(m, /^Прикрепить файл/).click();
+      await (await chooser).setFiles(f);
+      const row = await waitDb(`select file_name || '|' || mime || '|' || size_bytes || '|' || storage_path from attachments
+        where work_order_id = '${id}' and kind = 'document'`, (v) => v.length > 0, 20000);
+      ctx.notes.push(`в базе: ${row.split('|').slice(0, 3).join(' · ')}`);
+      assert(row.includes(`|${uuid(1)}/${id}/`) && row.endsWith('-akt-e2e.pdf'), `путь файла: ${row}`);
+      await see(m, /Документы · 1/).waitFor({ timeout: 15000 });
+      await ctx.shot(m, 'docs');
+      await btn(m, /^akt-e2e\.pdf/).click();
+      await settle(m, 800);
+      // Вкладка открывается с noopener — её адрес Playwright не видит, поэтому
+      // проверяем, что браузер запросил файл по подписанной ссылке.
+      const opened = m.context().waitForEvent('request', {
+        predicate: (r) => /\/object\/sign\/order-files\/.+akt-e2e\.pdf\?token=/.test(r.url()) && r.method() === 'GET',
+        timeout: 15000,
+      });
+      await btn(m, /^Открыть$/).click();
+      const req = await opened;
+      ctx.notes.push(`открыт по подписанной ссылке: …${req.url().split('?')[0].slice(-24)}`);
+    },
+  },
+  {
+    id: 13,
+    title: '«Системы»: администратор создаёт систему; менеджер с зоной «Климат + Сантехника» её не видит',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`delete from layers where company_id = '${uuid(1)}' and name = 'E2E Лифты'`);
+      sql(`delete from access_zones where profile_id = 'd0000000-0000-4000-8000-000000000004';
+        insert into access_zones(company_id, profile_id, layer_ids, scope_kind, scope_ref)
+        select '${uuid(1)}', 'd0000000-0000-4000-8000-000000000004',
+          array(select id from layers where company_id = '${uuid(1)}' and name in ('Климат', 'Сантехника')), 'city', 'Москва'`);
+      const a = await ctx.page();
+      await login(a, base, USERS.admin);
+      await home(a, base);
+      await profileTab(a).click();
+      await settle(a, 1000);
+      await btn(a, /^Моя компания/).click();
+      await scrollTo(a, /^Системы/);
+      await btn(a, /^Системы/).click();
+      await see(a, /Оборудование: \d+/).waitFor({ timeout: 20000 });
+      await btn(a, /^Система$/).click();
+      await see(a, /Новая система/).waitFor({ timeout: 10000 });
+      await typeInto(a, a.getByRole('textbox').first(), 'E2E Лифты');
+      await typeInto(a, a.getByRole('textbox').nth(1), 'E2E Lifts');
+      await clickAction(a, /^Создать систему/);
+      const row = await waitDb(`select name_i18n->>'en' || '|' || coalesce(icon, '-') || '|' || color from layers
+        where company_id = '${uuid(1)}' and name = 'E2E Лифты'`, (v) => v.length > 0);
+      ctx.notes.push(`создана: ${row}`);
+      await see(a, /E2E Лифты/).waitFor({ timeout: 10000 });
+      await ctx.shot(a, 'admin');
+      const m = await ctx.page();
+      await login(m, base, USERS.manager2);
+      await home(m, base);
+      await profileTab(m).click();
+      await settle(m, 1000);
+      await btn(m, /^Моя компания/).click();
+      await scrollTo(m, /^Системы/);
+      await btn(m, /^Системы/).click();
+      await see(m, /Оборудование: \d+/).waitFor({ timeout: 20000 });
+      await settle(m, 1500);
+      await ctx.shot(m, 'manager2');
+      const t = await screenText(m);
+      assert(!/E2E Лифты/.test(t), 'менеджер с зоной видит систему вне своей зоны');
+      assert(/Климат/.test(t) && !/Электрика/.test(t), 'менеджер с зоной видит не те системы');
+      assert(!/Новая система|^Система$/m.test(t), 'у менеджера есть кнопка «+ Система»');
+      ctx.notes.push('менеджер с зоной видит только «Климат» и «Сантехника»');
+    },
+  },
+  {
+    id: 14,
+    title: 'Акт подрядчику «КлиматСервис» за месяц: в «К оплате» только доказанные заявки → «Сформировать акт» → номер и PDF',
+    async run(ctx) {
+      const { base } = ctx;
+      // Сколько доказанных по правилам акта — тем же расчётом в SQL.
+      const proven = +sql(`select count(*) from work_orders w left join objects o on o.id = w.object_id
+        where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
+          and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
+          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo' and a.stage = 'after'))
+          and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
+          and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`);
+      const before = +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await scrollTo(m, /Акты подрядчикам/);
+      await btn(m, /^Акты подрядчикам/).click();
+      await see(m, /К оплате · \d+/).waitFor({ timeout: 30000 });
+      await settle(m, 1500);
+      const t = await screenText(m);
+      const shown = +(t.match(/К оплате · (\d+)/i)?.[1] ?? NaN);
+      ctx.notes.push(`к оплате на экране ${shown}, по базе ${proven}`);
+      assert(shown === proven && proven > 0, `«К оплате»: на экране ${shown}, доказанных в базе ${proven}`);
+      assert(/нет фото «после»|визит вне геозоны|не принята менеджером|нет отметки визита/.test(t),
+        'нет списка «без доказательства» с причинами');
+      await ctx.shot(m, 'act');
+      await clickAction(m, /^Сформировать акт/);
+      // PDF загружается после выдачи номера — ждём путь файла в акте.
+      const act = await waitDb(`select number || '|' || (totals->>'paid') || '|' || coalesce(pdf_path, '-') from contractor_acts
+        where contractor_id = '${uuid(31)}' order by created_at desc limit 1`,
+        (v) => v.length > 0 && !v.endsWith('|-') && +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`) > before, 40000);
+      ctx.notes.push(`акт: ${act.split('|').slice(0, 2).join(', к оплате ')}`);
+      const [num, paid, pdf] = act.split('|');
+      assert(/^АКТ-\d{4}-\d{3}$/.test(num), `номер акта: ${num}`);
+      assert(+paid === proven, `в акте к оплате ${paid}, ждали ${proven}`);
+      assert(pdf.endsWith('.pdf'), `PDF акта не сохранён: ${pdf}`);
+    },
+  },
 ];

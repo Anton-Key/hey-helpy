@@ -2452,7 +2452,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tabPpr => 'PM';
+  String get tabPpr => 'Maintenance';
 
   @override
   String get pprTitle => 'Preventive maintenance';
@@ -2543,7 +2543,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String pprTaskLine(String period, String due) {
-    return 'PM · $period · due $due';
+    return 'Maintenance · $period · due $due';
   }
 
   @override
@@ -2553,13 +2553,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pprPeriodRow => 'Maintenance period';
 
   @override
-  String get pprTag => 'PM';
+  String get pprTag => 'Maintenance';
 
   @override
   String get pprKindOrder => 'Preventive maintenance';
 
   @override
-  String get filterPpr => 'PM';
+  String get filterPpr => 'Maintenance';
 
   @override
   String get pprFilters => 'Filters';
@@ -4174,4 +4174,518 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get orderLinkNotFound =>
       'The work order wasn\'t found or you don\'t have access to it.';
+
+  @override
+  String get photoInZone => 'inside geofence';
+
+  @override
+  String photoOutOfZone(int meters) {
+    return 'outside geofence · $meters m';
+  }
+
+  @override
+  String photoCounter(int n, int total) {
+    return '$n of $total';
+  }
+
+  @override
+  String get photoPrev => 'Previous photo';
+
+  @override
+  String get photoNext => 'Next photo';
+
+  @override
+  String get fileDownload => 'Download';
+
+  @override
+  String get fileShare => 'Share';
+
+  @override
+  String get fileOpenFailed =>
+      'Couldn\'t open the file. Check your connection and try again.';
+
+  @override
+  String get formFromObjectCard => 'from the site card';
+
+  @override
+  String get formFromMap => 'from the map';
+
+  @override
+  String get formFromPlan => 'from the floor plan';
+
+  @override
+  String get formFromEquipment => 'from the equipment card';
+
+  @override
+  String get formFromPhoto => 'from “Identify by photo”';
+
+  @override
+  String get formFromOrder => 'from the work order';
+
+  @override
+  String formNearby(int meters) {
+    return 'Near you · $meters m';
+  }
+
+  @override
+  String get formOtherObject => 'Other site';
+
+  @override
+  String get formRecent => 'Recent:';
+
+  @override
+  String get docsTitle => 'Documents';
+
+  @override
+  String get docAttach => 'Attach a file';
+
+  @override
+  String get docAttachHint => 'PDF, Word, Excel, JPG, PNG, TXT — up to 20 MB';
+
+  @override
+  String get docUploading => 'Uploading…';
+
+  @override
+  String docUploaded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Files attached',
+      one: 'File attached',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get docUploadFailed =>
+      'Some files couldn\'t be attached. Check your connection and try again.';
+
+  @override
+  String get docPickFailed => 'Couldn\'t pick the file.';
+
+  @override
+  String docTooBig(String name) {
+    return '“$name” is larger than 20 MB and can\'t be attached.';
+  }
+
+  @override
+  String docBadType(String name) {
+    return '“$name”: only PDF, Word, Excel, JPG, PNG or TXT can be attached.';
+  }
+
+  @override
+  String docEmpty(String name) {
+    return '“$name” is empty.';
+  }
+
+  @override
+  String get docKb => 'KB';
+
+  @override
+  String get docMb => 'MB';
+
+  @override
+  String get docOpen => 'Open';
+
+  @override
+  String get docDeleteTitle => 'Delete the document?';
+
+  @override
+  String get docDeleted => 'Document deleted';
+
+  @override
+  String get docDeleteFailed => 'Couldn\'t delete the document.';
+
+  @override
+  String get docLoadFailed => 'Couldn\'t load documents — retry';
+
+  @override
+  String docWillAttach(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# files will be attached',
+      one: '# file will be attached',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get docAttachFailed =>
+      'The work order was created, but the file wasn\'t attached. Open the order and attach it again.';
+
+  @override
+  String get systemsTitle => 'Systems';
+
+  @override
+  String get systemsMenuHint =>
+      'HVAC, electrical, plumbing… — equipment, contractors and work orders depend on them';
+
+  @override
+  String get systemAdd => 'System';
+
+  @override
+  String get systemNew => 'New system';
+
+  @override
+  String get systemEdit => 'Edit system';
+
+  @override
+  String get systemCreate => 'Create system';
+
+  @override
+  String get systemNameRu => 'Name (Russian)';
+
+  @override
+  String get systemNameRuHint => 'e.g. «Лифты»';
+
+  @override
+  String get systemNameEn => 'Name (English)';
+
+  @override
+  String get systemNameEnHint => 'e.g. Lifts';
+
+  @override
+  String get systemIcon => 'Icon';
+
+  @override
+  String get systemColor => 'Color';
+
+  @override
+  String get systemNameRequired =>
+      'Enter the system name (up to 60 characters).';
+
+  @override
+  String get systemNameTaken => 'A system with this name already exists.';
+
+  @override
+  String get systemSaveFailed =>
+      'Couldn\'t save. Check your connection and try again.';
+
+  @override
+  String get systemsLoadFailed => 'Couldn\'t load systems';
+
+  @override
+  String get systemsEmpty => 'There are no systems in your access zone';
+
+  @override
+  String get systemsEmptyAdmin => 'No systems yet — add the first one';
+
+  @override
+  String systemCounts(int assets, int orders, int contractors) {
+    return 'Equipment: $assets · open orders: $orders · contractors: $contractors';
+  }
+
+  @override
+  String systemMoveUp(String name) {
+    return 'Move up: $name';
+  }
+
+  @override
+  String systemMoveDown(String name) {
+    return 'Move down: $name';
+  }
+
+  @override
+  String get systemsFooterAdmin =>
+      'Reorder with the arrows. A system that is already in use can only be archived.';
+
+  @override
+  String get systemsFooterManager =>
+      'Systems in your access zone. The company admin manages them.';
+
+  @override
+  String systemsArchived(int count) {
+    return 'Archive · $count';
+  }
+
+  @override
+  String get systemsArchivedFooter =>
+      'Archived systems aren\'t offered for new work orders, equipment or zones; existing data keeps them.';
+
+  @override
+  String get systemArchivedBadge => 'Archived';
+
+  @override
+  String get systemAssets => 'Equipment';
+
+  @override
+  String get systemOpenOrders => 'Open work orders';
+
+  @override
+  String get systemContractorAll => 'at all sites';
+
+  @override
+  String get systemNoAssets => 'No equipment in this system';
+
+  @override
+  String get systemArchive => 'Archive';
+
+  @override
+  String get systemArchiveHint =>
+      'Won\'t be offered for new work orders, equipment or zones';
+
+  @override
+  String get systemRestore => 'Restore from archive';
+
+  @override
+  String get systemArchivedToast => 'System archived';
+
+  @override
+  String get systemRestoredToast => 'System restored';
+
+  @override
+  String get systemDeleteHint => 'Only if nothing refers to the system';
+
+  @override
+  String systemDeleteTitle(String name) {
+    return 'Delete the system “$name”?';
+  }
+
+  @override
+  String get systemDeleteMessage =>
+      'You can delete it only if it has no work orders, equipment, contractors, maintenance plans or zones.';
+
+  @override
+  String get systemDeletedToast => 'System deleted';
+
+  @override
+  String get systemInUse => 'The system is in use — it can only be archived.';
+
+  @override
+  String get actsTitle => 'Contractor acts';
+
+  @override
+  String get actsMenuHint => 'Pay only for proven work';
+
+  @override
+  String get actsSlogan => 'We pay contractors only for proven work';
+
+  @override
+  String get actContractor => 'Contractor';
+
+  @override
+  String get actPickContractor => 'Choose a contractor';
+
+  @override
+  String get actNoContractors => 'No contractors yet';
+
+  @override
+  String get actPrevMonth => 'Previous month';
+
+  @override
+  String get actNextMonth => 'Next month';
+
+  @override
+  String actPaidTitle(int count) {
+    return 'To pay · $count';
+  }
+
+  @override
+  String actRejectedTitle(int count) {
+    return 'No proof — not accepted for payment · $count';
+  }
+
+  @override
+  String get actReasonNotAccepted => 'not accepted by a manager';
+
+  @override
+  String get actReasonReturned => 'returned for rework';
+
+  @override
+  String get actReasonNoPhoto => 'no “after” photo';
+
+  @override
+  String get actReasonNoVisit => 'no visit check-in';
+
+  @override
+  String get actReasonOutOfZone => 'visit outside the geofence';
+
+  @override
+  String get actReasonChecklist => 'checklist not completed';
+
+  @override
+  String get actProofPhoto => 'photo';
+
+  @override
+  String get actProofGeo => 'geofence';
+
+  @override
+  String get actProofChecklist => 'checklist';
+
+  @override
+  String get actOverdue => 'overdue';
+
+  @override
+  String actTotalLine(int paid, int rejected, String share, int overdue) {
+    return 'To pay: $paid · no proof: $rejected · proven $share · overdue: $overdue';
+  }
+
+  @override
+  String get actNoRates => 'No rates — the act shows counts only';
+
+  @override
+  String actSumLine(String sum) {
+    return 'Total to pay: $sum';
+  }
+
+  @override
+  String get actKpiPaid => 'to pay';
+
+  @override
+  String get actKpiRejected => 'no proof';
+
+  @override
+  String get actKpiShare => 'proven';
+
+  @override
+  String get actKpiOverdue => 'overdue';
+
+  @override
+  String get actNoOrders =>
+      'The contractor has no completed work orders this month';
+
+  @override
+  String get actLoadFailed => 'Couldn\'t load the contractor\'s work orders';
+
+  @override
+  String get actIssue => 'Create act';
+
+  @override
+  String actIssued(String number) {
+    return 'Act $number created';
+  }
+
+  @override
+  String get actIssueFailed =>
+      'Couldn\'t create the act. Check your connection and try again.';
+
+  @override
+  String get actPdfNotSaved =>
+      'The act was created, but the PDF wasn\'t archived — you can download it now.';
+
+  @override
+  String get actExcel => 'Excel for accounting';
+
+  @override
+  String get actExcelSaved => 'Excel file saved';
+
+  @override
+  String get actExcelFailed => 'Couldn\'t save the Excel file';
+
+  @override
+  String get actHistory => 'Created acts';
+
+  @override
+  String get actHistoryEmpty => 'No acts for this contractor yet';
+
+  @override
+  String actHistoryRow(String period, int paid, int rejected) {
+    return '$period · to pay $paid, no proof $rejected';
+  }
+
+  @override
+  String get actReplaced => 'replaced';
+
+  @override
+  String get actRates => 'Contractor rates';
+
+  @override
+  String get actRateOrder => 'Per work order';
+
+  @override
+  String get actRateVisit => 'Per maintenance visit';
+
+  @override
+  String get actRateNone => 'not set';
+
+  @override
+  String get actRatesHint =>
+      'Optional. Without rates the act shows counts only.';
+
+  @override
+  String get actRatesSaved => 'Rates saved';
+
+  @override
+  String get actRatesFailed =>
+      'Couldn\'t save the rates (admin rights required)';
+
+  @override
+  String get actPdfTitle => 'Certificate of completed work';
+
+  @override
+  String actPdfNumberDate(String number, String date) {
+    return 'No. $number of $date';
+  }
+
+  @override
+  String get actPdfCustomer => 'Customer';
+
+  @override
+  String get actPdfContractor => 'Contractor';
+
+  @override
+  String get actPdfPeriod => 'Period';
+
+  @override
+  String get actPdfIssuedBy => 'Created by';
+
+  @override
+  String get actPdfNotAccepted => 'Not accepted for payment';
+
+  @override
+  String get actPdfSigns => 'Signatures';
+
+  @override
+  String get actPdfSignLine => '____________ / ____________ /';
+
+  @override
+  String actPdfPage(int page, int pages) {
+    return 'page $page of $pages';
+  }
+
+  @override
+  String get actColNo => 'No.';
+
+  @override
+  String get actColDate => 'Date';
+
+  @override
+  String get actColObject => 'Site';
+
+  @override
+  String get actColPlace => 'Room';
+
+  @override
+  String get actColWork => 'Work';
+
+  @override
+  String get actColProofs => 'Proof';
+
+  @override
+  String get actColSum => 'Amount';
+
+  @override
+  String get actColReasons => 'Reason';
+
+  @override
+  String get actSheetPaid => 'To pay';
+
+  @override
+  String get actSheetRejected => 'Not accepted';
+
+  @override
+  String homeBadgePhoto(int count) {
+    return 'Identified by photo in 7 days: $count';
+  }
+
+  @override
+  String homeBadgePhotoRate(int count, String rate) {
+    return 'Identified by photo: $count ($rate right)';
+  }
+
+  @override
+  String homeBadgeTelegram(int count) {
+    return 'From Telegram in 7 days: $count';
+  }
 }

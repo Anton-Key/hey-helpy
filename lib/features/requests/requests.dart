@@ -18,6 +18,8 @@ import '../regions/geo_pickers.dart';
 import '../photos/photo_capture.dart';
 import '../ppr/ppr_logic.dart';
 import '../ppr/ppr_text.dart';
+import '../documents/document_repository.dart';
+import '../documents/documents_section.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
 import '../photo_identify/identify_log.dart' show newUuid;
@@ -25,6 +27,7 @@ import '../visits/visit_repository.dart';
 import '../visits/visit_section.dart';
 import 'contractor_picker.dart';
 import 'order_filter.dart';
+import 'order_form_place.dart';
 import 'order_menu.dart';
 import 'work_order.dart';
 import '../../core/app_message.dart';
@@ -67,6 +70,8 @@ class RequestsRepo {
       {String? contractorId,
       String? objectId,
       String? locationId,
+      String? layerId,
+      bool openOnly = false,
       int limit = 200}) async {
     var q = _c.from('work_orders').select(
         'id,title,work_type,layer_id,priority,status,recurrence,object_id,location_id,'
@@ -74,6 +79,8 @@ class RequestsRepo {
     if (contractorId != null) q = q.eq('assigned_contractor_id', contractorId);
     if (objectId != null) q = q.eq('object_id', objectId);
     if (locationId != null) q = q.eq('location_id', locationId);
+    if (layerId != null) q = q.eq('layer_id', layerId);
+    if (openOnly) q = q.not('status', 'in', '(done,cancelled)');
     return await q.order('created_at', ascending: false).limit(limit);
   }
 
@@ -102,6 +109,18 @@ class RequestsRepo {
   /// («Показать N заявок» в окне «Фильтры»).
   Future<int> countFiltered(List<ServerCond> conds) =>
       applyServerConds(_c.from('work_orders').count(CountOption.exact), conds);
+
+  /// Заявки канала за последние [days] дней (плашки на главной, шаг 24).
+  Future<int> countChannel(String channel, {int days = 7}) => _c
+      .from('work_orders')
+      .count(CountOption.exact)
+      .eq('input_channel', channel)
+      .gte(
+          'created_at',
+          DateTime.now()
+              .subtract(Duration(days: days))
+              .toUtc()
+              .toIso8601String());
 
   /// Сколько всего заявок видно пользователю (без фильтров) — «из M».
   Future<int> countAll() => _c.from('work_orders').count(CountOption.exact);
@@ -184,6 +203,21 @@ class RequestsRepo {
   }
 
   /// Имя конкретного исполнителя заявки (executors → profiles).
+  /// Объекты последних заявок текущего пользователя (новые — первыми) —
+  /// для кнопок «Недавние» в форме новой заявки.
+  Future<List<String?>> recentObjectIds() async {
+    final uid = _c.auth.currentUser?.id;
+    if (uid == null) return const [];
+    final rows = await _c
+        .from('work_orders')
+        .select('object_id')
+        .eq('created_by', uid)
+        .not('object_id', 'is', null)
+        .order('created_at', ascending: false)
+        .limit(30);
+    return [for (final r in rows as List) r['object_id'] as String?];
+  }
+
   Future<String?> executorName(String executorId) async {
     final r = await _c
         .from('executors')
@@ -206,6 +240,17 @@ class RequestsRepo {
     await _c.from('work_orders').update({'status': status}).eq('id', id);
   }
 
+  /// Шаг 24: сообщить автору в Telegram о новом статусе (Edge Function
+  /// telegram-notify). Что и кому — решает функция по базе; ошибки и
+  /// «функция не выложена» — тихо, смена статуса уже сохранена.
+  void notifyTelegram(String id) {
+    unawaited(_c.functions
+        .invoke('telegram-notify', body: {'orderId': id})
+        .timeout(const Duration(seconds: 20))
+        .then((_) {},
+            onError: (e) => debugPrint('telegram-notify: ${e.runtimeType}')));
+  }
+
   /// Удалить заявку навсегда — только менеджер (политика `wo_delete`).
   /// Сначала файлы фото из Storage, затем сама заявка; визиты, вложения,
   /// чек-листы и история удаляются базой каскадом. Возвращает, сколько файлов
@@ -215,16 +260,25 @@ class RequestsRepo {
   Future<int> deleteOrder(String id) async {
     final rows = await _c
         .from('attachments')
-        .select('storage_path')
+        .select('storage_path,kind')
         .eq('work_order_id', id);
-    final paths = [
-      for (final r in rows)
-        if (r['storage_path'] is String) r['storage_path'] as String,
-    ];
+    // Фото — в work-photos, документы (0019) — в order-files.
+    final byBucket = <String, List<String>>{};
+    for (final r in rows) {
+      if (r['storage_path'] is! String) continue;
+      final bucket = r['kind'] == 'document'
+          ? DocumentRepository.bucket
+          : PhotoRepository.bucket;
+      (byBucket[bucket] ??= []).add(r['storage_path'] as String);
+    }
+    final paths = [for (final p in byBucket.values) ...p];
     var removed = 0;
-    if (paths.isNotEmpty) {
-      removed =
-          (await _c.storage.from(PhotoRepository.bucket).remove(paths)).length;
+    for (final e in byBucket.entries) {
+      try {
+        removed += (await _c.storage.from(e.key).remove(e.value)).length;
+      } catch (err) {
+        debugPrint('deleteOrder files: ${err.runtimeType}');
+      }
     }
     final deleted =
         await _c.from('work_orders').delete().eq('id', id).select('id');
@@ -398,6 +452,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         _ok(l.statusError(e), type: AppMessageType.error);
         return;
       }
+      _notifyTelegram();
       var message = l.toastInProgress;
       if (recordVisit) {
         final position = await positionFuture;
@@ -463,6 +518,13 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     }
   }
 
+  /// Заявка из Telegram — автор узнает о новом статусе в чате (шаг 24).
+  void _notifyTelegram() {
+    if (_d?['input_channel'] == 'telegram') {
+      widget.repo.notifyTelegram(widget.order.id);
+    }
+  }
+
   bool get _isAuthor => widget.uid != null && _d?['created_by'] == widget.uid;
   bool get _isManager => widget.role == 'admin' || widget.role == 'manager';
   bool get _isExecutor =>
@@ -512,6 +574,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final l = context.l10n;
     try {
       await widget.repo.setStatus(widget.order.id, status);
+      _notifyTelegram();
       await _load();
       _ok(okText);
     } catch (e) {
@@ -546,6 +609,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     }
     try {
       await widget.repo.returnForRework(widget.order.id, reason);
+      _notifyTelegram();
       await _load();
       _ok(l.toastReturned);
     } catch (e) {
@@ -794,11 +858,23 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
             photos: _photos,
             loadFailed: _photosFailed,
             busy: _uploading,
+            geofence: _geofence(objId),
             onAddBefore:
                 _canAddBefore(status) ? () => _addPhoto('before') : null,
             onAddAfter: _canAddAfter(status) ? () => _addPhoto('after') : null,
           ),
         ),
+      // Документы (шаг 24, 0019): видят все, кто видит заявку; прикрепляют
+      // автор, менеджер и исполнитель подрядчика; в отменённую — нельзя.
+      OrderDocumentsSection(
+        key: ValueKey('docs-${widget.order.id}'),
+        orderId: widget.order.id,
+        companyId: widget.companyId ?? (d['company_id'] as String),
+        canUpload:
+            status != 'cancelled' && (_isAuthor || _isManager || _isExecutor),
+        isManager: _isManager,
+        uid: widget.uid,
+      ),
       if (_isManager && (_visits.isNotEmpty || _visitsFailed))
         VisitsSection(visits: _visits, loadFailed: _visitsFailed),
       if (actions.isNotEmpty) ...[
@@ -809,6 +885,13 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         ],
       ],
     ];
+  }
+
+  /// Геозона объекта заявки — для подписи фото «в геозоне».
+  PhotoGeofence? _geofence(String? objectId) {
+    final o = widget.objects.where((o) => o.id == objectId).firstOrNull;
+    if (o?.lat == null || o?.lng == null) return null;
+    return PhotoGeofence(lat: o!.lat!, lng: o.lng!, radiusM: o.geofenceRadiusM);
   }
 
   // Те же правила проверяет база (миграция 0006).
@@ -1006,6 +1089,9 @@ Future<bool?> showOrderForm({
   /// «Узнать оборудование по фото» вверху новой заявки: окно закрывается
   /// и вызывается [onPhoto].
   VoidCallback? onPhoto,
+
+  /// Откуда открыли форму — подпись «из карточки объекта» / «с плана».
+  PlaceOrigin? origin,
 }) async {
   // Виды работ = слои компании из базы; ничего не зашито в приложение.
   List<Layer> layers = const [];
@@ -1031,21 +1117,54 @@ Future<bool?> showOrderForm({
       : Layer.find(layers, id: initialLayerId);
   String priority =
       isEdit ? (existing['priority'] ?? 'normal') as String : 'normal';
-  String? objectId = isEdit
-      ? existing['object_id'] as String?
-      : objects.any((o) => o.id == initialObjectId)
-          ? initialObjectId
-          : null;
+  // Место новой заявки (шаг 24): контекст → GPS ≤ 200 м → пусто.
+  // Объект и помещение прошлой заявки не подставляются никогда.
+  final start = isEdit
+      ? InitialPlace.empty
+      : initialOrderPlace(
+          objects: objects,
+          contextObjectId: initialObjectId,
+          contextLocationId: initialLocationId,
+          origin: origin);
+  String? objectId = isEdit ? existing['object_id'] as String? : start.objectId;
+  var placeSource = start.source;
+  int? nearbyM;
   bool recurring = isEdit ? existing['recurrence'] != null : false;
-  String? locationId = isEdit
-      ? existing['location_id'] as String?
-      : (objectId == null ? null : initialLocationId);
+  String? locationId =
+      isEdit ? existing['location_id'] as String? : start.locationId;
+  // Пока окно открыто, GPS и «Недавние» дописываются по мере ответа.
+  var sheetOpen = true;
+  StateSetter? sheetSet;
+  var touched = false;
+  List<Obj> recent = const [];
+  void refresh() {
+    if (sheetOpen) sheetSet?.call(() {});
+  }
+
+  if (!isEdit && objectId == null) {
+    quickPosition().then((pos) {
+      if (pos == null || touched || objectId != null) return;
+      final near = nearestObject(objects, pos.lat, pos.lng);
+      if (near == null) return;
+      objectId = near.object.id;
+      locationId = null;
+      placeSource = PlaceSource.gps;
+      nearbyM = near.distanceM;
+      refresh();
+    });
+    repo.recentObjectIds().then((ids) {
+      recent = recentObjects(ids, objects);
+      refresh();
+    }, onError: (_) {});
+  }
   final initialLocation = locationId;
   // Оборудование — только если не сменили объект и помещение.
   final assetId = isEdit ? null : initialAssetId;
 
   const priorities = ['low', 'normal', 'high', 'critical'];
   final l = context.l10n;
+  // Документы новой заявки (шаг 24): загружаются после создания заявки.
+  var docs = <PickedDocument>[];
   final locale = context.localeCode;
   final formTitle = isEdit ? l.formEditTitle : l.formNewTitle;
 
@@ -1070,7 +1189,8 @@ Future<bool?> showOrderForm({
             setLocation: locationId != initialLocation,
             locationId: locationId);
       } else {
-        final id = photo == null ? null : newUuid();
+        // id из приложения — чтобы сразу приложить снимок и документы.
+        final id = photo == null && docs.isEmpty ? null : newUuid();
         await repo.create(
             id: id,
             inputChannel: photo == null ? 'button' : 'camera',
@@ -1083,6 +1203,21 @@ Future<bool?> showOrderForm({
             recurring: recurring,
             locationId: locationId,
             assetId: locationId == initialLocation ? assetId : null);
+        if (id != null && docs.isNotEmpty) {
+          var failed = false;
+          for (final f in docs) {
+            try {
+              await DocumentRepository()
+                  .upload(companyId: companyId, workOrderId: id, file: f);
+            } catch (e) {
+              debugPrint('Order document: ${e.runtimeType}');
+              failed = true;
+            }
+          }
+          if (failed && ctx.mounted) {
+            showAppMessage(ctx, l.docAttachFailed, type: AppMessageType.error);
+          }
+        }
         if (id != null && photo != null) {
           try {
             await PhotoRepository().upload(
@@ -1106,7 +1241,7 @@ Future<bool?> showOrderForm({
     }
   }
 
-  return showAppSheet<bool>(
+  final result = await showAppSheet<bool>(
     context: context,
     builder: (ctx) => Padding(
       padding: EdgeInsetsDirectional.only(
@@ -1114,131 +1249,262 @@ Future<bool?> showOrderForm({
       child: StatefulBuilder(
         // Поля прокручиваются, кнопка «Создать» / «Сохранить» закреплена
         // внизу окна и видна при любой высоте и с открытой клавиатурой.
-        builder: (ctx, setSt) =>
-            Column(mainAxisSize: MainAxisSize.min, children: [
-          SheetHeader(title: formTitle, cancelLabel: l.commonCancel),
-          Flexible(
-              child: SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-                AppSpace.screen, AppSpace.xs, AppSpace.screen, AppSpace.l),
-            child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (!isEdit && onPhoto != null && photo == null)
-                    AppGroup(children: [
-                      AppRow(
-                        leading: const LeadingIcon(AppIcons.camera),
-                        title: l.photoEntryHint,
-                        onTap: () {
-                          Navigator.pop(ctx);
-                          onPhoto();
-                        },
-                      ),
-                    ]),
-                  if (photo != null)
-                    AppGroup(children: [
-                      AppRow(
-                        leading: ClipRRect(
-                          borderRadius:
-                              BorderRadius.circular(AppRadius.segmentThumb),
-                          child: Image.memory(photo.bytes,
-                              width: 44, height: 44, fit: BoxFit.cover),
+        builder: (ctx, setSt) {
+          sheetSet = setSt;
+          return Column(mainAxisSize: MainAxisSize.min, children: [
+            SheetHeader(title: formTitle, cancelLabel: l.commonCancel),
+            Flexible(
+                child: SingleChildScrollView(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpace.screen, AppSpace.xs, AppSpace.screen, AppSpace.l),
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (!isEdit && onPhoto != null && photo == null)
+                      AppGroup(children: [
+                        AppRow(
+                          leading: const LeadingIcon(AppIcons.camera),
+                          title: l.photoEntryHint,
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            onPhoto();
+                          },
                         ),
-                        title: l.photoWillAttach,
-                        chevron: false,
+                      ]),
+                    if (photo != null)
+                      AppGroup(children: [
+                        AppRow(
+                          leading: ClipRRect(
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.segmentThumb),
+                            child: Image.memory(photo.bytes,
+                                width: 44, height: 44, fit: BoxFit.cover),
+                          ),
+                          title: l.photoWillAttach,
+                          chevron: false,
+                        ),
+                      ]),
+                    if (!isEdit && SchemaCompat.has('0019') != false)
+                      AppGroup(children: [
+                        AppRow(
+                          leading: const LeadingIcon(AppIcons.attach),
+                          title: docs.isEmpty
+                              ? l.docAttach
+                              : l.docWillAttach(docs.length),
+                          subtitle: docs.isEmpty
+                              ? l.docAttachHint
+                              : docs.map((d) => d.name).join(', '),
+                          subtitleMaxLines: 2,
+                          chevron: false,
+                          trailing: docs.isEmpty
+                              ? null
+                              : AppIconButton(
+                                  icon: AppIcons.close,
+                                  label: l.actionDelete,
+                                  onPressed: () => setSt(() => docs = [])),
+                          onTap: () async {
+                            final picked = await pickDocuments(ctx);
+                            if (picked.isNotEmpty) {
+                              setSt(() => docs = [...docs, ...picked]);
+                            }
+                          },
+                        ),
+                      ]),
+                    AppGroup(header: l.formWhat, children: [
+                      _inp(titleC, l.formWhatHint),
+                    ]),
+                    AppGroup(header: l.fieldDescription, children: [
+                      _inp(descC, l.formDetailsHint, lines: 3),
+                    ]),
+                    AppGroup(header: l.fieldObject, children: [
+                      _Dropdown(
+                          value: objectId,
+                          hint: objects.isEmpty
+                              ? l.formNoObjects(l.tabLocations)
+                              : l.formChooseObject,
+                          // По городам: «Москва · Офис 3» (одинаковые названия
+                          // бывают в разных городах).
+                          items: [
+                            for (final g in groupObjectsByCity(objects))
+                              for (final o in g.items)
+                                DropdownMenuItem(
+                                    value: o.id,
+                                    child: Text(objectDisplayName(o),
+                                        style: AppText.body))
+                          ],
+                          onChanged: (v) => setSt(() {
+                                if (v != objectId) locationId = null;
+                                objectId = v;
+                                touched = true;
+                                placeSource = PlaceSource.none;
+                              })),
+                    ]),
+                    if (!isEdit)
+                      _PlaceHint(
+                        source:
+                            objectId == null ? PlaceSource.none : placeSource,
+                        origin: origin,
+                        nearbyM: nearbyM,
+                        recent: objectId == null ? recent : const [],
+                        onOther: () => setSt(() {
+                          objectId = null;
+                          locationId = null;
+                          touched = true;
+                          placeSource = PlaceSource.none;
+                        }),
+                        onPick: (o) => setSt(() {
+                          objectId = o.id;
+                          locationId = null;
+                          touched = true;
+                          placeSource = PlaceSource.none;
+                        }),
+                      ),
+                    // Помещение выбранного объекта — с этажом («Лобби · 1 этаж»).
+                    if (objectId != null)
+                      AppGroup(header: l.formPlace, children: [
+                        PlaceField(
+                            key: ValueKey(objectId),
+                            objectId: objectId!,
+                            value: locationId,
+                            onChanged: (v) => setSt(() => locationId = v)),
+                      ]),
+                    if (assetId != null &&
+                        initialAssetName != null &&
+                        locationId == initialLocation)
+                      AppGroup(header: l.formAsset, children: [
+                        AppRow(
+                            leading: const LeadingIcon(AppIcons.wrench),
+                            title: initialAssetName),
+                      ]),
+                    SectionHeader(l.fieldWorkType),
+                    if (layersFailed)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.symmetric(
+                            horizontal: AppSpace.rowH),
+                        child:
+                            Text(l.formLayersFailed, style: AppText.footnote),
+                      )
+                    else
+                      Wrap(
+                          spacing: AppSpace.s,
+                          runSpacing: AppSpace.s,
+                          children: [
+                            for (final t in Layer.active(layers,
+                                keepId: isEdit
+                                    ? existing['layer_id'] as String?
+                                    : null))
+                              AppChip(
+                                  label: t.label(locale),
+                                  selected: layer?.id == t.id,
+                                  onTap: () => setSt(() =>
+                                      layer = layer?.id == t.id ? null : t))
+                          ]),
+                    SectionHeader(l.fieldPriority),
+                    SegmentedControl<String>(
+                      segments: [
+                        for (final p in priorities) Segment(p, l.priority(p))
+                      ],
+                      selected: priority,
+                      onChanged: (p) => setSt(() => priority = p),
+                    ),
+                    const SizedBox(height: AppSpace.xl),
+                    AppGroup(children: [
+                      AppRow(
+                        title: l.formRecurring,
+                        trailing: Switch(
+                            value: recurring,
+                            onChanged: (v) => setSt(() => recurring = v)),
                       ),
                     ]),
-                  AppGroup(header: l.formWhat, children: [
-                    _inp(titleC, l.formWhatHint),
                   ]),
-                  AppGroup(header: l.fieldDescription, children: [
-                    _inp(descC, l.formDetailsHint, lines: 3),
-                  ]),
-                  AppGroup(header: l.fieldObject, children: [
-                    _Dropdown(
-                        value: objectId,
-                        hint: objects.isEmpty
-                            ? l.formNoObjects(l.tabLocations)
-                            : l.formChooseObject,
-                        // По городам: «Москва · Офис 3» (одинаковые названия
-                        // бывают в разных городах).
-                        items: [
-                          for (final g in groupObjectsByCity(objects))
-                            for (final o in g.items)
-                              DropdownMenuItem(
-                                  value: o.id,
-                                  child: Text(objectDisplayName(o),
-                                      style: AppText.body))
-                        ],
-                        onChanged: (v) => setSt(() {
-                              if (v != objectId) locationId = null;
-                              objectId = v;
-                            })),
-                  ]),
-                  // Помещение выбранного объекта — с этажом («Лобби · 1 этаж»).
-                  if (objectId != null)
-                    AppGroup(header: l.formPlace, children: [
-                      PlaceField(
-                          key: ValueKey(objectId),
-                          objectId: objectId!,
-                          value: locationId,
-                          onChanged: (v) => setSt(() => locationId = v)),
-                    ]),
-                  if (assetId != null &&
-                      initialAssetName != null &&
-                      locationId == initialLocation)
-                    AppGroup(header: l.formAsset, children: [
-                      AppRow(
-                          leading: const LeadingIcon(AppIcons.wrench),
-                          title: initialAssetName),
-                    ]),
-                  SectionHeader(l.fieldWorkType),
-                  if (layersFailed)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: AppSpace.rowH),
-                      child: Text(l.formLayersFailed, style: AppText.footnote),
-                    )
-                  else
-                    Wrap(
-                        spacing: AppSpace.s,
-                        runSpacing: AppSpace.s,
-                        children: [
-                          for (final t in layers)
-                            AppChip(
-                                label: t.label(locale),
-                                selected: layer?.id == t.id,
-                                onTap: () => setSt(
-                                    () => layer = layer?.id == t.id ? null : t))
-                        ]),
-                  SectionHeader(l.fieldPriority),
-                  SegmentedControl<String>(
-                    segments: [
-                      for (final p in priorities) Segment(p, l.priority(p))
-                    ],
-                    selected: priority,
-                    onChanged: (p) => setSt(() => priority = p),
-                  ),
-                  const SizedBox(height: AppSpace.xl),
-                  AppGroup(children: [
-                    AppRow(
-                      title: l.formRecurring,
-                      trailing: Switch(
-                          value: recurring,
-                          onChanged: (v) => setSt(() => recurring = v)),
-                    ),
-                  ]),
-                ]),
-          )),
-          BottomActionBar(
-              child: AppButton.primary(
-                  onPressed: () => save(ctx),
-                  label: isEdit ? l.commonSave : l.requestsCreate)),
-        ]),
+            )),
+            BottomActionBar(
+                child: AppButton.primary(
+                    onPressed: () => save(ctx),
+                    label: isEdit ? l.commonSave : l.requestsCreate)),
+          ]);
+        },
       ),
     ),
   );
+  sheetOpen = false;
+  return result;
+}
+
+/// Под полем «Объект» новой заявки: откуда взялся объект («из карточки
+/// объекта», «📍 Рядом с вами · 40 м» с «Другой объект») или, если объект
+/// не выбран, кнопки «Недавние» — они ничего не подставляют сами.
+class _PlaceHint extends StatelessWidget {
+  const _PlaceHint(
+      {required this.source,
+      required this.origin,
+      required this.nearbyM,
+      required this.recent,
+      required this.onOther,
+      required this.onPick});
+  final PlaceSource source;
+  final PlaceOrigin? origin;
+  final int? nearbyM;
+  final List<Obj> recent;
+  final VoidCallback onOther;
+  final ValueChanged<Obj> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    const pad = EdgeInsetsDirectional.fromSTEB(
+        AppSpace.rowH, 0, AppSpace.rowH, AppSpace.group);
+    switch (source) {
+      case PlaceSource.context:
+        final from = switch (origin) {
+          PlaceOrigin.objectCard => l.formFromObjectCard,
+          PlaceOrigin.map => l.formFromMap,
+          PlaceOrigin.plan => l.formFromPlan,
+          PlaceOrigin.equipment => l.formFromEquipment,
+          PlaceOrigin.photo => l.formFromPhoto,
+          PlaceOrigin.order => l.formFromOrder,
+          null => null,
+        };
+        if (from == null) return const SizedBox.shrink();
+        return Padding(
+            padding: pad, child: Text(from, style: AppText.footnote));
+      case PlaceSource.gps:
+        return Padding(
+          padding: pad,
+          child: Row(children: [
+            const Icon(AppIcons.place, size: 16, color: AppColors.accentText),
+            const SizedBox(width: AppSpace.xs),
+            Expanded(
+                child: Text(l.formNearby(nearbyM ?? 0),
+                    style: AppText.footnote
+                        .copyWith(color: AppColors.accentText))),
+            AppButton.plain(
+                small: true,
+                expand: false,
+                label: l.formOtherObject,
+                onPressed: onOther),
+          ]),
+        );
+      case PlaceSource.none:
+        if (recent.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: pad,
+          child: Wrap(
+              spacing: AppSpace.s,
+              runSpacing: AppSpace.s,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(l.formRecent, style: AppText.footnote),
+                for (final o in recent)
+                  AppChip(
+                      label: objectDisplayName(o),
+                      selected: false,
+                      onTap: () => onPick(o)),
+              ]),
+        );
+    }
+  }
 }
 
 /// Поле внутри белой группы: без своей заливки и рамки.

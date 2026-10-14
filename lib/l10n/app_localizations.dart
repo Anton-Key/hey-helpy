@@ -7136,6 +7136,882 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Заявка не найдена или у вас нет к ней доступа.'**
   String get orderLinkNotFound;
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'в геозоне'**
+  String get photoInZone;
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'вне геозоны · {meters} м'**
+  String photoOutOfZone(int meters);
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} из {total}'**
+  String photoCounter(int n, int total);
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Предыдущее фото'**
+  String get photoPrev;
+
+  /// Шаг 24: фото
+  ///
+  /// In ru, this message translates to:
+  /// **'Следующее фото'**
+  String get photoNext;
+
+  /// Шаг 24: файлы
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать'**
+  String get fileDownload;
+
+  /// Шаг 24: файлы
+  ///
+  /// In ru, this message translates to:
+  /// **'Поделиться'**
+  String get fileShare;
+
+  /// Шаг 24: файлы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось открыть файл. Проверьте интернет и попробуйте ещё раз.'**
+  String get fileOpenFailed;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'из карточки объекта'**
+  String get formFromObjectCard;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'с карты'**
+  String get formFromMap;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'с плана этажа'**
+  String get formFromPlan;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'из карточки оборудования'**
+  String get formFromEquipment;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'из «Узнать по фото»'**
+  String get formFromPhoto;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'из заявки'**
+  String get formFromOrder;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'Рядом с вами · {meters} м'**
+  String formNearby(int meters);
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'Другой объект'**
+  String get formOtherObject;
+
+  /// Шаг 24: форма заявки
+  ///
+  /// In ru, this message translates to:
+  /// **'Недавние:'**
+  String get formRecent;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Документы'**
+  String get docsTitle;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Прикрепить файл'**
+  String get docAttach;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'PDF, Word, Excel, JPG, PNG, TXT — до 20 МБ'**
+  String get docAttachHint;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Загружаю файл…'**
+  String get docUploading;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{Файл прикреплён} other{Файлы прикреплены}}'**
+  String docUploaded(int count);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не все файлы удалось прикрепить. Проверьте интернет и попробуйте ещё раз.'**
+  String get docUploadFailed;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось выбрать файл.'**
+  String get docPickFailed;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'«{name}» больше 20 МБ — такой файл не прикрепить.'**
+  String docTooBig(String name);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'«{name}»: можно прикрепить только PDF, Word, Excel, JPG, PNG или TXT.'**
+  String docBadType(String name);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'«{name}» — пустой файл.'**
+  String docEmpty(String name);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'КБ'**
+  String get docKb;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'МБ'**
+  String get docMb;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть'**
+  String get docOpen;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить документ?'**
+  String get docDeleteTitle;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Документ удалён'**
+  String get docDeleted;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось удалить документ.'**
+  String get docDeleteFailed;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить документы — повторить'**
+  String get docLoadFailed;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{# файл будет приложен} few{# файла будут приложены} many{# файлов будут приложены} other{# файла будут приложены}}'**
+  String docWillAttach(int count);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка создана, но файл не приложился. Откройте заявку и прикрепите его ещё раз.'**
+  String get docAttachFailed;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Системы'**
+  String get systemsTitle;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Климат, электрика, сантехника… — от них зависят оборудование, подрядчики и заявки'**
+  String get systemsMenuHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get systemAdd;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая система'**
+  String get systemNew;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить систему'**
+  String get systemEdit;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать систему'**
+  String get systemCreate;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Название (русский)'**
+  String get systemNameRu;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, «Лифты»'**
+  String get systemNameRuHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Название (английский)'**
+  String get systemNameEn;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, «Lifts»'**
+  String get systemNameEnHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Значок'**
+  String get systemIcon;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Цвет'**
+  String get systemColor;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите название системы (до 60 знаков).'**
+  String get systemNameRequired;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система с таким названием уже есть.'**
+  String get systemNameTaken;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.'**
+  String get systemSaveFailed;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить системы'**
+  String get systemsLoadFailed;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'В вашей зоне доступа нет систем'**
+  String get systemsEmpty;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Систем пока нет — добавьте первую'**
+  String get systemsEmptyAdmin;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование: {assets} · открытых заявок: {orders} · подрядчиков: {contractors}'**
+  String systemCounts(int assets, int orders, int contractors);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Выше: {name}'**
+  String systemMoveUp(String name);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Ниже: {name}'**
+  String systemMoveDown(String name);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Порядок — стрелками. Систему, которой уже пользуются, можно только архивировать.'**
+  String get systemsFooterAdmin;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Системы вашей зоны доступа. Изменяет их администратор компании.'**
+  String get systemsFooterManager;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Архив · {count}'**
+  String systemsArchived(int count);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Архивные системы не предлагаются в новых заявках, оборудовании и зонах; старые данные с ними остаются.'**
+  String get systemsArchivedFooter;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'В архиве'**
+  String get systemArchivedBadge;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get systemAssets;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Открытые заявки'**
+  String get systemOpenOrders;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'на всех объектах'**
+  String get systemContractorAll;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудования этой системы нет'**
+  String get systemNoAssets;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Архивировать'**
+  String get systemArchive;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не будет предлагаться в новых заявках, оборудовании и зонах'**
+  String get systemArchiveHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Вернуть из архива'**
+  String get systemRestore;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система в архиве'**
+  String get systemArchivedToast;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система снова в работе'**
+  String get systemRestoredToast;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Только если на систему ничего не ссылается'**
+  String get systemDeleteHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить систему «{name}»?'**
+  String systemDeleteTitle(String name);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить можно, только если у системы нет заявок, оборудования, подрядчиков, планов ТО и зон.'**
+  String get systemDeleteMessage;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система удалена'**
+  String get systemDeletedToast;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Системой уже пользуются — её можно только архивировать.'**
+  String get systemInUse;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акты подрядчикам'**
+  String get actsTitle;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'К оплате — только доказанные заявки'**
+  String get actsMenuHint;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Платим подрядчику только за доказанную работу'**
+  String get actsSlogan;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get actContractor;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите подрядчика'**
+  String get actPickContractor;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчиков пока нет'**
+  String get actNoContractors;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Предыдущий месяц'**
+  String get actPrevMonth;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Следующий месяц'**
+  String get actNextMonth;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'К оплате · {count}'**
+  String actPaidTitle(int count);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Без доказательства — к оплате не принимается · {count}'**
+  String actRejectedTitle(int count);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'не принята менеджером'**
+  String get actReasonNotAccepted;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'возвращена на доработку'**
+  String get actReasonReturned;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'нет фото «после»'**
+  String get actReasonNoPhoto;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'нет отметки визита'**
+  String get actReasonNoVisit;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'визит вне геозоны'**
+  String get actReasonOutOfZone;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'чек-лист не выполнен'**
+  String get actReasonChecklist;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'фото'**
+  String get actProofPhoto;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'геозона'**
+  String get actProofGeo;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'чек-лист'**
+  String get actProofChecklist;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'просрочена'**
+  String get actOverdue;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'К оплате: {paid} · без доказательства: {rejected} · доказано {share} · просрочено: {overdue}'**
+  String actTotalLine(int paid, int rejected, String share, int overdue);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ставок нет — акт без сумм, только количество'**
+  String get actNoRates;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Итого к оплате: {sum}'**
+  String actSumLine(String sum);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'к оплате'**
+  String get actKpiPaid;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'без доказательства'**
+  String get actKpiRejected;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'доказано'**
+  String get actKpiShare;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'просрочено'**
+  String get actKpiOverdue;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'За этот месяц у подрядчика нет выполненных заявок'**
+  String get actNoOrders;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить заявки подрядчика'**
+  String get actLoadFailed;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформировать акт'**
+  String get actIssue;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акт {number} сформирован'**
+  String actIssued(String number);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сформировать акт. Проверьте интернет и попробуйте ещё раз.'**
+  String get actIssueFailed;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акт сформирован, но PDF не сохранился в архиве — его можно скачать сейчас.'**
+  String get actPdfNotSaved;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Excel для бухгалтерии'**
+  String get actExcel;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Файл Excel сохранён'**
+  String get actExcelSaved;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить файл Excel'**
+  String get actExcelFailed;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформированные акты'**
+  String get actHistory;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Актов этому подрядчику пока нет'**
+  String get actHistoryEmpty;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{period} · к оплате {paid}, без доказательства {rejected}'**
+  String actHistoryRow(String period, int paid, int rejected);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'заменён'**
+  String get actReplaced;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ставки подрядчика'**
+  String get actRates;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'За заявку'**
+  String get actRateOrder;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'За визит планового ТО'**
+  String get actRateVisit;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'не задана'**
+  String get actRateNone;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Необязательно. Без ставок акт показывает только количество.'**
+  String get actRatesHint;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ставки сохранены'**
+  String get actRatesSaved;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить ставки (нужны права администратора)'**
+  String get actRatesFailed;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акт выполненных работ'**
+  String get actPdfTitle;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'№ {number} от {date}'**
+  String actPdfNumberDate(String number, String date);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Заказчик'**
+  String get actPdfCustomer;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнитель'**
+  String get actPdfContractor;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Период'**
+  String get actPdfPeriod;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформировал'**
+  String get actPdfIssuedBy;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не принято к оплате'**
+  String get actPdfNotAccepted;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подписи сторон'**
+  String get actPdfSigns;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'____________ / ____________ /'**
+  String get actPdfSignLine;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'стр. {page} из {pages}'**
+  String actPdfPage(int page, int pages);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'№'**
+  String get actColNo;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата'**
+  String get actColDate;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get actColObject;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get actColPlace;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа'**
+  String get actColWork;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Доказательства'**
+  String get actColProofs;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сумма'**
+  String get actColSum;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Причина'**
+  String get actColReasons;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'К оплате'**
+  String get actSheetPaid;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не принято'**
+  String get actSheetRejected;
+
+  /// Шаг 24: главная
+  ///
+  /// In ru, this message translates to:
+  /// **'Узнано по фото за 7 дней: {count}'**
+  String homeBadgePhoto(int count);
+
+  /// Шаг 24: главная
+  ///
+  /// In ru, this message translates to:
+  /// **'Узнано по фото: {count} (угадано {rate})'**
+  String homeBadgePhotoRate(int count, String rate);
+
+  /// Шаг 24: главная
+  ///
+  /// In ru, this message translates to:
+  /// **'Из Telegram за 7 дней: {count}'**
+  String homeBadgeTelegram(int count);
 }
 
 class _AppLocalizationsDelegate

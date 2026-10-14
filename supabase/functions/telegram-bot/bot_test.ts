@@ -170,6 +170,10 @@ function world(opts: {
       sessions.set(chat, s ? structuredClone(s) : null);
       return Promise.resolve();
     },
+    notifyOptout(_chat, off) {
+      calls.push(off ? "notify_off" : "notify_on");
+      return Promise.resolve();
+    },
   };
   let n = 0;
   const deps: Deps = {
@@ -684,4 +688,15 @@ Deno.test("в логе нет текста, имени и chat_id", async () => 
   assertFalse(s.includes("Мария"));
   assertFalse(s.includes(String(CHAT)));
   assertFalse(s.includes(String(USER)));
+});
+
+Deno.test("уведомления: /stop и кнопка «Не присылать» выключают, /start — снова включает", async () => {
+  const w = world({});
+  await handleUpdate(msg({ text: "/stop" }), w.deps);
+  assertStringIncludes(w.sent.at(-1)!.html, "уведомления о заявках больше не придут");
+  assert(w.calls.includes("notify_off"));
+  await handleUpdate(press("nf:off", 999), w.deps);
+  assertEquals(w.calls.filter((c) => c === "notify_off").length, 2);
+  await handleUpdate(msg({ text: "/start" }), w.deps);
+  assert(w.calls.includes("notify_on"));
 });

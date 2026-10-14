@@ -22,11 +22,12 @@ import { startLocalBackend } from './local_backend.mjs';
 const ROOT = resolve(import.meta.dirname, '../..');
 const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6)
   ?? join(ROOT, process.argv.includes('--step=17') ? 'docs/screens/preview17'
-    : process.argv.includes('--step=23') ? 'docs/screens/preview23' : 'docs/screens/preview'));
+    : process.argv.includes('--step=23') ? 'docs/screens/preview23'
+    : process.argv.includes('--step=24') ? 'docs/screens/preview24' : 'docs/screens/preview'));
 const WEB = join(ROOT, 'build/web_local');
 const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
 const STEP = process.argv.find((a) => a.startsWith('--step='))?.slice(7) ?? '16';
-const LAST_MIGRATION = { '17': '0016', '23': '0018' }[STEP] ?? '0015';
+const LAST_MIGRATION = { '17': '0016', '23': '0018', '24': '0022' }[STEP] ?? '0015';
 const PREVIEW_NOTE = `ПРЕДПРОСМОТР: локальная база с миграциями 0001–${LAST_MIGRATION} и демо-данными (demo.sql + demo_history.sql), не рабочая база`;
 const USERS = { manager: 'manager@example.com', admin: 'manager@example.com', manager2: 'manager2@example.com',
   executor: 'executor@example.com', requester: 'requester@example.com' };
@@ -434,6 +435,123 @@ const SCREENS23 = [
     } },
 ];
 
+// ---------------------------------------------------------------------------
+// Экраны шага 24 (--step=24): форма заявки без прошлого места (пусто, GPS,
+// контекст), фото и документы в карточке, просмотр фото, «Системы»
+// (администратор и менеджер с зоной), карточка и форма системы, акты
+// подрядчикам, плашки главной. Перед съёмкой — PREP17 (администратор и
+// «Менеджер Москва») и PREP24: документ в заявке 113 и узнавания по фото.
+// ---------------------------------------------------------------------------
+const PREP24 = `
+insert into public.attachments(id, work_order_id, kind, storage_path, uploaded_by, file_name, mime, size_bytes, created_at)
+select 'de300000-0000-4000-8000-00000000c113', '${uuid(113)}', 'document',
+       '${uuid(1)}/${uuid(113)}/de300000-c113-akt_osmotra_demo.pdf',
+       (select id from auth.users where email = 'executor@example.com'),
+       'Акт осмотра (демо).pdf', 'application/pdf', 184320, now() - interval '2 days'
+on conflict (id) do nothing;
+delete from public.photo_identifications where company_id = '${uuid(1)}' and model = 'main' and ms = 4321;
+insert into public.photo_identifications(company_id, user_id, object_id, kind, confidence, top_asset_id, chosen_asset_id, outcome, model, ms)
+select '${uuid(1)}', (select id from auth.users where email = 'manager@example.com'), '${uuid(10)}', 'ac', 0.9,
+       '${uuid(708)}', case when g < 4 then '${uuid(708)}'::uuid end,
+       case when g < 4 then 'matched_top' else 'dismissed' end, 'main', 4321
+from generate_series(1, 5) g;
+`;
+
+async function openNewOrder(page) {
+  await home(page);
+  const b = page.getByRole('button', { name: /^(\+ )?Заявка$|^Новая заявка$|^Создать заявку$/ }).first();
+  await b.click();
+  await see(page, /Новая заявка/).waitFor({ timeout: 15000 });
+  await settle(page, 3800); // GPS ждём не дольше 3 с
+}
+
+async function openOrderById(page, n) {
+  await home(page);
+  await page.evaluate((h) => { location.hash = h; }, `/orders/${uuid(n)}`);
+  await see(page, /Создана/).waitFor({ timeout: 20000 });
+  await settle(page, 2000);
+}
+
+async function openSystems(page) {
+  await home(page);
+  await profileTab(page).click();
+  await settle(page, 1000);
+  await btn(page, /^Моя компания/).click();
+  await scrollTo(page, /^Системы/);
+  await btn(page, /^Системы/).click();
+  await see(page, /Оборудование: \d+/).waitFor({ timeout: 20000 });
+  await settle(page, 1500);
+}
+
+async function openActs(page) {
+  await home(page);
+  await page.getByRole('button', { name: /^Отчёты/ }).or(page.getByRole('tab', { name: /^Отчёты/ }))
+    .or(page.getByText(/^Отчёты$/)).first().click();
+  await see(page, /Акты подрядчикам/).waitFor({ timeout: 20000 });
+  await scrollTo(page, /Акты подрядчикам/);
+  await btn(page, /^Акты подрядчикам/).click();
+  await see(page, /К оплате · \d+/).waitFor({ timeout: 30000 });
+  await settle(page, 1500);
+}
+
+const SCREENS24 = [
+  { key: 'home-badges', title: 'Главная менеджера: «Узнано по фото» и «Из Telegram» за 7 дней', role: 'admin', run: async (page) => {
+      await home(page);
+      await see(page, /Из Telegram за 7 дней/).waitFor({ timeout: 20000 });
+      await settle(page, 1000);
+    } },
+  { key: 'form-empty', title: 'Новая заявка без контекста и GPS: объект пуст, кнопки «Недавние»', role: 'admin', run: openNewOrder },
+  { key: 'form-gps', title: 'Новая заявка рядом с объектом (GPS в 40 м): «Рядом с вами · 40 м»', role: 'admin', run: async (page) => {
+      await openNewOrder(page);
+      await see(page, /Рядом с вами/).waitFor({ timeout: 8000 });
+    } },
+  { key: 'form-context', title: 'Новая заявка из карточки оборудования: «из карточки оборудования»', role: 'admin', run: async (page) => {
+      await openObjectCard(page);
+      await scrollTo(page, /Кондиционер КД-301/);
+      await btn(page, /^Кондиционер КД-301/).click();
+      await see(page, /Паспорт|Показать на плане/).waitFor({ timeout: 20000 });
+      await scrollTo(page, /Создать заявку/);
+      await btn(page, /^Создать заявку/).click();
+      await see(page, /из карточки оборудования/).waitFor({ timeout: 15000 });
+      await settle(page, 1200);
+    } },
+  { key: 'order-photos', title: 'Карточка заявки: «Фото · N», «До» / «После», документы', role: 'admin', run: async (page) => {
+      await openOrderById(page, 113);
+      await scrollTo(page, /^ФОТО|Фото ·/);
+      await settle(page, 1500);
+    } },
+  { key: 'order-viewer', title: 'Фото на весь экран: «После · кто · когда · в геозоне»', role: 'admin', run: async (page) => {
+      await openOrderById(page, 113);
+      await scrollTo(page, /^ФОТО|Фото ·/);
+      await btn(page, /^После$/).click();
+      await settle(page, 2000);
+    } },
+  { key: 'order-docs', title: 'Карточка заявки: «Документы · 1», «Прикрепить файл»', role: 'admin', run: async (page) => {
+      await openOrderById(page, 113);
+      await scrollTo(page, /Акт осмотра \(демо\)/);
+      await settle(page, 1000);
+    } },
+  { key: 'systems', title: '«Моя компания» → «Системы»: значки, цвета, счётчики', run: openSystems },
+  { key: 'system-card', title: 'Карточка системы «Климат»: оборудование по объектам, подрядчики', role: 'admin', run: async (page) => {
+      await openSystems(page);
+      await btn(page, /^Климат/).click();
+      await see(page, /Открытые заявки/).waitFor({ timeout: 20000 });
+      await settle(page, 1500);
+    } },
+  { key: 'system-form', title: '«+ Система»: название RU / EN, значок, цвет', role: 'admin', run: async (page) => {
+      await openSystems(page);
+      await btn(page, /^Система$/).click();
+      await see(page, /Новая система/).waitFor({ timeout: 15000 });
+      await settle(page, 1000);
+    } },
+  { key: 'acts', title: 'Отчёты → «Акты подрядчикам»: «КлиматСервис», к оплате только доказанное', role: 'admin', run: openActs },
+  { key: 'acts-rejected', title: 'Акт: «Без доказательства — к оплате не принимается» с причинами', role: 'admin', run: async (page) => {
+      await openActs(page);
+      await scrollTo(page, /Без доказательства/);
+      await settle(page, 1000);
+    } },
+];
+
 /** Плакат с QR-кодом объекта: тот же перехват Blob, что у PDF отчёта. */
 async function capturePoster(page) {
   await page.evaluate(() => { window.__pdfBlob = null; });
@@ -484,7 +602,36 @@ async function capturePdf(page) {
   return pdf;
 }
 
-const RUNS = STEP === '23' ? [
+/** PDF акта (шаг 24): «Сформировать акт» → Blob в окно печати. */
+async function captureActPdf(page) {
+  await page.evaluate(() => { window.__pdfBlob = null; });
+  await openActs(page);
+  await btn(page, /^Сформировать акт/).click();
+  for (let i = 0; i < 120; i++) {
+    if (await page.evaluate(() => !!window.__pdfBlob)) break;
+    await page.waitForTimeout(500);
+  }
+  const b64 = await page.evaluate(async () => {
+    const blob = window.__pdfBlob;
+    if (!blob) return null;
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let s = '';
+    for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+    return btoa(s);
+  });
+  if (!b64) throw new Error('PDF акта не получен');
+  const pdf = join(tmpdir(), 'hh-act.pdf');
+  writeFileSync(pdf, Buffer.from(b64, 'base64'));
+  return pdf;
+}
+
+const GEO_BC = { latitude: 44.80507, longitude: 20.44942, accuracy: 10 };
+const RUNS = STEP === '24' ? [
+  { role: 'admin', label: 'Администратор', width: 1280, height: 800, except: ['form-gps'] },
+  { role: 'admin', label: 'Администратор', width: 412, height: 915, except: ['form-gps'] },
+  { role: 'admin', label: 'Администратор (GPS у «БЦ «Демо»»)', width: 412, height: 915, geo: GEO_BC, only: ['form-gps'] },
+  { role: 'manager2', label: 'Менеджер с зоной «Климат + Сантехника · Москва»', width: 1280, height: 800, only: ['systems'] },
+] : STEP === '23' ? [
   { role: 'admin', label: 'Администратор', width: 1280, height: 800 },
   { role: 'admin', label: 'Администратор', width: 412, height: 915 },
   { role: 'requester', label: 'Заявитель', width: 412, height: 915, only: ['tg-settings', 'tg-code'] },
@@ -500,10 +647,10 @@ const RUNS = STEP === '23' ? [
   { role: 'manager', label: 'Менеджер', width: 360, height: 780, only: ['ppr-list', 'locations-regions'] },
   { role: 'executor', label: 'Исполнитель', width: 412, height: 915, only: ['ppr-list', 'ppr-orders'] },
 ];
-const SCREENS = { '17': SCREENS17, '23': SCREENS23 }[STEP] ?? SCREENS16;
-if (STEP === '17' || STEP === '23') {
+const SCREENS = { '17': SCREENS17, '23': SCREENS23, '24': SCREENS24 }[STEP] ?? SCREENS16;
+if (STEP === '17' || STEP === '23' || STEP === '24') {
   execFileSync('sudo', ['-u', 'postgres', 'psql', '-X', '-q', '-v', 'ON_ERROR_STOP=1', '-d',
-    process.env.HH_TEST_DB ?? 'hh_test', '-c', PREP17], { stdio: 'inherit' });
+    process.env.HH_TEST_DB ?? 'hh_test', '-c', PREP17 + (STEP === '24' ? PREP24 : '')], { stdio: 'inherit' });
 }
 
 rmSync(OUT, { recursive: true, force: true });
@@ -512,7 +659,8 @@ const results = [];
 const browser = await chromium.launch();
 try {
   for (const r of RUNS) {
-    const ctx = await browser.newContext({ viewport: { width: r.width, height: r.height }, locale: 'ru-RU', deviceScaleFactor: 1 });
+    const ctx = await browser.newContext({ viewport: { width: r.width, height: r.height }, locale: 'ru-RU', deviceScaleFactor: 1,
+      ...(r.geo ? { geolocation: r.geo, permissions: ['geolocation'] } : {}) });
     await ctx.addInitScript(() => {
       const orig = URL.createObjectURL;
       URL.createObjectURL = function (obj) {
@@ -534,6 +682,7 @@ try {
     for (const s of SCREENS) {
       if (ONLY && !s.key.startsWith(ONLY)) continue;
       if (r.only && !r.only.includes(s.key)) continue;
+      if (r.except && r.except.includes(s.key)) continue;
       if (s.role && s.role !== r.role) continue;
       const name = `${r.role}-${r.width}-${s.key}.png`;
       try {
@@ -548,7 +697,7 @@ try {
       await page.keyboard.press('Escape').catch(() => {});
     }
     // PDF — один раз, у менеджера на ПК.
-    if (STEP !== '17' && r.role === 'manager' && r.width === 1280 && (!ONLY || 'report-pdf'.startsWith(ONLY))) {
+    if (STEP !== '17' && STEP !== '24' && r.role === 'manager' && r.width === 1280 && (!ONLY || 'report-pdf'.startsWith(ONLY))) {
       const name = 'manager-report-pdf-page1.png';
       try {
         const pdf = await capturePdf(page);
@@ -558,6 +707,19 @@ try {
           note: `страниц в PDF: ${pages ?? '?'}` });
       } catch (e) {
         results.push({ ...r, title: 'PDF отчёта — первая страница', ok: false, note: String(e.message).split('\n')[0] });
+      }
+    }
+    // PDF акта подрядчику (шаг 24) — один раз, у администратора на ПК.
+    if (STEP === '24' && r.role === 'admin' && r.width === 1280 && (!ONLY || 'act-pdf'.startsWith(ONLY))) {
+      try {
+        const pdf = await captureActPdf(page);
+        await page.screenshot({ path: join(OUT, 'admin-1280-act-issued.png') });
+        execFileSync('pdftoppm', ['-png', '-r', '80', '-f', '1', '-l', '1', '-singlefile', pdf, join(OUT, 'admin-act-pdf-page1')]);
+        const pages = execFileSync('pdfinfo', [pdf], { encoding: 'utf8' }).match(/Pages:\s+(\d+)/)?.[1];
+        results.push({ ...r, title: 'PDF акта подрядчику — первая страница (файл из веб-версии)', ok: true,
+          file: 'admin-act-pdf-page1.png', note: `страниц: ${pages ?? '?'}` });
+      } catch (e) {
+        results.push({ ...r, title: 'PDF акта подрядчику', ok: false, note: String(e.message).split('\n')[0] });
       }
     }
     // Плакат с QR (шаг 23) — один раз, у администратора на ПК.

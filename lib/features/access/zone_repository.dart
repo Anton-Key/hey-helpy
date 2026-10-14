@@ -191,7 +191,7 @@ class ZoneRepository {
         .from('floors')
         .select('id,name')
         .eq('object_id', objectId)
-        .order('sort');
+        .order('sort', ascending: true);
     final a = await _c
         .from('assets')
         .select('id,name,locations!inner(object_id)')

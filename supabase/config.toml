@@ -17,3 +17,8 @@ verify_jwt = true
 # секретом TELEGRAM_WEBHOOK_SECRET (не совпал → 401, ничего не делает).
 [functions.telegram-bot]
 verify_jwt = false
+
+# Уведомления автору заявки в Telegram (шаг 24): вызывает приложение со своим
+# JWT после смены статуса; без токена — 401 шлюзом.
+[functions.telegram-notify]
+verify_jwt = true

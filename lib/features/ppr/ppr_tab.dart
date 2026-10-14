@@ -187,7 +187,11 @@ class _PprTabState extends State<PprTab> {
     final d = _data;
     return CustomScrollView(slivers: [
       HomeHeader(
-        title: l.pprTitle,
+        // Телефон: короткое «Maintenance» — «Preventive maintenance» крупным
+        // заголовком не помещается в 412 px (шаг 24); по-русски — «Плановое ТО».
+        title: MediaQuery.sizeOf(context).width < AppSpace.wideFrom
+            ? l.tabPpr
+            : l.pprTitle,
         onRefresh: () => _load(generate: true),
         actions: [
           AppIconButton(

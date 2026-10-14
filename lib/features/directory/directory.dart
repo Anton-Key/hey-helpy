@@ -186,7 +186,25 @@ class Layer {
   final String id;
   final String name;
   final Map<String, String> names;
-  const Layer({required this.id, required this.name, this.names = const {}});
+
+  /// Цвет «#RRGGBB», значок — код из [kSystemIcons] (шаг 24, 0020).
+  final String? color;
+  final String? icon;
+  final int sort;
+
+  /// Архивная система не предлагается в новых заявках, оборудовании и
+  /// зонах, но в старых данных видна (0020).
+  final DateTime? archivedAt;
+  final bool requiresPhoto;
+  const Layer(
+      {required this.id,
+      required this.name,
+      this.names = const {},
+      this.color,
+      this.icon,
+      this.sort = 100,
+      this.archivedAt,
+      this.requiresPhoto = false});
   factory Layer.fromMap(Map<String, dynamic> m) => Layer(
         id: m['id'] as String,
         name: (m['name'] ?? '') as String,
@@ -195,7 +213,20 @@ class Layer {
             if (e.value is String && (e.value as String).isNotEmpty)
               '${e.key}': e.value as String,
         },
+        color: m['color'] as String?,
+        icon: m['icon'] as String?,
+        sort: (m['sort'] as num?)?.toInt() ?? 100,
+        archivedAt: DateTime.tryParse('${m['archived_at'] ?? ''}'),
+        requiresPhoto: m['requires_photo'] == true,
       );
+
+  bool get archived => archivedAt != null;
+
+  /// Для выбора в новых записях: без архивных, кроме уже выбранной [keepId].
+  static List<Layer> active(List<Layer> layers, {String? keepId}) => [
+        for (final l in layers)
+          if (!l.archived || l.id == keepId) l
+      ];
 
   /// Название на языке интерфейса; если перевода нет — русское, затем основное.
   String label(String localeCode) => names[localeCode] ?? names['ru'] ?? name;
@@ -430,7 +461,11 @@ class DirectoryRepo {
   /// отображения. Добавляются в базе без изменения приложения.
   /// select() без списка полей: name_i18n появляется только после миграции 0007.
   Future<List<Layer>> layers() async {
-    final rows = await _c.from('layers').select().order('sort').order('name');
+    final rows = await _c
+        .from('layers')
+        .select()
+        .order('sort', ascending: true)
+        .order('name', ascending: true);
     return (rows as List)
         .map((e) => Layer.fromMap(e as Map<String, dynamic>))
         .toList();
@@ -614,8 +649,7 @@ class _ObjectsTabState extends State<ObjectsTab> {
                     child: Semantics(
                       header: true,
                       child: Text(
-                          l.cityCount(
-                              r.region?.name ?? l.regionNone, r.count),
+                          l.cityCount(r.region?.name ?? l.regionNone, r.count),
                           style: AppText.title2),
                     ),
                   ),
@@ -725,7 +759,8 @@ class _ObjectsTabState extends State<ObjectsTab> {
                 if (ctx.mounted) Navigator.pop(ctx, true);
               } catch (e) {
                 debugPrint('addObject: $e');
-                _snack(_refused(e) ? l.zoneRefused : l.saveFailed, type: AppMessageType.error);
+                _snack(_refused(e) ? l.zoneRefused : l.saveFailed,
+                    type: AppMessageType.error);
               }
             },
           ),
@@ -922,7 +957,8 @@ class _ContractorsTabState extends State<ContractorsTab> {
               if (ctx.mounted) Navigator.pop(ctx, true);
             } catch (e) {
               debugPrint('addContractor: $e');
-              _snack(_refused(e) ? l.zoneRefused : l.saveFailed, type: AppMessageType.error);
+              _snack(_refused(e) ? l.zoneRefused : l.saveFailed,
+                  type: AppMessageType.error);
             }
           },
         ),

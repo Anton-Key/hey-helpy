@@ -4204,4 +4204,519 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get orderLinkNotFound =>
       'Заявка не найдена или у вас нет к ней доступа.';
+
+  @override
+  String get photoInZone => 'в геозоне';
+
+  @override
+  String photoOutOfZone(int meters) {
+    return 'вне геозоны · $meters м';
+  }
+
+  @override
+  String photoCounter(int n, int total) {
+    return '$n из $total';
+  }
+
+  @override
+  String get photoPrev => 'Предыдущее фото';
+
+  @override
+  String get photoNext => 'Следующее фото';
+
+  @override
+  String get fileDownload => 'Скачать';
+
+  @override
+  String get fileShare => 'Поделиться';
+
+  @override
+  String get fileOpenFailed =>
+      'Не удалось открыть файл. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get formFromObjectCard => 'из карточки объекта';
+
+  @override
+  String get formFromMap => 'с карты';
+
+  @override
+  String get formFromPlan => 'с плана этажа';
+
+  @override
+  String get formFromEquipment => 'из карточки оборудования';
+
+  @override
+  String get formFromPhoto => 'из «Узнать по фото»';
+
+  @override
+  String get formFromOrder => 'из заявки';
+
+  @override
+  String formNearby(int meters) {
+    return 'Рядом с вами · $meters м';
+  }
+
+  @override
+  String get formOtherObject => 'Другой объект';
+
+  @override
+  String get formRecent => 'Недавние:';
+
+  @override
+  String get docsTitle => 'Документы';
+
+  @override
+  String get docAttach => 'Прикрепить файл';
+
+  @override
+  String get docAttachHint => 'PDF, Word, Excel, JPG, PNG, TXT — до 20 МБ';
+
+  @override
+  String get docUploading => 'Загружаю файл…';
+
+  @override
+  String docUploaded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Файлы прикреплены',
+      one: 'Файл прикреплён',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get docUploadFailed =>
+      'Не все файлы удалось прикрепить. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get docPickFailed => 'Не удалось выбрать файл.';
+
+  @override
+  String docTooBig(String name) {
+    return '«$name» больше 20 МБ — такой файл не прикрепить.';
+  }
+
+  @override
+  String docBadType(String name) {
+    return '«$name»: можно прикрепить только PDF, Word, Excel, JPG, PNG или TXT.';
+  }
+
+  @override
+  String docEmpty(String name) {
+    return '«$name» — пустой файл.';
+  }
+
+  @override
+  String get docKb => 'КБ';
+
+  @override
+  String get docMb => 'МБ';
+
+  @override
+  String get docOpen => 'Открыть';
+
+  @override
+  String get docDeleteTitle => 'Удалить документ?';
+
+  @override
+  String get docDeleted => 'Документ удалён';
+
+  @override
+  String get docDeleteFailed => 'Не удалось удалить документ.';
+
+  @override
+  String get docLoadFailed => 'Не удалось загрузить документы — повторить';
+
+  @override
+  String docWillAttach(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# файла будут приложены',
+      many: '# файлов будут приложены',
+      few: '# файла будут приложены',
+      one: '# файл будет приложен',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get docAttachFailed =>
+      'Заявка создана, но файл не приложился. Откройте заявку и прикрепите его ещё раз.';
+
+  @override
+  String get systemsTitle => 'Системы';
+
+  @override
+  String get systemsMenuHint =>
+      'Климат, электрика, сантехника… — от них зависят оборудование, подрядчики и заявки';
+
+  @override
+  String get systemAdd => 'Система';
+
+  @override
+  String get systemNew => 'Новая система';
+
+  @override
+  String get systemEdit => 'Изменить систему';
+
+  @override
+  String get systemCreate => 'Создать систему';
+
+  @override
+  String get systemNameRu => 'Название (русский)';
+
+  @override
+  String get systemNameRuHint => 'Например, «Лифты»';
+
+  @override
+  String get systemNameEn => 'Название (английский)';
+
+  @override
+  String get systemNameEnHint => 'Например, «Lifts»';
+
+  @override
+  String get systemIcon => 'Значок';
+
+  @override
+  String get systemColor => 'Цвет';
+
+  @override
+  String get systemNameRequired => 'Введите название системы (до 60 знаков).';
+
+  @override
+  String get systemNameTaken => 'Система с таким названием уже есть.';
+
+  @override
+  String get systemSaveFailed =>
+      'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get systemsLoadFailed => 'Не удалось загрузить системы';
+
+  @override
+  String get systemsEmpty => 'В вашей зоне доступа нет систем';
+
+  @override
+  String get systemsEmptyAdmin => 'Систем пока нет — добавьте первую';
+
+  @override
+  String systemCounts(int assets, int orders, int contractors) {
+    return 'Оборудование: $assets · открытых заявок: $orders · подрядчиков: $contractors';
+  }
+
+  @override
+  String systemMoveUp(String name) {
+    return 'Выше: $name';
+  }
+
+  @override
+  String systemMoveDown(String name) {
+    return 'Ниже: $name';
+  }
+
+  @override
+  String get systemsFooterAdmin =>
+      'Порядок — стрелками. Систему, которой уже пользуются, можно только архивировать.';
+
+  @override
+  String get systemsFooterManager =>
+      'Системы вашей зоны доступа. Изменяет их администратор компании.';
+
+  @override
+  String systemsArchived(int count) {
+    return 'Архив · $count';
+  }
+
+  @override
+  String get systemsArchivedFooter =>
+      'Архивные системы не предлагаются в новых заявках, оборудовании и зонах; старые данные с ними остаются.';
+
+  @override
+  String get systemArchivedBadge => 'В архиве';
+
+  @override
+  String get systemAssets => 'Оборудование';
+
+  @override
+  String get systemOpenOrders => 'Открытые заявки';
+
+  @override
+  String get systemContractorAll => 'на всех объектах';
+
+  @override
+  String get systemNoAssets => 'Оборудования этой системы нет';
+
+  @override
+  String get systemArchive => 'Архивировать';
+
+  @override
+  String get systemArchiveHint =>
+      'Не будет предлагаться в новых заявках, оборудовании и зонах';
+
+  @override
+  String get systemRestore => 'Вернуть из архива';
+
+  @override
+  String get systemArchivedToast => 'Система в архиве';
+
+  @override
+  String get systemRestoredToast => 'Система снова в работе';
+
+  @override
+  String get systemDeleteHint => 'Только если на систему ничего не ссылается';
+
+  @override
+  String systemDeleteTitle(String name) {
+    return 'Удалить систему «$name»?';
+  }
+
+  @override
+  String get systemDeleteMessage =>
+      'Удалить можно, только если у системы нет заявок, оборудования, подрядчиков, планов ТО и зон.';
+
+  @override
+  String get systemDeletedToast => 'Система удалена';
+
+  @override
+  String get systemInUse =>
+      'Системой уже пользуются — её можно только архивировать.';
+
+  @override
+  String get actsTitle => 'Акты подрядчикам';
+
+  @override
+  String get actsMenuHint => 'К оплате — только доказанные заявки';
+
+  @override
+  String get actsSlogan => 'Платим подрядчику только за доказанную работу';
+
+  @override
+  String get actContractor => 'Подрядчик';
+
+  @override
+  String get actPickContractor => 'Выберите подрядчика';
+
+  @override
+  String get actNoContractors => 'Подрядчиков пока нет';
+
+  @override
+  String get actPrevMonth => 'Предыдущий месяц';
+
+  @override
+  String get actNextMonth => 'Следующий месяц';
+
+  @override
+  String actPaidTitle(int count) {
+    return 'К оплате · $count';
+  }
+
+  @override
+  String actRejectedTitle(int count) {
+    return 'Без доказательства — к оплате не принимается · $count';
+  }
+
+  @override
+  String get actReasonNotAccepted => 'не принята менеджером';
+
+  @override
+  String get actReasonReturned => 'возвращена на доработку';
+
+  @override
+  String get actReasonNoPhoto => 'нет фото «после»';
+
+  @override
+  String get actReasonNoVisit => 'нет отметки визита';
+
+  @override
+  String get actReasonOutOfZone => 'визит вне геозоны';
+
+  @override
+  String get actReasonChecklist => 'чек-лист не выполнен';
+
+  @override
+  String get actProofPhoto => 'фото';
+
+  @override
+  String get actProofGeo => 'геозона';
+
+  @override
+  String get actProofChecklist => 'чек-лист';
+
+  @override
+  String get actOverdue => 'просрочена';
+
+  @override
+  String actTotalLine(int paid, int rejected, String share, int overdue) {
+    return 'К оплате: $paid · без доказательства: $rejected · доказано $share · просрочено: $overdue';
+  }
+
+  @override
+  String get actNoRates => 'Ставок нет — акт без сумм, только количество';
+
+  @override
+  String actSumLine(String sum) {
+    return 'Итого к оплате: $sum';
+  }
+
+  @override
+  String get actKpiPaid => 'к оплате';
+
+  @override
+  String get actKpiRejected => 'без доказательства';
+
+  @override
+  String get actKpiShare => 'доказано';
+
+  @override
+  String get actKpiOverdue => 'просрочено';
+
+  @override
+  String get actNoOrders => 'За этот месяц у подрядчика нет выполненных заявок';
+
+  @override
+  String get actLoadFailed => 'Не удалось загрузить заявки подрядчика';
+
+  @override
+  String get actIssue => 'Сформировать акт';
+
+  @override
+  String actIssued(String number) {
+    return 'Акт $number сформирован';
+  }
+
+  @override
+  String get actIssueFailed =>
+      'Не удалось сформировать акт. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get actPdfNotSaved =>
+      'Акт сформирован, но PDF не сохранился в архиве — его можно скачать сейчас.';
+
+  @override
+  String get actExcel => 'Excel для бухгалтерии';
+
+  @override
+  String get actExcelSaved => 'Файл Excel сохранён';
+
+  @override
+  String get actExcelFailed => 'Не удалось сохранить файл Excel';
+
+  @override
+  String get actHistory => 'Сформированные акты';
+
+  @override
+  String get actHistoryEmpty => 'Актов этому подрядчику пока нет';
+
+  @override
+  String actHistoryRow(String period, int paid, int rejected) {
+    return '$period · к оплате $paid, без доказательства $rejected';
+  }
+
+  @override
+  String get actReplaced => 'заменён';
+
+  @override
+  String get actRates => 'Ставки подрядчика';
+
+  @override
+  String get actRateOrder => 'За заявку';
+
+  @override
+  String get actRateVisit => 'За визит планового ТО';
+
+  @override
+  String get actRateNone => 'не задана';
+
+  @override
+  String get actRatesHint =>
+      'Необязательно. Без ставок акт показывает только количество.';
+
+  @override
+  String get actRatesSaved => 'Ставки сохранены';
+
+  @override
+  String get actRatesFailed =>
+      'Не удалось сохранить ставки (нужны права администратора)';
+
+  @override
+  String get actPdfTitle => 'Акт выполненных работ';
+
+  @override
+  String actPdfNumberDate(String number, String date) {
+    return '№ $number от $date';
+  }
+
+  @override
+  String get actPdfCustomer => 'Заказчик';
+
+  @override
+  String get actPdfContractor => 'Исполнитель';
+
+  @override
+  String get actPdfPeriod => 'Период';
+
+  @override
+  String get actPdfIssuedBy => 'Сформировал';
+
+  @override
+  String get actPdfNotAccepted => 'Не принято к оплате';
+
+  @override
+  String get actPdfSigns => 'Подписи сторон';
+
+  @override
+  String get actPdfSignLine => '____________ / ____________ /';
+
+  @override
+  String actPdfPage(int page, int pages) {
+    return 'стр. $page из $pages';
+  }
+
+  @override
+  String get actColNo => '№';
+
+  @override
+  String get actColDate => 'Дата';
+
+  @override
+  String get actColObject => 'Объект';
+
+  @override
+  String get actColPlace => 'Помещение';
+
+  @override
+  String get actColWork => 'Работа';
+
+  @override
+  String get actColProofs => 'Доказательства';
+
+  @override
+  String get actColSum => 'Сумма';
+
+  @override
+  String get actColReasons => 'Причина';
+
+  @override
+  String get actSheetPaid => 'К оплате';
+
+  @override
+  String get actSheetRejected => 'Не принято';
+
+  @override
+  String homeBadgePhoto(int count) {
+    return 'Узнано по фото за 7 дней: $count';
+  }
+
+  @override
+  String homeBadgePhotoRate(int count, String rate) {
+    return 'Узнано по фото: $count (угадано $rate)';
+  }
+
+  @override
+  String homeBadgeTelegram(int count) {
+    return 'Из Telegram за 7 дней: $count';
+  }
 }

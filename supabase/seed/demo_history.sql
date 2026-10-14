@@ -37,6 +37,10 @@
 --     подрядчика Huaxin FM (950–951) с зонами по городу (970–971).
 --   • шаг 23 (блок 5g, если применена 0018): заявки из Telegram-бота 277
 --     (гость по QR-коду) и 278 (сотрудник с привязанным аккаунтом).
+--   • шаг 24 (блок 5h, если применена 0020): значки и цвета систем.
+--   • шаг 24 (блок 6b): доказательства для акта «КлиматСервис» (фото «после» —
+--     картинка из сборки demo/ac_after.jpg, чек-лист, визиты 317–318) и,
+--     если применена 0021, ставки трёх подрядчиков.
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
 -- и миграций 0001–0015. Подробно: docs/DEMO_SETUP.md, шаг 4.
@@ -1220,6 +1224,25 @@ begin
     raise notice 'Миграция 0018 не применена — заявки из Telegram (шаг 23) пропущены.';
   end if;
 
+  -- 5h. Шаг 24 (миграция 0020, если применена): значки и цвета систем
+  --     «Демо БЦ» для раздела «Моя компания → Системы». Порядок — как в 0004.
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'layers' and column_name = 'icon') then
+    update public.layers ly set icon = v.icon, color = v.color, archived_at = null
+      from (values
+        ('Климат', 'climate', '#0E8C80'),
+        ('Электрика', 'electric', '#C27A0A'),
+        ('Сантехника', 'plumbing', '#2F6FE0'),
+        ('Клининг', 'cleaning', '#7A55C7'),
+        ('Мебель', 'furniture', '#8A6A4F'),
+        ('Системы безопасности', 'security', '#B42318'),
+        ('Другое', 'other', '#5E6D7C')
+      ) as v(name, icon, color)
+     where ly.company_id = c_company and ly.name = v.name;
+  else
+    raise notice 'Миграция 0020 не применена — значки систем (шаг 24) пропущены.';
+  end if;
+
   -- 6. Визиты
   -- Колонки: vn — номер (часть id); n — заявка; off — минут от начала работы
   -- до прихода; dur — минут на объекте; dist — метров до объекта
@@ -1279,6 +1302,80 @@ begin
     distance_m = excluded.distance_m, in_geofence = excluded.in_geofence,
     mock_location = excluded.mock_location, created_at = excluded.created_at;
   get diagnostics v_visits = row_count;
+
+  -- 6b. Шаг 24 — «Оплата по доказательству»: доказательства в истории
+  --     «КлиматСервис», чтобы в акте за текущий месяц были и доказанные
+  --     заявки, и «без доказательства» с разными причинами:
+  --       111, 112, 113, 214, 220 — фото «после» + визит в геозоне
+  --         (111 ещё и выполненный чек-лист; 113 сдана позже срока);
+  --       109 — нет фото «после»; 110 — визит вне геозоны;
+  --       225 — нет отметки визита; 114 — не принята менеджером.
+  --     Фото «после» — нарисованная картинка из сборки приложения
+  --     (путь demo/ac_after.jpg = assets/demo_photos/ac_after.jpg), не файл
+  --     в Storage и не фото реального объекта. id вложений …a1NN,
+  --     пунктов чек-листа …b1NN, визиты 317–318.
+  insert into public.attachments (id, work_order_id, kind, stage, storage_path, taken_at,
+                                  lat, lng, uploaded_by, mock_location, created_at)
+  select ('de300000-0000-4000-8000-00000000a' || lpad(v.n::text, 3, '0'))::uuid,
+         w.id, 'photo', 'after', 'demo/ac_after.jpg',
+         coalesce(w.submitted_at, w.updated_at) - interval '10 minutes',
+         o.lat + 0.0001, o.lng, v_executor, false,
+         coalesce(w.submitted_at, w.updated_at) - interval '10 minutes'
+    from (values (111), (112), (113), (214), (220), (110), (225)) as v(n)
+    join public.work_orders w on w.id = ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid
+    left join public.objects o on o.id = w.object_id
+   where v_executor is not null
+  on conflict (id) do update set
+    work_order_id = excluded.work_order_id, stage = excluded.stage,
+    storage_path = excluded.storage_path, taken_at = excluded.taken_at,
+    lat = excluded.lat, lng = excluded.lng, uploaded_by = excluded.uploaded_by,
+    created_at = excluded.created_at;
+
+  insert into public.checklist_items (id, work_order_id, text, is_done, done_at, done_by, created_at)
+  select ('de300000-0000-4000-8000-00000000b' || lpad(v.k::text, 3, '0'))::uuid, w.id, v.txt, true,
+         coalesce(w.submitted_at, w.updated_at) - interval '20 minutes', v_executor, w.created_at
+    from (values (101, 'Давление хладагента в норме'), (102, 'Фильтры очищены'),
+                 (103, 'Дренаж проверен')) as v(k, txt)
+    join public.work_orders w on w.id = 'de300000-0000-4000-8000-000000000111'::uuid
+   where v_executor is not null
+  on conflict (id) do update set work_order_id = excluded.work_order_id, text = excluded.text,
+    is_done = true, done_at = excluded.done_at, done_by = excluded.done_by;
+
+  -- Визиты в геозоне у 214 и 220 (объекты карты) — 317, 318.
+  insert into public.visits (id, company_id, object_id, profile_id, contractor_id, work_order_id,
+                             started_at, ended_at, source, lat, lng, accuracy_m, distance_m,
+                             in_geofence, mock_location, created_at)
+  select ('de300000-0000-4000-8000-' || lpad(v.vn::text, 12, '0'))::uuid,
+         c_company, w.object_id, v_executor, w.assigned_contractor_id, w.id,
+         coalesce(w.started_at, w.submitted_at - interval '1 hour'),
+         coalesce(w.started_at, w.submitted_at - interval '1 hour') + interval '45 minutes',
+         'geofence', o.lat + 0.0002, o.lng, 6, 22, true, false,
+         coalesce(w.started_at, w.submitted_at - interval '1 hour')
+    from (values (317, 214), (318, 220)) as v(vn, n)
+    join public.work_orders w on w.id = ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid
+    join public.objects o on o.id = w.object_id
+   where v_executor is not null and o.lat is not null
+  on conflict (id) do update set
+    object_id = excluded.object_id, work_order_id = excluded.work_order_id,
+    started_at = excluded.started_at, ended_at = excluded.ended_at,
+    lat = excluded.lat, lng = excluded.lng, distance_m = excluded.distance_m,
+    in_geofence = true, mock_location = false, created_at = excluded.created_at;
+
+  -- 113 сдана на день позже срока (в акте — «просрочена», но к оплате).
+  update public.work_orders set due_at = submitted_at - interval '1 day'
+   where id = 'de300000-0000-4000-8000-000000000113';
+
+  -- Ставки (миграция 0021, если применена): за заявку и за визит ТО.
+  if to_regclass('public.contractor_rates') is not null then
+    insert into public.contractor_rates (contractor_id, company_id, rate_order, rate_visit, currency)
+    values (c_contr_hvac, c_company, 4500, 2500, 'RUB'),
+           (c_contr_elec, c_company, 3800, 2000, 'RUB'),
+           ('de300000-0000-4000-8000-000000000501', c_company, 5200, 3000, 'RUB')
+    on conflict (contractor_id) do update set
+      rate_order = excluded.rate_order, rate_visit = excluded.rate_visit, currency = excluded.currency;
+  else
+    raise notice 'Миграция 0021 не применена — ставки подрядчиков (шаг 24) пропущены.';
+  end if;
 
   raise notice 'Готово: демо-история — заявок %, визитов %.%', v_orders, v_visits,
     case when v_elec_exec is null

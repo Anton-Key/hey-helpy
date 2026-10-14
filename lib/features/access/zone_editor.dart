@@ -335,16 +335,18 @@ class _ZoneRuleEditorScreenState extends State<ZoneRuleEditorScreen> {
                   label: l.zoneAllSystems,
                   selected: _layers.isEmpty,
                   onTap: () => setState(() => _layers = {})),
+              // Архивные — только если уже были в зоне.
               for (final y in _refs.layers)
-                AppChip(
-                  label: y.label(l.localeName),
-                  selected: _layers.contains(y.id),
-                  onTap: () => setState(() {
-                    _layers = _layers.contains(y.id)
-                        ? ({..._layers}..remove(y.id))
-                        : {..._layers, y.id};
-                  }),
-                ),
+                if (!y.archived || _layers.contains(y.id))
+                  AppChip(
+                    label: y.label(l.localeName),
+                    selected: _layers.contains(y.id),
+                    onTap: () => setState(() {
+                      _layers = _layers.contains(y.id)
+                          ? ({..._layers}..remove(y.id))
+                          : {..._layers, y.id};
+                    }),
+                  ),
             ]),
             const SizedBox(height: AppSpace.group),
             AppGroup(
@@ -521,8 +523,10 @@ class _AccessZoneScreenState extends State<AccessZoneScreen> {
           _rules = templateWholeCompany();
         });
       case 1:
-        final id = await _pickOne(l.zoneTemplatePickSystem,
-            [for (final y in refs.layers) (y.id, y.label(l.localeName))]);
+        final id = await _pickOne(l.zoneTemplatePickSystem, [
+          for (final y in Layer.active(refs.layers))
+            (y.id, y.label(l.localeName))
+        ]);
         if (id != null) {
           setState(() {
             _whole = false;

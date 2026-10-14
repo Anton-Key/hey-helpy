@@ -13,10 +13,13 @@ type Db = any;
 type Log = (fields: Record<string, unknown>) => void;
 
 export async function loadLayers(db: Db, log: Log): Promise<LayerRef[]> {
-  const r = await db.from("layers").select("id,name,name_i18n").order("sort")
-    .order("name");
+  // «*», а не список столбцов: archived_at появляется только с 0020, а без
+  // неё запрос со столбцом упал бы. Архивные системы модели не предлагаются.
+  const r = await db.from("layers").select("*").order("sort").order("name");
   if (r.error) log({ code: "layers_failed" });
-  return (r.data ?? []).map((l: LayerRef) => ({
+  return (r.data ?? []).filter((l: { archived_at?: string | null }) =>
+    !l.archived_at
+  ).map((l: LayerRef) => ({
     id: l.id,
     name: l.name ?? "",
     name_i18n: l.name_i18n ?? null,

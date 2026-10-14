@@ -180,6 +180,42 @@ export function reporterName(u: TgUser | undefined): string | null {
 // Клиент API
 // ---------------------------------------------------------------------------
 
+/** Кнопка в уведомлении о статусе (telegram-notify, шаг 24): «Не присылать». */
+export const NOTIFY_OFF = "nf:off";
+
+/**
+ * Отправить фото байтами (multipart), подпись — HTML. Для уведомления
+ * «выполнена» с фото «после»: файл пересылается, а не ссылка на хранилище.
+ */
+export async function sendPhotoBytes(
+  token: string,
+  chatId: number,
+  photo: Uint8Array,
+  caption: string,
+  markup?: ReplyMarkup,
+  fetchFn: typeof fetch = fetch,
+  timeoutMs = 15000,
+): Promise<void> {
+  const form = new FormData();
+  form.append("chat_id", String(chatId));
+  form.append("caption", caption);
+  form.append("parse_mode", "HTML");
+  if (markup) form.append("reply_markup", JSON.stringify(markup));
+  form.append("photo", new Blob([new Uint8Array(photo)], { type: "image/jpeg" }), "after.jpg");
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetchFn(`${API}/bot${token}/sendPhoto`, { method: "POST", body: form, signal: ctrl.signal });
+    const data = await res.json().catch(() => null) as { ok?: boolean } | null;
+    if (!res.ok || !data?.ok) throw new TgError(`tg_sendPhoto_${res.status}`);
+  } catch (e) {
+    if (e instanceof TgError) throw e;
+    throw new TgError(ctrl.signal.aborted ? "tg_sendPhoto_timeout" : "tg_sendPhoto_network");
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export class TgError extends Error {
   constructor(readonly code: string) {
     super(code);

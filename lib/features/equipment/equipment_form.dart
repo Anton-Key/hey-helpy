@@ -282,7 +282,8 @@ class _AssetFormState extends State<_AssetForm> {
                 ]),
                 SectionHeader(l.assetFieldSystem),
                 Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
-                  for (final y in widget.layers)
+                  for (final y in Layer.active(widget.layers,
+                      keepId: widget.existing?.layerId))
                     AppChip(
                         label: y.label(locale),
                         selected: _layerId == y.id,

@@ -1088,7 +1088,12 @@ export const SCENARIOS = [
         ctx.notes.push(`${title}: в очереди ${n} действий`);
         assert(n === 6, `в очереди должно быть 6 действий (начать, визит, 2 пункта, фото, сдать), на экране ${n}`);
         assert(sql(`select status from work_orders where id = '${id}'`) === 'assigned', 'без сети сервер не должен меняться');
-        if (shotPrefix) await ctx.shot(e, `${shotPrefix}-queued`);
+        if (shotPrefix) {
+          await settle(e, 4000); // сообщение сверху закрывается — видна плашка
+          await e.mouse.wheel(0, -2000);
+          await settle(e, 800);
+          await ctx.shot(e, `${shotPrefix}-queued`);
+        }
         // Сеть вернулась — очередь уходит сама.
         await net(e).click();
         await waitDb(`select status from work_orders where id = '${id}'`, 'on_review', 30000);
@@ -1128,7 +1133,9 @@ export const SCENARIOS = [
       await login(mp, base, USERS.admin);
       await openOrder(mp, base, 'E2E-17 Без сети: фильтр');
       await scrollTo(mp, /Снято без сети в/);
-      await settle(mp, 800);
+      await mp.mouse.move(200, 500);
+      await mp.mouse.wheel(0, 600);
+      await settle(mp, 1000);
       await ctx.shot(mp, 'card-proof');
       const m = await ctx.page();
       await login(m, base, USERS.admin);

@@ -244,6 +244,10 @@ class OfflineService extends ChangeNotifier {
   Future<ClockReading> readingAt([DateTime? device]) async {
     final r = await clock.read();
     if (device == null) return r;
+    // [device] — DateTime.now() экрана съёмки; в тестовом режиме к нему
+    // добавляются те же «переведённые часы», что и у [clock].
+    final c = clock;
+    if (c is PlatformDeviceClock) device = device.add(c.skew);
     final shift = r.device.difference(device);
     return ClockReading(
         device: device,

@@ -5,6 +5,7 @@ import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
+import '../camera/camera_entry.dart';
 import '../directory/directory.dart';
 import 'asset_card.dart';
 import '../photo_identify/photo_identify_screen.dart';
@@ -129,13 +130,10 @@ class _EquipmentSectionState extends State<EquipmentSection> {
   }
 
   Future<void> _findByPhoto() async {
-    await Navigator.push<bool>(
-        context,
-        appRoute(
-            (_) => PhotoIdentifyScreen(
-                objectId: widget.object.id,
-                origin: PhotoIdentifyOrigin.equipment),
-            title: widget.object.name));
+    await openPhotoCamera(context,
+        objectId: widget.object.id,
+        origin: PhotoIdentifyOrigin.equipment,
+        title: widget.object.name);
     if (mounted) await _load();
   }
 

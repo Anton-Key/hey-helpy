@@ -4688,4 +4688,123 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeBadgeTelegram(int count) {
     return 'From Telegram in 7 days: $count';
   }
+
+  @override
+  String get cameraTitle => 'Camera';
+
+  @override
+  String get cameraWhatIsIt => 'What is it?';
+
+  @override
+  String get cameraLooking => 'Looking…';
+
+  @override
+  String get cameraAimHint =>
+      'Point the frame at the equipment and tap “What is it?”';
+
+  @override
+  String get cameraStarting => 'Starting the camera…';
+
+  @override
+  String get cameraDenied =>
+      'No camera access. Allow it in the browser or phone settings — or choose a photo.';
+
+  @override
+  String get cameraNoCamera =>
+      'No camera found. You can choose a photo instead.';
+
+  @override
+  String get cameraUnsupported =>
+      'The camera can\'t be shown here. You can choose a photo instead.';
+
+  @override
+  String get cameraFailed =>
+      'Couldn\'t start the camera. Try again or choose a photo.';
+
+  @override
+  String get cameraPickPhoto => 'Choose a photo';
+
+  @override
+  String get cameraRetryStart => 'Try again';
+
+  @override
+  String get cameraAgain => 'Scan again';
+
+  @override
+  String get cameraNotThis => 'Not this one';
+
+  @override
+  String get cameraAssetCard => 'Equipment card';
+
+  @override
+  String get cameraCreateOrder => 'Create work order';
+
+  @override
+  String cameraOpenOrders(int count) {
+    return 'Open work orders · $count';
+  }
+
+  @override
+  String get cameraNoOpenOrders => 'No open work orders';
+
+  @override
+  String get cameraNextMaintenance => 'Next maintenance';
+
+  @override
+  String cameraMaintenanceDue(String date) {
+    return 'due $date';
+  }
+
+  @override
+  String cameraMaintenanceOverdue(String date) {
+    return 'overdue · due $date';
+  }
+
+  @override
+  String get cameraMaintenanceSystem => 'system-wide on site';
+
+  @override
+  String get cameraNoMaintenance => 'No maintenance scheduled';
+
+  @override
+  String get cameraLastDone => 'Last job';
+
+  @override
+  String get cameraNoHistory => 'No completed jobs yet';
+
+  @override
+  String get cameraNotRecognized =>
+      'Not recognized. Choose from this room\'s list';
+
+  @override
+  String get cameraPickManually => 'Choose the equipment';
+
+  @override
+  String get cameraNoAssetsHere => 'No registered equipment here';
+
+  @override
+  String get cameraAllAssets => 'All equipment on site…';
+
+  @override
+  String cameraCandidateOf(int n, int total) {
+    return 'Option $n of $total';
+  }
+
+  @override
+  String get cameraFailedAi =>
+      'Couldn\'t recognize it — choose the equipment from the list.';
+
+  @override
+  String get cameraAuto => 'Auto';
+
+  @override
+  String cameraAutoSeen(String name) {
+    return 'Looks like: $name — open';
+  }
+
+  @override
+  String get cameraArDemo => 'AR (demo)';
+
+  @override
+  String get formFromCamera => 'from the camera';
 }

@@ -720,7 +720,9 @@ export const SCENARIOS = [
       await m.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
         [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|`]);
       await home(m, base);
+      // «По фото» открывает «Камеру» (шаг 25); выбор снимка — «Выбрать фото».
       await section(m, /^По фото/);
+      await clickAction(m, /^Выбрать фото/, 30000);
       await clickAction(m, /^Сфотографировать/);
       await btn(m, /^Это он/).waitFor({ timeout: 30000 });
       await ctx.shot(m, 'identified');
@@ -916,6 +918,49 @@ export const SCENARIOS = [
       assert(/^АКТ-\d{4}-\d{3}$/.test(num), `номер акта: ${num}`);
       assert(+paid === proven, `в акте к оплате ${paid}, ждали ${proven}`);
       assert(pdf.endsWith('.pdf'), `PDF акта не сохранён: ${pdf}`);
+    },
+  },
+  {
+    id: 15,
+    title: '«Камера-помощник» (заглушка камеры и ИИ, телефон): «Что это?» → «КД-301 · 91 %» и карточка → «Создать заявку» → заявка с фото',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`delete from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
+        and id::text not like 'de300000-%'`);
+      const m = await ctx.page({ width: 412, height: 915 });
+      await login(m, base, USERS.admin);
+      // «Где я» — переговорная 301 «БЦ «Демо»» (запомнено на устройстве).
+      const uid = sql(`select id from auth.users where email = '${USERS.admin}'`);
+      await m.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
+        [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|${uuid(21)}`]);
+      await home(m, base);
+      await btn(m, /Узнать оборудование по фото/).click();
+      await btn(m, /^Что это\?/).waitFor({ timeout: 30000 });
+      await see(m, /Переговорная/).waitFor({ timeout: 15000 });
+      await ctx.shot(m, 'live');
+      await btn(m, /^Что это\?/).click();
+      await see(m, /КД-301 · 91 %/).waitFor({ timeout: 30000 });
+      await see(m, /Плановое ТО|ТО не запланировано/).waitFor({ timeout: 15000 });
+      await settle(m, 800);
+      const t = await screenText(m);
+      assert(/Кондиционер КД-301/.test(t), 'в карточке нет «Кондиционер КД-301»');
+      assert(/Открытые заявки · \d+|Нет открытых заявок/.test(t), 'в карточке нет открытых заявок');
+      assert(/Последняя работа|Выполненных работ ещё не было/.test(t), 'в карточке нет последней работы');
+      ctx.notes.push('карточка: ' + (t.match(/Открытые заявки · \d+|Нет открытых заявок/)?.[0] ?? '?')
+        + '; ' + (t.match(/Плановое ТО[^\n]*|ТО не запланировано/)?.[0] ?? '?'));
+      await ctx.shot(m, 'card');
+      await clickAction(m, /^Создать заявку/);
+      await see(m, /Снимок будет приложен/).waitFor({ timeout: 15000 });
+      await see(m, /с камеры/).waitFor({ timeout: 5000 });
+      await ctx.shot(m, 'form');
+      // Кнопка формы — последняя «Создать заявку» (первая — в карточке под шторкой).
+      await m.getByRole('button', { name: /^Создать заявку$/ }).last().click();
+      const id = await waitDb(`select id from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
+        and created_at > now() - interval '2 minutes' order by created_at desc limit 1`, (v) => v.length > 0, 20000);
+      await waitDb(`select count(*) from attachments where work_order_id = '${id}' and stage = 'before'`, '1', 20000);
+      const row = sql(`select coalesce(asset_id::text, '-') || '|' || coalesce(location_id::text, '-') || '|' || title from work_orders where id = '${id}'`);
+      ctx.notes.push(`заявка: ${row.split('|')[2]}`);
+      assert(row.startsWith(`${uuid(708)}|${uuid(21)}|`), `оборудование и помещение заявки: ${row}`);
     },
   },
 ];

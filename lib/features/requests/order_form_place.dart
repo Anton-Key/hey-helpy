@@ -3,7 +3,7 @@ import 'package:latlong2/latlong.dart';
 import '../directory/directory.dart';
 
 /// Откуда открыли форму новой заявки — подпись под полем «Объект».
-enum PlaceOrigin { objectCard, map, plan, equipment, photo, order }
+enum PlaceOrigin { objectCard, map, plan, equipment, photo, camera, order }
 
 /// Откуда взялся объект в форме: контекст, GPS или никак (пусто).
 enum PlaceSource { context, gps, none }

@@ -3,7 +3,8 @@
 # docs/demo/hey-helpy-demo-phone.mp4 (телефон 412). Локальная база, без сети.
 # База hh_test пересоздаётся (tools/db_test/run.sh). Нужны:
 # сборка build/web_e2e (tools/e2e/build.sh), PostgREST (POSTGREST=…), ffmpeg.
-# Запуск: bash tools/e2e/record_demo.sh [--phone-only|--pc-only]
+# Запуск: bash tools/e2e/record_demo.sh [--phone-only|--pc-only|--v2-only]
+# --v2-only (шаг 25) — только docs/demo/hey-helpy-demo-v2.mp4 (ПК, «Камера-помощник» → акт).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"
@@ -13,6 +14,7 @@ bash tools/db_test/run.sh > /tmp/hh_db_test.log 2>&1 || { tail -20 /tmp/hh_db_te
 sudo -u postgres psql -X -q -v ON_ERROR_STOP=1 -d hh_test -f tools/e2e/prep.sql
 [ -f build/web_e2e/index.html ] || bash tools/e2e/build.sh
 cd tools/e2e
+if [ "${1:-}" = "--v2-only" ]; then node record_demo.mjs --v2 > /tmp/hh_demo_v2.log 2>&1 || true; grep -v '^[0-9][0-9]/[A-Z]' /tmp/hh_demo_v2.log | tail -3; pkill -x postgrest 2>/dev/null || true; exit 0; fi
 if [ "${1:-}" != "--phone-only" ]; then node record_demo.mjs > /tmp/hh_demo_pc.log 2>&1 || true; grep -v '^[0-9][0-9]/[A-Z]' /tmp/hh_demo_pc.log | tail -3; fi
 pkill -x postgrest 2>/dev/null || true
 if [ "${1:-}" != "--pc-only" ]; then node record_demo.mjs --phone > /tmp/hh_demo_phone.log 2>&1 || true; grep -v '^[0-9][0-9]/[A-Z]' /tmp/hh_demo_phone.log | tail -3; fi

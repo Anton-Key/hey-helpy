@@ -1,0 +1,43 @@
+import { startLocalBackend } from '/workspaces/hey-helpy/tools/screens/local_backend.mjs';
+import { chromium, startWeb, login, home, btn, settle, USERS, uuid } from '/workspaces/hey-helpy/tools/e2e/lib.mjs';
+const out = process.argv[2];
+const backend = await startLocalBackend({ port: 54321 });
+const web = await startWeb();
+const browser = await chromium.launch({ args: ['--disable-dev-shm-usage', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
+const c = await browser.newContext({ viewport: { width: 412, height: 915 }, locale: 'ru-RU', permissions: ['camera'] });
+const p = await c.newPage();
+const errs = [];
+p.on('pageerror', (e) => errs.push(e.message.slice(0, 200)));
+p.on('console', (m) => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 200)); });
+await login(p, web.base, USERS.admin);
+await home(p, web.base);
+console.log('keys:', await p.evaluate(() => Object.keys(localStorage).filter((k) => /hh\.web|auth-token/.test(k))));
+// 1. Без WebXR.
+await p.goto(web.base + `ar/index.html?location=${uuid(21)}`);
+await p.waitForTimeout(2500);
+console.log('no-xr:', await p.evaluate(() => [...document.querySelectorAll('section')].filter((s) => !s.hidden).map((s) => s.id + ': ' + s.innerText.replace(/\s+/g, ' ').slice(0, 140))));
+await p.screenshot({ path: `${out}/ar-unsupported.png` });
+// 2. С подменой navigator.xr — список оборудования под RLS.
+await c.addInitScript(() => Object.defineProperty(navigator, 'xr', { value: { isSessionSupported: async () => true, requestSession: async () => { throw new Error('нет AR в тесте'); } } }));
+const p2 = await c.newPage();
+p2.on('pageerror', (e) => errs.push(e.message.slice(0, 200)));
+await p2.goto(web.base + `ar/index.html?location=${uuid(21)}`);
+await p2.waitForTimeout(5000);
+console.log('xr:', await p2.evaluate(() => [...document.querySelectorAll('section')].filter((s) => !s.hidden).map((s) => s.id + ': ' + s.innerText.replace(/\s+/g, ' ').slice(0, 300))));
+await p2.screenshot({ path: `${out}/ar-ready.png` });
+await p2.click('#start-ar');
+await p2.waitForTimeout(800);
+console.log('start error:', await p2.evaluate(() => document.getElementById('error').innerText));
+console.log('camera link:', await p2.evaluate(() => document.getElementById('to-camera2').href));
+// 3. «Авто» с настоящей веб-камерой (видео движется — плашки нет, ошибок нет).
+await p2.close();
+await p.goto(web.base);
+await home(p, web.base);
+await btn(p, /Узнать оборудование по фото/).click();
+await btn(p, /^Что это\?/).waitFor({ timeout: 30000 });
+await btn(p, /^Авто$/).click();
+await p.waitForTimeout(4000);
+console.log('auto video:', await p.evaluate(() => document.querySelectorAll('video').length), 'canvas probe ok');
+await p.screenshot({ path: `${out}/cam-auto.png` });
+console.log('errors:', errs);
+await browser.close(); web.stop(); backend.stop();

@@ -37,6 +37,8 @@ dependencies:
   file_picker: ^13.1.0
   # «Поделиться» фото и документами заявки на Android (шаг 24).
   share_plus: ^13.3.1
+  # Живая камера «Камера-помощник» на Android (шаг 25); в вебе — свой <video>.
+  camera: ^0.12.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -8012,6 +8012,210 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Из Telegram за 7 дней: {count}'**
   String homeBadgeTelegram(int count);
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Камера'**
+  String get cameraTitle;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Что это?'**
+  String get cameraWhatIsIt;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Смотрю…'**
+  String get cameraLooking;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Наведите рамку на оборудование и нажмите «Что это?»'**
+  String get cameraAimHint;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Включаю камеру…'**
+  String get cameraStarting;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет доступа к камере. Разрешите его в настройках браузера или телефона — или выберите готовое фото.'**
+  String get cameraDenied;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Камера не найдена. Можно выбрать готовое фото.'**
+  String get cameraNoCamera;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Здесь камера не показывается. Можно выбрать готовое фото.'**
+  String get cameraUnsupported;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось включить камеру. Попробуйте ещё раз или выберите готовое фото.'**
+  String get cameraFailed;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать фото'**
+  String get cameraPickPhoto;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Попробовать снова'**
+  String get cameraRetryStart;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Ещё раз'**
+  String get cameraAgain;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Не тот'**
+  String get cameraNotThis;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Карточка оборудования'**
+  String get cameraAssetCard;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать заявку'**
+  String get cameraCreateOrder;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Открытые заявки · {count}'**
+  String cameraOpenOrders(int count);
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет открытых заявок'**
+  String get cameraNoOpenOrders;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Плановое ТО'**
+  String get cameraNextMaintenance;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'до {date}'**
+  String cameraMaintenanceDue(String date);
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'просрочено · до {date}'**
+  String cameraMaintenanceOverdue(String date);
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'по системе на объекте'**
+  String get cameraMaintenanceSystem;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Плановое ТО не запланировано'**
+  String get cameraNoMaintenance;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Последняя работа'**
+  String get cameraLastDone;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполненных работ ещё не было'**
+  String get cameraNoHistory;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Не узнал. Выберите из списка помещения'**
+  String get cameraNotRecognized;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите оборудование'**
+  String get cameraPickManually;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Здесь нет оборудования в реестре'**
+  String get cameraNoAssetsHere;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё оборудование объекта…'**
+  String get cameraAllAssets;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Вариант {n} из {total}'**
+  String cameraCandidateOf(int n, int total);
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Не получилось распознать — выберите оборудование из списка.'**
+  String get cameraFailedAi;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Авто'**
+  String get cameraAuto;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'Похоже: {name} — открыть'**
+  String cameraAutoSeen(String name);
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'AR (демо)'**
+  String get cameraArDemo;
+
+  /// Шаг 25: Камера-помощник
+  ///
+  /// In ru, this message translates to:
+  /// **'с камеры'**
+  String get formFromCamera;
 }
 
 class _AppLocalizationsDelegate

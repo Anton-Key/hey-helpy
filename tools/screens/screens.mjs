@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, wri
 import { extname, join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '../..');
-// --pitch — кадры для питча (18 + 20 «Акт», шаг 24) в docs/screens/pitch/ (см. PITCH ниже):
+// --pitch — кадры для питча (18 + 20 «Акт», шаг 24; 21, 23, 24 — шаг 25) в docs/screens/pitch/ (см. PITCH ниже):
 // без служебных пометок, разбор голосовой заявки — настоящий ИИ (VOICE_MOCK_AI).
 const PITCH_MODE = process.argv.includes('--pitch');
 // --out=<папка> — снимать в другую папку (для отладки, не трогая docs/screens/latest).
@@ -1270,6 +1270,11 @@ function DEMO_ASSET_NAME() { return 'Кондиционер серверной';
 async function openPhoto(page, { here = true } = {}) {
   await home(page);
   await page.getByRole('button', { name: /^(Узнать оборудование по фото|По фото)$/ }).first().click();
+  // Шаг 25: «По фото» открывает «Камеру»; прежний экран — «Выбрать фото».
+  await see(page, /Сфотографировать|Что это\?/).first().waitFor({ timeout: 20000 });
+  if (await btn(page, /^Что это\?/).isVisible().catch(() => false)) {
+    await btn(page, /^Выбрать фото/).click();
+  }
   await see(page, 'Сфотографировать').waitFor({ timeout: 20000 });
   await settle(page, 1200);
   if (!here) return;
@@ -1284,6 +1289,31 @@ async function openPhoto(page, { here = true } = {}) {
   await settle(page, 500);
   await see(page, /301 · Переговорная/).click();
   await settle(page, 1200);
+}
+
+/** «Камера-помощник» (шаг 25): камера — заглушка (нарисованный кадр), «Где я» — 301. */
+async function openCamera(page) {
+  await home(page);
+  await page.getByRole('button', { name: /^(Узнать оборудование по фото|По фото)$/ }).first().click();
+  await btn(page, /^Что это\?/).waitFor({ timeout: 20000 });
+  await settle(page, 1200);
+  if (await see(page, /БЦ «Демо» · 301 · Переговорная/).isVisible().catch(() => false)) return;
+  await page.getByRole('button', { name: /^Где я/ }).first().click();
+  await see(page, 'Выберите объект').waitFor({ timeout: 10000 });
+  await settle(page, 500);
+  await see(page, /Белград · БЦ «Демо»/).click();
+  await see(page, /301 · Переговорная/).waitFor({ timeout: 15000 });
+  await settle(page, 500);
+  await see(page, /301 · Переговорная/).click();
+  await settle(page, 1200);
+}
+
+async function cameraCard(page) {
+  await openCamera(page);
+  await btn(page, /^Что это\?/).click();
+  await see(page, /КД-301 · \d+ %/).waitFor({ timeout: 30000 });
+  await see(page, /Плановое ТО|ТО не запланировано/).waitFor({ timeout: 20000 });
+  await settle(page, 1500);
 }
 
 async function photoResult(page) {
@@ -1350,6 +1380,27 @@ function NEW_SCREENS() {
         await settle(p, 1500);
         return '«Создать» не нажимали';
       }, after: async (p) => { await p.keyboard.press('Escape').catch(() => {}); } },
+    { key: 'camera-live', title: '«Камера-помощник»: живое видео, «Где я», рамка-прицел, «Что это?»', run: async (p) => {
+        await openCamera(p);
+        return 'камера — заглушка: нарисованный кадр (ПРЕДПРОСМОТР)';
+      } },
+    { key: 'camera-card', title: '«Камера-помощник»: стоп-кадр, «КД-301 · 91 %», карточка поверх кадра', run: async (p) => {
+        await cameraCard(p);
+        return 'нарисованный кадр; ответ ИИ — заглушка VOICE_MOCK; заявки и ТО — рабочая база';
+      } },
+    { key: 'systems', title: '«Моя компания» → «Системы»: значки, цвета, оборудование, заявки, подрядчики', run: async (p) => {
+        await openCompany(p);
+        await scrollTo(p, /^Системы/);
+        await btn(p, /^Системы/).click();
+        await see(p, /Оборудование: \d+/).waitFor({ timeout: 20000 });
+        await settle(p, 1500);
+      } },
+    { key: 'order-photos', title: 'Заявка «КлиматСервис» 111: «Фото · 2» — «До» и «После», документы', run: async (p) => {
+        await home(p);
+        await openOrder(p, 'Плановое ТО: проверка давления хладагента');
+        await scrollTo(p, /Фото · \d+|ФОТО · \d+/);
+        await settle(p, 2500);
+      } },
     { key: 'plan-areas', title: 'План этажа «3 этаж»: области и номера помещений', run: async (p) => {
         await openPlan(p, 10, 602);
       } },
@@ -1501,6 +1552,12 @@ const PITCH = [
   { file: '18-photo-identify-phone', width: 412, key: 'photo-result' },
   // Шаг 24: «Акт: к оплате только доказанное» — «КлиматСервис», текущий месяц
   // (нужны 0021 и Refresh demo: доказательства и ставки в демо-истории).
+  // Шаг 25: «Камера-помощник» — карточка поверх стоп-кадра (кадр — нарисованный,
+  // ответ — заглушка VOICE_MOCK; заявки и ТО КД-301 — рабочая база после Refresh demo).
+  { file: '21-camera-card-phone', width: 412, key: 'camera-card' },
+  // 22 — макет уведомления Telegram: tools/screens/tg_notify_mock.mjs.
+  { file: '23-systems-desktop', width: 1920, key: 'systems' },
+  { file: '24-order-photos-phone', width: 412, key: 'order-photos' },
   { file: '20-act-proven-desktop', width: 1920, key: 'act', run: async (p) => {
       await home(p);
       await nav(p, 'Отчёты').click();

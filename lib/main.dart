@@ -7,6 +7,7 @@ import 'core/design/design.dart';
 import 'core/l10n_ext.dart';
 import 'core/locale_controller.dart';
 import 'core/supabase_config.dart';
+import 'core/web_bridge.dart';
 import 'core/web_url.dart';
 import 'l10n/app_localizations.dart';
 
@@ -30,6 +31,9 @@ Future<void> main() async {
     // Тот же anon-ключ: в supabase_flutter 2.17 publishableKey заменил anonKey.
     publishableKey: SupabaseConfig.anonKey,
   );
+
+  // Страница «AR (демо)» (web/ar/) берёт адрес базы и вход отсюда.
+  WebBridge.publishConfig(SupabaseConfig.url, SupabaseConfig.anonKey);
 
   runApp(HeyHelpyApp(locale: locale));
 }

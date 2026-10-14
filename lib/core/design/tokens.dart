@@ -79,6 +79,22 @@ class AppColors {
   /// Почти прозрачное затемнение под выпадающим окном (широкий экран).
   static const popoverScrim = Color(0x0F0F1A17);
 
+  // «Камера-помощник» (шаг 25): поверх живого видео.
+  /// Фон под видео (пока камера включается).
+  static const camera = Color(0xFF000000);
+
+  /// Подложка подписей и кнопок поверх видео.
+  static const cameraOverlay = Color(0x8C000000);
+
+  /// Текст и значки поверх видео (на [cameraOverlay]).
+  static const onCamera = Color(0xFFFFFFFF);
+
+  /// Рамка-прицел, пока ничего не узнано.
+  static const cameraFrame = Color(0xCCFFFFFF);
+
+  /// Полупрозрачная карточка поверх стоп-кадра.
+  static const glass = Color(0xF2FFFFFF);
+
   /// Цвет точки приоритета: critical — красная, high — оранжевая,
   /// остальные — серая.
   static Color priority(String p) => switch (p) {

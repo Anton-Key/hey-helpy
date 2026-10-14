@@ -1,5 +1,8 @@
 // Запасное видео демо (шаг 18): главный сценарий на локальной базе, без интернета.
-//   node record_demo.mjs [--phone] [--out=<файл.mp4>]
+//   node record_demo.mjs [--phone | --v2] [--out=<файл.mp4>]
+//   --v2 (шаг 25) — видео показа v2 (ПК, 2–2,5 мин): голос → «Камера-помощник» →
+//   заявка с фото → исполнитель «после» → приёмка → акт «к оплате» → уведомление
+//   в Telegram (макет, кадр 22) → docs/demo/hey-helpy-demo-v2.mp4.
 // Запуск через record_demo.sh (база, сборка, PostgREST).
 //
 // Как устроено:
@@ -21,8 +24,9 @@ import {
 } from './lib.mjs';
 
 const PHONE = process.argv.includes('--phone');
+const V2 = process.argv.includes('--v2');
 const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6)
-  ?? join(ROOT, 'docs/demo', PHONE ? 'hey-helpy-demo-phone.mp4' : 'hey-helpy-demo.mp4'));
+  ?? join(ROOT, 'docs/demo', PHONE ? 'hey-helpy-demo-phone.mp4' : V2 ? 'hey-helpy-demo-v2.mp4' : 'hey-helpy-demo.mp4'));
 const VIEW = PHONE ? { width: 412, height: 915, scale: 2 } : { width: 1920, height: 1080, scale: 1 };
 const FRAMES = mkdtempSync(join(tmpdir(), 'hh-demo-frames-'));
 const TMP = mkdtempSync(join(tmpdir(), 'hh-demo-'));
@@ -178,7 +182,7 @@ async function tap(page, locator, { pause = 900, ms } = {}) {
   await page.waitForTimeout(pause);
 }
 const caption = (page, t) => page.evaluate((x) => window.__caption?.(x), t);
-const hold = (page, ms) => page.waitForTimeout(ms * (PHONE ? 0.8 : 0.4));
+const hold = (page, ms) => page.waitForTimeout(ms * (PHONE ? 0.8 : V2 ? 1.15 : 0.4));
 async function section(page, re) {
   await tap(page, page.getByRole('button', { name: re }).or(page.getByRole('tab', { name: re })).first(), { pause: 1600 });
 }
@@ -347,6 +351,92 @@ async function pcScenario(page) {
   await hold(page, 3500);
 }
 
+// ---------------------------------------------------------------------------
+// Видео v2 (шаг 25): одна поломка от голоса до «выполнена ✅».
+// ---------------------------------------------------------------------------
+async function v2Scenario(page) {
+  await caption(page, 'Эй, Helpy — ИИ-сервис эксплуатации зданий');
+  await moveTo(page, 600, 420, 900);
+  await hold(page, 3000);
+
+  // 1. Голос → ИИ.
+  await caption(page, 'Заявку не пишут — её говорят');
+  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Эй, Helpy/ }).first(), { pause: 600 });
+  await see(page, /очень жарко/).waitFor({ timeout: 20000 });
+  await hold(page, 1400);
+  await tap(page, btn(page, /^Готово/), { pause: 200 });
+  await caption(page, 'ИИ разбирает речь…');
+  await see(page, /Проверьте заявку/).waitFor({ timeout: 20000 });
+  await caption(page, 'ИИ понял: что сломалось, где и насколько срочно — и назначил подрядчика');
+  await moveTo(page, 1100, 330, 700);
+  await hold(page, 3800);
+  await tap(page, btn(page, /^Отправить/), { pause: 1800 });
+
+  // 2. «Камера-помощник».
+  await caption(page, 'Исполнитель у прибора: навёл камеру — «Что это?»');
+  await tap(page, page.getByRole('button', { name: /^(По фото|Узнать оборудование по фото)$/ }).first(), { pause: 1500 });
+  await btn(page, /^Что это\?/).waitFor({ timeout: 20000 });
+  await hold(page, 2500);
+  await tap(page, btn(page, /^Что это\?/), { pause: 300 });
+  await see(page, /КД-301 · \d+ %/).waitFor({ timeout: 30000 });
+  await see(page, /Открытые заявки · \d+|Нет открытых заявок/).waitFor({ timeout: 20000 });
+  await caption(page, 'Распознавание оборудования камерой: «Кондиционер КД-301» — заявки, плановое ТО, история');
+  await moveTo(page, 1650, 700, 900);
+  await hold(page, 5500);
+  await caption(page, 'Заявка с фото — в одно касание');
+  await tap(page, btn(page, /^Создать заявку/), { pause: 1500 });
+  await see(page, /Снимок будет приложен/).waitFor({ timeout: 15000 });
+  await hold(page, 2500);
+  await tap(page, page.getByRole('button', { name: /^Создать заявку$/ }).last(), { pause: 1500 });
+  const id = await waitDb(`select id from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
+    and id::text not like 'de300000-%' order by created_at desc limit 1`, (v) => v.length > 0, 20000);
+  const title = sql(`select title from work_orders where id = '${id}'`);
+
+  // 3. Исполнитель за кадром: в геозоне, фото «после», на проверку.
+  await caption(page, 'Исполнитель отмечается на объекте и фотографирует результат…');
+  await hold(page, 2200);
+  pause();
+  await executorOffscreen(title);
+  await section(page, /^Главная/);
+  const refresh = page.getByRole('button', { name: /^Обновить/ }).first();
+  if (await refresh.isVisible().catch(() => false)) await refresh.click();
+  await page.waitForTimeout(1500);
+  resume();
+  await search(page, title.slice(0, 14));
+  await tap(page, btn(page, new RegExp('^' + title.slice(0, 14))), { pause: 1800 });
+  await caption(page, 'Доказательство: визит в геозоне, фото «до» и «после»');
+  await wheel(page, 700, 6);
+  await hold(page, 4200);
+  await caption(page, 'Заявку нельзя закрыть без подтверждения — менеджер принимает работу');
+  await tap(page, btn(page, /^Принять работу/), { pause: 900 });
+  const confirm = btn(page, /^Принять$/);
+  if (await confirm.isVisible().catch(() => false)) await tap(page, confirm, { pause: 1200 });
+  await hold(page, 1500);
+
+  // 4. Акт «к оплате».
+  await section(page, /^Отчёты/);
+  await caption(page, 'Платим подрядчику только за доказанную работу');
+  const acts = page.getByRole('button', { name: /^Акты подрядчикам/ }).first();
+  await acts.scrollIntoViewIfNeeded().catch(() => {});
+  await tap(page, acts, { pause: 2000 });
+  await see(page, /К оплате · \d+/).waitFor({ timeout: 30000 });
+  await caption(page, 'Акт «КлиматСервис»: к оплате — только с фото и геозоной, остальное не принимается');
+  await moveTo(page, 1000, 520, 900);
+  await hold(page, 5500);
+
+  // 5. Уведомление автору в Telegram — макет (кадр 22).
+  const { readFileSync } = await import('node:fs');
+  const tg = 'data:image/png;base64,' + readFileSync(join(ROOT, 'docs/screens/pitch/22-telegram-done-phone.png')).toString('base64');
+  await page.evaluate((x) => window.__pdf(x), tg);
+  await caption(page, 'Кто сообщил о поломке через Telegram, получает «выполнена ✅» с фото (макет чата)');
+  await moveTo(page, 900, 500, 900);
+  await moveTo(page, 1050, 640, 900);
+  await hold(page, 4000);
+  await page.evaluate(() => window.__pdf(null));
+  await caption(page, 'Эй, Helpy: приём → отправка → исполнение → контроль');
+  await hold(page, 3500);
+}
+
 /** Кнопка «назад» в шапке (на телефоне карточки открыты поверх вкладок). */
 async function back(page) {
   const b = page.getByRole('button', { name: /^(Заявки|Заявка|Назад|Back)$/ }).first();
@@ -422,13 +512,17 @@ try {
   const page = await ctx.newPage();
   // Вход и прогрев — до записи.
   await login(page, base, USERS.admin);
+  // v2: «Где я» для «Камеры» — переговорная 301 «БЦ «Демо»» (запомнено на устройстве).
+  const uid = sql(`select id from auth.users where email = '${USERS.admin}'`);
+  await page.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
+    [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|${uuid(21)}`]);
   await openApp(page, base, `?voice=${encodeURIComponent('Эй, Хелпи, в переговорной на третьем этаже не работает кондиционер, очень жарко')}`);
   await profileTab(page).waitFor({ timeout: 60000 });
   await settle(page, 3000);
   await page.evaluate(() => window.__caption?.(''));
   const stop = await startRecording(page);
   try {
-    if (PHONE) await phoneScenario(page); else await pcScenario(page);
+    if (PHONE) await phoneScenario(page); else if (V2) await v2Scenario(page); else await pcScenario(page);
   } finally {
     await caption(page, '');
     await page.waitForTimeout(400);
@@ -465,7 +559,7 @@ for (const crf of [24, 28, 32]) {
   execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', join(TMP, 'list.txt'),
     '-vf', `${scale}:flags=lanczos,fps=30,format=yuv420p`, '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf),
     '-profile:v', 'high', '-movflags', '+faststart', '-an', OUT]);
-  if (statSync(OUT).size <= 20 * 1024 * 1024) break;
+  if (statSync(OUT).size <= (V2 ? 25 : 20) * 1024 * 1024) break;
 }
 rmSync(FRAMES, { recursive: true, force: true });
 console.log(`${ok ? 'Готово' : 'Частично'}: ${OUT} — ${Math.round(total)} с, ${(statSync(OUT).size / 1024 / 1024).toFixed(1)} МБ, кадров ${files.length}`);

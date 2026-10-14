@@ -266,3 +266,24 @@ end $$;
 
 select t.make_company24b(1);
 select t.make_company24b(2);
+
+-- 0024 (шаг 27): офлайн — якорь часов, отпечаток фото, офлайн-действие,
+-- решение менеджера по доказательству (у компании 2 те же строки).
+create or replace function t.make_company27(k int) returns void
+language plpgsql as $$
+declare
+  c uuid := t.id(k, 1);
+begin
+  insert into public.offline_clock_anchors(profile_id, company_id, boot_id, mono_ms)
+  values (t.id(k, 102), c, format('boot-%s', k), 1000);
+  insert into public.offline_photo_hashes(storage_path, company_id, sha256)
+  values (format('%s/%s/off_%s.jpg', c, t.id(k, 101), t.id(k, 191)), c, repeat('a', 64));
+  insert into public.offline_actions(id, company_id, profile_id, work_order_id, kind, device_at, trusted_at,
+                                     time_trust, result)
+  values (t.id(k, 192), c, t.id(k, 102), t.id(k, 101), 'start', now(), now(), 'monotonic', 'applied');
+  insert into public.act_proof_decisions(id, company_id, work_order_id, decision, reason, decided_by)
+  values (t.id(k, 193), c, t.id(k, 101), 'approve', 'Проверено охраной', t.id(k, 100));
+end $$;
+
+select t.make_company27(1);
+select t.make_company27(2);

@@ -7,7 +7,9 @@
 // репозиторий не класть.
 //
 // Запуск: cd tools/demo_photos && PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node generate.mjs
-// Результат: assets/demo_photos/ac_indoor.jpg (1280×960, JPEG ~80 %).
+// Результат: assets/demo_photos/ac_indoor.jpg (1280×960, JPEG ~80 %) и
+// ac_after.jpg — тот же блок после ремонта, без подтёка (фото «после» в
+// демо-истории, шаг 24: путь вложения demo/ac_after.jpg — картинка из сборки).
 import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -16,7 +18,7 @@ const ROOT = resolve(HERE, '../..');
 const OUT = join(ROOT, 'assets/demo_photos');
 const W = 1280, H = 960;
 
-const svg = `
+const draw = (leak) => `
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
     <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1">
@@ -60,8 +62,9 @@ const svg = `
   <text x="268" y="402" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="6" fill="#9aa4a8">AIRDEMO</text>
   <!-- трасса и подтёк воды под блоком (видимая неисправность) -->
   <rect x="1060" y="470" width="26" height="490" fill="#ecebe7" stroke="#d2d0ca" stroke-width="2"/>
-  <path d="M640 548 C 636 600, 646 640, 640 700 C 637 740, 650 760, 644 800" stroke="#7fb3c8" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.65"/>
-  <ellipse cx="644" cy="812" rx="16" ry="10" fill="#7fb3c8" opacity="0.6"/>
+  ${leak ? `<path d="M640 548 C 636 600, 646 640, 640 700 C 637 740, 650 760, 644 800" stroke="#7fb3c8" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.65"/>
+  <ellipse cx="644" cy="812" rx="16" ry="10" fill="#7fb3c8" opacity="0.6"/>` : `<rect x="560" y="600" width="160" height="44" rx="10" fill="#ffffff" stroke="#2DB89A" stroke-width="3"/>
+  <text x="640" y="630" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#0B7A62" text-anchor="middle">ТО ✓ 10.2026</text>`}
   <!-- наклейка-шильдик сбоку -->
   <rect x="1000" y="452" width="56" height="20" rx="3" fill="#ffffff" stroke="#bdbdb8"/>
   <text x="1028" y="466" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#555" text-anchor="middle">KD-301</text>
@@ -74,7 +77,9 @@ mkdirSync(OUT, { recursive: true });
 const { chromium } = await import(new URL('../screens/node_modules/playwright/index.mjs', import.meta.url));
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: W, height: H } });
-await page.setContent(`<html><body style="margin:0">${svg}</body></html>`);
-await page.screenshot({ path: join(OUT, 'ac_indoor.jpg'), type: 'jpeg', quality: 80 });
+for (const [name, leak] of [['ac_indoor.jpg', true], ['ac_after.jpg', false]]) {
+  await page.setContent(`<html><body style="margin:0">${draw(leak)}</body></html>`);
+  await page.screenshot({ path: join(OUT, name), type: 'jpeg', quality: 80 });
+  console.log(`assets/demo_photos/${name}`);
+}
 await browser.close();
-console.log('assets/demo_photos/ac_indoor.jpg');

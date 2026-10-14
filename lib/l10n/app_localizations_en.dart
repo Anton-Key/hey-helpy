@@ -4451,4 +4451,226 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get systemInUse => 'The system is in use — it can only be archived.';
+
+  @override
+  String get actsTitle => 'Contractor acts';
+
+  @override
+  String get actsMenuHint => 'Pay only for proven work';
+
+  @override
+  String get actsSlogan => 'We pay contractors only for proven work';
+
+  @override
+  String get actContractor => 'Contractor';
+
+  @override
+  String get actPickContractor => 'Choose a contractor';
+
+  @override
+  String get actNoContractors => 'No contractors yet';
+
+  @override
+  String get actPrevMonth => 'Previous month';
+
+  @override
+  String get actNextMonth => 'Next month';
+
+  @override
+  String actPaidTitle(int count) {
+    return 'To pay · $count';
+  }
+
+  @override
+  String actRejectedTitle(int count) {
+    return 'No proof — not accepted for payment · $count';
+  }
+
+  @override
+  String get actReasonNotAccepted => 'not accepted by a manager';
+
+  @override
+  String get actReasonReturned => 'returned for rework';
+
+  @override
+  String get actReasonNoPhoto => 'no “after” photo';
+
+  @override
+  String get actReasonNoVisit => 'no visit check-in';
+
+  @override
+  String get actReasonOutOfZone => 'visit outside the geofence';
+
+  @override
+  String get actReasonChecklist => 'checklist not completed';
+
+  @override
+  String get actProofPhoto => 'photo';
+
+  @override
+  String get actProofGeo => 'geofence';
+
+  @override
+  String get actProofChecklist => 'checklist';
+
+  @override
+  String get actOverdue => 'overdue';
+
+  @override
+  String actTotalLine(int paid, int rejected, String share, int overdue) {
+    return 'To pay: $paid · no proof: $rejected · proven $share · overdue: $overdue';
+  }
+
+  @override
+  String get actNoRates => 'No rates — the act shows counts only';
+
+  @override
+  String actSumLine(String sum) {
+    return 'Total to pay: $sum';
+  }
+
+  @override
+  String get actKpiPaid => 'to pay';
+
+  @override
+  String get actKpiRejected => 'no proof';
+
+  @override
+  String get actKpiShare => 'proven';
+
+  @override
+  String get actKpiOverdue => 'overdue';
+
+  @override
+  String get actNoOrders =>
+      'The contractor has no completed work orders this month';
+
+  @override
+  String get actLoadFailed => 'Couldn\'t load the contractor\'s work orders';
+
+  @override
+  String get actIssue => 'Create act';
+
+  @override
+  String actIssued(String number) {
+    return 'Act $number created';
+  }
+
+  @override
+  String get actIssueFailed =>
+      'Couldn\'t create the act. Check your connection and try again.';
+
+  @override
+  String get actPdfNotSaved =>
+      'The act was created, but the PDF wasn\'t archived — you can download it now.';
+
+  @override
+  String get actExcel => 'Excel for accounting';
+
+  @override
+  String get actExcelSaved => 'Excel file saved';
+
+  @override
+  String get actExcelFailed => 'Couldn\'t save the Excel file';
+
+  @override
+  String get actHistory => 'Created acts';
+
+  @override
+  String get actHistoryEmpty => 'No acts for this contractor yet';
+
+  @override
+  String actHistoryRow(String period, int paid, int rejected) {
+    return '$period · to pay $paid, no proof $rejected';
+  }
+
+  @override
+  String get actReplaced => 'replaced';
+
+  @override
+  String get actRates => 'Contractor rates';
+
+  @override
+  String get actRateOrder => 'Per work order';
+
+  @override
+  String get actRateVisit => 'Per PM visit';
+
+  @override
+  String get actRateNone => 'not set';
+
+  @override
+  String get actRatesHint =>
+      'Optional. Without rates the act shows counts only.';
+
+  @override
+  String get actRatesSaved => 'Rates saved';
+
+  @override
+  String get actRatesFailed =>
+      'Couldn\'t save the rates (admin rights required)';
+
+  @override
+  String get actPdfTitle => 'Certificate of completed work';
+
+  @override
+  String actPdfNumberDate(String number, String date) {
+    return 'No. $number of $date';
+  }
+
+  @override
+  String get actPdfCustomer => 'Customer';
+
+  @override
+  String get actPdfContractor => 'Contractor';
+
+  @override
+  String get actPdfPeriod => 'Period';
+
+  @override
+  String get actPdfIssuedBy => 'Created by';
+
+  @override
+  String get actPdfNotAccepted => 'Not accepted for payment';
+
+  @override
+  String get actPdfSigns => 'Signatures';
+
+  @override
+  String get actPdfSignLine => '____________ / ____________ /';
+
+  @override
+  String actPdfPage(int page, int pages) {
+    return 'page $page of $pages';
+  }
+
+  @override
+  String get actColNo => 'No.';
+
+  @override
+  String get actColDate => 'Date';
+
+  @override
+  String get actColObject => 'Site';
+
+  @override
+  String get actColPlace => 'Room';
+
+  @override
+  String get actColWork => 'Work';
+
+  @override
+  String get actColProofs => 'Proof';
+
+  @override
+  String get actColSum => 'Amount';
+
+  @override
+  String get actColReasons => 'Reason';
+
+  @override
+  String get actSheetPaid => 'To pay';
+
+  @override
+  String get actSheetRejected => 'Not accepted';
 }

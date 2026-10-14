@@ -18,6 +18,7 @@ import '../directory/city.dart';
 import '../directory/object_picker.dart';
 // Отложенно: PDF (пакеты pdf / printing, шрифт) — только по кнопке печати.
 import 'report_pdf.dart' deferred as pdf;
+import '../acts/contractor_acts_screen.dart';
 
 /// Вкладка «Отчёты» (только менеджер и администратор): период, фильтры,
 /// четыре главные цифры по компании и показатели по каждому подрядчику.
@@ -616,6 +617,21 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ],
         ]);
       }),
+      // «Оплата по доказательству» (шаг 24): акт подрядчику за месяц.
+      const SizedBox(height: AppSpace.group),
+      AppGroup(children: [
+        AppRow(
+          leading: const LeadingIcon(AppIcons.act),
+          title: l.actsTitle,
+          subtitle: l.actsMenuHint,
+          onTap: () => Navigator.push(
+              context,
+              appRoute(
+                  (_) =>
+                      ContractorActsScreen(initialContractorId: _contractorId),
+                  title: l.navReports)),
+        ),
+      ]),
       ..._photoBlock(l),
       ..._regionBlock(l, f, report),
       SectionHeader(l.reportsByContractor),

@@ -14,9 +14,23 @@ class WorkPhoto {
   final String? url; // временная ссылка на файл
   final String? uploaderName; // кто снял (profiles.full_name)
 
-  const WorkPhoto({required this.id, required this.stage, required this.storagePath,
-      this.takenAt, this.lat, this.lng, this.mockLocation = false, this.url,
-      this.uploaderName});
+  /// Демо-история (шаг 24): путь `demo/<файл>` — нарисованная картинка из
+  /// сборки (assets/demo_photos), а не файл в хранилище.
+  final String? asset;
+
+  const WorkPhoto(
+      {required this.id,
+      required this.stage,
+      required this.storagePath,
+      this.takenAt,
+      this.lat,
+      this.lng,
+      this.mockLocation = false,
+      this.url,
+      this.uploaderName,
+      this.asset});
+
+  bool get viewable => url != null || asset != null;
 
   bool get hasLocation => lat != null && lng != null;
 
@@ -31,7 +45,26 @@ class CapturedPhoto {
   final double? lat;
   final double? lng;
   final bool mockLocation;
-  const CapturedPhoto({required this.bytes, required this.takenAt, this.lat, this.lng, this.mockLocation = false});
+  const CapturedPhoto(
+      {required this.bytes,
+      required this.takenAt,
+      this.lat,
+      this.lng,
+      this.mockLocation = false});
+}
+
+/// Путь демо-фото: `demo/ac_after.jpg` → `assets/demo_photos/ac_after.jpg`.
+const demoPrefix = 'demo/';
+String? demoAsset(String path) {
+  if (!path.startsWith(demoPrefix)) return null;
+  final name = path.substring(demoPrefix.length);
+  return RegExp(r'^[a-z0-9_]+\.jpg$').hasMatch(name)
+      ? 'assets/demo_photos/$name'
+      : null;
+}
+
+class _NoPaths implements Exception {
+  const _NoPaths();
 }
 
 class PhotoRepository {
@@ -48,10 +81,16 @@ class PhotoRepository {
         .order('created_at');
     final list = (rows as List).cast<Map<String, dynamic>>();
     if (list.isEmpty) return const [];
-    final paths = [for (final r in list) r['storage_path'] as String];
+    final paths = [
+      for (final r in list)
+        if (!(r['storage_path'] as String).startsWith(demoPrefix))
+          r['storage_path'] as String
+    ];
     final urls = <String, String>{};
     try {
-      final signed = await _c.storage.from(bucket).createSignedUrlsResult(paths, 60 * 60);
+      if (paths.isEmpty) throw const _NoPaths();
+      final signed =
+          await _c.storage.from(bucket).createSignedUrlsResult(paths, 60 * 60);
       for (final s in signed) {
         if (s is SignedUrlSuccess) urls[s.path] = s.signedUrl;
       }
@@ -69,22 +108,30 @@ class PhotoRepository {
           lng: (r['lng'] as num?)?.toDouble(),
           mockLocation: r['mock_location'] == true,
           url: urls[r['storage_path']],
-          uploaderName: (r['uploader'] as Map<String, dynamic>?)?['full_name'] as String?,
+          uploaderName:
+              (r['uploader'] as Map<String, dynamic>?)?['full_name'] as String?,
+          asset: demoAsset(r['storage_path'] as String),
         ),
     ];
   }
 
   /// Байты файла — для «Поделиться» на телефоне.
-  Future<Uint8List> download(String path) => _c.storage.from(bucket).download(path);
+  Future<Uint8List> download(String path) =>
+      _c.storage.from(bucket).download(path);
 
   /// Загружает снимок в Storage и записывает его во вложения заявки.
   /// Путь <company_id>/<work_order_id>/<стадия>_<время>.jpg — по нему
   /// проверяются права в базе (миграция 0006).
-  Future<void> upload({required String companyId, required String workOrderId,
-      required String stage, required CapturedPhoto photo}) async {
-    final path = '$companyId/$workOrderId/${stage}_${photo.takenAt.millisecondsSinceEpoch}.jpg';
+  Future<void> upload(
+      {required String companyId,
+      required String workOrderId,
+      required String stage,
+      required CapturedPhoto photo}) async {
+    final path =
+        '$companyId/$workOrderId/${stage}_${photo.takenAt.millisecondsSinceEpoch}.jpg';
     await _c.storage.from(bucket).uploadBinary(path, photo.bytes,
-        fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false));
+        fileOptions:
+            const FileOptions(contentType: 'image/jpeg', upsert: false));
     try {
       await _c.from('attachments').insert({
         'work_order_id': workOrderId,
@@ -99,7 +146,9 @@ class PhotoRepository {
       });
     } catch (_) {
       // Запись не создалась — убираем «осиротевший» файл.
-      try { await _c.storage.from(bucket).remove([path]); } catch (_) {}
+      try {
+        await _c.storage.from(bucket).remove([path]);
+      } catch (_) {}
       rethrow;
     }
   }

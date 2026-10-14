@@ -213,23 +213,26 @@ class _Thumb extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: square ? 1 : 4 / 3,
         child: Stack(fit: StackFit.expand, children: [
-          photo.url == null
+          !photo.viewable
               ? broken
-              // Миниатюра: тот же файл, но декодируется уменьшенным —
-              // меньше памяти; сам файл кэширует браузер / система.
-              : Image.network(photo.url!,
-                  // Не смог раскодировать сам (бывает в Яндекс Браузере) —
-                  // картинка обычным элементом <img> браузера (шаг 24).
-                  webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
-                  fit: BoxFit.cover,
-                  cacheWidth: square ? 240 : 480,
-                  loadingBuilder: (_, child, progress) => progress == null
-                      ? child
-                      : const ColoredBox(
-                          color: AppColors.fill, child: AppLoader()),
-                  errorBuilder: (_, __, ___) => broken),
+              : photo.asset != null
+                  ? Image.asset(photo.asset!,
+                      fit: BoxFit.cover, cacheWidth: square ? 240 : 480)
+                  // Миниатюра: тот же файл, но декодируется уменьшенным —
+                  // меньше памяти; сам файл кэширует браузер / система.
+                  : Image.network(photo.url!,
+                      // Не смог раскодировать сам (бывает в Яндекс Браузере) —
+                      // картинка обычным элементом <img> браузера (шаг 24).
+                      webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+                      fit: BoxFit.cover,
+                      cacheWidth: square ? 240 : 480,
+                      loadingBuilder: (_, child, progress) => progress == null
+                          ? child
+                          : const ColoredBox(
+                              color: AppColors.fill, child: AppLoader()),
+                      errorBuilder: (_, __, ___) => broken),
           // Значок лупы подсказывает, что фото открывается на весь экран.
-          if (photo.url != null && !square)
+          if (photo.viewable && !square)
             PositionedDirectional(
               end: 6,
               bottom: 6,
@@ -246,7 +249,7 @@ class _Thumb extends StatelessWidget {
         ]),
       ),
     );
-    if (photo.url == null) return image;
+    if (!photo.viewable) return image;
     return Pressable(
         onTap: () => onOpen(photo),
         effect: PressEffect.highlight,
@@ -503,6 +506,13 @@ class _ZoomPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (photo.asset != null) {
+      return InteractiveViewer(
+          transformationController: controller,
+          minScale: 1,
+          maxScale: 5,
+          child: Center(child: Image.asset(photo.asset!, fit: BoxFit.contain)));
+    }
     if (photo.url == null) {
       return const Center(
           child: Icon(AppIcons.imageBroken,

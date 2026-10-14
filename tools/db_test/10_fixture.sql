@@ -245,3 +245,24 @@ end $$;
 
 select t.make_company24(1);
 select t.make_company24(2);
+
+-- 0021 (шаг 24): ставки подрядчика 031, акт за сентябрь и его PDF.
+create or replace function t.make_company24b(k int) returns void
+language plpgsql as $$
+declare
+  c uuid := t.id(k, 1);
+begin
+  insert into public.contractor_rates(contractor_id, company_id, rate_order, rate_visit, currency)
+  values (t.id(k, 31), c, 4500, 2500, 'RUB');
+  insert into public.contractor_acts(id, company_id, contractor_id, year, seq, number, period_start, period_end,
+                                     totals, items, pdf_path, created_by)
+  values (t.id(k, 181), c, t.id(k, 31), 2026, 1, 'АКТ-2026-001', '2026-09-01', '2026-09-30',
+          '{"paid":1}', '[]', format('%s/%s/act.pdf', c, t.id(k, 181)), t.id(k, 100));
+  insert into storage.buckets(id, name, public) values ('contractor-acts', 'contractor-acts', false)
+  on conflict (id) do nothing;
+  insert into storage.objects(id, bucket_id, name, owner, owner_id) values
+    (t.id(k, 174), 'contractor-acts', format('%s/%s/act.pdf', c, t.id(k, 181)), t.id(k, 100), t.id(k, 100)::text);
+end $$;
+
+select t.make_company24b(1);
+select t.make_company24b(2);

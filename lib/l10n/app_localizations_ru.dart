@@ -4475,7 +4475,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get systemDeleteMessage =>
-      'Удалить можно, только если у системы нет заявок, оборудования, подрядчиков, планов ППР и зон.';
+      'Удалить можно, только если у системы нет заявок, оборудования, подрядчиков, планов ТО и зон.';
 
   @override
   String get systemDeletedToast => 'Система удалена';
@@ -4483,4 +4483,225 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get systemInUse =>
       'Системой уже пользуются — её можно только архивировать.';
+
+  @override
+  String get actsTitle => 'Акты подрядчикам';
+
+  @override
+  String get actsMenuHint => 'К оплате — только доказанные заявки';
+
+  @override
+  String get actsSlogan => 'Платим подрядчику только за доказанную работу';
+
+  @override
+  String get actContractor => 'Подрядчик';
+
+  @override
+  String get actPickContractor => 'Выберите подрядчика';
+
+  @override
+  String get actNoContractors => 'Подрядчиков пока нет';
+
+  @override
+  String get actPrevMonth => 'Предыдущий месяц';
+
+  @override
+  String get actNextMonth => 'Следующий месяц';
+
+  @override
+  String actPaidTitle(int count) {
+    return 'К оплате · $count';
+  }
+
+  @override
+  String actRejectedTitle(int count) {
+    return 'Без доказательства — к оплате не принимается · $count';
+  }
+
+  @override
+  String get actReasonNotAccepted => 'не принята менеджером';
+
+  @override
+  String get actReasonReturned => 'возвращена на доработку';
+
+  @override
+  String get actReasonNoPhoto => 'нет фото «после»';
+
+  @override
+  String get actReasonNoVisit => 'нет отметки визита';
+
+  @override
+  String get actReasonOutOfZone => 'визит вне геозоны';
+
+  @override
+  String get actReasonChecklist => 'чек-лист не выполнен';
+
+  @override
+  String get actProofPhoto => 'фото';
+
+  @override
+  String get actProofGeo => 'геозона';
+
+  @override
+  String get actProofChecklist => 'чек-лист';
+
+  @override
+  String get actOverdue => 'просрочена';
+
+  @override
+  String actTotalLine(int paid, int rejected, String share, int overdue) {
+    return 'К оплате: $paid · без доказательства: $rejected · доказано $share · просрочено: $overdue';
+  }
+
+  @override
+  String get actNoRates => 'Ставок нет — акт без сумм, только количество';
+
+  @override
+  String actSumLine(String sum) {
+    return 'Итого к оплате: $sum';
+  }
+
+  @override
+  String get actKpiPaid => 'к оплате';
+
+  @override
+  String get actKpiRejected => 'без доказательства';
+
+  @override
+  String get actKpiShare => 'доказано';
+
+  @override
+  String get actKpiOverdue => 'просрочено';
+
+  @override
+  String get actNoOrders => 'За этот месяц у подрядчика нет выполненных заявок';
+
+  @override
+  String get actLoadFailed => 'Не удалось загрузить заявки подрядчика';
+
+  @override
+  String get actIssue => 'Сформировать акт';
+
+  @override
+  String actIssued(String number) {
+    return 'Акт $number сформирован';
+  }
+
+  @override
+  String get actIssueFailed =>
+      'Не удалось сформировать акт. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get actPdfNotSaved =>
+      'Акт сформирован, но PDF не сохранился в архиве — его можно скачать сейчас.';
+
+  @override
+  String get actExcel => 'Excel для бухгалтерии';
+
+  @override
+  String get actExcelSaved => 'Файл Excel сохранён';
+
+  @override
+  String get actExcelFailed => 'Не удалось сохранить файл Excel';
+
+  @override
+  String get actHistory => 'Сформированные акты';
+
+  @override
+  String get actHistoryEmpty => 'Актов этому подрядчику пока нет';
+
+  @override
+  String actHistoryRow(String period, int paid, int rejected) {
+    return '$period · к оплате $paid, без доказательства $rejected';
+  }
+
+  @override
+  String get actReplaced => 'заменён';
+
+  @override
+  String get actRates => 'Ставки подрядчика';
+
+  @override
+  String get actRateOrder => 'За заявку';
+
+  @override
+  String get actRateVisit => 'За визит планового ТО';
+
+  @override
+  String get actRateNone => 'не задана';
+
+  @override
+  String get actRatesHint =>
+      'Необязательно. Без ставок акт показывает только количество.';
+
+  @override
+  String get actRatesSaved => 'Ставки сохранены';
+
+  @override
+  String get actRatesFailed =>
+      'Не удалось сохранить ставки (нужны права администратора)';
+
+  @override
+  String get actPdfTitle => 'Акт выполненных работ';
+
+  @override
+  String actPdfNumberDate(String number, String date) {
+    return '№ $number от $date';
+  }
+
+  @override
+  String get actPdfCustomer => 'Заказчик';
+
+  @override
+  String get actPdfContractor => 'Исполнитель';
+
+  @override
+  String get actPdfPeriod => 'Период';
+
+  @override
+  String get actPdfIssuedBy => 'Сформировал';
+
+  @override
+  String get actPdfNotAccepted => 'Не принято к оплате';
+
+  @override
+  String get actPdfSigns => 'Подписи сторон';
+
+  @override
+  String get actPdfSignLine => '____________ / ____________ /';
+
+  @override
+  String actPdfPage(int page, int pages) {
+    return 'стр. $page из $pages';
+  }
+
+  @override
+  String get actColNo => '№';
+
+  @override
+  String get actColDate => 'Дата';
+
+  @override
+  String get actColObject => 'Объект';
+
+  @override
+  String get actColPlace => 'Помещение';
+
+  @override
+  String get actColWork => 'Работа';
+
+  @override
+  String get actColProofs => 'Доказательства';
+
+  @override
+  String get actColSum => 'Сумма';
+
+  @override
+  String get actColReasons => 'Причина';
+
+  @override
+  String get actSheetPaid => 'К оплате';
+
+  @override
+  String get actSheetRejected => 'Не принято';
 }

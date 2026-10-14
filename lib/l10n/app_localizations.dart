@@ -7578,7 +7578,7 @@ abstract class AppLocalizations {
   /// Шаг 24: системы
   ///
   /// In ru, this message translates to:
-  /// **'Удалить можно, только если у системы нет заявок, оборудования, подрядчиков, планов ППР и зон.'**
+  /// **'Удалить можно, только если у системы нет заявок, оборудования, подрядчиков, планов ТО и зон.'**
   String get systemDeleteMessage;
 
   /// Шаг 24: системы
@@ -7592,6 +7592,408 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Системой уже пользуются — её можно только архивировать.'**
   String get systemInUse;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акты подрядчикам'**
+  String get actsTitle;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'К оплате — только доказанные заявки'**
+  String get actsMenuHint;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Платим подрядчику только за доказанную работу'**
+  String get actsSlogan;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчик'**
+  String get actContractor;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите подрядчика'**
+  String get actPickContractor;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подрядчиков пока нет'**
+  String get actNoContractors;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Предыдущий месяц'**
+  String get actPrevMonth;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Следующий месяц'**
+  String get actNextMonth;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'К оплате · {count}'**
+  String actPaidTitle(int count);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Без доказательства — к оплате не принимается · {count}'**
+  String actRejectedTitle(int count);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'не принята менеджером'**
+  String get actReasonNotAccepted;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'возвращена на доработку'**
+  String get actReasonReturned;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'нет фото «после»'**
+  String get actReasonNoPhoto;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'нет отметки визита'**
+  String get actReasonNoVisit;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'визит вне геозоны'**
+  String get actReasonOutOfZone;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'чек-лист не выполнен'**
+  String get actReasonChecklist;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'фото'**
+  String get actProofPhoto;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'геозона'**
+  String get actProofGeo;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'чек-лист'**
+  String get actProofChecklist;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'просрочена'**
+  String get actOverdue;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'К оплате: {paid} · без доказательства: {rejected} · доказано {share} · просрочено: {overdue}'**
+  String actTotalLine(int paid, int rejected, String share, int overdue);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ставок нет — акт без сумм, только количество'**
+  String get actNoRates;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Итого к оплате: {sum}'**
+  String actSumLine(String sum);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'к оплате'**
+  String get actKpiPaid;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'без доказательства'**
+  String get actKpiRejected;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'доказано'**
+  String get actKpiShare;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'просрочено'**
+  String get actKpiOverdue;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'За этот месяц у подрядчика нет выполненных заявок'**
+  String get actNoOrders;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить заявки подрядчика'**
+  String get actLoadFailed;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформировать акт'**
+  String get actIssue;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акт {number} сформирован'**
+  String actIssued(String number);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сформировать акт. Проверьте интернет и попробуйте ещё раз.'**
+  String get actIssueFailed;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акт сформирован, но PDF не сохранился в архиве — его можно скачать сейчас.'**
+  String get actPdfNotSaved;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Excel для бухгалтерии'**
+  String get actExcel;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Файл Excel сохранён'**
+  String get actExcelSaved;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить файл Excel'**
+  String get actExcelFailed;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформированные акты'**
+  String get actHistory;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Актов этому подрядчику пока нет'**
+  String get actHistoryEmpty;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{period} · к оплате {paid}, без доказательства {rejected}'**
+  String actHistoryRow(String period, int paid, int rejected);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'заменён'**
+  String get actReplaced;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ставки подрядчика'**
+  String get actRates;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'За заявку'**
+  String get actRateOrder;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'За визит планового ТО'**
+  String get actRateVisit;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'не задана'**
+  String get actRateNone;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Необязательно. Без ставок акт показывает только количество.'**
+  String get actRatesHint;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ставки сохранены'**
+  String get actRatesSaved;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить ставки (нужны права администратора)'**
+  String get actRatesFailed;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акт выполненных работ'**
+  String get actPdfTitle;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'№ {number} от {date}'**
+  String actPdfNumberDate(String number, String date);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Заказчик'**
+  String get actPdfCustomer;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнитель'**
+  String get actPdfContractor;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Период'**
+  String get actPdfPeriod;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформировал'**
+  String get actPdfIssuedBy;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не принято к оплате'**
+  String get actPdfNotAccepted;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подписи сторон'**
+  String get actPdfSigns;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'____________ / ____________ /'**
+  String get actPdfSignLine;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'стр. {page} из {pages}'**
+  String actPdfPage(int page, int pages);
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'№'**
+  String get actColNo;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Дата'**
+  String get actColDate;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Объект'**
+  String get actColObject;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение'**
+  String get actColPlace;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа'**
+  String get actColWork;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Доказательства'**
+  String get actColProofs;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сумма'**
+  String get actColSum;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Причина'**
+  String get actColReasons;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'К оплате'**
+  String get actSheetPaid;
+
+  /// Шаг 24: акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не принято'**
+  String get actSheetRejected;
 }
 
 class _AppLocalizationsDelegate

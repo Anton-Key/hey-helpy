@@ -4923,4 +4923,155 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get cameraNoEquipment =>
       'В кадре не видно оборудования — наведите камеру на прибор';
+
+  @override
+  String get eqPlaceMountFloor => 'Пол';
+
+  @override
+  String get eqPlaceMountWall => 'Стена';
+
+  @override
+  String get eqPlaceMountCeiling => 'Потолок';
+
+  @override
+  String get eqPlaceMountAboveCeiling => 'За подвесным потолком';
+
+  @override
+  String get eqPlaceMountCabinet => 'В шкафу';
+
+  @override
+  String get eqPlaceMountOutdoor => 'Снаружи';
+
+  @override
+  String eqPlaceHeightValue(String value) {
+    return '$value м';
+  }
+
+  @override
+  String get eqPlaceOnPlan => 'Место на плане';
+
+  @override
+  String get eqPlaceNotSet => 'Не указано · Указать на плане';
+
+  @override
+  String get eqPlaceChange => 'Изменить';
+
+  @override
+  String get eqPlaceWhereExactly => 'Где именно';
+
+  @override
+  String get eqPlaceHeight => 'Высота, м';
+
+  @override
+  String get eqPlaceHeightHint => 'Например, 2,8';
+
+  @override
+  String get eqPlaceHeightBad => 'Высота — число от 0 до 100 м, например 2,8';
+
+  @override
+  String get eqPlaceLandmark => 'Ориентир';
+
+  @override
+  String get eqPlaceLandmarkHint => 'Например, над дверью, слева';
+
+  @override
+  String get eqPlacePhoto => 'Сфотографировать, где установлено';
+
+  @override
+  String get eqPlacePhotoTitle => 'Фото места установки';
+
+  @override
+  String get eqPlacePhotoRetake => 'Переснять';
+
+  @override
+  String get eqPlacePhotoRemove => 'Убрать фото';
+
+  @override
+  String get eqPlacePhotoNeedsFloor =>
+      'Фото места можно сохранить, когда помещение стоит на этаже объекта';
+
+  @override
+  String get eqPlacePhotoBad => 'Нужна фотография JPEG, PNG или WebP до 15 МБ';
+
+  @override
+  String get eqPlacePhotoFailed => 'Не удалось сохранить фото места';
+
+  @override
+  String get eqPlaceDone => 'Готово';
+
+  @override
+  String get eqPlaceRemove => 'Убрать с плана';
+
+  @override
+  String get eqPlaceDragHint =>
+      'Перетащите метку или нажмите на план там, где стоит оборудование';
+
+  @override
+  String eqPlaceOtherRoom(String room) {
+    return 'Точка в помещении $room — сменить помещение?';
+  }
+
+  @override
+  String get eqPlaceSwitchRoom => 'Сменить';
+
+  @override
+  String get eqPlaceKeepRoom => 'Оставить';
+
+  @override
+  String eqPlaceRoomChanged(String room) {
+    return 'Помещение сменится на $room';
+  }
+
+  @override
+  String get eqPlaceNoPlan =>
+      'Загрузите план этажа в карточке объекта — потом здесь можно будет поставить точку';
+
+  @override
+  String get eqPlaceOpenObject => 'Открыть карточку объекта';
+
+  @override
+  String get eqPlaceSaved => 'Место на плане сохранено';
+
+  @override
+  String get eqPlaceSaveFailed => 'Не удалось сохранить место на плане';
+
+  @override
+  String eqPlaceMarker(String name) {
+    return '$name — метка на плане, можно перетащить';
+  }
+
+  @override
+  String get eqExportButton => 'Выгрузить в Excel';
+
+  @override
+  String get eqExportDone => 'Файл выгрузки сохранён';
+
+  @override
+  String get eqExportFailed => 'Не удалось выгрузить оборудование';
+
+  @override
+  String get eqExportEmpty => 'Нет оборудования для выгрузки';
+
+  @override
+  String get eqExportFileName => 'Оборудование';
+
+  @override
+  String get eqExportIssueBadHeight => 'высота не распознана';
+
+  @override
+  String eqExportIssueUnknownMount(String text) {
+    return 'нет такого варианта «Где именно»: «$text»';
+  }
+
+  @override
+  String eqExportIssueOtherObject(String text) {
+    return 'строка другого объекта: «$text»';
+  }
+
+  @override
+  String get eqExportWillUpdate => 'обновится';
+
+  @override
+  String get eqExportReimportInfo =>
+      'Выгрузку из «Выгрузить в Excel» можно поправить и загрузить обратно: строки с ID обновят своё оборудование, без ID — добавятся.';
 }

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/design.dart';
 import '../../core/scrolling.dart';
+import '../../l10n/app_localizations.dart';
+import '../equipment/asset_place.dart';
 import '../equipment/equipment_kinds.dart';
 import '../map/map_logic.dart';
 import '../map/map_parts.dart';
@@ -722,6 +724,11 @@ class PlanMarker extends StatelessWidget {
     final glow = markerGlowColor(tone);
     final place = item.isPlace;
     final d = place ? 30.0 : 26.0;
+    // Шаг 27: у оборудования под названием — «потолок · 2,8 м».
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+    final mount = place || l10n == null || !showLabel
+        ? null
+        : formatMountLine(l10n, item.mount, withLandmark: false);
     final Widget shape;
     if (place) {
       shape = Container(
@@ -825,14 +832,23 @@ class PlanMarker extends StatelessWidget {
                       .withValues(alpha: highlighted ? 0.97 : 0.92),
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                   boxShadow: highlighted ? AppShadows.floating : null),
-              child: Text(item.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: AppText.caption.copyWith(
-                      color: AppColors.ink,
-                      fontWeight:
-                          highlighted ? FontWeight.w700 : FontWeight.w600)),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text(item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: AppText.caption.copyWith(
+                        color: AppColors.ink,
+                        fontWeight:
+                            highlighted ? FontWeight.w700 : FontWeight.w600)),
+                if (mount != null)
+                  Text(mount,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: AppText.caption.copyWith(
+                          color: AppColors.secondary, fontSize: 10)),
+              ]),
             ),
           ),
       ]),

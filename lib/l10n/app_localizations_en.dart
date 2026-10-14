@@ -4893,4 +4893,156 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cameraNoEquipment =>
       'No equipment in the frame — point the camera at a device';
+
+  @override
+  String get eqPlaceMountFloor => 'Floor';
+
+  @override
+  String get eqPlaceMountWall => 'Wall';
+
+  @override
+  String get eqPlaceMountCeiling => 'Ceiling';
+
+  @override
+  String get eqPlaceMountAboveCeiling => 'Above the suspended ceiling';
+
+  @override
+  String get eqPlaceMountCabinet => 'In a cabinet';
+
+  @override
+  String get eqPlaceMountOutdoor => 'Outdoors';
+
+  @override
+  String eqPlaceHeightValue(String value) {
+    return '$value m';
+  }
+
+  @override
+  String get eqPlaceOnPlan => 'Location on floor plan';
+
+  @override
+  String get eqPlaceNotSet => 'Not set · Set on floor plan';
+
+  @override
+  String get eqPlaceChange => 'Change';
+
+  @override
+  String get eqPlaceWhereExactly => 'Exact location';
+
+  @override
+  String get eqPlaceHeight => 'Height, m';
+
+  @override
+  String get eqPlaceHeightHint => 'For example, 2.8';
+
+  @override
+  String get eqPlaceHeightBad =>
+      'Height must be a number from 0 to 100 m, e.g. 2.8';
+
+  @override
+  String get eqPlaceLandmark => 'Landmark';
+
+  @override
+  String get eqPlaceLandmarkHint => 'For example, above the door, on the left';
+
+  @override
+  String get eqPlacePhoto => 'Take a photo of where it is installed';
+
+  @override
+  String get eqPlacePhotoTitle => 'Installation photo';
+
+  @override
+  String get eqPlacePhotoRetake => 'Retake';
+
+  @override
+  String get eqPlacePhotoRemove => 'Remove photo';
+
+  @override
+  String get eqPlacePhotoNeedsFloor =>
+      'The installation photo can be saved once the room is on a floor of the object';
+
+  @override
+  String get eqPlacePhotoBad => 'Use a JPEG, PNG or WebP photo up to 15 MB';
+
+  @override
+  String get eqPlacePhotoFailed => 'Couldn\'t save the installation photo';
+
+  @override
+  String get eqPlaceDone => 'Done';
+
+  @override
+  String get eqPlaceRemove => 'Remove from plan';
+
+  @override
+  String get eqPlaceDragHint =>
+      'Drag the marker or tap the plan where the equipment is';
+
+  @override
+  String eqPlaceOtherRoom(String room) {
+    return 'The point is in room $room — change the room?';
+  }
+
+  @override
+  String get eqPlaceSwitchRoom => 'Change';
+
+  @override
+  String get eqPlaceKeepRoom => 'Keep';
+
+  @override
+  String eqPlaceRoomChanged(String room) {
+    return 'The room will change to $room';
+  }
+
+  @override
+  String get eqPlaceNoPlan =>
+      'Upload a floor plan in the object card — then you can set the point here';
+
+  @override
+  String get eqPlaceOpenObject => 'Open object card';
+
+  @override
+  String get eqPlaceSaved => 'Location on the plan saved';
+
+  @override
+  String get eqPlaceSaveFailed => 'Couldn\'t save the location on the plan';
+
+  @override
+  String eqPlaceMarker(String name) {
+    return '$name — marker on the plan, drag to move';
+  }
+
+  @override
+  String get eqExportButton => 'Export to Excel';
+
+  @override
+  String get eqExportDone => 'Export file saved';
+
+  @override
+  String get eqExportFailed => 'Couldn\'t export equipment';
+
+  @override
+  String get eqExportEmpty => 'No equipment to export';
+
+  @override
+  String get eqExportFileName => 'Equipment';
+
+  @override
+  String get eqExportIssueBadHeight => 'height not recognized';
+
+  @override
+  String eqExportIssueUnknownMount(String text) {
+    return 'unknown exact location: \"$text\"';
+  }
+
+  @override
+  String eqExportIssueOtherObject(String text) {
+    return 'row of another object: \"$text\"';
+  }
+
+  @override
+  String get eqExportWillUpdate => 'will be updated';
+
+  @override
+  String get eqExportReimportInfo =>
+      'A file from \"Export to Excel\" can be edited and imported back: rows with an ID update their equipment, rows without an ID are added.';
 }

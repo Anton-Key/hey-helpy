@@ -1,3 +1,5 @@
+import 'asset_place.dart';
+
 /// Оборудование объекта (assets) для реестра (шаг 16).
 ///
 /// Паспортные поля (система, производитель, модель, серийный номер, дата
@@ -17,6 +19,8 @@ class Asset {
     this.installedAt,
     this.floorId,
     this.placed = false,
+    this.planX,
+    this.planY,
     this.meta = const {},
   });
 
@@ -38,12 +42,27 @@ class Asset {
   final String? floorId;
   final bool placed;
 
+  /// Точка на плане — доли 0..1 (null — не на плане).
+  final double? planX;
+  final double? planY;
+
+  /// Точка на плане (шаг 27); null — не размещено.
+  PlanPoint? get point => floorId != null && planX != null && planY != null
+      ? PlanPoint(floorId!, planX!, planY!)
+      : null;
+
+  /// Где именно: монтаж, высота, ориентир (assets.meta, шаг 27).
+  MountInfo get mount => MountInfo.fromMeta(meta);
+
+  /// Фото места установки (путь в floor-plans) или null.
+  String? get placePhoto => placePhotoOf(meta);
+
   /// assets.meta целиком: при правке вида остальные ключи сохраняются.
   final Map<String, dynamic> meta;
 
   /// Колонки до 0015 и после.
   static const legacyColumns =
-      'id,location_id,name,category,inventory_no,meta,floor_id,plan_x';
+      'id,location_id,name,category,inventory_no,meta,floor_id,plan_x,plan_y';
   static const columns =
       '$legacyColumns,layer_id,manufacturer,model,serial_no,installed_at';
 
@@ -68,6 +87,8 @@ class Asset {
       installedAt: DateTime.tryParse('${m['installed_at'] ?? ''}'),
       floorId: m['floor_id'] as String?,
       placed: m['plan_x'] != null,
+      planX: (m['plan_x'] as num?)?.toDouble(),
+      planY: (m['plan_y'] as num?)?.toDouble(),
       meta: meta is Map ? Map<String, dynamic>.from(meta) : const {},
     );
   }
@@ -92,6 +113,11 @@ class AssetDraft {
     this.installedAt,
     this.kind,
     this.baseMeta,
+    this.mount,
+    this.setPoint = false,
+    this.point,
+    this.setPlacePhoto = false,
+    this.placePhoto,
   });
 
   final String name;
@@ -109,13 +135,26 @@ class AssetDraft {
   /// Прежний assets.meta (правка): другие ключи не теряются.
   final Map<String, dynamic>? baseMeta;
 
+  /// Где именно (шаг 27); null — как было в [baseMeta].
+  final MountInfo? mount;
+
+  /// Записать точку на плане: [point] или «убрать с плана» (null).
+  final bool setPoint;
+  final PlanPoint? point;
+
+  /// Записать фото места: [placePhoto] или убрать (null).
+  final bool setPlacePhoto;
+  final String? placePhoto;
+
   Map<String, dynamic> get meta {
-    final m = Map<String, dynamic>.of(baseMeta ?? const {});
+    var m = Map<String, dynamic>.of(baseMeta ?? const {});
     if (kind == null) {
       m.remove('kind');
     } else {
       m['kind'] = kind;
     }
+    if (mount != null) m = mount!.applyTo(m);
+    if (setPlacePhoto) m = withPlacePhoto(m, placePhoto);
     return m;
   }
 
@@ -130,6 +169,13 @@ class AssetDraft {
         'serial_no': serialNo,
         'installed_at': installedAt == null ? null : isoDate(installedAt!),
         'meta': meta,
+        if (setPoint && point != null) ...{
+          'floor_id': point!.floorId,
+          'plan_x': point!.rounded().x,
+          'plan_y': point!.rounded().y,
+        },
+        // «Убрать с плана»: точку стереть, этаж оставить (как на плане).
+        if (setPoint && point == null) ...{'plan_x': null, 'plan_y': null},
       };
 }
 

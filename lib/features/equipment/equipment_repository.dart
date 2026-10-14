@@ -1,6 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/paging.dart';
 import '../../core/schema_compat.dart';
+import '../floors/floor_models.dart';
+import '../floors/floor_repository.dart';
+import '../floors/plan_logic.dart';
+import 'asset_place.dart';
 import 'equipment_models.dart';
 
 /// Реестр оборудования (шаг 16). Читает вся компания, меняет только
@@ -117,5 +123,66 @@ class EquipmentRepo {
         .order('created_at', ascending: false)
         .limit(limit);
     return rows;
+  }
+
+  // ------------------------------------------------- место на плане (шаг 27)
+
+  /// Точка на плане ([point] null — убрать с плана, этаж остаётся) и,
+  /// если нужно, новое помещение. Права — политики assets (менеджер).
+  Future<void> setPlanPoint(String id, PlanPoint? point,
+      {String? locationId}) async {
+    final p = point?.rounded();
+    final v = <String, dynamic>{
+      if (p != null) ...{'floor_id': p.floorId, 'plan_x': p.x, 'plan_y': p.y},
+      if (p == null) ...{'plan_x': null, 'plan_y': null},
+      if (locationId != null) 'location_id': locationId,
+    };
+    final rows = await _c.from('assets').update(v).eq('id', id).select('id');
+    if (rows.isEmpty) {
+      throw const PostgrestException(message: 'not allowed', code: '42501');
+    }
+  }
+
+  /// Фото места установки — в папку этажа хранилища floor-plans (туда
+  /// менеджер может писать по политикам 0013/0014, без новой миграции).
+  /// Возвращает путь для assets.meta.place_photo.
+  Future<String> uploadPlacePhoto(
+      Floor floor, Uint8List bytes, PlanImageInfo info) async {
+    final path = placePhotoPath(
+        floor.companyId, floor.objectId, floor.id, info.ext, DateTime.now());
+    await _c.storage.from(FloorRepo.bucket).uploadBinary(path, bytes,
+        fileOptions: FileOptions(contentType: info.mime, upsert: false));
+    return path;
+  }
+
+  /// Удалить файл фото места (старый после замены); ошибки — тихо.
+  Future<void> removePlacePhoto(String path) async {
+    try {
+      await _c.storage.from(FloorRepo.bucket).remove([path]);
+    } catch (e) {
+      debugPrint('EquipmentRepo: фото места не удалено (${e.runtimeType})');
+    }
+  }
+
+  // ------------------------------------------------- выгрузка (шаг 27)
+
+  /// Оборудование системы во всех объектах (что видно по RLS) — с
+  /// помещением и объектом, для выгрузки в Excel из карточки системы.
+  Future<List<(Asset, Map<String, dynamic>?)>> assetsOfLayer(
+      String layerId) async {
+    Future<List<(Asset, Map<String, dynamic>?)>> query(String locCols) async {
+      final rows = await fetchAll(() => _c
+          .from('assets')
+          .select('${Asset.columns},locations($locCols)')
+          .eq('layer_id', layerId)
+          .order('name'));
+      return [
+        for (final r in rows)
+          (Asset.fromMap(r), r['locations'] as Map<String, dynamic>?)
+      ];
+    }
+
+    return SchemaCompat.run('0015', () => query('object_id,name,code'),
+        legacy: () => query('object_id,name'));
   }
 }

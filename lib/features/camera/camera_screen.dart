@@ -14,6 +14,7 @@ import '../../l10n/app_localizations.dart';
 import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../equipment/asset_card.dart';
+import '../equipment/asset_place.dart';
 import '../equipment/equipment_kinds.dart';
 import '../equipment/equipment_repository.dart';
 import '../floors/floor_models.dart';
@@ -1170,6 +1171,8 @@ class _CameraScreenState extends State<CameraScreen>
         ? _layers.where((y) => y.id == r?.layerId).firstOrNull
         : null;
     final card = _card;
+    // Шаг 27: где именно — «потолок · 2,8 м · над дверью, слева».
+    final mountText = item == null ? null : formatMountLine(l, item.mount);
     final sub = [
       if (kind != null) equipmentKindLabel(l, kind),
       if (c.placeText.isNotEmpty) c.placeText,
@@ -1188,6 +1191,11 @@ class _CameraScreenState extends State<CameraScreen>
               Text(c.name, style: AppText.headline),
               if (sub.isNotEmpty)
                 Text(sub, style: AppText.footnote, maxLines: 3),
+              if (mountText != null)
+                Text(mountText,
+                    style: AppText.footnote.copyWith(color: AppColors.ink),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
               if (_manual == null && card.total > 1)
                 Text(l.cameraCandidateOf(card.index + 1, card.total),
                     style:

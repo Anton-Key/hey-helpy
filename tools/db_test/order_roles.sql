@@ -91,6 +91,12 @@ begin
   perform t.check((select started_at is not null from public.work_orders where id = w1), 'started_at заполнен');
 
   -- ===== Фото, чек-лист, визит =====
+  -- файлы уже загружены (0024, Н-2: строка фото — только к своему файлу)
+  insert into storage.objects(bucket_id, name, owner, owner_id) values
+    ('work-photos', c1 || '/' || w1 || '/m.jpg', mgr, mgr::text),
+    ('work-photos', c1 || '/' || w1 || '/b.jpg', mgr, mgr::text),
+    ('work-photos', c1 || '/' || w1 || '/e.jpg', ex, ex::text),
+    ('work-photos', c1 || '/' || w1 || '/d.jpg', ex, ex::text);
   perform t.check(not t.try_sql(mgr, format(
     $q$insert into public.attachments(work_order_id, kind, stage, storage_path, uploaded_by, source)
        values (%L, 'photo', 'after', %L, %L, 'camera')$q$, w1, c1 || '/' || w1 || '/m.jpg', mgr)),

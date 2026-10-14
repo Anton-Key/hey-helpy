@@ -240,6 +240,8 @@ begin
   -- ===== Обычная вставка не может притвориться офлайн-действием =====
   perform t.login(null);
   update public.work_orders set status = 'in_progress' where id = w4;
+  insert into storage.objects(bucket_id, name, owner, owner_id)
+  values ('work-photos', format('%s/%s/x.jpg', c1, w4), ex, ex::text);
   perform t.login(ex);
   begin
     insert into public.attachments(work_order_id, kind, stage, storage_path, uploaded_by, source,
@@ -287,4 +289,74 @@ begin
     perform t.login(null);
     perform t.check(true, 'решение напрямую, мимо функции — нельзя');
   end;
+end $$;
+
+-- ===== Исправления по проверке прав (Н-1, Н-2, Н-3) =====
+do $$
+declare
+  c1 uuid := t.id(1, 1);
+  mgr uuid := t.id(1, 100); ex uuid := t.id(1, 102); req uuid := t.id(1, 103); mgr_zone uuid := t.id(1, 104);
+  w uuid := t.id(1, 394);  -- в работе у «КлиматСервис» (см. выше)
+  ok boolean;
+begin
+  -- Н-1
+  begin
+    perform t.login(mgr_zone);
+    perform public.set_member_role(req, 'manager');
+    ok := true;
+  exception when others then ok := false;
+  end;
+  perform t.login(null);
+  perform t.check(not ok, 'Н-1: менеджер с зоной не делает заявителя менеджером всей компании');
+  perform t.check((select role from public.profiles where id = req) = 'requester', 'Н-1: роль не изменилась');
+
+  -- Н-2: демо-картинка вместо снимка
+  begin
+    perform t.login(ex);
+    insert into public.attachments(work_order_id, kind, stage, storage_path, uploaded_by, source)
+    values (w, 'photo', 'after', 'demo/ac_after.jpg', ex, 'camera');
+    ok := true;
+  exception when others then ok := false;
+  end;
+  perform t.login(null);
+  perform t.check(not ok, 'Н-2: фото «после» с путём demo/… не вставляется');
+  -- Н-2: файл другого человека в папке заявки
+  insert into storage.objects(bucket_id, name, owner, owner_id)
+  values ('work-photos', format('%s/%s/foreign.jpg', c1, w), mgr, mgr::text);
+  begin
+    perform t.login(ex);
+    insert into public.attachments(work_order_id, kind, stage, storage_path, uploaded_by, source)
+    values (w, 'photo', 'after', format('%s/%s/foreign.jpg', c1, w), ex, 'camera');
+    ok := true;
+  exception when others then ok := false;
+  end;
+  perform t.login(null);
+  perform t.check(not ok, 'Н-2: чужой файл не прикладывается как своё фото');
+  -- Н-2: свой загруженный файл — можно
+  insert into storage.objects(bucket_id, name, owner, owner_id)
+  values ('work-photos', format('%s/%s/own.jpg', c1, w), ex, ex::text);
+  begin
+    perform t.login(ex);
+    insert into public.attachments(work_order_id, kind, stage, storage_path, uploaded_by, source)
+    values (w, 'photo', 'after', format('%s/%s/own.jpg', c1, w), ex, 'camera');
+    ok := true;
+  exception when others then ok := false;
+  end;
+  perform t.login(null);
+  perform t.check(ok, 'Н-2: своё загруженное фото «после» прикладывается');
+
+  -- Н-3
+  insert into public.report_links(company_id, object_id, token, enabled)
+  values (c1, t.id(1, 11), 'beijing-link-token-00001', true);
+  perform t.check(exists (select 1 from public.report_links where company_id = c1 and object_id is null),
+                  'Н-3: в компании есть ссылка компании');
+  perform t.login(mgr_zone);
+  perform t.check(not exists (select 1 from public.report_links
+                               where token = 'beijing-link-token-00001' or object_id is null),
+                  'Н-3: менеджер зоны «Москва» не видит ссылок Пекина и компании');
+  perform t.login(mgr);
+  perform t.check(exists (select 1 from public.report_links where token = 'beijing-link-token-00001')
+                  and exists (select 1 from public.report_links where object_id is null),
+                  'Н-3: менеджер без зон видит все ссылки');
+  perform t.login(null);
 end $$;

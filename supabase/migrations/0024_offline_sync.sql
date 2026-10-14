@@ -25,6 +25,13 @@
 --    только через act_proof_decide(), строки не меняются и не удаляются
 --    (каждое изменение — новая строка = журнал).
 --
+-- 6) Исправления проверки прав (docs/security/review-2026-10.md):
+--    Н-1 set_member_role — менеджер с зоной ролей не меняет;
+--    Н-2 attachments_insert — фото только из папки своей заявки и только
+--        файл, уже загруженный этим же человеком;
+--    Н-3 report_links_select — менеджер с зоной видит только ссылки своих
+--        объектов, ссылку компании — только администратор.
+--
 -- Требует 0023. Повторный запуск безопасен: if not exists, create or
 -- replace, drop … if exists.
 -- =====================================================================
@@ -732,7 +739,8 @@ begin
           raise exception 'offline:bad_photo';
         end if;
         if not exists (select 1 from storage.objects so
-                        where so.bucket_id = 'work-photos' and so.name = v_path) then
+                        where so.bucket_id = 'work-photos' and so.name = v_path
+                          and so.owner_id = v_uid::text) then
           raise exception 'offline:photo_missing';
         end if;
         select h.sha256 into v_known from offline_photo_hashes h where h.storage_path = v_path;
@@ -871,3 +879,101 @@ begin
 end $$;
 revoke all on function public.act_proof_decide(uuid, text, text) from public, anon;
 grant execute on function public.act_proof_decide(uuid, text, text) to authenticated;
+
+-- ---------------------------------------------------------------------
+-- 10. Исправления по проверке прав (docs/security/review-2026-10.md)
+-- ---------------------------------------------------------------------
+
+-- Н-1. Менеджер с зоной доступа ролей не меняет: иначе он сделал бы
+-- коллегу (или свой второй аккаунт) менеджером всей компании.
+create or replace function public.set_member_role(p_profile uuid, p_role text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_me     text := coalesce(public.my_role(), '');
+  v_target text;
+begin
+  if v_me not in ('admin', 'manager') then
+    raise exception 'forbidden: admin only';
+  end if;
+  if v_me = 'manager' and not public.zones_unrestricted() then
+    raise exception 'forbidden: admin only';
+  end if;
+  if p_role not in ('admin', 'manager', 'requester', 'contractor', 'executor') then
+    raise exception 'unknown role %', p_role;
+  end if;
+  if p_profile = auth.uid() then
+    raise exception 'cannot change own role';
+  end if;
+
+  select role into v_target from profiles
+   where id = p_profile and company_id = public.my_company_id()
+   for update;
+  if not found then
+    raise exception 'profile not found in your company';
+  end if;
+
+  if v_me = 'manager' and (p_role = 'admin' or v_target = 'admin') then
+    raise exception 'forbidden: admin only';
+  end if;
+  if v_target = 'admin' and p_role <> 'admin' and not exists (
+       select 1 from profiles a
+        where a.company_id = public.my_company_id() and a.role = 'admin' and a.id <> p_profile) then
+    raise exception 'last admin';
+  end if;
+
+  update profiles set role = p_role where id = p_profile;
+end;
+$$;
+revoke all on function public.set_member_role(uuid, text) from public, anon;
+grant execute on function public.set_member_role(uuid, text) to authenticated;
+
+-- Н-2. Фото — только файл из папки этой заявки, загруженный этим же
+-- человеком (раньше путь фото не проверялся: можно было «приложить»
+-- демо-картинку или фото другой заявки). Остальное — как в 0023.
+drop policy if exists attachments_insert on public.attachments;
+create policy attachments_insert on public.attachments for insert with check (
+  uploaded_by = (select auth.uid())
+  and (
+    (kind = 'photo'
+     and exists (
+       select 1 from public.work_orders w
+        where w.id = attachments.work_order_id
+          and w.company_id = (select public.my_company_id())
+          and attachments.storage_path like w.company_id::text || '/' || w.id::text || '/%'
+          and exists (select 1 from storage.objects so
+                       where so.bucket_id = 'work-photos'
+                         and so.name = attachments.storage_path
+                         and so.owner_id = (select auth.uid())::text)
+          and (
+            (attachments.stage = 'after'
+               and w.status = 'in_progress'
+               and public.wo_is_executor(w.id))
+            or
+            (attachments.stage = 'before'
+               and w.status not in ('done', 'cancelled')
+               and ((select public.is_manager()) or w.created_by = (select auth.uid())))
+          )))
+    or
+    (kind = 'document'
+     and exists (
+       select 1 from public.work_orders w
+        where w.id = attachments.work_order_id
+          and w.company_id = (select public.my_company_id())
+          and w.status <> 'cancelled'
+          and attachments.storage_path like w.company_id::text || '/' || w.id::text || '/%'
+          and ((select public.is_manager())
+               or w.created_by = (select auth.uid())
+               or w.assigned_contractor_id in (select public.my_contractor_ids()))))
+  ));
+
+-- Н-3. Токены ссылок Telegram: менеджер с зоной — только объекты своей
+-- зоны; ссылку компании видит администратор.
+drop policy if exists report_links_select on public.report_links;
+create policy report_links_select on public.report_links for select using (
+  report_links.company_id = (select public.my_company_id()) and (select public.is_manager())
+  and ((select public.is_admin()) or (select public.zones_unrestricted())
+       or (report_links.object_id is not null and public.can_manage(report_links.object_id))));

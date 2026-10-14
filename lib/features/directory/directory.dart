@@ -595,7 +595,11 @@ class _ObjectsTabState extends State<ObjectsTab> {
           // При перечитывании остаётся прежний список — карта не сбрасывается.
           if (!snap.hasData) {
             if (snap.hasError) {
-              return AppEmptyState(text: l.objectsLoadFailed, error: true);
+              return AppEmptyState(
+                  text: l.objectsLoadFailed,
+                  error: true,
+                  actionLabel: l.commonRetry,
+                  onAction: _reload);
             }
             return const AppLoader();
           }
@@ -620,7 +624,11 @@ class _ObjectsTabState extends State<ObjectsTab> {
         } else if (snap.hasError) {
           content = SliverFillRemaining(
               hasScrollBody: false,
-              child: AppEmptyState(text: l.objectsLoadFailed, error: true));
+              child: AppEmptyState(
+                  text: l.objectsLoadFailed,
+                  error: true,
+                  actionLabel: l.commonRetry,
+                  onAction: _reload));
         } else if ((snap.data ?? const []).isEmpty) {
           content = SliverFillRemaining(
               hasScrollBody: false,
@@ -875,7 +883,11 @@ class _ContractorsTabState extends State<ContractorsTab> {
         } else if (snap.hasError) {
           content = SliverFillRemaining(
               hasScrollBody: false,
-              child: AppEmptyState(text: l.contractorsLoadFailed, error: true));
+              child: AppEmptyState(
+                  text: l.contractorsLoadFailed,
+                  error: true,
+                  actionLabel: l.commonRetry,
+                  onAction: _reload));
         } else if ((snap.data ?? const []).isEmpty) {
           content = SliverFillRemaining(
               hasScrollBody: false,

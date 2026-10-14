@@ -4719,4 +4719,121 @@ class AppLocalizationsRu extends AppLocalizations {
   String homeBadgeTelegram(int count) {
     return 'Из Telegram за 7 дней: $count';
   }
+
+  @override
+  String get cameraTitle => 'Камера';
+
+  @override
+  String get cameraWhatIsIt => 'Что это?';
+
+  @override
+  String get cameraLooking => 'Смотрю…';
+
+  @override
+  String get cameraAimHint =>
+      'Наведите рамку на оборудование и нажмите «Что это?»';
+
+  @override
+  String get cameraStarting => 'Включаю камеру…';
+
+  @override
+  String get cameraDenied =>
+      'Нет доступа к камере. Разрешите его в настройках браузера или телефона — или выберите готовое фото.';
+
+  @override
+  String get cameraNoCamera => 'Камера не найдена. Можно выбрать готовое фото.';
+
+  @override
+  String get cameraUnsupported =>
+      'Здесь камера не показывается. Можно выбрать готовое фото.';
+
+  @override
+  String get cameraFailed =>
+      'Не удалось включить камеру. Попробуйте ещё раз или выберите готовое фото.';
+
+  @override
+  String get cameraPickPhoto => 'Выбрать фото';
+
+  @override
+  String get cameraRetryStart => 'Попробовать снова';
+
+  @override
+  String get cameraAgain => 'Ещё раз';
+
+  @override
+  String get cameraNotThis => 'Не тот';
+
+  @override
+  String get cameraAssetCard => 'Карточка оборудования';
+
+  @override
+  String get cameraCreateOrder => 'Создать заявку';
+
+  @override
+  String cameraOpenOrders(int count) {
+    return 'Открытые заявки · $count';
+  }
+
+  @override
+  String get cameraNoOpenOrders => 'Нет открытых заявок';
+
+  @override
+  String get cameraNextMaintenance => 'Плановое ТО';
+
+  @override
+  String cameraMaintenanceDue(String date) {
+    return 'до $date';
+  }
+
+  @override
+  String cameraMaintenanceOverdue(String date) {
+    return 'просрочено · до $date';
+  }
+
+  @override
+  String get cameraMaintenanceSystem => 'по системе на объекте';
+
+  @override
+  String get cameraNoMaintenance => 'Плановое ТО не запланировано';
+
+  @override
+  String get cameraLastDone => 'Последняя работа';
+
+  @override
+  String get cameraNoHistory => 'Выполненных работ ещё не было';
+
+  @override
+  String get cameraNotRecognized => 'Не узнал. Выберите из списка помещения';
+
+  @override
+  String get cameraPickManually => 'Выберите оборудование';
+
+  @override
+  String get cameraNoAssetsHere => 'Здесь нет оборудования в реестре';
+
+  @override
+  String get cameraAllAssets => 'Всё оборудование объекта…';
+
+  @override
+  String cameraCandidateOf(int n, int total) {
+    return 'Вариант $n из $total';
+  }
+
+  @override
+  String get cameraFailedAi =>
+      'Не получилось распознать — выберите оборудование из списка.';
+
+  @override
+  String get cameraAuto => 'Авто';
+
+  @override
+  String cameraAutoSeen(String name) {
+    return 'Похоже: $name — открыть';
+  }
+
+  @override
+  String get cameraArDemo => 'AR (демо)';
+
+  @override
+  String get formFromCamera => 'с камеры';
 }

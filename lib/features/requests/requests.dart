@@ -1463,6 +1463,7 @@ class _PlaceHint extends StatelessWidget {
           PlaceOrigin.plan => l.formFromPlan,
           PlaceOrigin.equipment => l.formFromEquipment,
           PlaceOrigin.photo => l.formFromPhoto,
+          PlaceOrigin.camera => l.formFromCamera,
           PlaceOrigin.order => l.formFromOrder,
           null => null,
         };

@@ -6,11 +6,11 @@ import '../../core/app_message.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
+import '../camera/camera_entry.dart';
 import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../home/home_actions.dart';
 import '../home/home_chrome.dart';
-import '../photo_identify/photo_identify_screen.dart';
 import '../voice/voice_record_screen.dart';
 import '../voice/wake_word_service.dart';
 import '../ppr/ppr_text.dart';
@@ -691,10 +691,8 @@ class _RequestsTabState extends State<RequestsTab> {
       _snack(context.l10n.requestsNoCompany, type: AppMessageType.error);
       return;
     }
-    final ok = await Navigator.push<bool>(
-        context,
-        appRoute((_) => PhotoIdentifyScreen(objectId: widget.objectFilter?.id),
-            title: context.l10n.tabRequests));
+    final ok = await openPhotoCamera(context,
+        objectId: widget.objectFilter?.id, title: context.l10n.tabRequests);
     if (ok == true) {
       await _load(refs: false);
       if (mounted) _snackOk(context.l10n.requestsCreated);

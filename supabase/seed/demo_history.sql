@@ -38,6 +38,10 @@
 --   • шаг 23 (блок 5g, если применена 0018): заявки из Telegram-бота 277
 --     (гость по QR-коду) и 278 (сотрудник с привязанным аккаунтом).
 --   • шаг 24 (блок 5h, если применена 0020): значки и цвета систем.
+--   • шаг 25 (блок 5i): у «Кондиционера КД-301» — открытая заявка 277, принятые
+--     101/106/108/110 и план ТО 809 с задачей 279 этого месяца (сцена «Камеры»);
+--     (блок 5j, если применена 0018): включённые ссылки Telegram объекта
+--     «БЦ «Демо»» и компании с демо-токенами (report_links 981–982).
 --   • шаг 24 (блок 6b): доказательства для акта «КлиматСервис» (фото «после» —
 --     картинка из сборки demo/ac_after.jpg, чек-лист, визиты 317–318) и,
 --     если применена 0021, ставки трёх подрядчиков.
@@ -1241,6 +1245,101 @@ begin
      where ly.company_id = c_company and ly.name = v.name;
   else
     raise notice 'Миграция 0020 не применена — значки систем (шаг 24) пропущены.';
+  end if;
+
+  -- 5i. Шаг 25 — «Камера-помощник»: у «Кондиционера КД-301» (708, переговорная
+  --     301) одна открытая заявка (277 из Telegram, если применена 0018),
+  --     история принятых (101, 106, 108, 110 — последняя 110, «КлиматСервис»)
+  --     и плановое ТО в этом месяце: план 809, задача 279 текущего периода
+  --     (назначена, срок — конец месяца). 114 (на проверке) к единице не
+  --     привязана — иначе открытых было бы две. У «КД-302» (736) заявок нет.
+  --     Задача 279 не «принята» и не «на проверке» — в акт не попадает.
+  update public.work_orders set asset_id = 'de300000-0000-4000-8000-000000000708'
+   where id in ('de300000-0000-4000-8000-000000000101', 'de300000-0000-4000-8000-000000000106',
+                'de300000-0000-4000-8000-000000000108', 'de300000-0000-4000-8000-000000000110',
+                'de300000-0000-4000-8000-000000000277');
+  update public.work_orders set asset_id = null
+   where company_id = c_company and asset_id = 'de300000-0000-4000-8000-000000000736'
+     and id::text like 'de300000-0000-4000-8000-000000000%';
+
+  insert into public.maintenance_plans (id, company_id, object_id, location_id, asset_id, layer_id,
+    title, description, period_kind, starts_on, checklist, requires_photo, priority, active, created_by,
+    created_at, updated_at)
+  values ('de300000-0000-4000-8000-000000000809', c_company, c_object, c_loc_meet,
+    'de300000-0000-4000-8000-000000000708', v_layer_hvac,
+    'ТО кондиционера КД-301', 'Ежемесячное ТО кондиционера переговорной 301.', 'month', v_plan_start,
+    '["Очистить фильтры", "Проверить дренаж и поддон", "Замерить температуру на выходе"]'::jsonb,
+    true, 'normal', true, v_manager, v_plan_start, v_plan_start)
+  on conflict (id) do update set
+    company_id = excluded.company_id, object_id = excluded.object_id, location_id = excluded.location_id,
+    asset_id = excluded.asset_id, layer_id = excluded.layer_id, title = excluded.title,
+    description = excluded.description, period_kind = excluded.period_kind, period_days = null,
+    starts_on = excluded.starts_on, checklist = excluded.checklist, requires_photo = true,
+    priority = excluded.priority, active = true, created_by = excluded.created_by,
+    created_at = excluded.created_at, updated_at = excluded.updated_at;
+
+  -- Задача текущего периода: если менеджер уже входил в этом месяце,
+  -- ppr_generate мог создать её со случайным id — та строка удаляется.
+  delete from public.work_orders
+   where plan_id = 'de300000-0000-4000-8000-000000000809'
+     and id <> 'de300000-0000-4000-8000-000000000279';
+  insert into public.work_orders (
+    id, company_id, object_id, location_id, asset_id, title, description, work_type, layer_id,
+    priority, status, requires_photo, input_channel, created_by,
+    assigned_contractor_id, assigned_by, due_at, created_at, updated_at,
+    return_count, recurrence, plan_id, period_start, period_end)
+  select 'de300000-0000-4000-8000-000000000279', c_company, p.object_id, p.location_id, p.asset_id,
+    p.title || ' — ' || public.period_label(p.period_kind, b.period_start, b.period_end, 'ru'),
+    p.description, ly.name, ly.id, p.priority, 'assigned', true, 'ppr', v_manager,
+    'de300000-0000-4000-8000-000000000031', 'rule',
+    (b.period_end::timestamp + interval '23 hours 59 minutes') at time zone 'utc',
+    x.created, x.created, 0,
+    jsonb_build_object('kind', 'ppr', 'period', p.period_kind, 'days', null),
+    p.id, b.period_start, b.period_end
+  from public.maintenance_plans p
+  join public.layers ly on ly.id = p.layer_id
+  cross join lateral public.period_bounds(p.period_kind, null, p.starts_on, v_today::date) b
+  cross join lateral (
+    select least(b.period_start + interval '6 hours', now() - interval '6 hours') as created
+  ) x
+  where p.id = 'de300000-0000-4000-8000-000000000809'
+  on conflict (id) do update set
+    company_id = excluded.company_id, object_id = excluded.object_id,
+    location_id = excluded.location_id, asset_id = excluded.asset_id,
+    title = excluded.title, description = excluded.description,
+    work_type = excluded.work_type, layer_id = excluded.layer_id,
+    priority = excluded.priority, status = excluded.status, recurrence = excluded.recurrence,
+    requires_photo = true, requires_scan = false, input_channel = excluded.input_channel,
+    created_by = excluded.created_by, assigned_contractor_id = excluded.assigned_contractor_id,
+    assigned_executor_id = null, assigned_by = excluded.assigned_by, due_at = excluded.due_at,
+    time_spent_minutes = null, created_at = excluded.created_at, updated_at = excluded.updated_at,
+    started_at = null, submitted_at = null, accepted_at = null, accepted_by = null,
+    return_reason = null, return_count = 0, plan_id = excluded.plan_id,
+    period_start = excluded.period_start, period_end = excluded.period_end;
+  get diagnostics v_world_orders = row_count;
+  v_orders := v_orders + v_world_orders;
+
+  -- 5j. Шаг 25 (миграция 0018, если применена): включённые ссылки Telegram —
+  --     QR объекта «БЦ «Демо»» и ссылка компании «Демо БЦ», с постоянными
+  --     ДЕМО-токенами (плакат и QR готовы к показу без ручных действий).
+  --     Токены открыты в репозитории: по ним гость может писать заявки только
+  --     в «Демо БЦ», с лимитами бота (5 в час с чата, 30 в сутки на ссылку).
+  --     Другие включённые ссылки этого объекта и компании выключаются (одна
+  --     включённая на объект / компанию). Отключить — в приложении («Отключить»).
+  if to_regclass('public.report_links') is not null then
+    update public.report_links set enabled = false, disabled_at = now()
+     where company_id = c_company and enabled
+       and (object_id = c_object or object_id is null)
+       and id not in ('de300000-0000-4000-8000-000000000981', 'de300000-0000-4000-8000-000000000982');
+    insert into public.report_links (id, company_id, object_id, token, enabled, created_by, created_at, disabled_at)
+    values
+      ('de300000-0000-4000-8000-000000000981', c_company, c_object, 'demo-bc-object-qr-2026', true, v_manager, now(), null),
+      ('de300000-0000-4000-8000-000000000982', c_company, null, 'demo-bc-company-link-2026', true, v_manager, now(), null)
+    on conflict (id) do update set
+      company_id = excluded.company_id, object_id = excluded.object_id, token = excluded.token,
+      enabled = true, disabled_at = null, created_by = excluded.created_by;
+  else
+    raise notice 'Миграция 0018 не применена — ссылки Telegram (шаг 25) пропущены.';
   end if;
 
   -- 6. Визиты

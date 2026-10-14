@@ -16,7 +16,7 @@ void main() {
       expect(s['a']!.contractors, 2);
       expect(s['b']!.contractors, 1);
       expect(s['c']!.openOrders, 1);
-      expect(s.containsKey(null), isFalse);
+      expect(s.keys.toSet(), {'a', 'b', 'c'});
     });
 
     test('порядок: вверх / вниз, за край — без изменений', () {

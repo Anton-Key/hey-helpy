@@ -26,6 +26,17 @@ class WorkPhoto {
   /// Фото «после» загружено из файла — не доказательство (метка «из файла»).
   bool get fromFile => source == 'file';
 
+  /// Шаг 27 (0024): снято без сети, насколько можно верить времени,
+  /// когда дошло до сервера, расхождение часов, пометка «прислано после
+  /// отмены», сверен ли отпечаток.
+  final bool offline;
+  final String? timeTrust;
+  final DateTime? trustedAt;
+  final DateTime? syncedAt;
+  final int? driftS;
+  final String? syncNote;
+  final bool? sha256Ok;
+
   const WorkPhoto(
       {required this.id,
       required this.stage,
@@ -37,7 +48,14 @@ class WorkPhoto {
       this.url,
       this.uploaderName,
       this.asset,
-      this.source});
+      this.source,
+      this.offline = false,
+      this.timeTrust,
+      this.trustedAt,
+      this.syncedAt,
+      this.driftS,
+      this.syncNote,
+      this.sha256Ok});
 
   bool get viewable => url != null || asset != null;
 
@@ -100,8 +118,12 @@ class PhotoRepository {
         .eq('work_order_id', workOrderId)
         .eq('kind', 'photo')
         .order('created_at');
-    final rows = await SchemaCompat.run('0023', () => query('source,'),
-        legacy: () => query(''));
+    final rows = await SchemaCompat.run(
+        '0024',
+        () => query('source,offline,time_trust,trusted_at,synced_at,'
+            'time_drift_s,sync_note,sha256_ok,'),
+        legacy: () => SchemaCompat.run('0023', () => query('source,'),
+            legacy: () => query('')));
     final list = rows.cast<Map<String, dynamic>>();
     if (list.isEmpty) return const [];
     final paths = [
@@ -135,6 +157,13 @@ class PhotoRepository {
               (r['uploader'] as Map<String, dynamic>?)?['full_name'] as String?,
           asset: demoAsset(r['storage_path'] as String),
           source: r['source'] as String?,
+          offline: r['offline'] == true,
+          timeTrust: r['time_trust'] as String?,
+          trustedAt: DateTime.tryParse('${r['trusted_at'] ?? ''}'),
+          syncedAt: DateTime.tryParse('${r['synced_at'] ?? ''}'),
+          driftS: (r['time_drift_s'] as num?)?.toInt(),
+          syncNote: r['sync_note'] as String?,
+          sha256Ok: r['sha256_ok'] as bool?,
         ),
     ];
   }

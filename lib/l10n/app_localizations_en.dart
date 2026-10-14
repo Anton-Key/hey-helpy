@@ -5079,4 +5079,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get offTestNet => 'Network (test)';
+
+  @override
+  String actReviewTitle(int count) {
+    return 'Needs manager\'s decision · $count';
+  }
+
+  @override
+  String get actReviewHint =>
+      'The work is accepted but the proof is questionable. Decide whether to pay.';
+
+  @override
+  String get actDoubtFromFile =>
+      'the \"after\" photo was uploaded from a file, not taken on site';
+
+  @override
+  String actDoubtTimeUnverified(String drift) {
+    return 'photo time not verified: the phone clock was off by $drift';
+  }
+
+  @override
+  String get actDoubtTimeDevice =>
+      'photo time not verified: no network and no GPS';
+
+  @override
+  String get actDoubtLate =>
+      'the photo arrived after the work order was closed or cancelled';
+
+  @override
+  String get actDoubtHash =>
+      'the photo fingerprint wasn\'t checked by the server';
+
+  @override
+  String get actDoubtVisitTime => 'offline visit time not verified';
+
+  @override
+  String get actReasonRejectedByManager => 'not accepted by the manager';
+
+  @override
+  String get actApprove => 'Approve for payment';
+
+  @override
+  String get actReject => 'Don\'t accept';
+
+  @override
+  String get actDecisionChange => 'Change decision';
+
+  @override
+  String get actDecisionComment => 'Comment';
+
+  @override
+  String get actDecisionApproveHint =>
+      'E.g.: called the technician, security confirmed the visit';
+
+  @override
+  String get actDecisionRejectHint => 'Comment (optional)';
+
+  @override
+  String get actDecisionCommentRequired => 'Write why you approve the payment';
+
+  @override
+  String get actDecisionSaved => 'Decision saved';
+
+  @override
+  String get actDecisionDenied =>
+      'A manager decides — not the technician and not the person who submitted the work';
+
+  @override
+  String get actDecisionLocked =>
+      'The act is already issued — the decision can\'t be changed';
+
+  @override
+  String get actDecisionNotAccepted => 'Accept the work first';
+
+  @override
+  String actDecisionApproved(String who, String when, String comment) {
+    return '✋ manager\'s decision: $who, $when — $comment';
+  }
+
+  @override
+  String actDecisionRejected(String who, String when) {
+    return '✋ not accepted by the manager: $who, $when';
+  }
+
+  @override
+  String get actByManager => 'approved by the manager';
+
+  @override
+  String actPendingWarn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count work orders are',
+      one: '$count work order is',
+    );
+    return '$_temp0 waiting for your decision — they won\'t be in the act';
+  }
+
+  @override
+  String get actDecideNow => 'Decide now';
+
+  @override
+  String get actIssueWithout => 'Issue without them';
+
+  @override
+  String get actPendingBlock => 'Waiting for a decision (no amounts)';
+
+  @override
+  String actManualLine(int count) {
+    return 'of them approved manually: $count';
+  }
+
+  @override
+  String homeDecisionsBadge(int count) {
+    return 'Waiting for your payment decision: $count';
+  }
+
+  @override
+  String reportsOfflineLine(int offline, int manual) {
+    return 'Submitted offline: $offline · approved manually: $manual';
+  }
+
+  @override
+  String get proofTitle => 'Proof';
 }

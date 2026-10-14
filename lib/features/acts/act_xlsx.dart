@@ -65,6 +65,21 @@ Uint8List buildActXlsx(ActDoc d) {
       t(r.reasons),
     ]);
   }
+  // Шаг 27: «Ожидают решения» — отдельным блоком под отказами, без сумм.
+  if (d.review.isNotEmpty) {
+    rej.appendRow([t('')]);
+    rej.appendRow([t(l.actPendingBlock)]);
+    for (final r in d.review) {
+      rej.appendRow([
+        IntCellValue(r.no),
+        t(r.date),
+        t(r.object),
+        t(r.place),
+        t(r.work),
+        t(r.reasons),
+      ]);
+    }
+  }
   for (final s in [paid, rej]) {
     for (var i = 0; i < 7; i++) {
       s.setColumnWidth(i, i == 0 ? 6 : (i == 4 ? 40 : 22));

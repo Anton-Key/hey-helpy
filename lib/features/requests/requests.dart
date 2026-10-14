@@ -31,6 +31,10 @@ import '../offline/offline_banner.dart';
 import '../offline/offline_logic.dart';
 import '../offline/offline_service.dart';
 import 'order_checklist.dart';
+import '../acts/act_doc.dart' show actDecisionText;
+import '../acts/act_logic.dart' show ActDecision;
+import '../acts/proof_decisions.dart';
+import '../offline/proof_text.dart';
 import '../visits/visit_repository.dart';
 import '../visits/visit_section.dart';
 import 'contractor_picker.dart';
@@ -440,6 +444,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         _loadMyContractors(),
         _loadPhotos(),
         if (_isManager) _loadVisits(),
+        if (_isManager) _loadDecision(),
         _loadExecutor(d?['assigned_executor_id'] as String?),
       ]);
     } catch (e) {
@@ -1077,6 +1082,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       ),
       if (_isManager && (_visits.isNotEmpty || _visitsFailed))
         VisitsSection(visits: _visits, loadFailed: _visitsFailed),
+      // Шаг 27: как сняты фото и отмечен визит без сети, решение менеджера.
+      if (_isManager) ..._proofLines(l),
       if (actions.isNotEmpty) ...[
         SectionHeader(l.actionsTitle),
         for (var i = 0; i < actions.length; i++) ...[
@@ -1084,6 +1091,75 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
           actions[i],
         ],
       ],
+    ];
+  }
+
+  ProofDecision? _decision;
+
+  Future<void> _loadDecision() async {
+    try {
+      final d = await ProofDecisionsRepo().latest([widget.order.id]);
+      if (mounted) setState(() => _decision = d[widget.order.id]);
+    } catch (e) {
+      debugPrint('decision: ${e.runtimeType}');
+    }
+  }
+
+  /// «Снято без сети в 14:19 · время по GPS ✓ · отправлено в 14:25» —
+  /// у каждого фото «после» и визита без сети; решение менеджера, если есть.
+  List<Widget> _proofLines(AppLocalizations l) {
+    final lines = <(String, String)>[
+      for (final p in _photos.where((p) => p.stage != 'before'))
+        if (offlineProofLine(l,
+                offline: p.offline,
+                trust: p.timeTrust,
+                at: p.trustedAt ?? p.takenAt,
+                synced: p.syncedAt,
+                driftS: p.driftS,
+                syncNote: p.syncNote,
+                sha256Ok: p.sha256Ok)
+            case final t?)
+          (l.offKindPhoto, t),
+      for (final v in _visits)
+        if (offlineProofLine(l,
+                offline: v.offline,
+                trust: v.timeTrust,
+                at: v.startedAt,
+                synced: v.syncedAt,
+                driftS: v.driftS,
+                visit: true)
+            case final t?)
+          (l.offKindVisit, t),
+    ];
+    final d = _decision;
+    final decision = d == null
+        ? null
+        : actDecisionText(
+            l,
+            ActDecision(
+                approve: d.approve, at: d.at, by: d.byName, reason: d.reason));
+    if (lines.isEmpty && decision == null) return const [];
+    return [
+      AppGroup(header: l.proofTitle, children: [
+        for (final (title, t) in lines)
+          AppRow(
+              leading: t.contains('⚠️') || t.contains(l.proofNeedsDecision)
+                  ? LeadingIcon(AppIcons.warning,
+                      color: StatusColors.newOrder.foreground,
+                      background: StatusColors.newOrder.background)
+                  : const LeadingIcon(AppIcons.verified),
+              title: title,
+              subtitle: t,
+              subtitleMaxLines: 5,
+              chevron: false),
+        if (decision != null)
+          AppRow(
+              leading: const LeadingIcon.neutral(AppIcons.act),
+              title: l.actByManager,
+              subtitle: decision,
+              subtitleMaxLines: 5,
+              chevron: false),
+      ]),
     ];
   }
 

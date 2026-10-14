@@ -8654,6 +8654,192 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Сеть (тест)'**
   String get offTestNet;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Требует решения менеджера · {count}'**
+  String actReviewTitle(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа принята, но доказательство под вопросом. Решите, платить ли.'**
+  String get actReviewHint;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'фото «после» загружено из файла, не снято на месте'**
+  String get actDoubtFromFile;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время снимка не подтверждено: часы телефона расходились на {drift}'**
+  String actDoubtTimeUnverified(String drift);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время снимка не подтверждено: без сети и без GPS'**
+  String get actDoubtTimeDevice;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'фото прислано, когда заявку уже закрыли или отменили'**
+  String get actDoubtLate;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'отпечаток фото не сверен сервером'**
+  String get actDoubtHash;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время визита без сети не подтверждено'**
+  String get actDoubtVisitTime;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'не принято менеджером'**
+  String get actReasonRejectedByManager;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтвердить к оплате'**
+  String get actApprove;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не принимать'**
+  String get actReject;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить решение'**
+  String get actDecisionChange;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Комментарий'**
+  String get actDecisionComment;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Например: звонил исполнителю, визит подтверждён охраной'**
+  String get actDecisionApproveHint;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Комментарий (необязательно)'**
+  String get actDecisionRejectHint;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Напишите, почему подтверждаете к оплате'**
+  String get actDecisionCommentRequired;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Решение сохранено'**
+  String get actDecisionSaved;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Решает менеджер — не исполнитель и не тот, кто сдавал работу'**
+  String get actDecisionDenied;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акт уже сформирован — решение не меняется'**
+  String get actDecisionLocked;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала примите работу'**
+  String get actDecisionNotAccepted;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'✋ решение менеджера: {who}, {when} — {comment}'**
+  String actDecisionApproved(String who, String when, String comment);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'✋ не принято менеджером: {who}, {when}'**
+  String actDecisionRejected(String who, String when);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'подтверждено менеджером'**
+  String get actByManager;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} заявка ждёт} few{{count} заявки ждут} many{{count} заявок ждут} other{{count} заявки ждут}} вашего решения — они не попадут в акт'**
+  String actPendingWarn(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Решить сейчас'**
+  String get actDecideNow;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформировать без них'**
+  String get actIssueWithout;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ожидают решения (без сумм)'**
+  String get actPendingBlock;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'из них подтверждено вручную: {count}'**
+  String actManualLine(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ждут вашего решения по оплате: {count}'**
+  String homeDecisionsBadge(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сдано без сети: {offline} · подтверждено вручную: {manual}'**
+  String reportsOfflineLine(int offline, int manual);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Доказательства'**
+  String get proofTitle;
 }
 
 class _AppLocalizationsDelegate

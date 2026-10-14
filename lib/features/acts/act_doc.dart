@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../offline/proof_text.dart' show driftText;
 import 'act_logic.dart';
 
 /// Строка акта словами — одна и та же для PDF и Excel.
@@ -38,6 +39,7 @@ class ActDoc {
     required this.author,
     required this.paid,
     required this.rejected,
+    this.review = const [],
     required this.totalLine,
     required this.sumLine,
     required this.hasSums,
@@ -51,6 +53,9 @@ class ActDoc {
   final String author;
   final List<ActDocRow> paid;
   final List<ActDocRow> rejected;
+
+  /// «Ожидают решения» — без сумм (шаг 27).
+  final List<ActDocRow> review;
 
   /// «К оплате: 5 · без доказательства: 4 · доказано 56 % · просрочено 1».
   final String totalLine;
@@ -68,7 +73,35 @@ String actReasonText(AppLocalizations l, ActReason r) => switch (r) {
       ActReason.noVisit => l.actReasonNoVisit,
       ActReason.visitOutOfZone => l.actReasonOutOfZone,
       ActReason.checklist => l.actReasonChecklist,
+      ActReason.rejectedByManager => l.actReasonRejectedByManager,
     };
+
+/// Сомнение словами (шаг 27).
+String actDoubtText(AppLocalizations l, ActDoubt d, {int? driftS}) =>
+    switch (d) {
+      ActDoubt.photoFromFile => l.actDoubtFromFile,
+      ActDoubt.timeUnverified =>
+        l.actDoubtTimeUnverified(driftText(l, driftS ?? 0)),
+      ActDoubt.timeDeviceOnly => l.actDoubtTimeDevice,
+      ActDoubt.latePhoto => l.actDoubtLate,
+      ActDoubt.hashUnchecked => l.actDoubtHash,
+      ActDoubt.visitTime => l.actDoubtVisitTime,
+    };
+
+String actDoubtsText(AppLocalizations l, ActLine x) => [
+      for (final d in x.doubts) actDoubtText(l, d, driftS: x.order.driftS)
+    ].join('; ');
+
+/// «✋ решение менеджера: А. Костриков, 14 окт. 19:20 — комментарий».
+String? actDecisionText(AppLocalizations l, ActDecision? d) {
+  if (d == null) return null;
+  final when = DateFormat.MMMd(l.localeName).add_Hm().format(d.at.toLocal());
+  final who = d.by ?? '—';
+  return d.approve
+      ? l.actDecisionApproved(who, when, d.reason ?? '')
+      : l.actDecisionRejected(who, when) +
+          ((d.reason?.isNotEmpty ?? false) ? ' — ${d.reason}' : '');
+}
 
 String actProofText(AppLocalizations l, ActLine x) => [
       if (x.photoProof) l.actProofPhoto,
@@ -104,9 +137,20 @@ ActDoc buildActDoc({
         object: objectName(x.order.objectId),
         place: placeName(x.order.locationId),
         work: x.order.title.isEmpty ? workName(x.order) : x.order.title,
-        proofs: actProofText(l, x),
+        proofs: [
+          actProofText(l, x),
+          if (x.manual) '${l.actByManager}: ${x.decision?.reason ?? ''}',
+        ].where((t) => t.isNotEmpty).join(' · '),
         amount: x.amount == null ? '—' : actMoney(l.localeName, x.amount!, cur),
-        reasons: [for (final r in x.reasons) actReasonText(l, r)].join('; '),
+        reasons: [
+          for (final r in x.reasons) actReasonText(l, r),
+          if (x.reasons.contains(ActReason.rejectedByManager) ||
+              (x.reasons.isEmpty && !x.manual))
+            actDoubtsText(l, x),
+          if (x.reasons.contains(ActReason.rejectedByManager) &&
+              (x.decision?.reason?.isNotEmpty ?? false))
+            x.decision!.reason!,
+        ].where((t) => t.isNotEmpty).join('; '),
         overdue: x.order.overdue,
       );
   final sum = result.sum;
@@ -123,11 +167,17 @@ ActDoc buildActDoc({
       for (var i = 0; i < result.rejected.length; i++)
         row(i, result.rejected[i])
     ],
-    totalLine: l.actTotalLine(
-        result.paid.length,
-        result.rejected.length,
-        result.provenShare == null ? '—' : pct.format(result.provenShare),
-        result.overdue),
+    review: [
+      for (var i = 0; i < result.review.length; i++) row(i, result.review[i])
+    ],
+    totalLine: [
+      l.actTotalLine(
+          result.paid.length,
+          result.rejected.length,
+          result.provenShare == null ? '—' : pct.format(result.provenShare),
+          result.overdue),
+      if (result.manual > 0) l.actManualLine(result.manual),
+    ].join(' · '),
     sumLine: sum == null
         ? l.actNoRates
         : l.actSumLine(actMoney(l.localeName, sum, cur)),

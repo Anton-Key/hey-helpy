@@ -147,14 +147,15 @@ class _LiveShotScreenState extends State<LiveShotScreen>
     final fix = widget.stamp?.timeFix;
     final stampAt = fix == null
         ? at
-        : await fix(at).timeout(const Duration(seconds: 2), onTimeout: () => at);
+        : await fix(at)
+            .timeout(const Duration(seconds: 2), onTimeout: () => at);
     final pos = await _position.timeout(const Duration(seconds: 4),
         onTimeout: () => null);
     var bytes = frame;
     final stamp = widget.stamp;
     if (stamp != null) {
-      final text =
-          stampText(l, stamp, at: stampAt, lat: pos?.latitude, lng: pos?.longitude);
+      final text = stampText(l, stamp,
+          at: stampAt, lat: pos?.latitude, lng: pos?.longitude);
       bytes = await stampJpeg(frame, text) ?? frame;
     }
     if (!mounted) return;

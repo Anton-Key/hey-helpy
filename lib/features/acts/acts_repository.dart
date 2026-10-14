@@ -5,7 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/paging.dart';
 import '../../core/schema_compat.dart';
 import '../directory/directory.dart';
+import '../offline/offline_logic.dart' show TimeTrust, timeTrustFromDb, trustOk;
 import 'act_logic.dart';
+import 'proof_decisions.dart';
 
 /// Сформированный акт (contractor_acts, миграция 0021).
 class SavedAct {
@@ -119,42 +121,95 @@ class ActsRepository {
     final ids = [for (final r in inPeriod) r['id'] as String];
     final photos = <String>{};
     final filePhotos = <String>{};
+    final doubts = <String, Set<ActDoubt>>{};
+    final drift = <String, int>{};
+    final offline = <String>{};
     final visits = <String, VisitProof>{};
+    final visitDoubt = <String>{};
     final checklist = <String, (int, int)>{};
+    Future<List<dynamic>> photoRows(List<String> chunk) {
+      Future<List<dynamic>> q(String cols) => _c
+          .from('attachments')
+          .select(cols)
+          .eq('kind', 'photo')
+          .eq('stage', 'after')
+          .inFilter('work_order_id', chunk);
+      return SchemaCompat.run(
+          '0024',
+          () => q('work_order_id,source,offline,time_trust,time_drift_s,'
+              'sync_note,sha256_ok'),
+          legacy: () => SchemaCompat.run(
+              '0023', () => q('work_order_id,source'),
+              legacy: () => q('work_order_id')));
+    }
+
+    Future<List<dynamic>> visitRows(List<String> chunk) {
+      Future<List<dynamic>> q(String cols) =>
+          _c.from('visits').select(cols).inFilter('work_order_id', chunk);
+      return SchemaCompat.run(
+          '0024', () => q('work_order_id,in_geofence,offline,time_trust'),
+          legacy: () => q('work_order_id,in_geofence'));
+    }
+
+    final decisions = await ProofDecisionsRepo().latest(ids);
     for (final chunk in chunks(ids)) {
       final r = await Future.wait([
-        // Источник фото (0023): «из файла» — не доказательство.
-        SchemaCompat.run(
-            '0023',
-            () => _c
-                .from('attachments')
-                .select('work_order_id,source')
-                .eq('kind', 'photo')
-                .eq('stage', 'after')
-                .inFilter('work_order_id', chunk),
-            legacy: () => _c
-                .from('attachments')
-                .select('work_order_id')
-                .eq('kind', 'photo')
-                .eq('stage', 'after')
-                .inFilter('work_order_id', chunk)),
-        _c
-            .from('visits')
-            .select('work_order_id,in_geofence')
-            .inFilter('work_order_id', chunk),
+        photoRows(chunk),
+        visitRows(chunk),
         _c
             .from('checklist_items')
             .select('work_order_id,is_done')
             .inFilter('work_order_id', chunk),
       ]);
+      // Фото: доказательство — живой снимок онлайн или без сети с
+      // подтверждённым временем и сверенным отпечатком (шаг 27); прочее —
+      // сомнения для решения менеджера.
+      final photoDoubts = <String, List<Set<ActDoubt>>>{};
       for (final a in r[0]) {
-        (a['source'] == 'file' ? filePhotos : photos)
-            .add(a['work_order_id'] as String);
+        final id = a['work_order_id'] as String;
+        if (a['source'] == 'file') {
+          filePhotos.add(id);
+          continue;
+        }
+        final d = <ActDoubt>{};
+        if (a['offline'] == true) {
+          offline.add(id);
+          final t = timeTrustFromDb(a['time_trust']);
+          if (t == TimeTrust.unverified) {
+            d.add(ActDoubt.timeUnverified);
+            final s = (a['time_drift_s'] as num?)?.toInt();
+            if (s != null) drift[id] = s;
+          } else if (t == TimeTrust.deviceOnly) {
+            d.add(ActDoubt.timeDeviceOnly);
+          }
+          if (a['sync_note'] != null) d.add(ActDoubt.latePhoto);
+          if (a['sha256_ok'] != true) d.add(ActDoubt.hashUnchecked);
+        }
+        if (d.isEmpty) {
+          photos.add(id);
+        } else {
+          (photoDoubts[id] ??= []).add(d);
+        }
+      }
+      for (final e in photoDoubts.entries) {
+        if (photos.contains(e.key)) continue;
+        // Сомнения «лучшего» снимка — того, где их меньше.
+        final best = e.value.reduce((a, b) => a.length <= b.length ? a : b);
+        doubts[e.key] = best;
+        filePhotos.add(e.key);
       }
       for (final v in r[1]) {
         final id = v['work_order_id'] as String;
+        if (v['offline'] == true) offline.add(id);
         if (v['in_geofence'] == true) {
-          visits[id] = VisitProof.inZone;
+          final ok = trustOk(timeTrustFromDb(v['time_trust']));
+          if (ok) {
+            visits[id] = VisitProof.inZone;
+            visitDoubt.remove(id);
+          } else if (visits[id] != VisitProof.inZone) {
+            visits[id] = VisitProof.inZone;
+            visitDoubt.add(id);
+          }
         } else {
           visits.putIfAbsent(id, () => VisitProof.outOfZone);
         }
@@ -188,11 +243,25 @@ class ActsRepository {
           checklistTotal: checklist[r['id']]?.$1 ?? 0,
           checklistDone: checklist[r['id']]?.$2 ?? 0,
           isPpr: (r['recurrence'] as Map?)?['kind'] == 'ppr',
+          doubts: [
+            // фото — только если требовалось и нет доказанного
+            if (r['requires_photo'] == true && !photos.contains(r['id']))
+              ...?doubts[r['id']],
+            if (withZone.contains(r['object_id']) &&
+                visitDoubt.contains(r['id']))
+              ActDoubt.visitTime,
+          ],
+          driftS: drift[r['id']],
+          offline: offline.contains(r['id']),
+          decision: switch (decisions[r['id']]) {
+            final ProofDecision d => ActDecision(
+                approve: d.approve, at: d.at, by: d.byName, reason: d.reason),
+            null => null,
+          },
         ),
     ];
   }
 
-  /// Акты подрядчика (новые первыми). Без 0021 — [MigrationMissing].
   Future<List<SavedAct>> acts(String contractorId) =>
       SchemaCompat.run('0021', () async {
         final rows = await _c

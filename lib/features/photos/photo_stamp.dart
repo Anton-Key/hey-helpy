@@ -13,7 +13,11 @@ import 'photo_stamp_encode.dart' deferred as stamp_encode;
 /// Что вжечь в фото «после» (шаг 26): объект и помещение заявки, геозона.
 class PhotoStamp {
   const PhotoStamp(
-      {this.object, this.place, this.geofence, this.offline = false, this.timeFix});
+      {this.object,
+      this.place,
+      this.geofence,
+      this.offline = false,
+      this.timeFix});
   final String? object;
   final String? place;
   final PhotoGeofence? geofence;

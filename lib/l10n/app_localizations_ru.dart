@@ -5111,4 +5111,128 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get offTestNet => 'Сеть (тест)';
+
+  @override
+  String actReviewTitle(int count) {
+    return 'Требует решения менеджера · $count';
+  }
+
+  @override
+  String get actReviewHint =>
+      'Работа принята, но доказательство под вопросом. Решите, платить ли.';
+
+  @override
+  String get actDoubtFromFile =>
+      'фото «после» загружено из файла, не снято на месте';
+
+  @override
+  String actDoubtTimeUnverified(String drift) {
+    return 'время снимка не подтверждено: часы телефона расходились на $drift';
+  }
+
+  @override
+  String get actDoubtTimeDevice =>
+      'время снимка не подтверждено: без сети и без GPS';
+
+  @override
+  String get actDoubtLate =>
+      'фото прислано, когда заявку уже закрыли или отменили';
+
+  @override
+  String get actDoubtHash => 'отпечаток фото не сверен сервером';
+
+  @override
+  String get actDoubtVisitTime => 'время визита без сети не подтверждено';
+
+  @override
+  String get actReasonRejectedByManager => 'не принято менеджером';
+
+  @override
+  String get actApprove => 'Подтвердить к оплате';
+
+  @override
+  String get actReject => 'Не принимать';
+
+  @override
+  String get actDecisionChange => 'Изменить решение';
+
+  @override
+  String get actDecisionComment => 'Комментарий';
+
+  @override
+  String get actDecisionApproveHint =>
+      'Например: звонил исполнителю, визит подтверждён охраной';
+
+  @override
+  String get actDecisionRejectHint => 'Комментарий (необязательно)';
+
+  @override
+  String get actDecisionCommentRequired =>
+      'Напишите, почему подтверждаете к оплате';
+
+  @override
+  String get actDecisionSaved => 'Решение сохранено';
+
+  @override
+  String get actDecisionDenied =>
+      'Решает менеджер — не исполнитель и не тот, кто сдавал работу';
+
+  @override
+  String get actDecisionLocked => 'Акт уже сформирован — решение не меняется';
+
+  @override
+  String get actDecisionNotAccepted => 'Сначала примите работу';
+
+  @override
+  String actDecisionApproved(String who, String when, String comment) {
+    return '✋ решение менеджера: $who, $when — $comment';
+  }
+
+  @override
+  String actDecisionRejected(String who, String when) {
+    return '✋ не принято менеджером: $who, $when';
+  }
+
+  @override
+  String get actByManager => 'подтверждено менеджером';
+
+  @override
+  String actPendingWarn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count заявки ждут',
+      many: '$count заявок ждут',
+      few: '$count заявки ждут',
+      one: '$count заявка ждёт',
+    );
+    return '$_temp0 вашего решения — они не попадут в акт';
+  }
+
+  @override
+  String get actDecideNow => 'Решить сейчас';
+
+  @override
+  String get actIssueWithout => 'Сформировать без них';
+
+  @override
+  String get actPendingBlock => 'Ожидают решения (без сумм)';
+
+  @override
+  String actManualLine(int count) {
+    return 'из них подтверждено вручную: $count';
+  }
+
+  @override
+  String homeDecisionsBadge(int count) {
+    return 'Ждут вашего решения по оплате: $count';
+  }
+
+  @override
+  String reportsOfflineLine(int offline, int manual) {
+    return 'Сдано без сети: $offline · подтверждено вручную: $manual';
+  }
+
+  @override
+  String get proofTitle => 'Доказательства';
 }

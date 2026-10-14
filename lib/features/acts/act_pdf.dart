@@ -205,6 +205,28 @@ Future<({Uint8List bytes, int pages})> buildActPdf(
               4: const pw.FlexColumnWidth(2.6),
             },
             alertRows: {for (var i = 0; i < rejectedRows.length; i++) i}),
+      // Шаг 27: «Ожидают решения» — коротко, без сумм.
+      if (d.review.isNotEmpty) ...[
+        pw.SizedBox(height: 14),
+        pw.Text(l.actPendingBlock, style: bold.copyWith(fontSize: 11)),
+        pw.SizedBox(height: 4),
+        table([
+          l.actColNo,
+          l.actColDate,
+          l.actColObject,
+          l.actColWork,
+          l.actColReasons
+        ], [
+          for (final r in d.review)
+            ['${r.no}', r.date, r.object, r.work, r.reasons]
+        ], {
+          0: const pw.FixedColumnWidth(18),
+          1: const pw.FixedColumnWidth(42),
+          2: const pw.FlexColumnWidth(2),
+          3: const pw.FlexColumnWidth(3),
+          4: const pw.FlexColumnWidth(2.6),
+        }),
+      ],
       pw.SizedBox(height: 28),
       pw.Text(l.actPdfSigns, style: bold.copyWith(fontSize: 11)),
       pw.SizedBox(height: 16),

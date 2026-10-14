@@ -4262,4 +4262,87 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get formRecent => 'Недавние:';
+
+  @override
+  String get docsTitle => 'Документы';
+
+  @override
+  String get docAttach => 'Прикрепить файл';
+
+  @override
+  String get docAttachHint => 'PDF, Word, Excel, JPG, PNG, TXT — до 20 МБ';
+
+  @override
+  String get docUploading => 'Загружаю файл…';
+
+  @override
+  String docUploaded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Файлы прикреплены',
+      one: 'Файл прикреплён',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get docUploadFailed =>
+      'Не все файлы удалось прикрепить. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get docPickFailed => 'Не удалось выбрать файл.';
+
+  @override
+  String docTooBig(String name) {
+    return '«$name» больше 20 МБ — такой файл не прикрепить.';
+  }
+
+  @override
+  String docBadType(String name) {
+    return '«$name»: можно прикрепить только PDF, Word, Excel, JPG, PNG или TXT.';
+  }
+
+  @override
+  String docEmpty(String name) {
+    return '«$name» — пустой файл.';
+  }
+
+  @override
+  String get docKb => 'КБ';
+
+  @override
+  String get docMb => 'МБ';
+
+  @override
+  String get docOpen => 'Открыть';
+
+  @override
+  String get docDeleteTitle => 'Удалить документ?';
+
+  @override
+  String get docDeleted => 'Документ удалён';
+
+  @override
+  String get docDeleteFailed => 'Не удалось удалить документ.';
+
+  @override
+  String get docLoadFailed => 'Не удалось загрузить документы — повторить';
+
+  @override
+  String docWillAttach(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# файла будут приложены',
+      many: '# файлов будут приложены',
+      few: '# файла будут приложены',
+      one: '# файл будет приложен',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get docAttachFailed =>
+      'Заявка создана, но файл не приложился. Откройте заявку и прикрепите его ещё раз.';
 }

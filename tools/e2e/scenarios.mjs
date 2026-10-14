@@ -706,4 +706,91 @@ export const SCENARIOS = [
       assert(js.length === 0, `ошибки JavaScript: ${js.slice(0, 2).join(' | ')}`);
     },
   },
+  {
+    id: 10,
+    title: '«Узнать по фото» (заглушка) → «Это он» → заявка с фото «до» → фото видно в карточке и на весь экран',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`delete from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
+        and id::text not like 'de300000-%'`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      // «Где я» запоминается на устройстве: сразу «БЦ «Демо»», без выбора.
+      const uid = sql(`select id from auth.users where email = '${USERS.admin}'`);
+      await m.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
+        [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|`]);
+      await home(m, base);
+      await section(m, /^По фото/);
+      await clickAction(m, /^Сфотографировать/);
+      await btn(m, /^Это он/).waitFor({ timeout: 30000 });
+      await ctx.shot(m, 'identified');
+      await clickAction(m, /^Это он/);
+      await see(m, /Снимок будет приложен/).waitFor({ timeout: 15000 });
+      await see(m, /из «Узнать по фото»/).waitFor({ timeout: 5000 });
+      await ctx.shot(m, 'form');
+      await clickAction(m, /^Создать/);
+      const id = await waitDb(`select id from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
+        and created_at > now() - interval '2 minutes' order by created_at desc limit 1`, (v) => v.length > 0, 20000);
+      await waitDb(`select count(*) from attachments where work_order_id = '${id}' and stage = 'before'`, '1', 20000);
+      const title = sql(`select title from work_orders where id = '${id}'`);
+      ctx.notes.push(`заявка: ${title}`);
+      // Карточка: ссылки на фото подписываются, миниатюра «До · 1» видна.
+      const signed = [];
+      m.on('response', (r) => { if (/\/object\/sign\/work-photos/.test(r.url())) signed.push(r.status()); });
+      await openOrder(m, base, title);
+      await see(m, /До · 1/).waitFor({ timeout: 15000 });
+      await settle(m, 1500);
+      assert(signed.includes(200), `подписанные ссылки на фото: ${signed.join(',') || 'не запрошены'}`);
+      await ctx.shot(m, 'card-photo');
+      // На весь экран: подпись «До · <кто> · <когда> · …».
+      await btn(m, /^До$/).click();
+      await settle(m, 2000);
+      const viewer = await screenText(m);
+      assert(/До · .+ · .+/.test(viewer), 'в просмотре нет подписи «До · кто · когда»');
+      await ctx.shot(m, 'viewer');
+      await m.keyboard.press('Escape');
+      await settle(m, 800);
+      ctx.notes.push('фото «до» в карточке и в просмотре видно');
+    },
+  },
+  {
+    id: 11,
+    title: 'Форма новой заявки: прошлое место не подставляется; GPS рядом с объектом → «Рядом с вами»',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`delete from work_orders where company_id = '${uuid(1)}' and title like 'E2E форма%'`);
+      // 1. Без геопозиции: создать заявку на «БЦ «Демо»», открыть форму снова — объект пуст.
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await clickAction(m, /^(\+ )?Заявка$/);
+      await see(m, /Новая заявка/).waitFor({ timeout: 10000 });
+      await typeInto(m, m.getByRole('textbox').first(), 'E2E форма 1');
+      await btn(m, /^Выберите объект/).click();
+      await settle(m, 800);
+      await m.getByRole('menuitem', { name: /БЦ «Демо»/ }).or(m.getByRole('option', { name: /БЦ «Демо»/ }))
+        .or(m.getByText(/БЦ «Демо»/)).first().click();
+      await settle(m, 800);
+      await clickAction(m, /^Создать заявку$/);
+      await waitDb(`select count(*) from work_orders where title = 'E2E форма 1'`, '1');
+      await settle(m, 1500);
+      await clickAction(m, /^(\+ )?Заявка$/);
+      await see(m, /Новая заявка/).waitFor({ timeout: 10000 });
+      await settle(m, 3800); // GPS ждём не дольше 3 с
+      await ctx.shot(m, 'form-empty');
+      assert(await btn(m, /^Выберите объект/).isVisible(), 'в новой форме подставился объект прошлой заявки');
+      await see(m, /Недавние/).waitFor({ timeout: 5000 });
+      ctx.notes.push('после заявки на «БЦ «Демо»» новая форма пустая, есть «Недавние»');
+      // 2. С геопозицией в 40 м от «БЦ «Демо»» — объект подставлен, без помещения.
+      const g = await ctx.page({ geo: { latitude: 44.80507, longitude: 20.44942, accuracy: 10 } });
+      await login(g, base, USERS.admin);
+      await home(g, base);
+      await clickAction(g, /^(\+ )?Заявка$/);
+      await see(g, /Рядом с вами · \d+ м/).waitFor({ timeout: 8000 });
+      await ctx.shot(g, 'form-gps');
+      const t = await screenText(g);
+      assert(/БЦ «Демо»/.test(t), 'по GPS не подставлен «БЦ «Демо»»');
+      ctx.notes.push(`GPS: ${t.match(/Рядом с вами · \d+ м/)?.[0]}`);
+    },
+  },
 ];

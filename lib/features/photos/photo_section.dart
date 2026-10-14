@@ -218,6 +218,9 @@ class _Thumb extends StatelessWidget {
               // Миниатюра: тот же файл, но декодируется уменьшенным —
               // меньше памяти; сам файл кэширует браузер / система.
               : Image.network(photo.url!,
+                  // Не смог раскодировать сам (бывает в Яндекс Браузере) —
+                  // картинка обычным элементом <img> браузера (шаг 24).
+                  webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
                   fit: BoxFit.cover,
                   cacheWidth: square ? 240 : 480,
                   loadingBuilder: (_, child, progress) => progress == null
@@ -517,6 +520,9 @@ class _ZoomPhoto extends StatelessWidget {
         maxScale: 5,
         child: Center(
             child: Image.network(photo.url!,
+                // Не смог раскодировать сам (бывает в Яндекс Браузере) —
+                // картинка обычным элементом <img> браузера (шаг 24).
+                webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
                 fit: BoxFit.contain,
                 loadingBuilder: (_, child, progress) =>
                     progress == null ? child : const AppLoader(),

@@ -7238,6 +7238,120 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Недавние:'**
   String get formRecent;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Документы'**
+  String get docsTitle;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Прикрепить файл'**
+  String get docAttach;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'PDF, Word, Excel, JPG, PNG, TXT — до 20 МБ'**
+  String get docAttachHint;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Загружаю файл…'**
+  String get docUploading;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{Файл прикреплён} other{Файлы прикреплены}}'**
+  String docUploaded(int count);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не все файлы удалось прикрепить. Проверьте интернет и попробуйте ещё раз.'**
+  String get docUploadFailed;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось выбрать файл.'**
+  String get docPickFailed;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'«{name}» больше 20 МБ — такой файл не прикрепить.'**
+  String docTooBig(String name);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'«{name}»: можно прикрепить только PDF, Word, Excel, JPG, PNG или TXT.'**
+  String docBadType(String name);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'«{name}» — пустой файл.'**
+  String docEmpty(String name);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'КБ'**
+  String get docKb;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'МБ'**
+  String get docMb;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть'**
+  String get docOpen;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить документ?'**
+  String get docDeleteTitle;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Документ удалён'**
+  String get docDeleted;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось удалить документ.'**
+  String get docDeleteFailed;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить документы — повторить'**
+  String get docLoadFailed;
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{# файл будет приложен} few{# файла будут приложены} many{# файлов будут приложены} other{# файла будут приложены}}'**
+  String docWillAttach(int count);
+
+  /// Шаг 24: документы
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка создана, но файл не приложился. Откройте заявку и прикрепите его ещё раз.'**
+  String get docAttachFailed;
 }
 
 class _AppLocalizationsDelegate

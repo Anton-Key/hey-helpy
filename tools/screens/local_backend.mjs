@@ -174,19 +174,19 @@ async function storageRequest(req, url, path) {
   const uid = readJwt((req.headers.authorization ?? '').replace(/^Bearer /, ''))?.sub;
   const fail = (e) => ({ status: 400, body: { statusCode: '403', error: 'Unauthorized',
     message: /row-level security|violates/.test(String(e.stderr ?? e)) ? 'new row violates row-level security policy' : String(e.stderr ?? e).slice(0, 200) } });
-  let m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans)\/(.+)$/);
+  let m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans|order-files|contractor-acts)\/(.+)$/);
   if (m && (req.method === 'POST' || req.method === 'PUT') && !m[2].startsWith('preview/')) {
     const body = await readBody(req);
     const name = decodeURIComponent(m[2]);
     if (!uid) return { status: 401, body: { message: 'unauthorized' } };
     try {
-      psqlAs(uid, `insert into storage.objects(bucket_id, name, owner) values (${lit(m[1])}, ${lit(name)}, ${lit(uid)})`);
+      psqlAs(uid, `insert into storage.objects(bucket_id, name, owner, owner_id) values (${lit(m[1])}, ${lit(name)}, ${lit(uid)}, ${lit(uid)})`);
     } catch (e) { return fail(e); }
     files.set(`${m[1]}/${name}`, filePart(req.headers['content-type'] ?? '', body));
     if (process.env.HH_LOG_STORAGE) console.log('upload', req.headers['content-type'], body.length, body.subarray(0, 60).toString('latin1').replace(/[^ -~]/g, '.'), files.get(`${m[1]}/${name}`).type, files.get(`${m[1]}/${name}`).data.subarray(0, 4).toString('hex'));
     return { status: 200, body: { Key: `${m[1]}/${name}`, Id: name } };
   }
-  m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans)$/);
+  m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans|order-files|contractor-acts)$/);
   if (m && req.method === 'DELETE') {
     const b = JSON.parse((await readBody(req)).toString() || '{}');
     const out = [];
@@ -198,7 +198,7 @@ async function storageRequest(req, url, path) {
     }
     return { status: 200, body: out };
   }
-  m = path.match(/^\/storage\/v1\/object\/sign\/(work-photos|floor-plans)(?:\/(.+))?$/);
+  m = path.match(/^\/storage\/v1\/object\/sign\/(work-photos|floor-plans|order-files|contractor-acts)(?:\/(.+))?$/);
   if (m && req.method === 'POST') {
     const b = JSON.parse((await readBody(req)).toString() || '{}');
     const sign = (p) => (files.has(`${m[1]}/${p}`) ? `/object/sign/${m[1]}/${p}?token=local` : null);
@@ -210,7 +210,7 @@ async function storageRequest(req, url, path) {
     }
     return { status: 200, body: (b.paths ?? []).map((p) => ({ path: p, signedURL: sign(p), error: sign(p) ? null : 'Either the object does not exist or you do not have access to it' })) };
   }
-  m = path.match(/^\/storage\/v1\/object\/(?:sign|authenticated|public)?\/?(work-photos|floor-plans)\/(.+)$/);
+  m = path.match(/^\/storage\/v1\/object\/(?:sign|authenticated|public)?\/?(work-photos|floor-plans|order-files|contractor-acts)\/(.+)$/);
   if (m && (req.method === 'GET' || req.method === 'HEAD')) {
     const f = files.get(`${m[1]}/${decodeURIComponent(m[2])}`);
     if (f) return { status: 200, body: req.method === 'HEAD' ? null : f.data, headers: { 'content-type': f.type } };

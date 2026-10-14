@@ -18,6 +18,8 @@ import '../regions/geo_pickers.dart';
 import '../photos/photo_capture.dart';
 import '../ppr/ppr_logic.dart';
 import '../ppr/ppr_text.dart';
+import '../documents/document_repository.dart';
+import '../documents/documents_section.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
 import '../photo_identify/identify_log.dart' show newUuid;
@@ -231,16 +233,25 @@ class RequestsRepo {
   Future<int> deleteOrder(String id) async {
     final rows = await _c
         .from('attachments')
-        .select('storage_path')
+        .select('storage_path,kind')
         .eq('work_order_id', id);
-    final paths = [
-      for (final r in rows)
-        if (r['storage_path'] is String) r['storage_path'] as String,
-    ];
+    // Фото — в work-photos, документы (0019) — в order-files.
+    final byBucket = <String, List<String>>{};
+    for (final r in rows) {
+      if (r['storage_path'] is! String) continue;
+      final bucket = r['kind'] == 'document'
+          ? DocumentRepository.bucket
+          : PhotoRepository.bucket;
+      (byBucket[bucket] ??= []).add(r['storage_path'] as String);
+    }
+    final paths = [for (final p in byBucket.values) ...p];
     var removed = 0;
-    if (paths.isNotEmpty) {
-      removed =
-          (await _c.storage.from(PhotoRepository.bucket).remove(paths)).length;
+    for (final e in byBucket.entries) {
+      try {
+        removed += (await _c.storage.from(e.key).remove(e.value)).length;
+      } catch (err) {
+        debugPrint('deleteOrder files: ${err.runtimeType}');
+      }
     }
     final deleted =
         await _c.from('work_orders').delete().eq('id', id).select('id');
@@ -816,6 +827,17 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
             onAddAfter: _canAddAfter(status) ? () => _addPhoto('after') : null,
           ),
         ),
+      // Документы (шаг 24, 0019): видят все, кто видит заявку; прикрепляют
+      // автор, менеджер и исполнитель подрядчика; в отменённую — нельзя.
+      OrderDocumentsSection(
+        key: ValueKey('docs-${widget.order.id}'),
+        orderId: widget.order.id,
+        companyId: widget.companyId ?? (d['company_id'] as String),
+        canUpload:
+            status != 'cancelled' && (_isAuthor || _isManager || _isExecutor),
+        isManager: _isManager,
+        uid: widget.uid,
+      ),
       if (_isManager && (_visits.isNotEmpty || _visitsFailed))
         VisitsSection(visits: _visits, loadFailed: _visitsFailed),
       if (actions.isNotEmpty) ...[
@@ -1104,6 +1126,8 @@ Future<bool?> showOrderForm({
 
   const priorities = ['low', 'normal', 'high', 'critical'];
   final l = context.l10n;
+  // Документы новой заявки (шаг 24): загружаются после создания заявки.
+  var docs = <PickedDocument>[];
   final locale = context.localeCode;
   final formTitle = isEdit ? l.formEditTitle : l.formNewTitle;
 
@@ -1128,7 +1152,8 @@ Future<bool?> showOrderForm({
             setLocation: locationId != initialLocation,
             locationId: locationId);
       } else {
-        final id = photo == null ? null : newUuid();
+        // id из приложения — чтобы сразу приложить снимок и документы.
+        final id = photo == null && docs.isEmpty ? null : newUuid();
         await repo.create(
             id: id,
             inputChannel: photo == null ? 'button' : 'camera',
@@ -1141,6 +1166,21 @@ Future<bool?> showOrderForm({
             recurring: recurring,
             locationId: locationId,
             assetId: locationId == initialLocation ? assetId : null);
+        if (id != null && docs.isNotEmpty) {
+          var failed = false;
+          for (final f in docs) {
+            try {
+              await DocumentRepository()
+                  .upload(companyId: companyId, workOrderId: id, file: f);
+            } catch (e) {
+              debugPrint('Order document: ${e.runtimeType}');
+              failed = true;
+            }
+          }
+          if (failed && ctx.mounted) {
+            showAppMessage(ctx, l.docAttachFailed, type: AppMessageType.error);
+          }
+        }
         if (id != null && photo != null) {
           try {
             await PhotoRepository().upload(
@@ -1206,6 +1246,32 @@ Future<bool?> showOrderForm({
                           ),
                           title: l.photoWillAttach,
                           chevron: false,
+                        ),
+                      ]),
+                    if (!isEdit && SchemaCompat.has('0019') != false)
+                      AppGroup(children: [
+                        AppRow(
+                          leading: const LeadingIcon(AppIcons.attach),
+                          title: docs.isEmpty
+                              ? l.docAttach
+                              : l.docWillAttach(docs.length),
+                          subtitle: docs.isEmpty
+                              ? l.docAttachHint
+                              : docs.map((d) => d.name).join(', '),
+                          subtitleMaxLines: 2,
+                          chevron: false,
+                          trailing: docs.isEmpty
+                              ? null
+                              : AppIconButton(
+                                  icon: AppIcons.close,
+                                  label: l.actionDelete,
+                                  onPressed: () => setSt(() => docs = [])),
+                          onTap: () async {
+                            final picked = await pickDocuments(ctx);
+                            if (picked.isNotEmpty) {
+                              setSt(() => docs = [...docs, ...picked]);
+                            }
+                          },
                         ),
                       ]),
                     AppGroup(header: l.formWhat, children: [

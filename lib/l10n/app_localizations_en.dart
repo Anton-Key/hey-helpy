@@ -4205,7 +4205,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t open the file. Check your connection and try again.';
 
   @override
-  String get formFromObjectCard => 'from the location card';
+  String get formFromObjectCard => 'from the site card';
 
   @override
   String get formFromMap => 'from the map';
@@ -4228,8 +4228,89 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get formOtherObject => 'Other location';
+  String get formOtherObject => 'Other site';
 
   @override
   String get formRecent => 'Recent:';
+
+  @override
+  String get docsTitle => 'Documents';
+
+  @override
+  String get docAttach => 'Attach a file';
+
+  @override
+  String get docAttachHint => 'PDF, Word, Excel, JPG, PNG, TXT — up to 20 MB';
+
+  @override
+  String get docUploading => 'Uploading…';
+
+  @override
+  String docUploaded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Files attached',
+      one: 'File attached',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get docUploadFailed =>
+      'Some files couldn\'t be attached. Check your connection and try again.';
+
+  @override
+  String get docPickFailed => 'Couldn\'t pick the file.';
+
+  @override
+  String docTooBig(String name) {
+    return '“$name” is larger than 20 MB and can\'t be attached.';
+  }
+
+  @override
+  String docBadType(String name) {
+    return '“$name”: only PDF, Word, Excel, JPG, PNG or TXT can be attached.';
+  }
+
+  @override
+  String docEmpty(String name) {
+    return '“$name” is empty.';
+  }
+
+  @override
+  String get docKb => 'KB';
+
+  @override
+  String get docMb => 'MB';
+
+  @override
+  String get docOpen => 'Open';
+
+  @override
+  String get docDeleteTitle => 'Delete the document?';
+
+  @override
+  String get docDeleted => 'Document deleted';
+
+  @override
+  String get docDeleteFailed => 'Couldn\'t delete the document.';
+
+  @override
+  String get docLoadFailed => 'Couldn\'t load documents — retry';
+
+  @override
+  String docWillAttach(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# files will be attached',
+      one: '# file will be attached',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get docAttachFailed =>
+      'The work order was created, but the file wasn\'t attached. Open the order and attach it again.';
 }

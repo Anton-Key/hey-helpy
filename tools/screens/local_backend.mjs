@@ -26,7 +26,7 @@
 // Импорт: startLocalBackend({ port }) → { url, anonKey, stop() }.
 import { createServer, request as httpRequest } from 'node:http';
 import { spawn, execFileSync } from 'node:child_process';
-import { createHmac } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { readFileSync, existsSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -322,6 +322,22 @@ export async function startLocalBackend({ port = 54321, postgrest = process.env.
         if (!text || text.length > 1000) return send(res, 400, { error: 'bad_request' });
         await new Promise((d) => setTimeout(d, +(process.env.HH_MOCK_AI_MS ?? 1200)));
         return send(res, 200, mockAi(p.sub, text));
+      }
+      // Шаг 27: сверка отпечатков фото из очереди без сети — как Edge
+      // Function offline-sync: SHA-256 по загруженному файлу.
+      if (path === '/functions/v1/offline-sync' && req.method === 'POST') {
+        const p = readJwt((req.headers.authorization ?? '').replace(/^Bearer /, ''));
+        if (!p?.sub) return send(res, 401, { error: 'unauthorized' });
+        const b = JSON.parse((await readBody(req)).toString() || '{}');
+        const results = [];
+        for (const ph of b.photos ?? []) {
+          const f = files.get(`work-photos/${ph.path}`);
+          if (!f) { results.push({ path: ph.path, ok: null }); continue; }
+          const hash = createHash('sha256').update(f.data).digest('hex');
+          try { psql(`select public.offline_photo_hash_put(${lit(ph.path)}, ${lit(hash)})`); } catch { results.push({ path: ph.path, ok: null }); continue; }
+          results.push({ path: ph.path, ok: hash === String(ph.sha256).toLowerCase() });
+        }
+        return send(res, 200, { results });
       }
       return send(res, 503, { error: 'ai_unavailable' });
     }

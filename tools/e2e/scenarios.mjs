@@ -1039,4 +1039,115 @@ export const SCENARIOS = [
       await ctx.shot(m, 'act');
     },
   },
+  {
+    id: 17,
+    title: 'Без сети (шаг 27): исполнитель начинает, отмечает чек-лист, снимает «после», сдаёт → сеть → «на проверке», время по монотонным часам; часы +2 ч → «Требует решения» → менеджер подтверждает',
+    async run(ctx) {
+      const { base } = ctx;
+      const mk = (title) => {
+        sql(`delete from work_orders where company_id = '${uuid(1)}' and title = '${title}'`);
+        const id = sql(`insert into work_orders(company_id, object_id, location_id, layer_id, work_type, title, status,
+            created_by, assigned_contractor_id, requires_photo)
+          select '${uuid(1)}', '${uuid(10)}', '${uuid(21)}', l.id, l.name, '${title}', 'assigned',
+            (select id from auth.users where email = '${USERS.requester}'), '${uuid(31)}', true
+            from layers l where l.company_id = '${uuid(1)}' and l.name = 'Климат' returning id`).split('\n')[0];
+        sql(`insert into checklist_items(work_order_id, text) values ('${id}', 'Очистить фильтры'), ('${id}', 'Проверить дренаж')`);
+        return id;
+      };
+      /** Открыть заявку без перезагрузки страницы (очередь в тестовом режиме — в памяти). */
+      const openInApp = async (page, title) => {
+        const search = page.getByRole('textbox').first();
+        await typeInto(page, search, title.slice(0, 24));
+        await settle(page, 1800);
+        await btn(page, new RegExp(title.slice(0, 20))).click();
+        await settle(page, 2500);
+      };
+      const net = (page) => page.getByRole('switch').first();
+      const runOffline = async (title, skewMin, shotPrefix) => {
+        const id = mk(title);
+        const e = await ctx.page({ width: 412, height: 915, geo: BC_DEMO });
+        await login(e, base, USERS.executor);
+        await openApp(e, base, `?offline=1&clockSkewMin=${skewMin}`);
+        await profileTab(e).waitFor({ timeout: 60000 });
+        await settle(e, 4000); // якорь часов и предзагрузка своих заявок
+        await openInApp(e, title);
+        // Сеть «выключена» (тест): всё — в очередь телефона.
+        await net(e).click();
+        await settle(e, 800);
+        await clickAction(e, /^Начать работу/);
+        await btn(e, /Очистить фильтры/).click();
+        await settle(e, 600);
+        await btn(e, /Проверить дренаж/).click();
+        await settle(e, 600);
+        await takeLivePhoto(e);
+        await settle(e, 1500);
+        await clickAction(e, /Выполнено, на проверку/);
+        await see(e, /Нет сети — сохранено на телефоне: \d+/).waitFor({ timeout: 15000 });
+        const t = await screenText(e);
+        const n = +(t.match(/сохранено на телефоне: (\d+)/)?.[1] ?? NaN);
+        ctx.notes.push(`${title}: в очереди ${n} действий`);
+        assert(n === 6, `в очереди должно быть 6 действий (начать, визит, 2 пункта, фото, сдать), на экране ${n}`);
+        assert(sql(`select status from work_orders where id = '${id}'`) === 'assigned', 'без сети сервер не должен меняться');
+        if (shotPrefix) await ctx.shot(e, `${shotPrefix}-queued`);
+        // Сеть вернулась — очередь уходит сама.
+        await net(e).click();
+        await waitDb(`select status from work_orders where id = '${id}'`, 'on_review', 30000);
+        await see(e, /Отправлено ✓|на проверке/i).waitFor({ timeout: 15000 }).catch(() => {});
+        return { id, e };
+      };
+
+      // 1. Честные часы: время по монотонным часам, отпечаток сверен.
+      const a = await runOffline('E2E-17 Без сети: фильтр', 0, 'offline');
+      const p = sql(`select offline || ',' || time_trust || ',' || coalesce(sha256_ok::text, 'null') || ',' || source
+        from attachments where work_order_id = '${a.id}' and stage = 'after'`);
+      ctx.notes.push(`фото: ${p}`);
+      assert(p === 'true,monotonic,true,camera', `фото «после»: ${p}`);
+      const v = sql(`select offline || ',' || time_trust || ',' || coalesce(in_geofence::text, 'null') from visits where work_order_id = '${a.id}'`);
+      assert(v === 'true,monotonic,true', `визит: ${v}`);
+      assert(sql(`select count(*) from checklist_items where work_order_id = '${a.id}' and is_done`) === '2', 'оба пункта отмечены');
+      assert(sql(`select count(*) from offline_actions where work_order_id = '${a.id}'`) === '6', 'в журнале 6 действий');
+
+      // 2. Часы телефона переведены на 2 ч → время не подтверждено.
+      const b = await runOffline('E2E-17b Без сети: часы', 120, null);
+      const pb = sql(`select time_trust || ',' || time_drift_s from attachments where work_order_id = '${b.id}' and stage = 'after'`);
+      ctx.notes.push(`фото при часах +2 ч: ${pb}`);
+      assert(pb.startsWith('unverified,') && Math.abs(+pb.split(',')[1] - 7200) < 120, `ожидалось unverified ≈ 7200 с: ${pb}`);
+
+      // Исполнитель решать не может — проверка базы.
+      sql(`update work_orders set status = 'done', accepted_at = now() where id in ('${a.id}', '${b.id}')`);
+      const exUid = sql(`select id from auth.users where email = '${USERS.executor}'`);
+      let denied = false;
+      try {
+        sql(`select set_config('request.jwt.claim.sub', '${exUid}', false); set role authenticated;
+             select public.act_proof_decide('${b.id}', 'approve', 'сам себе')`);
+      } catch { denied = true; }
+      assert(denied, 'исполнитель не должен решать по оплате');
+
+      // 3. Менеджер: карточка и акт — «Требует решения менеджера» → «Подтвердить к оплате».
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await openOrder(m, base, 'E2E-17 Без сети: фильтр');
+      await see(m, /Снято без сети в/).waitFor({ timeout: 20000 });
+      await ctx.shot(m, 'card-proof');
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await scrollTo(m, /Акты подрядчикам/);
+      await btn(m, /^Акты подрядчикам/).click();
+      await see(m, /Требует решения менеджера · \d+/).waitFor({ timeout: 30000 });
+      await scrollTo(m, /E2E-17b/);
+      await ctx.shot(m, 'act-review');
+      const row = m.getByRole('button', { name: /Подтвердить к оплате/ });
+      const count = await row.count();
+      assert(count > 0, 'нет кнопки «Подтвердить к оплате»');
+      // Кнопка именно у E2E-17b: последняя в группе по дате (заявка сдана сейчас).
+      await row.nth(count - 1).click();
+      await settle(m, 800);
+      await typeInto(m, m.getByRole('textbox').last(), 'Звонил исполнителю, визит подтверждён охраной');
+      await btn(m, /^Подтвердить к оплате$/).click();
+      await waitDb(`select decision from act_proof_decisions where work_order_id = '${b.id}' order by decided_at desc limit 1`, 'approve', 20000);
+      await see(m, /решение менеджера/).waitFor({ timeout: 20000 });
+      await scrollTo(m, /E2E-17b/);
+      await ctx.shot(m, 'act-approved');
+    },
+  },
 ];

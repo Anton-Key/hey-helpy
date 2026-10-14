@@ -24,7 +24,11 @@ class OfflineService extends ChangeNotifier {
   OfflineService._();
   static final OfflineService instance = OfflineService._();
 
-  static const testMode = bool.fromEnvironment('OFFLINE_TEST');
+  /// Тестовый режим в браузере: сборка с `OFFLINE_TEST=true` и адрес с
+  /// `?offline=1` (сквозной сценарий 17, кадры 25–27). Без параметра —
+  /// как обычный веб.
+  static final bool testMode = const bool.fromEnvironment('OFFLINE_TEST') &&
+      Uri.base.queryParameters['offline'] == '1';
 
   /// Офлайн-режим доступен: Android или тестовый режим.
   static bool get supported =>

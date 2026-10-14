@@ -1022,13 +1022,20 @@ export const SCENARIOS = [
       await btn(m, /^Акты подрядчикам/).click();
       await see(m, /К оплате · \d+/).waitFor({ timeout: 30000 });
       await settle(m, 1500);
-      await scrollTo(m, new RegExp(title));
       t = await screenText(m);
-      const iPaid = t.search(/К оплате · \d+/);
-      const iRej = t.search(/Без доказательства/);
-      const iOrder = t.indexOf(title);
-      ctx.notes.push(`в акте: «К оплате» @${iPaid}, заявка @${iOrder}, «Без доказательства» @${iRej}`);
-      assert(iOrder > iPaid && (iRej < 0 || iOrder < iRej), 'заявка должна быть в «К оплате»');
+      const shown = +(t.match(/К оплате · (\d+)/i)?.[1] ?? NaN);
+      // Те же правила акта в SQL (как сценарий 14, фото «из файла» — не доказательство).
+      const proven = sql(`select string_agg(w.id::text, ',') from work_orders w left join objects o on o.id = w.object_id
+        where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
+          and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
+          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo'
+                                                and a.stage = 'after' and a.source <> 'file'))
+          and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
+          and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`).split(',');
+      ctx.notes.push(`в акте к оплате на экране ${shown}, по базе ${proven.length}, заявка среди них: ${proven.includes(id)}`);
+      assert(proven.includes(id), 'заявка должна быть доказанной по правилам акта');
+      assert(shown === proven.length, `«К оплате»: на экране ${shown}, по базе ${proven.length}`);
+      await scrollTo(m, new RegExp(title));
       await ctx.shot(m, 'act');
     },
   },

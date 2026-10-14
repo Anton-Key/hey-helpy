@@ -2452,7 +2452,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tabPpr => 'PM';
+  String get tabPpr => 'Maintenance';
 
   @override
   String get pprTitle => 'Preventive maintenance';
@@ -2543,7 +2543,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String pprTaskLine(String period, String due) {
-    return 'PM · $period · due $due';
+    return 'Maintenance · $period · due $due';
   }
 
   @override
@@ -2553,13 +2553,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pprPeriodRow => 'Maintenance period';
 
   @override
-  String get pprTag => 'PM';
+  String get pprTag => 'Maintenance';
 
   @override
   String get pprKindOrder => 'Preventive maintenance';
 
   @override
-  String get filterPpr => 'PM';
+  String get filterPpr => 'Maintenance';
 
   @override
   String get pprFilters => 'Filters';
@@ -4444,7 +4444,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get systemDeleteMessage =>
-      'You can delete it only if it has no work orders, equipment, contractors, PM plans or zones.';
+      'You can delete it only if it has no work orders, equipment, contractors, maintenance plans or zones.';
 
   @override
   String get systemDeletedToast => 'System deleted';
@@ -4594,7 +4594,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actRateOrder => 'Per work order';
 
   @override
-  String get actRateVisit => 'Per PM visit';
+  String get actRateVisit => 'Per maintenance visit';
 
   @override
   String get actRateNone => 'not set';
@@ -4673,4 +4673,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actSheetRejected => 'Not accepted';
+
+  @override
+  String homeBadgePhoto(int count) {
+    return 'Identified by photo in 7 days: $count';
+  }
+
+  @override
+  String homeBadgePhotoRate(int count, String rate) {
+    return 'Identified by photo: $count ($rate right)';
+  }
+
+  @override
+  String homeBadgeTelegram(int count) {
+    return 'From Telegram in 7 days: $count';
+  }
 }

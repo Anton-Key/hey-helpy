@@ -110,6 +110,18 @@ class RequestsRepo {
   Future<int> countFiltered(List<ServerCond> conds) =>
       applyServerConds(_c.from('work_orders').count(CountOption.exact), conds);
 
+  /// Заявки канала за последние [days] дней (плашки на главной, шаг 24).
+  Future<int> countChannel(String channel, {int days = 7}) => _c
+      .from('work_orders')
+      .count(CountOption.exact)
+      .eq('input_channel', channel)
+      .gte(
+          'created_at',
+          DateTime.now()
+              .subtract(Duration(days: days))
+              .toUtc()
+              .toIso8601String());
+
   /// Сколько всего заявок видно пользователю (без фильтров) — «из M».
   Future<int> countAll() => _c.from('work_orders').count(CountOption.exact);
 

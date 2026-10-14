@@ -4704,4 +4704,19 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get actSheetRejected => 'Не принято';
+
+  @override
+  String homeBadgePhoto(int count) {
+    return 'Узнано по фото за 7 дней: $count';
+  }
+
+  @override
+  String homeBadgePhotoRate(int count, String rate) {
+    return 'Узнано по фото: $count (угадано $rate)';
+  }
+
+  @override
+  String homeBadgeTelegram(int count) {
+    return 'Из Telegram за 7 дней: $count';
+  }
 }

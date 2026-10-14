@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, wri
 import { extname, join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '../..');
-// --pitch — 18 кадров для питча в docs/screens/pitch/ (см. PITCH ниже):
+// --pitch — кадры для питча (18 + 20 «Акт», шаг 24) в docs/screens/pitch/ (см. PITCH ниже):
 // без служебных пометок, разбор голосовой заявки — настоящий ИИ (VOICE_MOCK_AI).
 const PITCH_MODE = process.argv.includes('--pitch');
 // --out=<папка> — снимать в другую папку (для отладки, не трогая docs/screens/latest).
@@ -1499,6 +1499,16 @@ const PITCH = [
   { file: '17-crew-zone-desktop', width: 1920, key: 'crew-zone' },
   // Шаг 22: «Узнать по фото» — результат (нарисованный снимок, заглушка ответа).
   { file: '18-photo-identify-phone', width: 412, key: 'photo-result' },
+  // Шаг 24: «Акт: к оплате только доказанное» — «КлиматСервис», текущий месяц
+  // (нужны 0021 и Refresh demo: доказательства и ставки в демо-истории).
+  { file: '20-act-proven-desktop', width: 1920, key: 'act', run: async (p) => {
+      await home(p);
+      await nav(p, 'Отчёты').click();
+      await scrollTo(p, /Акты подрядчикам/);
+      await btn(p, /^Акты подрядчикам/).click();
+      await see(p, /К оплате · \d+/).waitFor({ timeout: 30000 });
+      await settle(p, 1500);
+    } },
 ];
 
 /** PDF отчёта за 30 дней: перехватываем Blob, который веб-версия отдаёт в окно печати. */

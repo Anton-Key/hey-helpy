@@ -793,4 +793,123 @@ export const SCENARIOS = [
       ctx.notes.push(`GPS: ${t.match(/Рядом с вами · \d+ м/)?.[0]}`);
     },
   },
+  {
+    id: 12,
+    title: 'Документы: прикрепить PDF к заявке → строка «Документы · 1» → «Открыть» (новая вкладка)',
+    async run(ctx) {
+      const { base } = ctx;
+      const id = uuid(114);
+      sql(`delete from attachments where work_order_id = '${id}' and kind = 'document'`);
+      const f = join(TMP, 'akt-e2e.pdf');
+      // Простейший PDF из одной пустой страницы (сгенерирован, не реальный документ).
+      writeFileSync(f, '%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n');
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await m.evaluate((h) => { location.hash = h; }, `/orders/${id}`);
+      await see(m, /Создана/).waitFor({ timeout: 20000 });
+      await scrollTo(m, /Прикрепить файл/);
+      const chooser = m.waitForEvent('filechooser', { timeout: 15000 });
+      await btn(m, /^Прикрепить файл/).click();
+      await (await chooser).setFiles(f);
+      const row = await waitDb(`select file_name || '|' || mime || '|' || size_bytes || '|' || storage_path from attachments
+        where work_order_id = '${id}' and kind = 'document'`, (v) => v.length > 0, 20000);
+      ctx.notes.push(`в базе: ${row.split('|').slice(0, 3).join(' · ')}`);
+      assert(row.includes(`|${uuid(1)}/${id}/`) && row.endsWith('-akt-e2e.pdf'), `путь файла: ${row}`);
+      await see(m, /Документы · 1/).waitFor({ timeout: 15000 });
+      await ctx.shot(m, 'docs');
+      await btn(m, /^akt-e2e\.pdf/).click();
+      await settle(m, 800);
+      const popup = m.context().waitForEvent('page', { timeout: 15000 });
+      await btn(m, /^Открыть$/).click();
+      const tab = await popup;
+      ctx.notes.push(`открыт: ${new URL(tab.url()).pathname.split('/').slice(-1)[0]}`);
+      assert(/order-files/.test(tab.url()), `открылась не ссылка на файл: ${tab.url()}`);
+    },
+  },
+  {
+    id: 13,
+    title: '«Системы»: администратор создаёт систему; менеджер с зоной «Климат + Сантехника» её не видит',
+    async run(ctx) {
+      const { base } = ctx;
+      sql(`delete from layers where company_id = '${uuid(1)}' and name = 'E2E Лифты'`);
+      sql(`delete from access_zones where profile_id = 'd0000000-0000-4000-8000-000000000004';
+        insert into access_zones(company_id, profile_id, layer_ids, scope_kind, scope_ref)
+        select '${uuid(1)}', 'd0000000-0000-4000-8000-000000000004',
+          array(select id from layers where company_id = '${uuid(1)}' and name in ('Климат', 'Сантехника')), 'city', 'Москва'`);
+      const a = await ctx.page();
+      await login(a, base, USERS.admin);
+      await home(a, base);
+      await profileTab(a).click();
+      await settle(a, 1000);
+      await btn(a, /^Моя компания/).click();
+      await scrollTo(a, /^Системы/);
+      await btn(a, /^Системы/).click();
+      await see(a, /Оборудование: \d+/).waitFor({ timeout: 20000 });
+      await btn(a, /^Система$/).click();
+      await see(a, /Новая система/).waitFor({ timeout: 10000 });
+      await typeInto(a, a.getByRole('textbox').first(), 'E2E Лифты');
+      await typeInto(a, a.getByRole('textbox').nth(1), 'E2E Lifts');
+      await clickAction(a, /^Создать систему/);
+      const row = await waitDb(`select name_i18n->>'en' || '|' || coalesce(icon, '-') || '|' || color from layers
+        where company_id = '${uuid(1)}' and name = 'E2E Лифты'`, (v) => v.length > 0);
+      ctx.notes.push(`создана: ${row}`);
+      await see(a, /E2E Лифты/).waitFor({ timeout: 10000 });
+      await ctx.shot(a, 'admin');
+      const m = await ctx.page();
+      await login(m, base, USERS.manager2);
+      await home(m, base);
+      await profileTab(m).click();
+      await settle(m, 1000);
+      await btn(m, /^Моя компания/).click();
+      await scrollTo(m, /^Системы/);
+      await btn(m, /^Системы/).click();
+      await see(m, /Оборудование: \d+/).waitFor({ timeout: 20000 });
+      await settle(m, 1500);
+      await ctx.shot(m, 'manager2');
+      const t = await screenText(m);
+      assert(!/E2E Лифты/.test(t), 'менеджер с зоной видит систему вне своей зоны');
+      assert(/Климат/.test(t) && !/Электрика/.test(t), 'менеджер с зоной видит не те системы');
+      assert(!/Новая система|^Система$/m.test(t), 'у менеджера есть кнопка «+ Система»');
+      ctx.notes.push('менеджер с зоной видит только «Климат» и «Сантехника»');
+    },
+  },
+  {
+    id: 14,
+    title: 'Акт подрядчику «КлиматСервис» за месяц: в «К оплате» только доказанные заявки → «Сформировать акт» → номер и PDF',
+    async run(ctx) {
+      const { base } = ctx;
+      // Сколько доказанных по правилам акта — тем же расчётом в SQL.
+      const proven = +sql(`select count(*) from work_orders w left join objects o on o.id = w.object_id
+        where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
+          and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
+          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo' and a.stage = 'after'))
+          and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
+          and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`);
+      const before = +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await scrollTo(m, /Акты подрядчикам/);
+      await btn(m, /^Акты подрядчикам/).click();
+      await see(m, /К оплате · \d+/).waitFor({ timeout: 30000 });
+      await settle(m, 1500);
+      const t = await screenText(m);
+      const shown = +(t.match(/К оплате · (\d+)/)?.[1] ?? NaN);
+      ctx.notes.push(`к оплате на экране ${shown}, по базе ${proven}`);
+      assert(shown === proven && proven > 0, `«К оплате»: на экране ${shown}, доказанных в базе ${proven}`);
+      assert(/нет фото «после»|визит вне геозоны|не принята менеджером|нет отметки визита/.test(t),
+        'нет списка «без доказательства» с причинами');
+      await ctx.shot(m, 'act');
+      await clickAction(m, /^Сформировать акт/);
+      const act = await waitDb(`select number || '|' || (totals->>'paid') || '|' || coalesce(pdf_path, '-') from contractor_acts
+        where contractor_id = '${uuid(31)}' order by created_at desc limit 1`, (v) => v.length > 0 && +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`) > before, 30000);
+      ctx.notes.push(`акт: ${act.split('|').slice(0, 2).join(', к оплате ')}`);
+      const [num, paid, pdf] = act.split('|');
+      assert(/^АКТ-\d{4}-\d{3}$/.test(num), `номер акта: ${num}`);
+      assert(+paid === proven, `в акте к оплате ${paid}, ждали ${proven}`);
+      assert(pdf.endsWith('.pdf'), `PDF акта не сохранён: ${pdf}`);
+    },
+  },
 ];

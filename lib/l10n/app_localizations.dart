@@ -7994,6 +7994,24 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не принято'**
   String get actSheetRejected;
+
+  /// Шаг 24: главная
+  ///
+  /// In ru, this message translates to:
+  /// **'Узнано по фото за 7 дней: {count}'**
+  String homeBadgePhoto(int count);
+
+  /// Шаг 24: главная
+  ///
+  /// In ru, this message translates to:
+  /// **'Узнано по фото: {count} (угадано {rate})'**
+  String homeBadgePhotoRate(int count, String rate);
+
+  /// Шаг 24: главная
+  ///
+  /// In ru, this message translates to:
+  /// **'Из Telegram за 7 дней: {count}'**
+  String homeBadgeTelegram(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -21,6 +21,8 @@ import 'order_filters_panel.dart';
 import 'order_list.dart';
 import 'requests.dart';
 import 'order_form_place.dart';
+import 'package:intl/intl.dart';
+import '../reports/report_repository.dart';
 
 /// Ширина колонки вкладки «Заявки» на ПК: рядом с поиском помещаются
 /// таблетки главных фильтров.
@@ -171,6 +173,62 @@ class _RequestsTabState extends State<RequestsTab> {
   }
 
   /// Справочники (один раз и по «Обновить») и заявки по фильтру.
+  /// Плашки главной менеджера (шаг 24): за 7 дней — узнавания по фото
+  /// (и доля угаданных с первого раза) и заявки из Telegram. Нет данных —
+  /// плашек нет.
+  ({int photo, double? photoRate, int telegram})? _badges;
+
+  Future<void> _loadBadges() async {
+    if (_role != 'admin' && _role != 'manager') return;
+    try {
+      final now = DateTime.now();
+      final r = await Future.wait<Object?>([
+        ReportRepository()
+            .photoStats(now.subtract(const Duration(days: 7)), now),
+        _repo.countChannel('telegram').catchError((_) => 0),
+        _repo.countChannel('camera').catchError((_) => 0),
+      ]);
+      final stats = r[0] as PhotoStats?;
+      if (!mounted) return;
+      setState(() => _badges = (
+            photo: stats?.total ?? (r[2] as int),
+            photoRate: stats?.topRate,
+            telegram: r[1] as int,
+          ));
+    } catch (e) {
+      debugPrint('badges: ${e.runtimeType}');
+    }
+  }
+
+  Widget? _badgeRow() {
+    final b = _badges;
+    final l = context.l10n;
+    if (b == null || (b.photo == 0 && b.telegram == 0)) return null;
+    if (_filter.channels.isNotEmpty) return null;
+    final pct = NumberFormat.percentPattern(l.localeName);
+    void show(String channel) => _setFilter(OrderFilter.empty
+        .copyWith(channels: {channel}, period: PeriodPreset.days7));
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
+      child: Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
+        if (b.photo > 0)
+          AppChip(
+              icon: AppIcons.camera,
+              label: b.photoRate == null
+                  ? l.homeBadgePhoto(b.photo)
+                  : l.homeBadgePhotoRate(b.photo, pct.format(b.photoRate)),
+              selected: false,
+              onTap: () => show('camera')),
+        if (b.telegram > 0)
+          AppChip(
+              icon: AppIcons.telegram,
+              label: l.homeBadgeTelegram(b.telegram),
+              selected: false,
+              onTap: () => show('telegram')),
+      ]),
+    );
+  }
+
   Future<void> _load({bool refs = true, bool silent = false}) async {
     final req = ++_req;
     if (!silent) {
@@ -194,6 +252,7 @@ class _RequestsTabState extends State<RequestsTab> {
         _layers = r[2] as List<Layer>;
         _execIds = r[3] as List<String>;
         _refsLoaded = true;
+        unawaited(_loadBadges());
       }
       final conds = _filter.serverConditions(
           now: DateTime.now(), uid: _repo.uid, myExecutorIds: _execIds);
@@ -586,11 +645,13 @@ class _RequestsTabState extends State<RequestsTab> {
 
     final groups = groupOrders(view.items, _filter.sort, now: now);
     final headers = showGroupHeaders(groups);
+    final badges = _badgeRow();
     return [
       SliverContent(
-        top: headers ? 0 : AppSpace.xs,
+        top: headers && badges == null ? 0 : AppSpace.xs,
         maxWidth: kRequestsMaxWidth,
         sliver: SliverList.list(children: [
+          if (badges != null) badges,
           for (final g in groups)
             AppGroup(
                 header: headers ? _groupLabel(l, g.key) : null,

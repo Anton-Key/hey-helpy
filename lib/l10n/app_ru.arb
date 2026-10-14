@@ -2038,5 +2038,11 @@
   "actSheetPaid": "К оплате",
   "@actSheetPaid": {"description": "Шаг 24: акты"},
   "actSheetRejected": "Не принято",
-  "@actSheetRejected": {"description": "Шаг 24: акты"}
+  "@actSheetRejected": {"description": "Шаг 24: акты"},
+  "homeBadgePhoto": "Узнано по фото за 7 дней: {count}",
+  "@homeBadgePhoto": {"description": "Шаг 24: главная", "placeholders": {"count": {"type": "int"}}},
+  "homeBadgePhotoRate": "Узнано по фото: {count} (угадано {rate})",
+  "@homeBadgePhotoRate": {"description": "Шаг 24: главная", "placeholders": {"count": {"type": "int"}, "rate": {"type": "String"}}},
+  "homeBadgeTelegram": "Из Telegram за 7 дней: {count}",
+  "@homeBadgeTelegram": {"description": "Шаг 24: главная", "placeholders": {"count": {"type": "int"}}}
 }

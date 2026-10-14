@@ -820,11 +820,15 @@ export const SCENARIOS = [
       await ctx.shot(m, 'docs');
       await btn(m, /^akt-e2e\.pdf/).click();
       await settle(m, 800);
-      const popup = m.context().waitForEvent('page', { timeout: 15000 });
+      // Вкладка открывается с noopener — её адрес Playwright не видит, поэтому
+      // проверяем, что браузер запросил файл по подписанной ссылке.
+      const opened = m.context().waitForEvent('request', {
+        predicate: (r) => /\/object\/sign\/order-files\/.+akt-e2e\.pdf\?token=/.test(r.url()) && r.method() === 'GET',
+        timeout: 15000,
+      });
       await btn(m, /^Открыть$/).click();
-      const tab = await popup;
-      ctx.notes.push(`открыт: ${new URL(tab.url()).pathname.split('/').slice(-1)[0]}`);
-      assert(/order-files/.test(tab.url()), `открылась не ссылка на файл: ${tab.url()}`);
+      const req = await opened;
+      ctx.notes.push(`открыт по подписанной ссылке: …${req.url().split('?')[0].slice(-24)}`);
     },
   },
   {
@@ -896,15 +900,17 @@ export const SCENARIOS = [
       await see(m, /К оплате · \d+/).waitFor({ timeout: 30000 });
       await settle(m, 1500);
       const t = await screenText(m);
-      const shown = +(t.match(/К оплате · (\d+)/)?.[1] ?? NaN);
+      const shown = +(t.match(/К оплате · (\d+)/i)?.[1] ?? NaN);
       ctx.notes.push(`к оплате на экране ${shown}, по базе ${proven}`);
       assert(shown === proven && proven > 0, `«К оплате»: на экране ${shown}, доказанных в базе ${proven}`);
       assert(/нет фото «после»|визит вне геозоны|не принята менеджером|нет отметки визита/.test(t),
         'нет списка «без доказательства» с причинами');
       await ctx.shot(m, 'act');
       await clickAction(m, /^Сформировать акт/);
+      // PDF загружается после выдачи номера — ждём путь файла в акте.
       const act = await waitDb(`select number || '|' || (totals->>'paid') || '|' || coalesce(pdf_path, '-') from contractor_acts
-        where contractor_id = '${uuid(31)}' order by created_at desc limit 1`, (v) => v.length > 0 && +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`) > before, 30000);
+        where contractor_id = '${uuid(31)}' order by created_at desc limit 1`,
+        (v) => v.length > 0 && !v.endsWith('|-') && +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`) > before, 40000);
       ctx.notes.push(`акт: ${act.split('|').slice(0, 2).join(', к оплате ')}`);
       const [num, paid, pdf] = act.split('|');
       assert(/^АКТ-\d{4}-\d{3}$/.test(num), `номер акта: ${num}`);

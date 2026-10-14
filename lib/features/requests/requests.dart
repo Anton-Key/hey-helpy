@@ -28,6 +28,7 @@ import '../visits/visit_section.dart';
 import 'contractor_picker.dart';
 import 'order_filter.dart';
 import 'order_form_place.dart';
+import 'order_actions.dart';
 import 'order_menu.dart';
 import 'work_order.dart';
 import '../../core/app_message.dart';
@@ -236,6 +237,24 @@ class RequestsRepo {
     }).eq('id', id);
   }
 
+  /// Подрядчики, где текущий пользователь — исполнитель (`executors`).
+  /// Кэш на время работы приложения: состав меняется редко.
+  static final Map<String, Set<String>> _myContractors = {};
+
+  Future<Set<String>> myContractorIds() async {
+    final me = uid;
+    if (me == null) return const {};
+    final cached = _myContractors[me];
+    if (cached != null) return cached;
+    final rows = await _c
+        .from('executors')
+        .select('contractor_id')
+        .eq('profile_id', me);
+    return _myContractors[me] = {
+      for (final r in rows) r['contractor_id'] as String,
+    };
+  }
+
   Future<void> setStatus(String id, String status) async {
     await _c.from('work_orders').update({'status': status}).eq('id', id);
   }
@@ -356,6 +375,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   bool _visitsFailed = false;
   bool _starting = false;
   String? _executorName;
+  Set<String> _myContractorIds = const {};
 
   @override
   void initState() {
@@ -376,6 +396,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         _loading = false;
       });
       await Future.wait([
+        _loadMyContractors(),
         _loadPhotos(),
         if (_isManager) _loadVisits(),
         _loadExecutor(d?['assigned_executor_id'] as String?),
@@ -387,6 +408,15 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         _error = '$e';
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _loadMyContractors() async {
+    try {
+      final ids = await widget.repo.myContractorIds();
+      if (mounted) setState(() => _myContractorIds = ids);
+    } catch (e) {
+      debugPrint('my contractors: $e');
     }
   }
 
@@ -438,7 +468,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   Future<void> _startWork() async {
     final l = context.l10n;
     final d = _d!;
-    final recordVisit = _isExecutor && d['object_id'] != null;
+    final recordVisit = _can.isExecutor && d['object_id'] != null;
     setState(() => _starting = true);
     try {
       // Координаты ищутся, пока меняется статус.
@@ -449,7 +479,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       try {
         await widget.repo.setStatus(widget.order.id, 'in_progress');
       } catch (e) {
-        _ok(l.statusError(e), type: AppMessageType.error);
+        _ok(l.statusError(e, to: 'in_progress'), type: AppMessageType.error);
         return;
       }
       _notifyTelegram();
@@ -529,7 +559,18 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   bool get _isManager => widget.role == 'admin' || widget.role == 'manager';
   bool get _isExecutor =>
       widget.role == 'executor' || widget.role == 'contractor';
-  bool get _canEdit => _d != null && (_isAuthor || widget.role == 'admin');
+  /// Что можно этому пользователю с этой заявкой — одна функция (шаг 26).
+  OrderActions get _can => orderActions(
+        OrderActor(
+            role: widget.role,
+            uid: widget.uid,
+            contractorIds: _myContractorIds),
+        status: (_d?['status'] ?? widget.order.status) as String,
+        createdBy: _d?['created_by'] as String?,
+        contractorId: _d?['assigned_contractor_id'] as String?,
+        submittedBy: _d?['submitted_by'] as String?,
+      );
+  bool get _canEdit => _d != null && _can.edit;
 
   Future<void> _edit() async {
     final ok = await showOrderForm(
@@ -578,7 +619,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       await _load();
       _ok(okText);
     } catch (e) {
-      _ok(l.statusError(e), type: AppMessageType.error);
+      _ok(l.statusError(e, to: status), type: AppMessageType.error);
     }
   }
 
@@ -613,7 +654,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       await _load();
       _ok(l.toastReturned);
     } catch (e) {
-      _ok(l.statusError(e), type: AppMessageType.error);
+      _ok(l.statusError(e, to: 'returned'), type: AppMessageType.error);
     }
   }
 
@@ -774,7 +815,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
           title: l.fieldContractor,
           subtitle: _contractorNameIn(l, widget.contractors, contractorId),
           subtitleMaxLines: 2,
-          trailing: _canAssign(status)
+          trailing: _can.assign
               ? AppButton.tinted(
                   small: true,
                   expand: false,
@@ -797,7 +838,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
                 ? const LeadingIcon.danger(AppIcons.calendar)
                 : const LeadingIcon(AppIcons.calendar),
             title: pprLine,
-            subtitle: _isExecutor ? l.pprDoWithin : null,
+            subtitle: _can.isExecutor ? l.pprDoWithin : null,
             chevron: false,
           )
         else if (due != null)
@@ -850,8 +891,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       ]),
       if (_photos.isNotEmpty ||
           _photosFailed ||
-          _canAddBefore(status) ||
-          _canAddAfter(status))
+          _can.addBeforePhoto ||
+          _can.addAfterPhoto)
         Padding(
           padding: const EdgeInsetsDirectional.only(bottom: AppSpace.group),
           child: WorkPhotosSection(
@@ -859,9 +900,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
             loadFailed: _photosFailed,
             busy: _uploading,
             geofence: _geofence(objId),
-            onAddBefore:
-                _canAddBefore(status) ? () => _addPhoto('before') : null,
-            onAddAfter: _canAddAfter(status) ? () => _addPhoto('after') : null,
+            onAddBefore: _can.addBeforePhoto ? () => _addPhoto('before') : null,
+            onAddAfter: _can.addAfterPhoto ? () => _addPhoto('after') : null,
           ),
         ),
       // Документы (шаг 24, 0019): видят все, кто видит заявку; прикрепляют
@@ -893,22 +933,6 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     if (o?.lat == null || o?.lng == null) return null;
     return PhotoGeofence(lat: o!.lat!, lng: o.lng!, radiusM: o.geofenceRadiusM);
   }
-
-  // Те же правила проверяет база (миграция 0006).
-  bool _canAddBefore(String status) =>
-      (status == 'new' || status == 'assigned') && (_isAuthor || _isManager);
-  bool _canAddAfter(String status) =>
-      status == 'in_progress' && (_isExecutor || _isManager);
-
-  /// Менеджер назначает или меняет подрядчика, пока работу не начали.
-  /// Те же правила проверяет база (trg_wo_guard, trg_wo_status_flow).
-  bool _canAssign(String status) =>
-      _isManager &&
-      (status == 'new' || status == 'assigned' || status == 'returned');
-
-  bool _canStart(String status) =>
-      (_isExecutor || _isManager) &&
-      (status == 'new' || status == 'assigned' || status == 'returned');
 
   // Без фото «после» кнопка «На проверку» неактивна; база проверяет то же.
   bool get _needPhoto => _d?['requires_photo'] == true && !_hasAfterPhoto;
@@ -944,70 +968,53 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         label: context.l10n.actionAccept,
       );
 
-  Widget _returnButton() => AppButton.destructive(
-        onPressed: _returnForRework,
-        icon: AppIcons.undo,
-        label: context.l10n.actionReturn,
-      );
-
-  /// Главное действие нижней панели и необязательное круглое вторичное.
-  /// Менеджер: «Новая» → назначить; «На проверке» → принять (вернуть —
-  /// круглая кнопка). Исполнитель: «Назначена» / «Возвращена» → начать;
+  /// Главное действие нижней панели и необязательное круглое вторичное —
+  /// строго по [orderActions] (шаг 26). Менеджер: «Новая» → назначить;
+  /// «На проверке» → принять (вернуть — круглая кнопка). Исполнитель
+  /// назначенного подрядчика: «Назначена» / «Возвращена» → начать;
   /// «В работе» → фото «после» (пока его нет), затем сдать.
   (Widget?, Widget?) _primary() {
     final d = _d;
     if (d == null) return (null, null);
     final l = context.l10n;
     final status = (d['status'] ?? 'new') as String;
-    if (_isManager) {
-      if (status == 'new') {
-        return (
-          AppButton.primary(
-              onPressed: _assign,
-              icon: AppIcons.userAdd,
-              label: l.actionAssign),
-          null
-        );
-      }
-      if (status == 'on_review') {
-        return (
-          _acceptButton(),
-          AppIconButton(
-              icon: AppIcons.undo,
-              label: l.actionReturn,
-              filled: true,
-              size: 52,
-              color: AppColors.danger,
-              onPressed: _returnForRework)
-        );
-      }
-      return (null, null);
+    final can = _can;
+    if (can.assign && status == 'new') {
+      return (
+        AppButton.primary(
+            onPressed: _assign, icon: AppIcons.userAdd, label: l.actionAssign),
+        null
+      );
     }
-    if (_isExecutor) {
-      if (_canStart(status)) return (_startButton(status), null);
-      if (status == 'in_progress') {
-        if (_needPhoto) return (_photoButton(), null);
-        return (
-          _submitButton(),
-          AppIconButton(
-              icon: AppIcons.camera,
-              label: l.photoTakeMore,
-              filled: true,
-              size: 52,
-              onPressed: _uploading ? null : () => _addPhoto('after'))
-        );
-      }
+    if (can.accept) {
+      return (
+        _acceptButton(),
+        AppIconButton(
+            icon: AppIcons.undo,
+            label: l.actionReturn,
+            filled: true,
+            size: 52,
+            color: AppColors.danger,
+            onPressed: _returnForRework)
+      );
+    }
+    if (can.start) return (_startButton(status), null);
+    if (can.submit) {
+      if (_needPhoto) return (_photoButton(), null);
+      return (
+        _submitButton(),
+        AppIconButton(
+            icon: AppIcons.camera,
+            label: l.photoTakeMore,
+            filled: true,
+            size: 52,
+            onPressed: _uploading ? null : () => _addPhoto('after'))
+      );
     }
     return (null, null);
   }
 
-  /// Отменить можно автору и менеджеру, пока заявка не принята и не отменена.
-  bool get _canCancel {
-    final status = _d?['status'] as String? ?? widget.order.status;
-    return (_isAuthor || _isManager) &&
-        status != 'done' &&
-        status != 'cancelled';
-  }
+  bool get _canCancel => _d != null && _can.cancel;
 
   /// Удаление (меню «⋯», только менеджер): подтверждение → фото из Storage →
   /// заявка → назад к списку с сообщением. Ошибка — заявка остаётся.
@@ -1028,37 +1035,49 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     }
   }
 
-  /// Остальные действия — в блоке «Действия» (без повторов с нижней панелью).
-  /// Те же правила проверяет база.
+  /// Остальные действия и пояснения — в блоке «Действия» (без повторов с
+  /// нижней панелью). Те же правила проверяет база (0023).
   List<Widget> _actions(String status) {
-    final canAccept = _isAuthor || _isManager;
     final l = context.l10n;
-    final inBar = _isManager || _isExecutor;
-    return [
-      // Менеджер может начать и сдать работу сам — эти кнопки у него здесь.
-      if (_isManager && _canStart(status)) _startButton(status),
-      if (_isManager && status == 'in_progress') ...[
-        if (_needPhoto) _photoButton(primary: false),
-        _submitButton(),
-      ],
-      if (_needPhoto && status == 'in_progress' && (_isManager || _isExecutor))
-        Padding(
+    final can = _can;
+    Widget hint(String text) => Padding(
           padding:
               const EdgeInsetsDirectional.symmetric(horizontal: AppSpace.xs),
-          child: Text(l.photoNeededHint, style: AppText.footnote),
-        ),
-      // Заявитель принимает свою работу здесь: нижней панели у него нет.
-      if (!inBar && canAccept && status == 'on_review') ...[
-        _acceptButton(),
-        _returnButton(),
-      ],
-      if (canAccept && status != 'done' && status != 'cancelled')
+          child: Text(text, style: AppText.footnote),
+        );
+    return [
+      if (can.assignFirstHint) hint(l.orderAssignFirst),
+      if (can.watchProgress) _progressLine(),
+      if (can.otherManagerMustAccept) hint(l.orderOtherManagerAccepts),
+      if (_needPhoto && can.submit) hint(l.photoNeededHint),
+      if (can.cancel)
         AppButton.destructive(
           onPressed: () => _setStatus('cancelled', l.toastCancelled),
           icon: AppIcons.close,
           label: l.actionCancel,
         ),
     ];
+  }
+
+  /// Менеджер, заявка в работе: «Выполняет КлиматСервис · начато 14.10
+  /// 10:15 · фото «после»: нет» — вместо кнопок исполнителя.
+  Widget _progressLine() {
+    final l = context.l10n;
+    final d = _d!;
+    final started = DateTime.tryParse('${d['started_at'] ?? ''}');
+    final after = _photos.where((p) => p.stage != 'before').length;
+    return AppGroup(children: [
+      AppRow(
+        leading: const LeadingIcon(AppIcons.contractor),
+        title: l.orderProgressBy(_contractorNameIn(
+            l, widget.contractors, d['assigned_contractor_id'] as String?)),
+        subtitle: [
+          if (started != null) l.orderProgressStarted(l.dateTime(started)),
+          l.orderProgressAfter(after == 0 ? l.orderProgressNone : '$after'),
+        ].join(' · '),
+        subtitleMaxLines: 2,
+      ),
+    ]);
   }
 }
 

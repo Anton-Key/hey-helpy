@@ -4807,4 +4807,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get formFromCamera => 'from the camera';
+
+  @override
+  String get orderAssignFirst =>
+      'Assign a contractor first — their technician starts the work';
+
+  @override
+  String get orderOtherManagerAccepts =>
+      'You submitted this work — another manager must accept it';
+
+  @override
+  String orderProgressBy(String contractor) {
+    return 'In progress: $contractor';
+  }
+
+  @override
+  String orderProgressStarted(String date) {
+    return 'started $date';
+  }
+
+  @override
+  String orderProgressAfter(String count) {
+    return '“after” photos: $count';
+  }
+
+  @override
+  String get orderProgressNone => 'none';
+
+  @override
+  String get errExecutorOnly => 'Only the contractor\'s technician can do this';
+
+  @override
+  String get errManagerOnly => 'Only a manager can accept or return the work';
+
+  @override
+  String get errSamePersonAccept =>
+      'You submitted this work — another manager must accept it';
 }

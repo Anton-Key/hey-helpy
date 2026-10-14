@@ -4836,4 +4836,41 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get formFromCamera => 'с камеры';
+
+  @override
+  String get orderAssignFirst =>
+      'Сначала назначьте подрядчика — работу начинает его исполнитель';
+
+  @override
+  String get orderOtherManagerAccepts =>
+      'Работу на проверку отправили вы — принять должен другой менеджер';
+
+  @override
+  String orderProgressBy(String contractor) {
+    return 'Выполняет $contractor';
+  }
+
+  @override
+  String orderProgressStarted(String date) {
+    return 'начато $date';
+  }
+
+  @override
+  String orderProgressAfter(String count) {
+    return 'фото «после»: $count';
+  }
+
+  @override
+  String get orderProgressNone => 'нет';
+
+  @override
+  String get errExecutorOnly => 'Это действие выполняет исполнитель подрядчика';
+
+  @override
+  String get errManagerOnly =>
+      'Принять или вернуть работу может только менеджер';
+
+  @override
+  String get errSamePersonAccept =>
+      'Работу отправили вы — принять должен другой менеджер';
 }

@@ -8216,6 +8216,60 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'с камеры'**
   String get formFromCamera;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала назначьте подрядчика — работу начинает его исполнитель'**
+  String get orderAssignFirst;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Работу на проверку отправили вы — принять должен другой менеджер'**
+  String get orderOtherManagerAccepts;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполняет {contractor}'**
+  String orderProgressBy(String contractor);
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'начато {date}'**
+  String orderProgressStarted(String date);
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'фото «после»: {count}'**
+  String orderProgressAfter(String count);
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'нет'**
+  String get orderProgressNone;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Это действие выполняет исполнитель подрядчика'**
+  String get errExecutorOnly;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Принять или вернуть работу может только менеджер'**
+  String get errManagerOnly;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Работу отправили вы — принять должен другой менеджер'**
+  String get errSamePersonAccept;
 }
 
 class _AppLocalizationsDelegate

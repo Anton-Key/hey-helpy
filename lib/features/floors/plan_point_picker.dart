@@ -322,6 +322,9 @@ class _PlanPointPickerScreenState extends State<PlanPointPickerScreen> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   // Нажатие по плану — маркер сюда.
+                  // Для диктора «нажатие по центру плана» бессмысленно:
+                  // точку двигают маркером.
+                  excludeFromSemantics: true,
                   onTapUp: (d) =>
                       _setPoint(pixelsToFraction(d.localPosition, plan)),
                   child: SizedBox(
@@ -380,6 +383,7 @@ class _PlanPointPickerScreenState extends State<PlanPointPickerScreen> {
         width: _Marker.hit,
         height: _Marker.hit,
         child: Semantics(
+          button: true,
           label: l.eqPlaceMarker(widget.assetName),
           child: MouseRegion(
             cursor: SystemMouseCursors.move,

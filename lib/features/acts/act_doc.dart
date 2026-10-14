@@ -75,8 +75,11 @@ String actProofText(AppLocalizations l, ActLine x) => [
       if (x.checklistProof) l.actProofChecklist,
     ].join(', ');
 
+/// «4 500 ₽», «4 500,50 ₽» — копейки только если они есть.
 String actMoney(String locale, double v, String currency) =>
-    NumberFormat.simpleCurrency(locale: locale, name: currency).format(v);
+    NumberFormat.simpleCurrency(
+            locale: locale, name: currency, decimalDigits: v % 1 == 0 ? 0 : 2)
+        .format(v);
 
 ActDoc buildActDoc({
   required AppLocalizations l,

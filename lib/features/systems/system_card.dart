@@ -222,12 +222,12 @@ class _SystemCardScreenState extends State<SystemCardScreen> {
     ];
     return [
       AppGroup(children: [
-        AppRow(
-          leading: SystemTile(_layer),
-          title: _layer.label(context.localeCode),
-          subtitle: _layer.archived ? l.systemArchivedBadge : null,
-          chevron: false,
-        ),
+        if (_layer.archived)
+          AppRow(
+            leading: SystemTile(_layer),
+            title: l.systemArchivedBadge,
+            chevron: false,
+          ),
         AppRow(
             leading: const LeadingIcon.neutral(AppIcons.wrench),
             title: l.systemAssets,

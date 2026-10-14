@@ -573,6 +573,15 @@ class _ContractorActsScreenState extends State<ContractorActsScreen> {
       if (x.checklistProof) const _Proof(AppIcons.check),
     ];
     final reasons = [for (final r in x.reasons) actReasonText(l, r)].join(', ');
+    final narrow = MediaQuery.sizeOf(context).width < 600;
+    final badge = Row(mainAxisSize: MainAxisSize.min, children: [
+      ...proofs,
+      if (x.amount != null) ...[
+        const SizedBox(width: AppSpace.s),
+        Text(actMoney(l.localeName, x.amount!, _rates.currency),
+            style: AppText.callout.copyWith(fontWeight: FontWeight.w600)),
+      ],
+    ]);
     return AppRow(
       leading: x.payable
           ? const LeadingIcon(AppIcons.success)
@@ -585,14 +594,13 @@ class _ContractorActsScreenState extends State<ContractorActsScreen> {
         if (!x.payable) reasons,
       ].join(' · '),
       subtitleMaxLines: 3,
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        ...proofs,
-        if (x.amount != null) ...[
-          const SizedBox(width: AppSpace.s),
-          Text(actMoney(l.localeName, x.amount!, _rates.currency),
-              style: AppText.callout.copyWith(fontWeight: FontWeight.w600)),
-        ],
-      ]),
+      // Узкий экран: значки и сумма — под строкой, название во всю ширину.
+      trailing: narrow ? null : badge,
+      extra: narrow && (proofs.isNotEmpty || x.amount != null)
+          ? Padding(
+              padding: const EdgeInsetsDirectional.only(top: AppSpace.xs),
+              child: badge)
+          : null,
       onTap: () => _openOrder(o),
     );
   }

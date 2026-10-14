@@ -461,7 +461,11 @@ class DirectoryRepo {
   /// отображения. Добавляются в базе без изменения приложения.
   /// select() без списка полей: name_i18n появляется только после миграции 0007.
   Future<List<Layer>> layers() async {
-    final rows = await _c.from('layers').select().order('sort').order('name');
+    final rows = await _c
+        .from('layers')
+        .select()
+        .order('sort', ascending: true)
+        .order('name', ascending: true);
     return (rows as List)
         .map((e) => Layer.fromMap(e as Map<String, dynamic>))
         .toList();

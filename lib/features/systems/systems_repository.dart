@@ -76,7 +76,11 @@ class SystemsRepository {
   /// Все видимые системы (с архивными), по порядку.
   /// Есть ли 0020 — по столбцу `icon` в ответе (запрос «*» работает и без неё).
   Future<List<Layer>> list() async {
-    final rows = await _c.from('layers').select().order('sort').order('name');
+    final rows = await _c
+        .from('layers')
+        .select()
+        .order('sort', ascending: true)
+        .order('name', ascending: true);
     final list = (rows as List).cast<Map<String, dynamic>>();
     if (list.isNotEmpty) {
       SchemaCompat.mark('0020', list.first.containsKey('icon'));

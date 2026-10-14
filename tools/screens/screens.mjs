@@ -1376,10 +1376,10 @@ function NEW_SCREENS() {
 // браузере Playwright (ответ сервера на чтение profiles), в базе не меняется.
 const EN_SCREENS = [
   { key: 'en-requests', title: 'EN — Work orders', run: async (p) => { await home(p); } },
-  { key: 'en-ppr', title: 'EN — Preventive maintenance (PM)', run: async (p) => {
+  { key: 'en-ppr', title: 'EN — Preventive maintenance (Maintenance)', run: async (p) => {
       await home(p);
-      await p.getByRole('tab', { name: /^PM/ }).or(p.getByRole('button', { name: /^PM$/ }))
-        .or(p.getByText(/^PM$/)).first().click();
+      await p.getByRole('tab', { name: /^Maintenance/ }).or(p.getByRole('button', { name: /^Maintenance$/ }))
+        .or(p.getByText(/^Maintenance$/)).first().click();
       await see(p, /\d+ of \d+ done/).waitFor({ timeout: 20000 });
       await settle(p, 1500);
     } },

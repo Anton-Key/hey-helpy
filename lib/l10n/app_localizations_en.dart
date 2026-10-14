@@ -4807,4 +4807,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get formFromCamera => 'from the camera';
+
+  @override
+  String get orderAssignFirst =>
+      'Assign a contractor first — their technician starts the work';
+
+  @override
+  String get orderOtherManagerAccepts =>
+      'You submitted this work — another manager must accept it';
+
+  @override
+  String orderProgressBy(String contractor) {
+    return 'In progress: $contractor';
+  }
+
+  @override
+  String orderProgressStarted(String date) {
+    return 'started $date';
+  }
+
+  @override
+  String orderProgressAfter(String count) {
+    return '“after” photos: $count';
+  }
+
+  @override
+  String get orderProgressNone => 'none';
+
+  @override
+  String get errExecutorOnly => 'Only the contractor\'s technician can do this';
+
+  @override
+  String get errManagerOnly => 'Only a manager can accept or return the work';
+
+  @override
+  String get errSamePersonAccept =>
+      'You submitted this work — another manager must accept it';
+
+  @override
+  String get shotTitle => 'Result photo';
+
+  @override
+  String get shotHint =>
+      'Photograph the finished work. “After” photos are camera-only';
+
+  @override
+  String get shotTake => 'Take photo';
+
+  @override
+  String get shotRetake => 'Retake';
+
+  @override
+  String get shotDone => 'Use photo';
+
+  @override
+  String get shotPreparing => 'Preparing photo…';
+
+  @override
+  String get shotPickFile => 'Choose a file';
+
+  @override
+  String get shotFileWarning =>
+      'You can choose a file, but the photo will be marked “from file” and won\'t count as proof in the contractor act';
+
+  @override
+  String get photoFromFile => 'from file';
+
+  @override
+  String get stampInZone => 'in geofence';
+
+  @override
+  String get stampOutOfZone => 'outside geofence';
+
+  @override
+  String get shotDenied =>
+      'No camera access. Allow it in your browser or phone settings.';
+
+  @override
+  String get shotFailed => 'Couldn\'t start the camera. Please try again.';
+
+  @override
+  String get actReasonPhotoFromFile =>
+      '“after” photo uploaded from a file, not taken on site';
+
+  @override
+  String get cameraNoEquipment =>
+      'No equipment in the frame — point the camera at a device';
 }

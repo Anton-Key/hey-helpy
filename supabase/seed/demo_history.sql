@@ -1446,6 +1446,15 @@ begin
     lat = excluded.lat, lng = excluded.lng, uploaded_by = excluded.uploaded_by,
     created_at = excluded.created_at;
 
+  -- Шаг 26 (0023): источник демо-картинок — «demo», в акте они считаются
+  -- доказательством, как раньше. Без 0023 столбца нет — пропускаем.
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'attachments'
+                and column_name = 'source') then
+    execute $q$update public.attachments set source = 'demo'
+                where storage_path like 'demo/%' and source <> 'demo'$q$;
+  end if;
+
   insert into public.checklist_items (id, work_order_id, text, is_done, done_at, done_by, created_at)
   select ('de300000-0000-4000-8000-00000000b' || lpad(v.k::text, 3, '0'))::uuid, w.id, v.txt, true,
          coalesce(w.submitted_at, w.updated_at) - interval '20 minutes', v_executor, w.created_at

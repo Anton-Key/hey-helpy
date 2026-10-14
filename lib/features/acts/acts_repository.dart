@@ -118,16 +118,26 @@ class ActsRepository {
     ];
     final ids = [for (final r in inPeriod) r['id'] as String];
     final photos = <String>{};
+    final filePhotos = <String>{};
     final visits = <String, VisitProof>{};
     final checklist = <String, (int, int)>{};
     for (final chunk in chunks(ids)) {
       final r = await Future.wait([
-        _c
-            .from('attachments')
-            .select('work_order_id')
-            .eq('kind', 'photo')
-            .eq('stage', 'after')
-            .inFilter('work_order_id', chunk),
+        // Источник фото (0023): «из файла» — не доказательство.
+        SchemaCompat.run(
+            '0023',
+            () => _c
+                .from('attachments')
+                .select('work_order_id,source')
+                .eq('kind', 'photo')
+                .eq('stage', 'after')
+                .inFilter('work_order_id', chunk),
+            legacy: () => _c
+                .from('attachments')
+                .select('work_order_id')
+                .eq('kind', 'photo')
+                .eq('stage', 'after')
+                .inFilter('work_order_id', chunk)),
         _c
             .from('visits')
             .select('work_order_id,in_geofence')
@@ -138,7 +148,8 @@ class ActsRepository {
             .inFilter('work_order_id', chunk),
       ]);
       for (final a in r[0]) {
-        photos.add(a['work_order_id'] as String);
+        (a['source'] == 'file' ? filePhotos : photos)
+            .add(a['work_order_id'] as String);
       }
       for (final v in r[1]) {
         final id = v['work_order_id'] as String;
@@ -171,6 +182,7 @@ class ActsRepository {
           layerId: r['layer_id'] as String?,
           requiresPhoto: r['requires_photo'] == true,
           hasAfterPhoto: photos.contains(r['id']),
+          hasFileAfterPhoto: filePhotos.contains(r['id']),
           visitRequired: withZone.contains(r['object_id']),
           visit: visits[r['id']] ?? VisitProof.none,
           checklistTotal: checklist[r['id']]?.$1 ?? 0,

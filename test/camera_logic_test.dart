@@ -38,6 +38,21 @@ void main() {
       expect(cameraCard(busy: true).kind, CameraCardKind.looking);
     });
 
+    test('в кадре нет оборудования — отдельная карточка (шаг 26)', () {
+      const r = PhotoIdentification(kind: 'other', noEquipment: true);
+      expect(cameraCard(busy: false, result: r).kind,
+          CameraCardKind.noEquipment);
+      expect(
+          PhotoIdentification.fromJson(
+                  {'source': 'ai', 'kind': 'other', 'no_equipment': true})!
+              .noEquipment,
+          isTrue);
+      expect(
+          PhotoIdentification.fromJson({'source': 'ai', 'kind': 'ac'})!
+              .noEquipment,
+          isFalse);
+    });
+
     test('0 кандидатов или ошибка — «Не узнал»', () {
       expect(cameraCard(busy: false, result: _r(const [])).kind,
           CameraCardKind.notRecognized);

@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/schema_compat.dart';
+
 /// Фото к заявке: «до» (от автора) или «после» (результат работы).
 class WorkPhoto {
   final String id;
@@ -18,6 +20,12 @@ class WorkPhoto {
   /// сборки (assets/demo_photos), а не файл в хранилище.
   final String? asset;
 
+  /// Откуда снимок (0023): camera | file | telegram | demo; null — база без 0023.
+  final String? source;
+
+  /// Фото «после» загружено из файла — не доказательство (метка «из файла»).
+  bool get fromFile => source == 'file';
+
   const WorkPhoto(
       {required this.id,
       required this.stage,
@@ -28,7 +36,8 @@ class WorkPhoto {
       this.mockLocation = false,
       this.url,
       this.uploaderName,
-      this.asset});
+      this.asset,
+      this.source});
 
   bool get viewable => url != null || asset != null;
 
@@ -45,12 +54,24 @@ class CapturedPhoto {
   final double? lat;
   final double? lng;
   final bool mockLocation;
+
+  /// camera — снято живой камерой приложения; file — выбран файл (0023).
+  final String source;
   const CapturedPhoto(
       {required this.bytes,
       required this.takenAt,
       this.lat,
       this.lng,
-      this.mockLocation = false});
+      this.mockLocation = false,
+      this.source = 'file'});
+
+  CapturedPhoto withBytes(Uint8List b) => CapturedPhoto(
+      bytes: b,
+      takenAt: takenAt,
+      lat: lat,
+      lng: lng,
+      mockLocation: mockLocation,
+      source: source);
 }
 
 /// Путь демо-фото: `demo/ac_after.jpg` → `assets/demo_photos/ac_after.jpg`.
@@ -72,14 +93,16 @@ class PhotoRepository {
   final SupabaseClient _c = Supabase.instance.client;
 
   Future<List<WorkPhoto>> list(String workOrderId) async {
-    final rows = await _c
+    Future<List<dynamic>> query(String extra) => _c
         .from('attachments')
-        .select('id,stage,storage_path,taken_at,lat,lng,mock_location,'
+        .select('id,stage,storage_path,taken_at,lat,lng,mock_location,$extra'
             'uploader:profiles!attachments_uploaded_by_fkey(full_name)')
         .eq('work_order_id', workOrderId)
         .eq('kind', 'photo')
         .order('created_at');
-    final list = (rows as List).cast<Map<String, dynamic>>();
+    final rows = await SchemaCompat.run('0023', () => query('source,'),
+        legacy: () => query(''));
+    final list = rows.cast<Map<String, dynamic>>();
     if (list.isEmpty) return const [];
     final paths = [
       for (final r in list)
@@ -111,6 +134,7 @@ class PhotoRepository {
           uploaderName:
               (r['uploader'] as Map<String, dynamic>?)?['full_name'] as String?,
           asset: demoAsset(r['storage_path'] as String),
+          source: r['source'] as String?,
         ),
     ];
   }
@@ -132,18 +156,22 @@ class PhotoRepository {
     await _c.storage.from(bucket).uploadBinary(path, photo.bytes,
         fileOptions:
             const FileOptions(contentType: 'image/jpeg', upsert: false));
+    final row = {
+      'work_order_id': workOrderId,
+      'kind': 'photo',
+      'stage': stage,
+      'storage_path': path,
+      'taken_at': photo.takenAt.toUtc().toIso8601String(),
+      'lat': photo.lat,
+      'lng': photo.lng,
+      'mock_location': photo.mockLocation,
+      'uploaded_by': _c.auth.currentUser?.id,
+    };
     try {
-      await _c.from('attachments').insert({
-        'work_order_id': workOrderId,
-        'kind': 'photo',
-        'stage': stage,
-        'storage_path': path,
-        'taken_at': photo.takenAt.toUtc().toIso8601String(),
-        'lat': photo.lat,
-        'lng': photo.lng,
-        'mock_location': photo.mockLocation,
-        'uploaded_by': _c.auth.currentUser?.id,
-      });
+      // Источник снимка (0023) ставится один раз, при вставке.
+      await SchemaCompat.run('0023',
+          () => _c.from('attachments').insert({...row, 'source': photo.source}),
+          legacy: () => _c.from('attachments').insert(row));
     } catch (_) {
       // Запись не создалась — убираем «осиротевший» файл.
       try {

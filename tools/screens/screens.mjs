@@ -764,14 +764,21 @@ const SCREENS = [
       await home(p);
       const titles = [PICKER_ORDER, ...DEMO_TITLES.filter((t) => t !== PICKER_ORDER)];
       let chosen = null;
-      for (const t of titles) {
-        const card = p.getByRole('button', { name: t }).first();
-        if (!(await card.count())) continue;
-        // Текст карточки: название, место, статус — статус последней строкой.
-        if (!ASSIGNABLE.test((await card.innerText()).trim())) continue;
-        await card.click();
-        chosen = t;
-        break;
+      // На телефоне список ленивый: видны только верхние строки — листаем вниз.
+      for (let tries = 0; tries < 8 && !chosen; tries++) {
+        for (const t of titles) {
+          const card = p.getByRole('button', { name: t }).first();
+          if (!(await card.count())) continue;
+          // Текст карточки: название, место, статус — статус последней строкой.
+          if (!ASSIGNABLE.test((await card.innerText()).trim())) continue;
+          await card.click();
+          chosen = t;
+          break;
+        }
+        if (!chosen) {
+          await p.mouse.wheel(0, 600);
+          await settle(p, 600);
+        }
       }
       if (!chosen) throw new Error('В списке нет заявки из демо-истории со статусом «Новая», «Назначена» или «Возвращена»');
       await see(p, 'Подрядчик').waitFor({ timeout: 20000 });
@@ -1671,7 +1678,8 @@ if (PITCH_MODE) {
 // ---------------------------------------------------------------------------
 // Съёмка
 // ---------------------------------------------------------------------------
-rmSync(OUT, { recursive: true, force: true });
+// --only / --width снимают часть экранов: остальные снимки в папке не трогаем.
+if (!ONLY && !WIDTH) rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 const results = [];
 const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });

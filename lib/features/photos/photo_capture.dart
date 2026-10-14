@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,7 +20,8 @@ Future<CapturedPhoto?> capturePhoto() async {
   // Сначала разрешение на геолокацию (отдельным окном, до камеры),
   // затем координаты ищутся, пока человек снимает.
   final canLocate = await ensureLocationPermission();
-  final locationFuture = canLocate ? currentPosition() : Future<Position?>.value(null);
+  final locationFuture =
+      canLocate ? currentPosition() : Future<Position?>.value(null);
   final XFile? file;
   try {
     file = await ImagePicker().pickImage(
@@ -31,13 +33,21 @@ Future<CapturedPhoto?> capturePhoto() async {
       requestFullMetadata: false,
     );
   } on PlatformException catch (e) {
-    if (e.code == 'camera_access_denied') throw CaptureException(CaptureProblem.cameraDenied);
+    if (e.code == 'camera_access_denied') {
+      throw CaptureException(CaptureProblem.cameraDenied);
+    }
     throw CaptureException(CaptureProblem.failed);
   }
   if (file == null) return null;
   final takenAt = DateTime.now();
   final bytes = await file.readAsBytes();
   final pos = await locationFuture;
-  return CapturedPhoto(bytes: bytes, takenAt: takenAt,
-      lat: pos?.latitude, lng: pos?.longitude, mockLocation: pos?.isMocked ?? false);
+  // В браузере «камера» image_picker — это выбор файла: снимок «из файла».
+  return CapturedPhoto(
+      bytes: bytes,
+      takenAt: takenAt,
+      lat: pos?.latitude,
+      lng: pos?.longitude,
+      mockLocation: pos?.isMocked ?? false,
+      source: kIsWeb ? 'file' : 'camera');
 }

@@ -673,7 +673,9 @@ class _CameraScreenState extends State<CameraScreen>
           photo: photo == null
               ? null
               : CapturedPhoto(
-                  bytes: photo, takenAt: _takenAt ?? DateTime.now()),
+                  bytes: photo,
+                  takenAt: _takenAt ?? DateTime.now(),
+                  source: 'camera'),
         );
         if (ok == true && mounted) Navigator.pop(context, true);
       });
@@ -1124,7 +1126,12 @@ class _CameraScreenState extends State<CameraScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(manual ? l.cameraPickManually : l.cameraNotRecognized,
+          Text(
+              manual
+                  ? l.cameraPickManually
+                  : _card.kind == CameraCardKind.noEquipment
+                      ? l.cameraNoEquipment
+                      : l.cameraNotRecognized,
               style: AppText.headline),
           if (_problem != null) ...[
             const SizedBox(height: AppSpace.xs),

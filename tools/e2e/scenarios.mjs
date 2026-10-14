@@ -1,7 +1,7 @@
 // Сценарии сквозных тестов. Каждый — отдельный тест: run(ctx) бросает
 // исключение, если что-то не так. Проверки — и по экрану, и по базе.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, statSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -9,15 +9,6 @@ import {
 } from './lib.mjs';
 
 const TMP = mkdtempSync(join(tmpdir(), 'hh-e2e-'));
-/** Снимок «после» — сгенерированная картинка (не реальное фото). */
-function photoFile() {
-  const f = join(TMP, 'after.jpg');
-  if (!existsSync(f)) {
-    execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc=size=800x600:rate=1',
-      '-frames:v', '1', f]);
-  }
-  return f;
-}
 // Геопозиция «БЦ «Демо»» (Белград) — визит в геозоне.
 const BC_DEMO = { latitude: 44.80471, longitude: 20.44942, accuracy: 10 };
 
@@ -36,6 +27,15 @@ async function clickAction(page, re, timeout = 15000) {
   await b.waitFor({ timeout });
   await b.click();
   await settle(page, 1500);
+}
+
+/** Фото «после» — живой камерой (шаг 26; в сборке e2e — заглушка камеры):
+ * «Сфотографировать результат» → «Снять» → «Готово». Галереи нет. */
+async function takeLivePhoto(page) {
+  await clickAction(page, /Сфотографировать результат/);
+  await btn(page, /^Снять/).waitFor({ timeout: 20000 });
+  await btn(page, /^Снять/).click();
+  await clickAction(page, /^Готово/);
 }
 
 /** Весь текст экрана (дерево доступности Flutter). */
@@ -127,9 +127,7 @@ export const SCENARIOS = [
       const visit = await waitDb(`select coalesce(in_geofence::text, 'null') from visits where work_order_id = '${id}'`, (v) => v.length > 0);
       assert(visit === 'true', `визит должен быть в геозоне, в базе: ${visit}`);
       await ctx.shot(e, 'exec-started');
-      const chooser = e.waitForEvent('filechooser', { timeout: 15000 });
-      await clickAction(e, /Сфотографировать результат/);
-      await (await chooser).setFiles(photoFile());
+      await takeLivePhoto(e);
       await waitDb(`select count(*) from attachments where work_order_id = '${id}' and stage = 'after'`, '1', 20000);
       await settle(e, 2000);
       await ctx.shot(e, 'exec-photo');
@@ -189,9 +187,7 @@ export const SCENARIOS = [
       await openOrder(e, base, 'ТО кондиционеров');
       await clickAction(e, /^Начать работу/);
       await waitDb(`select status from work_orders where id = '${task}'`, 'in_progress');
-      const chooser = e.waitForEvent('filechooser', { timeout: 15000 });
-      await clickAction(e, /Сфотографировать результат/);
-      await (await chooser).setFiles(photoFile());
+      await takeLivePhoto(e);
       await waitDb(`select count(*) from attachments where work_order_id = '${task}' and stage = 'after'`, '1', 20000);
       await settle(e, 1500);
       await clickAction(e, /Выполнено, на проверку/);
@@ -889,7 +885,8 @@ export const SCENARIOS = [
       const proven = +sql(`select count(*) from work_orders w left join objects o on o.id = w.object_id
         where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
           and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
-          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo' and a.stage = 'after'))
+          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo' and a.stage = 'after'
+                                                and a.source <> 'file'))
           and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
           and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`);
       const before = +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`);
@@ -961,6 +958,85 @@ export const SCENARIOS = [
       const row = sql(`select coalesce(asset_id::text, '-') || '|' || coalesce(location_id::text, '-') || '|' || title from work_orders where id = '${id}'`);
       ctx.notes.push(`заявка: ${row.split('|')[2]}`);
       assert(row.startsWith(`${uuid(708)}|${uuid(21)}|`), `оборудование и помещение заявки: ${row}`);
+    },
+  },
+  {
+    id: 16,
+    title: 'Роли (шаг 26): менеджер не начинает работу за подрядчика → исполнитель (живой снимок «после») сдаёт → менеджер принимает → в акте «к оплате»',
+    async run(ctx) {
+      const { base } = ctx;
+      const title = 'E2E-16 Шумит кондиционер';
+      sql(`delete from work_orders where company_id = '${uuid(1)}' and title = '${title}'`);
+      const id = sql(`insert into work_orders(company_id, object_id, location_id, layer_id, work_type, title, status,
+          created_by, assigned_contractor_id, requires_photo)
+        select '${uuid(1)}', '${uuid(10)}', '${uuid(21)}', l.id, l.name, '${title}', 'assigned',
+          (select id from auth.users where email = '${USERS.requester}'), '${uuid(31)}', true
+          from layers l where l.company_id = '${uuid(1)}' and l.name = 'Климат' returning id`).split('\n')[0];
+
+      // 1. Менеджер: кнопок исполнителя нет.
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await openOrder(m, base, title);
+      let t = await screenText(m);
+      assert(!/Начать работу|Сфотографировать результат|Выполнено, на проверку/.test(t),
+        'у менеджера не должно быть кнопок исполнителя');
+      await ctx.shot(m, 'manager-assigned');
+
+      // 2. Исполнитель «КлиматСервис»: начать, живой снимок «после», сдать.
+      const e = await ctx.page({ width: 412, height: 915, geo: BC_DEMO });
+      await login(e, base, USERS.executor);
+      await openOrder(e, base, title);
+      await clickAction(e, /^Начать работу/);
+      await waitDb(`select status from work_orders where id = '${id}'`, 'in_progress');
+
+      // Менеджер видит ход работы, а не кнопки.
+      await openOrder(m, base, title);
+      await see(m, /Выполняет КлиматСервис/).waitFor({ timeout: 15000 });
+      t = await screenText(m);
+      assert(!/Выполнено, на проверку|Сфотографировать результат/.test(t), 'у менеджера в работе — только строка-статус');
+      await ctx.shot(m, 'manager-progress');
+
+      await takeLivePhoto(e);
+      const src = await waitDb(`select string_agg(source, ',') from attachments where work_order_id = '${id}' and stage = 'after'`,
+        (v) => v.length > 0, 20000);
+      ctx.notes.push(`источник фото «после»: ${src}`);
+      assert(src === 'camera', `фото «после» должно быть с камеры, в базе: ${src}`);
+      await settle(e, 1500);
+      await ctx.shot(e, 'exec-photo');
+      await clickAction(e, /Выполнено, на проверку/);
+      await waitDb(`select status from work_orders where id = '${id}'`, 'on_review');
+      const by = sql(`select p.email from work_orders w join auth.users p on p.id = w.submitted_by where w.id = '${id}'`);
+      assert(by === USERS.executor, `submitted_by: ${by}`);
+
+      // 3. Менеджер принимает.
+      await openOrder(m, base, title);
+      await clickAction(m, /^Принять работу/);
+      const confirm = btn(m, /^Принять$/);
+      if (await confirm.isVisible().catch(() => false)) await confirm.click();
+      await waitDb(`select status from work_orders where id = '${id}'`, 'done');
+
+      // 4. Акт «КлиматСервис» за месяц: заявка — в «К оплате».
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await scrollTo(m, /Акты подрядчикам/);
+      await btn(m, /^Акты подрядчикам/).click();
+      await see(m, /К оплате · \d+/).waitFor({ timeout: 30000 });
+      await settle(m, 1500);
+      t = await screenText(m);
+      const shown = +(t.match(/К оплате · (\d+)/i)?.[1] ?? NaN);
+      // Те же правила акта в SQL (как сценарий 14, фото «из файла» — не доказательство).
+      const proven = sql(`select string_agg(w.id::text, ',') from work_orders w left join objects o on o.id = w.object_id
+        where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
+          and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
+          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo'
+                                                and a.stage = 'after' and a.source <> 'file'))
+          and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
+          and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`).split(',');
+      ctx.notes.push(`в акте к оплате на экране ${shown}, по базе ${proven.length}, заявка среди них: ${proven.includes(id)}`);
+      assert(proven.includes(id), 'заявка должна быть доказанной по правилам акта');
+      assert(shown === proven.length, `«К оплате»: на экране ${shown}, по базе ${proven.length}`);
+      await scrollTo(m, new RegExp(title));
+      await ctx.shot(m, 'act');
     },
   },
 ];

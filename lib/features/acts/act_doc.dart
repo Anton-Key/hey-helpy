@@ -64,6 +64,7 @@ String actReasonText(AppLocalizations l, ActReason r) => switch (r) {
       ActReason.notAccepted => l.actReasonNotAccepted,
       ActReason.returned => l.actReasonReturned,
       ActReason.noPhoto => l.actReasonNoPhoto,
+      ActReason.photoFromFile => l.actReasonPhotoFromFile,
       ActReason.noVisit => l.actReasonNoVisit,
       ActReason.visitOutOfZone => l.actReasonOutOfZone,
       ActReason.checklist => l.actReasonChecklist,

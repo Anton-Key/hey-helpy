@@ -287,6 +287,40 @@ Deno.test("сопоставление: other — только по систем�
   assert(c[0].reasons.includes("open_order"));
 });
 
+Deno.test("нет оборудования в кадре: без вида, системы и кандидатов (шаг 26)", () => {
+  assertEquals(VISION_SCHEMA.required.includes("equipment"), true);
+  const v = normalizeVision(
+    {
+      equipment: false,
+      kind: "ac",
+      layer: "s1",
+      nameplate: { manufacturer: "X", model: "Y", serial: "Z" },
+      defect: "лицо",
+      confidence: 0.4,
+    },
+    layers,
+  );
+  assertEquals(v.noEquipment, true);
+  assertEquals(v.kind, "other");
+  assertEquals(v.layer, null);
+  assertEquals(v.nameplate, null);
+  const r = buildResult(v, assets, { locationId: ROOM301 }, "ru");
+  assertEquals(r.no_equipment, true);
+  assertEquals(r.candidates, []);
+
+  // Есть оборудование или старый ответ без поля — как раньше.
+  const ac = normalizeVision({ equipment: true, kind: "ac", confidence: 0.9 }, layers);
+  assertEquals(ac.noEquipment, undefined);
+  const old = buildResult(
+    normalizeVision({ kind: "ac", confidence: 0.9 }, layers),
+    assets,
+    { locationId: ROOM301 },
+    "ru",
+  );
+  assertEquals(old.no_equipment, false);
+  assertEquals(old.candidates[0].asset_id, "ac-301");
+});
+
 Deno.test("buildResult: подпись вида на языке интерфейса", () => {
   const r = buildResult(
     {

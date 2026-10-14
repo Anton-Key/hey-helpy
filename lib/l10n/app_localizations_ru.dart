@@ -4836,4 +4836,91 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get formFromCamera => 'с камеры';
+
+  @override
+  String get orderAssignFirst =>
+      'Сначала назначьте подрядчика — работу начинает его исполнитель';
+
+  @override
+  String get orderOtherManagerAccepts =>
+      'Работу на проверку отправили вы — принять должен другой менеджер';
+
+  @override
+  String orderProgressBy(String contractor) {
+    return 'Выполняет $contractor';
+  }
+
+  @override
+  String orderProgressStarted(String date) {
+    return 'начато $date';
+  }
+
+  @override
+  String orderProgressAfter(String count) {
+    return 'фото «после»: $count';
+  }
+
+  @override
+  String get orderProgressNone => 'нет';
+
+  @override
+  String get errExecutorOnly => 'Это действие выполняет исполнитель подрядчика';
+
+  @override
+  String get errManagerOnly =>
+      'Принять или вернуть работу может только менеджер';
+
+  @override
+  String get errSamePersonAccept =>
+      'Работу отправили вы — принять должен другой менеджер';
+
+  @override
+  String get shotTitle => 'Фото результата';
+
+  @override
+  String get shotHint =>
+      'Снимите результат работы. Фото «после» — только живой камерой';
+
+  @override
+  String get shotTake => 'Снять';
+
+  @override
+  String get shotRetake => 'Переснять';
+
+  @override
+  String get shotDone => 'Готово';
+
+  @override
+  String get shotPreparing => 'Готовлю фото…';
+
+  @override
+  String get shotPickFile => 'Выбрать файл';
+
+  @override
+  String get shotFileWarning =>
+      'Можно выбрать файл, но фото будет помечено «из файла» и не засчитается в акте как доказательство';
+
+  @override
+  String get photoFromFile => 'из файла';
+
+  @override
+  String get stampInZone => 'в геозоне';
+
+  @override
+  String get stampOutOfZone => 'вне геозоны';
+
+  @override
+  String get shotDenied =>
+      'Нет доступа к камере. Разрешите его в настройках браузера или телефона.';
+
+  @override
+  String get shotFailed => 'Не удалось включить камеру. Попробуйте ещё раз.';
+
+  @override
+  String get actReasonPhotoFromFile =>
+      'фото «после» загружено из файла, не снято на месте';
+
+  @override
+  String get cameraNoEquipment =>
+      'В кадре не видно оборудования — наведите камеру на прибор';
 }

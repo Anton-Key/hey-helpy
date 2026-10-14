@@ -231,6 +231,23 @@ class _Thumb extends StatelessWidget {
                           : const ColoredBox(
                               color: AppColors.fill, child: AppLoader()),
                       errorBuilder: (_, __, ___) => broken),
+          // Фото «после» из файла — не доказательство (шаг 26).
+          if (photo.stage != 'before' && photo.fromFile)
+            PositionedDirectional(
+              start: 6,
+              top: 6,
+              child: Container(
+                padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: AppSpace.s, vertical: 2),
+                decoration: BoxDecoration(
+                    color: StatusColors.returned.background,
+                    borderRadius: BorderRadius.circular(AppRadius.pill)),
+                child: Text(context.l10n.photoFromFile,
+                    style: AppText.caption.copyWith(
+                        color: StatusColors.returned.foreground,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ),
           // Значок лупы подсказывает, что фото открывается на весь экран.
           if (photo.viewable && !square)
             PositionedDirectional(
@@ -361,6 +378,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
       if (p.uploaderName?.isNotEmpty == true) p.uploaderName!,
       if (when != null) when,
       where,
+      if (p.stage != 'before' && p.fromFile) l.photoFromFile,
     ].join(' · ');
   }
 

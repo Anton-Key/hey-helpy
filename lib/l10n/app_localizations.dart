@@ -8216,6 +8216,150 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'с камеры'**
   String get formFromCamera;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала назначьте подрядчика — работу начинает его исполнитель'**
+  String get orderAssignFirst;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Работу на проверку отправили вы — принять должен другой менеджер'**
+  String get orderOtherManagerAccepts;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполняет {contractor}'**
+  String orderProgressBy(String contractor);
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'начато {date}'**
+  String orderProgressStarted(String date);
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'фото «после»: {count}'**
+  String orderProgressAfter(String count);
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'нет'**
+  String get orderProgressNone;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Это действие выполняет исполнитель подрядчика'**
+  String get errExecutorOnly;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Принять или вернуть работу может только менеджер'**
+  String get errManagerOnly;
+
+  /// Шаг 26: роли и действия с заявкой
+  ///
+  /// In ru, this message translates to:
+  /// **'Работу отправили вы — принять должен другой менеджер'**
+  String get errSamePersonAccept;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото результата'**
+  String get shotTitle;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Снимите результат работы. Фото «после» — только живой камерой'**
+  String get shotHint;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Снять'**
+  String get shotTake;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Переснять'**
+  String get shotRetake;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово'**
+  String get shotDone;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Готовлю фото…'**
+  String get shotPreparing;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать файл'**
+  String get shotPickFile;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Можно выбрать файл, но фото будет помечено «из файла» и не засчитается в акте как доказательство'**
+  String get shotFileWarning;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'из файла'**
+  String get photoFromFile;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'в геозоне'**
+  String get stampInZone;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'вне геозоны'**
+  String get stampOutOfZone;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет доступа к камере. Разрешите его в настройках браузера или телефона.'**
+  String get shotDenied;
+
+  /// Шаг 26: фото «после» — живой снимок
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось включить камеру. Попробуйте ещё раз.'**
+  String get shotFailed;
+
+  /// Шаг 26: акт — фото из файла
+  ///
+  /// In ru, this message translates to:
+  /// **'фото «после» загружено из файла, не снято на месте'**
+  String get actReasonPhotoFromFile;
+
+  /// Шаг 26: нет оборудования в кадре
+  ///
+  /// In ru, this message translates to:
+  /// **'В кадре не видно оборудования — наведите камеру на прибор'**
+  String get cameraNoEquipment;
 }
 
 class _AppLocalizationsDelegate

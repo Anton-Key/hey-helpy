@@ -48,11 +48,19 @@ extension L10nCodes on AppLocalizations {
       };
 
   /// Понятный текст для ошибок, которые возвращает база при смене статуса.
-  String statusError(Object e) {
+  /// [to] — статус, на который меняли: по нему понятнее, кто это делает (0023).
+  String statusError(Object e, {String? to}) {
     final m = '$e';
     if (m.contains('photo required')) return errPhotoRequired;
     if (m.contains('return reason required')) return returnReasonRequired;
-    if (m.contains('not allowed')) return errNotAllowed;
+    if (m.contains('same person submitted')) return errSamePersonAccept;
+    if (m.contains('not allowed')) {
+      return switch (to) {
+        'in_progress' || 'on_review' => errExecutorOnly,
+        'done' || 'returned' => errManagerOnly,
+        _ => errNotAllowed,
+      };
+    }
     return errorGeneric;
   }
 

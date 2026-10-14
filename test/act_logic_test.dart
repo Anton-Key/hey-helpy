@@ -4,6 +4,7 @@ import 'package:hey_helpy/features/acts/act_logic.dart';
 ActOrder o(String id,
         {String status = 'done',
         bool photo = true,
+        bool filePhoto = false,
         VisitProof visit = VisitProof.inZone,
         bool visitRequired = true,
         int clTotal = 0,
@@ -19,6 +20,7 @@ ActOrder o(String id,
         dueAt: due,
         requiresPhoto: true,
         hasAfterPhoto: photo,
+        hasFileAfterPhoto: filePhoto,
         visitRequired: visitRequired,
         visit: visit,
         checklistTotal: clTotal,
@@ -34,6 +36,13 @@ void main() {
       expect(r.paid.single.geoProof, isTrue);
       expect(r.paid.single.checklistProof, isTrue);
       expect(r.rejected, isEmpty);
+    });
+
+    test('фото «после» только из файла — не доказательство (шаг 26)', () {
+      expect(actReasons(o('f', photo: false, filePhoto: true)),
+          [ActReason.photoFromFile]);
+      // Есть и снимок камеры — к оплате.
+      expect(actReasons(o('g', photo: true, filePhoto: true)), isEmpty);
     });
 
     test('причины словами-кодами', () {

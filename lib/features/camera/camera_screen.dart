@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_message.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../core/location.dart';
+import '../../core/web_bridge.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/city.dart';
 import '../directory/directory.dart';
@@ -52,6 +54,7 @@ class CameraScreen extends StatefulWidget {
     this.origin = PhotoIdentifyOrigin.order,
     this.camera,
     this.offline = false,
+    this.identify,
   });
 
   final String? objectId;
@@ -65,6 +68,10 @@ class CameraScreen extends StatefulWidget {
   /// Без сервера (виджет-тесты): справочники не загружаются.
   @visibleForTesting
   final bool offline;
+
+  /// Подмена `photo-identify` (виджет-тесты).
+  @visibleForTesting
+  final Future<PhotoIdentification> Function(Uint8List jpeg)? identify;
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -115,6 +122,20 @@ class _CameraScreenState extends State<CameraScreen>
   bool _decided = false;
   bool _acting = false;
 
+  // «Авто» (по умолчанию выключено).
+  bool _auto = false;
+  Timer? _autoTimer;
+  final _gate = AutoScanGate();
+  List<int>? _prevLuma;
+  bool _autoBusy = false;
+  (Uint8List, PhotoIdentification)? _autoHit;
+
+  /// Время «Авто» — по тикам таймера (в тестах время подменяется).
+  DateTime _autoEpoch = DateTime.now();
+  DateTime get _autoNow => _autoTimer == null
+      ? DateTime.now()
+      : _autoEpoch.add(Duration(milliseconds: 300 * _autoTimer!.tick));
+
   @override
   void initState() {
     super.initState();
@@ -128,6 +149,7 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _autoTimer?.cancel();
     unawaited(_camera.stop());
     _breath.dispose();
     if (_result != null && !_decided) _finishLog(IdentifyOutcome.dismissed);
@@ -222,6 +244,17 @@ class _CameraScreenState extends State<CameraScreen>
       final saved = await loadPhotoHere();
       objectId = saved.$1;
       locationId = saved.$2;
+    }
+    // Ссылка «…/#/camera?location=…» — объект берётся из помещения.
+    if (objectId == null && locationId != null) {
+      try {
+        final r = await Supabase.instance.client
+            .from('locations')
+            .select('object_id')
+            .eq('id', locationId)
+            .maybeSingle();
+        objectId = r?['object_id'] as String?;
+      } catch (_) {}
     }
     if (objectId != null && !_objects.any((o) => o.id == objectId)) {
       objectId = null;
@@ -353,7 +386,11 @@ class _CameraScreenState extends State<CameraScreen>
     final l = context.l10n;
     final locale = context.localeCode;
     final hvacDefect = l.photoMockDefect;
-    setState(() => _busy = true);
+    _gate.onManual(_autoNow);
+    setState(() {
+      _busy = true;
+      _autoHit = null;
+    });
     unawaited(_breath.repeat(reverse: true));
     Uint8List bytes;
     try {
@@ -383,38 +420,53 @@ class _CameraScreenState extends State<CameraScreen>
       _logRow = Future.value(null);
       _decided = false;
     });
-    PhotoIdentification? result;
-    IdentifyProblem? problem;
-    try {
-      if (photoIdentifyMock) {
-        final hvac = defaultLayerForKind('ac', _layers);
-        result = await const MockPhotoIdentify().identify(
-            items: _items,
-            floorNames: _floorNames,
-            place: _here,
-            hvacLayerId: hvac?.id,
-            hvacLayerName: hvac?.label(locale),
-            defect: hvacDefect);
-      } else {
-        result = await PhotoIdentifyClient()
-            .identify(bytes, locale: locale, place: _here);
-      }
-    } on IdentifyException catch (e) {
-      problem = e.problem;
-    } catch (e) {
-      debugPrint('Camera identify: ${e.runtimeType}');
-      problem = IdentifyProblem.failed;
-    }
+    final (result, problem) = await _identify(bytes, locale, hvacDefect);
     _breath
       ..stop()
       ..value = 0;
     if (!mounted || _photo != bytes) return;
+    _showResult(result, problem, started);
+  }
+
+  /// Кадр → ответ `photo-identify` (с `VOICE_MOCK` — заглушка).
+  Future<(PhotoIdentification?, IdentifyProblem?)> _identify(
+      Uint8List bytes, String locale, String mockDefect) async {
+    try {
+      if (widget.identify case final f?) return (await f(bytes), null);
+      if (photoIdentifyMock) {
+        final hvac = defaultLayerForKind('ac', _layers);
+        return (
+          await const MockPhotoIdentify().identify(
+              items: _items,
+              floorNames: _floorNames,
+              place: _here,
+              hvacLayerId: hvac?.id,
+              hvacLayerName: hvac?.label(locale),
+              defect: mockDefect),
+          null
+        );
+      }
+      return (
+        await PhotoIdentifyClient()
+            .identify(bytes, locale: locale, place: _here),
+        null
+      );
+    } on IdentifyException catch (e) {
+      return (null, e.problem);
+    } catch (e) {
+      debugPrint('Camera identify: ${e.runtimeType}');
+      return (null, IdentifyProblem.failed);
+    }
+  }
+
+  /// Ответ на стоп-кадре: карточка, журнал (0017), сводка по оборудованию.
+  void _showResult(
+      PhotoIdentification? r, IdentifyProblem? problem, DateTime started) {
     setState(() {
       _busy = false;
-      _result = result;
+      _result = r;
       _problem = problem;
     });
-    final r = result;
     final companyId = _companyId;
     if (r != null && companyId != null && !widget.offline) {
       final ms = DateTime.now().difference(started).inMilliseconds;
@@ -424,9 +476,79 @@ class _CameraScreenState extends State<CameraScreen>
     unawaited(_loadFacts());
   }
 
+  // ---------------------------------------------------------------------------
+  // «Авто» (блок 2): телефон неподвижен ~1,5 с → кадр в photo-identify, не
+  // чаще раза в 6 с и не больше 20 за экран; результат — плашка сверху,
+  // карточка сама не выезжает. Только где камера умеет [LiveCamera.sampleLuma].
+  // ---------------------------------------------------------------------------
+
+  void _toggleAuto() {
+    setState(() {
+      _auto = !_auto;
+      _autoHit = null;
+    });
+    _autoTimer?.cancel();
+    _autoTimer = null;
+    _prevLuma = null;
+    if (_auto) {
+      _autoEpoch = DateTime.now();
+      _autoTimer = Timer.periodic(
+          const Duration(milliseconds: 300), (_) => unawaited(_autoTick()));
+    }
+  }
+
+  Future<void> _autoTick() async {
+    if (!_auto || _cam != _Cam.live || _busy || _autoBusy || _gate.exhausted) {
+      return;
+    }
+    final luma = await _camera.sampleLuma();
+    if (luma == null || !mounted) return;
+    final prev = _prevLuma;
+    _prevLuma = luma;
+    final diff = prev == null ? 1.0 : frameDiff(prev, luma);
+    if (!_gate.onFrame(diff, _autoNow)) return;
+    _autoBusy = true;
+    final locale = context.localeCode;
+    final defect = context.l10n.photoMockDefect;
+    try {
+      final bytes = await _camera.capture();
+      final (r, _) = await _identify(bytes, locale, defect);
+      if (!mounted || !_auto || _cam != _Cam.live || _busy) return;
+      if (r?.top != null) setState(() => _autoHit = (bytes, r!));
+    } catch (e) {
+      debugPrint('Camera auto: ${e.runtimeType}');
+    } finally {
+      _autoBusy = false;
+    }
+  }
+
+  /// «Похоже: … — открыть» → тот же стоп-кадр с карточкой, что у «Что это?».
+  Future<void> _openAutoHit() async {
+    final hit = _autoHit;
+    if (hit == null || _busy) return;
+    await _camera.stop();
+    if (!mounted) return;
+    final now = DateTime.now();
+    setState(() {
+      _autoHit = null;
+      _cam = _Cam.frozen;
+      _photo = hit.$1;
+      _takenAt = now;
+      _index = 0;
+      _manual = null;
+      _facts = null;
+      _factsFor = null;
+      _logRow = Future.value(null);
+      _decided = false;
+    });
+    _showResult(hit.$2, null, now);
+  }
+
   Future<void> _again() async {
     if (_result != null && !_decided) _finishLog(IdentifyOutcome.dismissed);
+    _prevLuma = null;
     setState(() {
+      _autoHit = null;
       _photo = null;
       _result = null;
       _problem = null;
@@ -685,6 +807,7 @@ class _CameraScreenState extends State<CameraScreen>
             _reticle(l, side, raise: frozen && !_busy && !wide),
           if (_cam == _Cam.error) Center(child: _errorPanel(l)),
           _topBar(l),
+          if (_autoHit != null && _cam == _Cam.live && !_busy) _autoPlaque(l),
           if (_cam == _Cam.live && !_busy) _shutter(l),
           if (frozen) _cardLayer(l, wide: wide, height: box.maxHeight),
         ]);
@@ -729,10 +852,49 @@ class _CameraScreenState extends State<CameraScreen>
                   ),
                 ),
               ),
+              if (_camera.canSample && _cam != _Cam.error) ...[
+                const SizedBox(width: AppSpace.s),
+                Semantics(
+                  toggled: _auto,
+                  child: Pressable(
+                    onTap: _toggleAuto,
+                    semanticLabel: l.cameraAuto,
+                    child: _Bubble(
+                      color: _auto ? AppColors.accent : null,
+                      child: Text(l.cameraAuto,
+                          style: AppText.footnote.copyWith(
+                              color: _auto
+                                  ? AppColors.onAccent
+                                  : AppColors.onCamera,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ),
+              ],
+              if (WebBridge.arLikely) ...[
+                const SizedBox(width: AppSpace.s),
+                Pressable(
+                  onTap: _openAr,
+                  child: _Bubble(
+                    child: Text(l.cameraArDemo,
+                        style: AppText.footnote.copyWith(
+                            color: AppColors.onCamera,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
             ]),
           ),
         ),
       );
+
+  /// «AR (демо)» — отдельная страница сайта `ar/` (WebXR, Chrome на Android).
+  Future<void> _openAr() async {
+    await _camera.stop();
+    await launchUrl(
+        WebBridge.arPage(locationId: _locationId, objectId: _objectId),
+        webOnlyWindowName: '_self');
+  }
 
   /// Рамка-прицел в центре: белая; ждём — «дышит» с подписью «Смотрю…»;
   /// узнали — зелёная с подписью «КД-301 · 95 %».
@@ -780,6 +942,37 @@ class _CameraScreenState extends State<CameraScreen>
       ),
     );
   }
+
+  /// Плашка «Похоже: Кондиционер КД-301 — открыть» под строкой «Где я».
+  Widget _autoPlaque(AppLocalizations l) => PositionedDirectional(
+        top: 0,
+        start: 0,
+        end: 0,
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpace.m, 64, AppSpace.m, 0),
+            child: Center(
+              child: Semantics(
+                liveRegion: true,
+                child: Pressable(
+                  onTap: _openAutoHit,
+                  child: _Bubble(
+                    color: AppColors.accent,
+                    child: Text(l.cameraAutoSeen(_autoHit!.$2.top!.name),
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: AppText.callout.copyWith(
+                            color: AppColors.onAccent,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
 
   Widget _shutter(AppLocalizations l) => PositionedDirectional(
         start: 0,

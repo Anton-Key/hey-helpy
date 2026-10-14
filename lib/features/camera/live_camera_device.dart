@@ -81,6 +81,14 @@ class DeviceLiveCamera implements LiveCamera {
     );
   }
 
+  /// В APK кадр для сравнения пришлось бы снимать целиком (takePicture) или
+  /// держать поток кадров — дорого; «Авто» на Android-приложении нет.
+  @override
+  Future<List<int>?> sampleLuma() async => null;
+
+  @override
+  bool get canSample => false;
+
   @override
   Future<Uint8List> capture() async {
     final c = _c;

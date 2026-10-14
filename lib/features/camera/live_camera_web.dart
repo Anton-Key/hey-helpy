@@ -126,6 +126,30 @@ class WebLiveCamera implements LiveCamera {
   @override
   Widget preview() => HtmlElementView(viewType: _viewType);
 
+  web.HTMLCanvasElement? _probe;
+
+  @override
+  bool get canSample => true;
+
+  @override
+  Future<List<int>?> sampleLuma() async {
+    final v = _video;
+    if (v == null || !running || v.videoWidth == 0) return null;
+    const w = 32, h = 24;
+    final c = _probe ??=
+        (web.document.createElement('canvas') as web.HTMLCanvasElement)
+          ..width = w
+          ..height = h;
+    final ctx = c.getContext('2d', {'willReadFrequently': true}.jsify())
+        as web.CanvasRenderingContext2D;
+    ctx.drawImage(v, 0, 0, w.toDouble(), h.toDouble());
+    final px = ctx.getImageData(0, 0, w, h).data.toDart;
+    return [
+      for (var i = 0; i < px.length; i += 4)
+        (px[i] * 3 + px[i + 1] * 6 + px[i + 2]) ~/ 10
+    ];
+  }
+
   @override
   Future<Uint8List> capture() async {
     final v = _video;

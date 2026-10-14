@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hey_helpy/core/design/design.dart';
 import 'package:hey_helpy/features/camera/camera_screen.dart';
 import 'package:hey_helpy/features/camera/live_camera.dart';
+import 'package:hey_helpy/features/photo_identify/identify_models.dart';
 import 'package:hey_helpy/l10n/app_localizations.dart';
 
 Widget _app(Widget child, {String locale = 'ru'}) => MaterialApp(
@@ -88,6 +89,61 @@ void main() {
     await t.pump();
     expect(cam.running, isTrue);
     expect(find.text(l.cameraNotRecognized), findsNothing);
+    await t.pumpWidget(_app(const SizedBox()));
+  });
+
+  testWidgets(
+      '«Авто»: неподвижно ~1,5 с → плашка «Похоже…», карточка сама не выезжает',
+      (t) async {
+    final cam = MockLiveCamera();
+    var calls = 0;
+    Future<PhotoIdentification> identify(_) async {
+      calls++;
+      return const PhotoIdentification(
+          kind: 'ac',
+          confidence: 0.95,
+          candidates: [
+            IdentifyCandidate(
+                assetId: 'a1',
+                name: 'Кондиционер КД-301',
+                locationId: 'l1',
+                locationLabel: '301 Переговорная'),
+          ]);
+    }
+
+    await t.pumpWidget(
+        _app(CameraScreen(camera: cam, offline: true, identify: identify)));
+    await t.pump();
+    final l = await AppLocalizations.delegate.load(const Locale('ru'));
+    // По умолчанию «Авто» выключено — ничего не отправляется.
+    await t.pump(const Duration(seconds: 3));
+    expect(calls, 0);
+
+    await t.tap(find.text(l.cameraAuto));
+    for (var i = 0; i < 12; i++) {
+      await t.pump(const Duration(milliseconds: 300));
+    }
+    expect(calls, 1);
+    final seen = l.cameraAutoSeen('Кондиционер КД-301');
+    expect(find.text(seen), findsOneWidget);
+    expect(find.text(l.cameraCreateOrder), findsNothing,
+        reason: 'карточка сама не выезжает');
+    expect(cam.running, isTrue);
+
+    // Не чаще раза в 6 с: через 3 с повторного запроса нет.
+    for (var i = 0; i < 10; i++) {
+      await t.pump(const Duration(milliseconds: 300));
+    }
+    expect(calls, 1);
+
+    // «…— открыть» → стоп-кадр и карточка.
+    await t.tap(find.text(seen));
+    for (var i = 0; i < 5; i++) {
+      await t.pump(const Duration(milliseconds: 100));
+    }
+    expect(cam.running, isFalse);
+    expect(find.text('КД-301 · 95 %'), findsOneWidget);
+    expect(find.text(l.cameraCreateOrder), findsOneWidget);
     await t.pumpWidget(_app(const SizedBox()));
   });
 }

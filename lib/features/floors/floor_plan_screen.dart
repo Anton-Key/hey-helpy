@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/web_bridge.dart';
 import '../../core/app_message.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
@@ -62,6 +64,7 @@ enum _MarkerAction {
   unplace,
   delete,
   photo,
+  ar,
 }
 
 enum _EmptyAction { newPlace, newAsset, putHere }
@@ -425,6 +428,13 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                     icon: AppIcons.camera,
                     label: l.photoOnPlan,
                     onPressed: () => Navigator.pop(ctx, _MarkerAction.photo)),
+                // Шаг 25: WebXR-демо — только Chrome на Android.
+                if (WebBridge.arLikely) ...[
+                  const SizedBox(height: AppSpace.s),
+                  AppButton.tinted(
+                      label: l.cameraArDemo,
+                      onPressed: () => Navigator.pop(ctx, _MarkerAction.ar)),
+                ],
               ],
               if (_editing) ...[
                 const SizedBox(height: AppSpace.group),
@@ -502,6 +512,10 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           await _reloadItems();
           _msg(l.requestsCreated, type: AppMessageType.success);
         }
+      case _MarkerAction.ar:
+        await launchUrl(
+            WebBridge.arPage(locationId: place?.id, objectId: widget.objectId),
+            webOnlyWindowName: '_self');
       case _MarkerAction.allOrders:
         await Navigator.push(
             context,

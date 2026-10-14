@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../features/camera/camera_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/floors/floor_plan_screen.dart';
 import '../features/home/home_screen.dart';
@@ -53,7 +54,8 @@ GoRouter createRouter(SessionController session) {
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (_, __) => OnboardingScreen(onCompleted: session.reloadProfile),
+        builder: (_, __) =>
+            OnboardingScreen(onCompleted: session.reloadProfile),
       ),
       GoRoute(
         path: '/',
@@ -64,6 +66,15 @@ GoRouter createRouter(SessionController session) {
             path: 'orders/:orderId',
             builder: (_, state) =>
                 OrderLinkScreen(orderId: state.pathParameters['orderId']!),
+          ),
+          // «Камера-помощник» по ссылке (шаг 25): со страницы AR-демо
+          // «Открыть «Камеру-помощник»» — …/#/camera?location=<id>.
+          GoRoute(
+            path: 'camera',
+            builder: (_, state) => CameraScreen(
+              objectId: state.uri.queryParameters['object'],
+              locationId: state.uri.queryParameters['location'],
+            ),
           ),
         ],
       ),

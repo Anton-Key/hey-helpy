@@ -54,6 +54,14 @@ abstract class LiveCamera {
 
   /// Кадр сейчас: JPEG не больше 1280 px по длинной стороне, ~80 %.
   Future<Uint8List> capture();
+
+  /// Яркость уменьшенного кадра (32 × 24, байты 0…255) — для «Авто»:
+  /// телефон неподвижен, если соседние замеры почти не отличаются.
+  /// null — платформа так не умеет (APK: «Авто» не показывается).
+  Future<List<int>?> sampleLuma();
+
+  /// Умеет ли [sampleLuma] (без включения камеры).
+  bool get canSample;
 }
 
 /// Камера для этой платформы (или заглушка с `VOICE_MOCK`).
@@ -114,4 +122,12 @@ class MockLiveCamera implements LiveCamera {
   @override
   Future<Uint8List> capture() async =>
       (await _bundle.load(kMockCameraFrame)).buffer.asUint8List();
+
+  /// Нарисованный кадр неподвижен — «телефон не двигается».
+  @override
+  Future<List<int>?> sampleLuma() async =>
+      _running ? List<int>.filled(32 * 24, 128) : null;
+
+  @override
+  bool get canSample => true;
 }

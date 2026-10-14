@@ -4313,4 +4313,142 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get docAttachFailed =>
       'The work order was created, but the file wasn\'t attached. Open the order and attach it again.';
+
+  @override
+  String get systemsTitle => 'Systems';
+
+  @override
+  String get systemsMenuHint =>
+      'HVAC, electrical, plumbing… — equipment, contractors and work orders depend on them';
+
+  @override
+  String get systemAdd => 'System';
+
+  @override
+  String get systemNew => 'New system';
+
+  @override
+  String get systemEdit => 'Edit system';
+
+  @override
+  String get systemCreate => 'Create system';
+
+  @override
+  String get systemNameRu => 'Name (Russian)';
+
+  @override
+  String get systemNameRuHint => 'e.g. «Лифты»';
+
+  @override
+  String get systemNameEn => 'Name (English)';
+
+  @override
+  String get systemNameEnHint => 'e.g. Lifts';
+
+  @override
+  String get systemIcon => 'Icon';
+
+  @override
+  String get systemColor => 'Color';
+
+  @override
+  String get systemNameRequired =>
+      'Enter the system name (up to 60 characters).';
+
+  @override
+  String get systemNameTaken => 'A system with this name already exists.';
+
+  @override
+  String get systemSaveFailed =>
+      'Couldn\'t save. Check your connection and try again.';
+
+  @override
+  String get systemsLoadFailed => 'Couldn\'t load systems';
+
+  @override
+  String get systemsEmpty => 'There are no systems in your access zone';
+
+  @override
+  String get systemsEmptyAdmin => 'No systems yet — add the first one';
+
+  @override
+  String systemCounts(int assets, int orders, int contractors) {
+    return 'Equipment: $assets · open orders: $orders · contractors: $contractors';
+  }
+
+  @override
+  String systemMoveUp(String name) {
+    return 'Move up: $name';
+  }
+
+  @override
+  String systemMoveDown(String name) {
+    return 'Move down: $name';
+  }
+
+  @override
+  String get systemsFooterAdmin =>
+      'Reorder with the arrows. A system that is already in use can only be archived.';
+
+  @override
+  String get systemsFooterManager =>
+      'Systems in your access zone. The company admin manages them.';
+
+  @override
+  String systemsArchived(int count) {
+    return 'Archive · $count';
+  }
+
+  @override
+  String get systemsArchivedFooter =>
+      'Archived systems aren\'t offered for new work orders, equipment or zones; existing data keeps them.';
+
+  @override
+  String get systemArchivedBadge => 'Archived';
+
+  @override
+  String get systemAssets => 'Equipment';
+
+  @override
+  String get systemOpenOrders => 'Open work orders';
+
+  @override
+  String get systemContractorAll => 'at all sites';
+
+  @override
+  String get systemNoAssets => 'No equipment in this system';
+
+  @override
+  String get systemArchive => 'Archive';
+
+  @override
+  String get systemArchiveHint =>
+      'Won\'t be offered for new work orders, equipment or zones';
+
+  @override
+  String get systemRestore => 'Restore from archive';
+
+  @override
+  String get systemArchivedToast => 'System archived';
+
+  @override
+  String get systemRestoredToast => 'System restored';
+
+  @override
+  String get systemDeleteHint => 'Only if nothing refers to the system';
+
+  @override
+  String systemDeleteTitle(String name) {
+    return 'Delete the system “$name”?';
+  }
+
+  @override
+  String get systemDeleteMessage =>
+      'You can delete it only if it has no work orders, equipment, contractors, PM plans or zones.';
+
+  @override
+  String get systemDeletedToast => 'System deleted';
+
+  @override
+  String get systemInUse => 'The system is in use — it can only be archived.';
 }

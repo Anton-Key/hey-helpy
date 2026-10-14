@@ -7352,6 +7352,246 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Заявка создана, но файл не приложился. Откройте заявку и прикрепите его ещё раз.'**
   String get docAttachFailed;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Системы'**
+  String get systemsTitle;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Климат, электрика, сантехника… — от них зависят оборудование, подрядчики и заявки'**
+  String get systemsMenuHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система'**
+  String get systemAdd;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая система'**
+  String get systemNew;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить систему'**
+  String get systemEdit;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать систему'**
+  String get systemCreate;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Название (русский)'**
+  String get systemNameRu;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, «Лифты»'**
+  String get systemNameRuHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Название (английский)'**
+  String get systemNameEn;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, «Lifts»'**
+  String get systemNameEnHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Значок'**
+  String get systemIcon;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Цвет'**
+  String get systemColor;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите название системы (до 60 знаков).'**
+  String get systemNameRequired;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система с таким названием уже есть.'**
+  String get systemNameTaken;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.'**
+  String get systemSaveFailed;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось загрузить системы'**
+  String get systemsLoadFailed;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'В вашей зоне доступа нет систем'**
+  String get systemsEmpty;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Систем пока нет — добавьте первую'**
+  String get systemsEmptyAdmin;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование: {assets} · открытых заявок: {orders} · подрядчиков: {contractors}'**
+  String systemCounts(int assets, int orders, int contractors);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Выше: {name}'**
+  String systemMoveUp(String name);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Ниже: {name}'**
+  String systemMoveDown(String name);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Порядок — стрелками. Систему, которой уже пользуются, можно только архивировать.'**
+  String get systemsFooterAdmin;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Системы вашей зоны доступа. Изменяет их администратор компании.'**
+  String get systemsFooterManager;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Архив · {count}'**
+  String systemsArchived(int count);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Архивные системы не предлагаются в новых заявках, оборудовании и зонах; старые данные с ними остаются.'**
+  String get systemsArchivedFooter;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'В архиве'**
+  String get systemArchivedBadge;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get systemAssets;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Открытые заявки'**
+  String get systemOpenOrders;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'на всех объектах'**
+  String get systemContractorAll;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудования этой системы нет'**
+  String get systemNoAssets;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Архивировать'**
+  String get systemArchive;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Не будет предлагаться в новых заявках, оборудовании и зонах'**
+  String get systemArchiveHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Вернуть из архива'**
+  String get systemRestore;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система в архиве'**
+  String get systemArchivedToast;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система снова в работе'**
+  String get systemRestoredToast;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Только если на систему ничего не ссылается'**
+  String get systemDeleteHint;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить систему «{name}»?'**
+  String systemDeleteTitle(String name);
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить можно, только если у системы нет заявок, оборудования, подрядчиков, планов ППР и зон.'**
+  String get systemDeleteMessage;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Система удалена'**
+  String get systemDeletedToast;
+
+  /// Шаг 24: системы
+  ///
+  /// In ru, this message translates to:
+  /// **'Системой уже пользуются — её можно только архивировать.'**
+  String get systemInUse;
 }
 
 class _AppLocalizationsDelegate

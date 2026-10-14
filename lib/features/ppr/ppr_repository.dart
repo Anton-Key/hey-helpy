@@ -284,8 +284,7 @@ class PprRepository {
 
   /// Название оборудования (карточка плана).
   Future<String?> assetName(String id) async {
-    final r =
-        await _c.from('assets').select('name').eq('id', id).maybeSingle();
+    final r = await _c.from('assets').select('name').eq('id', id).maybeSingle();
     return r?['name'] as String?;
   }
 

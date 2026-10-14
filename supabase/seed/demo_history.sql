@@ -37,6 +37,7 @@
 --     подрядчика Huaxin FM (950–951) с зонами по городу (970–971).
 --   • шаг 23 (блок 5g, если применена 0018): заявки из Telegram-бота 277
 --     (гость по QR-коду) и 278 (сотрудник с привязанным аккаунтом).
+--   • шаг 24 (блок 5h, если применена 0020): значки и цвета систем.
 --
 -- Запускать в Supabase → SQL Editor ПОСЛЕ supabase/seed/demo.sql
 -- и миграций 0001–0015. Подробно: docs/DEMO_SETUP.md, шаг 4.
@@ -1218,6 +1219,25 @@ begin
     v_orders := v_orders + v_world_orders;
   else
     raise notice 'Миграция 0018 не применена — заявки из Telegram (шаг 23) пропущены.';
+  end if;
+
+  -- 5h. Шаг 24 (миграция 0020, если применена): значки и цвета систем
+  --     «Демо БЦ» для раздела «Моя компания → Системы». Порядок — как в 0004.
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'layers' and column_name = 'icon') then
+    update public.layers ly set icon = v.icon, color = v.color, archived_at = null
+      from (values
+        ('Климат', 'climate', '#0E8C80'),
+        ('Электрика', 'electric', '#C27A0A'),
+        ('Сантехника', 'plumbing', '#2F6FE0'),
+        ('Клининг', 'cleaning', '#7A55C7'),
+        ('Мебель', 'furniture', '#8A6A4F'),
+        ('Системы безопасности', 'security', '#B42318'),
+        ('Другое', 'other', '#5E6D7C')
+      ) as v(name, icon, color)
+     where ly.company_id = c_company and ly.name = v.name;
+  else
+    raise notice 'Миграция 0020 не применена — значки систем (шаг 24) пропущены.';
   end if;
 
   -- 6. Визиты

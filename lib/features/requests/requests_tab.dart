@@ -632,8 +632,7 @@ class _RequestsTabState extends State<RequestsTab> {
     }
     final ok = await Navigator.push<bool>(
         context,
-        appRoute(
-            (_) => PhotoIdentifyScreen(objectId: widget.objectFilter?.id),
+        appRoute((_) => PhotoIdentifyScreen(objectId: widget.objectFilter?.id),
             title: context.l10n.tabRequests));
     if (ok == true) {
       await _load(refs: false);

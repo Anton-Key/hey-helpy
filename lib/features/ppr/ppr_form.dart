@@ -308,7 +308,7 @@ class _PprPlanFormScreenState extends State<PprPlanFormScreen> {
             ]),
             SectionHeader(l.pprFormSystem),
             Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
-              for (final y in widget.data.layers)
+              for (final y in Layer.active(widget.data.layers))
                 AppChip(
                     label: y.label(l.localeName),
                     selected: _layerId == y.id,

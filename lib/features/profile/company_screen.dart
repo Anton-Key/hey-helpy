@@ -16,6 +16,7 @@ import '../regions/regions_screen.dart';
 import 'profile_repository.dart';
 import '../../core/app_message.dart';
 import '../telegram/telegram_screens.dart';
+import '../systems/systems_screen.dart';
 
 /// Сроки приглашения на выбор (дней). Больше 7 не даём: так решено в 0008.
 const _inviteDays = [1, 3, 7];
@@ -435,6 +436,22 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                   title: l.tabLocations,
                   onTap: () => Navigator.pop(context, companyTabObjects),
                 ),
+                // Системы (шаг 24): администратор меняет, менеджер — смотрит
+                // системы своей зоны. Исполнителю и заявителю раздела нет.
+                if (_canManage && _me.companyId != null)
+                  AppRow(
+                    leading: const LeadingIcon(AppIcons.systems),
+                    title: l.systemsTitle,
+                    subtitle: l.systemsMenuHint,
+                    subtitleMaxLines: 2,
+                    onTap: () => Navigator.push(
+                        context,
+                        appRoute(
+                            (_) => SystemsScreen(
+                                companyId: _me.companyId!,
+                                isAdmin: _me.role == UserRole.admin),
+                            title: l.profileMyCompany)),
+                  ),
                 // Регионы компании (шаг 16): общий список, без дублей.
                 AppRow(
                   leading: const LeadingIcon(AppIcons.map),
@@ -443,8 +460,7 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                       context,
                       appRoute(
                           (_) => RegionsScreen(
-                              isManager: _canManage,
-                              companyId: _me.companyId),
+                              isManager: _canManage, companyId: _me.companyId),
                           title: l.profileMyCompany)),
                 ),
                 // Ссылка компании для Telegram-бота (шаг 23): администратор.
@@ -468,8 +484,7 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                     subtitle: l.auditMenuHint,
                     onTap: () => Navigator.push(
                         context,
-                        appRoute(
-                            (_) => AuditScreen(companyId: _me.companyId!),
+                        appRoute((_) => AuditScreen(companyId: _me.companyId!),
                             title: l.profileMyCompany)),
                   ),
               ]),
@@ -499,7 +514,9 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
 
   /// Администратор: у менеджера — выбор «Сменить роль» / «Зона доступа».
   bool _canSetZone(Member m) =>
-      _me.role == UserRole.admin && m.role == UserRole.manager && m.id != _me.id;
+      _me.role == UserRole.admin &&
+      m.role == UserRole.manager &&
+      m.id != _me.id;
 
   Future<void> _memberTap(Member m) async {
     if (!_canSetZone(m)) {

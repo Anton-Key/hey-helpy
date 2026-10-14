@@ -4345,4 +4345,142 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get docAttachFailed =>
       'Заявка создана, но файл не приложился. Откройте заявку и прикрепите его ещё раз.';
+
+  @override
+  String get systemsTitle => 'Системы';
+
+  @override
+  String get systemsMenuHint =>
+      'Климат, электрика, сантехника… — от них зависят оборудование, подрядчики и заявки';
+
+  @override
+  String get systemAdd => 'Система';
+
+  @override
+  String get systemNew => 'Новая система';
+
+  @override
+  String get systemEdit => 'Изменить систему';
+
+  @override
+  String get systemCreate => 'Создать систему';
+
+  @override
+  String get systemNameRu => 'Название (русский)';
+
+  @override
+  String get systemNameRuHint => 'Например, «Лифты»';
+
+  @override
+  String get systemNameEn => 'Название (английский)';
+
+  @override
+  String get systemNameEnHint => 'Например, «Lifts»';
+
+  @override
+  String get systemIcon => 'Значок';
+
+  @override
+  String get systemColor => 'Цвет';
+
+  @override
+  String get systemNameRequired => 'Введите название системы (до 60 знаков).';
+
+  @override
+  String get systemNameTaken => 'Система с таким названием уже есть.';
+
+  @override
+  String get systemSaveFailed =>
+      'Не удалось сохранить. Проверьте интернет и попробуйте ещё раз.';
+
+  @override
+  String get systemsLoadFailed => 'Не удалось загрузить системы';
+
+  @override
+  String get systemsEmpty => 'В вашей зоне доступа нет систем';
+
+  @override
+  String get systemsEmptyAdmin => 'Систем пока нет — добавьте первую';
+
+  @override
+  String systemCounts(int assets, int orders, int contractors) {
+    return 'Оборудование: $assets · открытых заявок: $orders · подрядчиков: $contractors';
+  }
+
+  @override
+  String systemMoveUp(String name) {
+    return 'Выше: $name';
+  }
+
+  @override
+  String systemMoveDown(String name) {
+    return 'Ниже: $name';
+  }
+
+  @override
+  String get systemsFooterAdmin =>
+      'Порядок — стрелками. Систему, которой уже пользуются, можно только архивировать.';
+
+  @override
+  String get systemsFooterManager =>
+      'Системы вашей зоны доступа. Изменяет их администратор компании.';
+
+  @override
+  String systemsArchived(int count) {
+    return 'Архив · $count';
+  }
+
+  @override
+  String get systemsArchivedFooter =>
+      'Архивные системы не предлагаются в новых заявках, оборудовании и зонах; старые данные с ними остаются.';
+
+  @override
+  String get systemArchivedBadge => 'В архиве';
+
+  @override
+  String get systemAssets => 'Оборудование';
+
+  @override
+  String get systemOpenOrders => 'Открытые заявки';
+
+  @override
+  String get systemContractorAll => 'на всех объектах';
+
+  @override
+  String get systemNoAssets => 'Оборудования этой системы нет';
+
+  @override
+  String get systemArchive => 'Архивировать';
+
+  @override
+  String get systemArchiveHint =>
+      'Не будет предлагаться в новых заявках, оборудовании и зонах';
+
+  @override
+  String get systemRestore => 'Вернуть из архива';
+
+  @override
+  String get systemArchivedToast => 'Система в архиве';
+
+  @override
+  String get systemRestoredToast => 'Система снова в работе';
+
+  @override
+  String get systemDeleteHint => 'Только если на систему ничего не ссылается';
+
+  @override
+  String systemDeleteTitle(String name) {
+    return 'Удалить систему «$name»?';
+  }
+
+  @override
+  String get systemDeleteMessage =>
+      'Удалить можно, только если у системы нет заявок, оборудования, подрядчиков, планов ППР и зон.';
+
+  @override
+  String get systemDeletedToast => 'Система удалена';
+
+  @override
+  String get systemInUse =>
+      'Системой уже пользуются — её можно только архивировать.';
 }

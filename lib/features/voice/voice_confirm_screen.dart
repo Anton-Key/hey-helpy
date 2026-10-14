@@ -380,7 +380,7 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
           Text(l.formLayersFailed, style: AppText.footnote)
         else
           Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
-            for (final t in _layers)
+            for (final t in Layer.active(_layers))
               AppChip(
                   label: t.label(locale),
                   selected: _layer?.id == t.id,

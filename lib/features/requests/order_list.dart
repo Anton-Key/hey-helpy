@@ -184,13 +184,19 @@ class WorkOrderListScreen extends StatefulWidget {
       this.subtitle,
       this.contractorId,
       this.objectId,
-      this.locationId});
+      this.locationId,
+      this.layerId,
+      this.openOnly = false});
 
   final String title;
   final String? subtitle;
   final String? contractorId;
   final String? objectId;
   final String? locationId;
+
+  /// Заявки системы (шаг 24): «Открытые заявки» в карточке системы.
+  final String? layerId;
+  final bool openOnly;
 
   @override
   State<WorkOrderListScreen> createState() => _WorkOrderListScreenState();
@@ -218,7 +224,9 @@ class _WorkOrderListScreenState extends State<WorkOrderListScreen> {
       final rows = await ctx.repo.listBy(
           contractorId: widget.contractorId,
           objectId: widget.objectId,
-          locationId: widget.locationId);
+          locationId: widget.locationId,
+          layerId: widget.layerId,
+          openOnly: widget.openOnly);
       if (!mounted) return;
       setState(() {
         _ctx = ctx;

@@ -70,6 +70,8 @@ class RequestsRepo {
       {String? contractorId,
       String? objectId,
       String? locationId,
+      String? layerId,
+      bool openOnly = false,
       int limit = 200}) async {
     var q = _c.from('work_orders').select(
         'id,title,work_type,layer_id,priority,status,recurrence,object_id,location_id,'
@@ -77,6 +79,8 @@ class RequestsRepo {
     if (contractorId != null) q = q.eq('assigned_contractor_id', contractorId);
     if (objectId != null) q = q.eq('object_id', objectId);
     if (locationId != null) q = q.eq('location_id', locationId);
+    if (layerId != null) q = q.eq('layer_id', layerId);
+    if (openOnly) q = q.not('status', 'in', '(done,cancelled)');
     return await q.order('created_at', ascending: false).limit(limit);
   }
 
@@ -1353,7 +1357,10 @@ Future<bool?> showOrderForm({
                           spacing: AppSpace.s,
                           runSpacing: AppSpace.s,
                           children: [
-                            for (final t in layers)
+                            for (final t in Layer.active(layers,
+                                keepId: isEdit
+                                    ? existing['layer_id'] as String?
+                                    : null))
                               AppChip(
                                   label: t.label(locale),
                                   selected: layer?.id == t.id,

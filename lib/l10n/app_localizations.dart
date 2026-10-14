@@ -8840,6 +8840,276 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Доказательства'**
   String get proofTitle;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'Пол'**
+  String get eqPlaceMountFloor;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'Стена'**
+  String get eqPlaceMountWall;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'Потолок'**
+  String get eqPlaceMountCeiling;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'За подвесным потолком'**
+  String get eqPlaceMountAboveCeiling;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'В шкафу'**
+  String get eqPlaceMountCabinet;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'Снаружи'**
+  String get eqPlaceMountOutdoor;
+
+  /// Шаг 27: высота в строке монтажа
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} м'**
+  String eqPlaceHeightValue(String value);
+
+  /// Шаг 27: строка и экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Место на плане'**
+  String get eqPlaceOnPlan;
+
+  /// Шаг 27: строка места на плане
+  ///
+  /// In ru, this message translates to:
+  /// **'Не указано · Указать на плане'**
+  String get eqPlaceNotSet;
+
+  /// Шаг 27: строка места на плане
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get eqPlaceChange;
+
+  /// Шаг 27: монтаж: заголовок
+  ///
+  /// In ru, this message translates to:
+  /// **'Где именно'**
+  String get eqPlaceWhereExactly;
+
+  /// Шаг 27: монтаж: поле
+  ///
+  /// In ru, this message translates to:
+  /// **'Высота, м'**
+  String get eqPlaceHeight;
+
+  /// Шаг 27: монтаж: подсказка
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, 2,8'**
+  String get eqPlaceHeightHint;
+
+  /// Шаг 27: монтаж: ошибка
+  ///
+  /// In ru, this message translates to:
+  /// **'Высота — число от 0 до 100 м, например 2,8'**
+  String get eqPlaceHeightBad;
+
+  /// Шаг 27: монтаж: поле
+  ///
+  /// In ru, this message translates to:
+  /// **'Ориентир'**
+  String get eqPlaceLandmark;
+
+  /// Шаг 27: монтаж: подсказка
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, над дверью, слева'**
+  String get eqPlaceLandmarkHint;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографировать, где установлено'**
+  String get eqPlacePhoto;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото места установки'**
+  String get eqPlacePhotoTitle;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Переснять'**
+  String get eqPlacePhotoRetake;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать фото'**
+  String get eqPlacePhotoRemove;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото места можно сохранить, когда помещение стоит на этаже объекта'**
+  String get eqPlacePhotoNeedsFloor;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужна фотография JPEG, PNG или WebP до 15 МБ'**
+  String get eqPlacePhotoBad;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить фото места'**
+  String get eqPlacePhotoFailed;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово'**
+  String get eqPlaceDone;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать с плана'**
+  String get eqPlaceRemove;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Перетащите метку или нажмите на план там, где стоит оборудование'**
+  String get eqPlaceDragHint;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Точка в помещении {room} — сменить помещение?'**
+  String eqPlaceOtherRoom(String room);
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Сменить'**
+  String get eqPlaceSwitchRoom;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставить'**
+  String get eqPlaceKeepRoom;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение сменится на {room}'**
+  String eqPlaceRoomChanged(String room);
+
+  /// Шаг 27: нет плана
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузите план этажа в карточке объекта — потом здесь можно будет поставить точку'**
+  String get eqPlaceNoPlan;
+
+  /// Шаг 27: нет плана
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть карточку объекта'**
+  String get eqPlaceOpenObject;
+
+  /// Шаг 27: сообщение
+  ///
+  /// In ru, this message translates to:
+  /// **'Место на плане сохранено'**
+  String get eqPlaceSaved;
+
+  /// Шаг 27: сообщение
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить место на плане'**
+  String get eqPlaceSaveFailed;
+
+  /// Шаг 27: диктор
+  ///
+  /// In ru, this message translates to:
+  /// **'{name} — метка на плане, можно перетащить'**
+  String eqPlaceMarker(String name);
+
+  /// Шаг 27: выгрузка реестра
+  ///
+  /// In ru, this message translates to:
+  /// **'Выгрузить в Excel'**
+  String get eqExportButton;
+
+  /// Шаг 27: выгрузка реестра
+  ///
+  /// In ru, this message translates to:
+  /// **'Файл выгрузки сохранён'**
+  String get eqExportDone;
+
+  /// Шаг 27: выгрузка реестра
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось выгрузить оборудование'**
+  String get eqExportFailed;
+
+  /// Шаг 27: выгрузка реестра
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет оборудования для выгрузки'**
+  String get eqExportEmpty;
+
+  /// Шаг 27: выгрузка реестра: имя файла
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get eqExportFileName;
+
+  /// Шаг 27: импорт: ошибка строки
+  ///
+  /// In ru, this message translates to:
+  /// **'высота не распознана'**
+  String get eqExportIssueBadHeight;
+
+  /// Шаг 27: импорт: ошибка строки
+  ///
+  /// In ru, this message translates to:
+  /// **'нет такого варианта «Где именно»: «{text}»'**
+  String eqExportIssueUnknownMount(String text);
+
+  /// Шаг 27: импорт: ошибка строки
+  ///
+  /// In ru, this message translates to:
+  /// **'строка другого объекта: «{text}»'**
+  String eqExportIssueOtherObject(String text);
+
+  /// Шаг 27: импорт: строка обновит существующее
+  ///
+  /// In ru, this message translates to:
+  /// **'обновится'**
+  String get eqExportWillUpdate;
+
+  /// Шаг 27: импорт: подсказка
+  ///
+  /// In ru, this message translates to:
+  /// **'Выгрузку из «Выгрузить в Excel» можно поправить и загрузить обратно: строки с ID обновят своё оборудование, без ID — добавятся.'**
+  String get eqExportReimportInfo;
 }
 
 class _AppLocalizationsDelegate

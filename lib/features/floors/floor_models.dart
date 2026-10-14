@@ -1,3 +1,4 @@
+import '../equipment/asset_place.dart';
 import 'plan_logic.dart' show parsePlanShape;
 
 /// Этаж объекта (таблица floors, миграция 0013).
@@ -67,6 +68,7 @@ class PlanItem {
     this.inventoryNo,
     this.code,
     this.shape,
+    this.mount = MountInfo.empty,
   });
 
   final PlanKind kind;
@@ -93,6 +95,10 @@ class PlanItem {
   /// Помещение: область на плане — многоугольник, точки долями 0..1
   /// (locations.plan_shape, 0013); null — области нет.
   final List<(double, double)>? shape;
+
+  /// Оборудование: где именно (assets.meta, шаг 27) — подпись маркера
+  /// «потолок · 2,8 м» и строка в «Камере-помощнике».
+  final MountInfo mount;
 
   bool get isPlace => kind == PlanKind.place;
 
@@ -142,6 +148,7 @@ class PlanItem {
         inventoryNo: inventoryNo,
         code: clearCode ? null : (code ?? this.code),
         shape: clearShape ? null : (shape ?? this.shape),
+        mount: mount,
       );
 
   /// Колонки помещения: без номера — для базы до миграции 0015
@@ -180,6 +187,7 @@ class PlanItem {
       category: m['category'] as String?,
       equipmentKind: meta is Map ? meta['kind'] as String? : null,
       inventoryNo: m['inventory_no'] as String?,
+      mount: MountInfo.fromMeta(meta is Map ? meta : null),
     );
   }
 }

@@ -1153,4 +1153,120 @@ export const SCENARIOS = [
       await ctx.shot(m, 'act-approved');
     },
   },
+  {
+    id: 18,
+    title: 'Место оборудования (шаг 27): форма → «Указать на плане» → точка (нажатие и перетаскивание) → сохранено → маркер на плане в этом месте',
+    async run(ctx) {
+      const { base } = ctx;
+      const NAME = 'E2E Датчик протечки';
+      const room = uuid(21); // 301 · Переговорная, 3 этаж (этаж 602)
+      const floor = uuid(602);
+      sql(`delete from assets where name = '${NAME}'`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await section(m, /^Локации/);
+      const list = m.getByRole('button', { name: /^Список/ }).or(m.getByText(/^Список$/)).first();
+      if (await list.isVisible().catch(() => false)) await list.click();
+      await settle(m, 1200);
+      await btn(m, /^БЦ «Демо»/).click();
+      await see(m, /Адрес|Этажи/).waitFor({ timeout: 20000 });
+      await settle(m, 1500);
+      // 1. Форма «Новое оборудование»: название, помещение, «где именно».
+      await scrollTo(m, /Добавить оборудование/);
+      await btn(m, /Добавить оборудование/).click();
+      await see(m, /Новое оборудование/).waitFor({ timeout: 15000 });
+      await settle(m, 1000);
+      await typeInto(m, m.getByRole('textbox').first(), NAME);
+      await see(m, /Выберите помещение/).click();
+      await settle(m, 800);
+      await m.getByRole('menuitem', { name: /^301 · Переговорная/ }).or(m.getByRole('option', { name: /^301 · Переговорная/ }))
+        .or(m.getByRole('button', { name: /^301 · Переговорная/ })).last().click();
+      await settle(m, 800);
+      await scrollTo(m, /^Потолок$/);
+      await btn(m, /^Потолок$/).click();
+      await typeInto(m, m.getByRole('textbox', { name: /Высота, м/ }), '2,8');
+      await ctx.shot(m, 'form');
+      // 2. «Место на плане» → экран выбора точки (план 3 этажа у переговорной).
+      await scrollTo(m, /Место на плане/);
+      await btn(m, /^Место на плане/).click();
+      const marker = m.getByRole('button', { name: /метка на плане/ }).or(m.getByLabel(/метка на плане/)).first();
+      await marker.waitFor({ timeout: 30000 });
+      await see(m, /3 этаж · 301 · Переговорная/).waitFor({ timeout: 10000 });
+      await settle(m, 1500);
+      await ctx.shot(m, 'picker');
+      // Нажатие по плану правее и ниже маркера → маркер туда; затем
+      // перетащить мышью чуть влево.
+      const b0 = await marker.boundingBox();
+      const c0 = { x: b0.x + b0.width / 2, y: b0.y + b0.height / 2 };
+      await raw(m, () => m.mouse.click(c0.x + 70, c0.y + 50));
+      await settle(m, 800);
+      await ctx.shot(m, 'picker-tap');
+      const b1 = await marker.boundingBox();
+      const c1 = { x: b1.x + b1.width / 2, y: b1.y + b1.height / 2 };
+      ctx.notes.push(`маркер после нажатия: сдвиг ${Math.round(c1.x - c0.x)}, ${Math.round(c1.y - c0.y)} px (ждали 70, 50)`);
+      assert(Math.abs(c1.x - c0.x - 70) < 4 && Math.abs(c1.y - c0.y - 50) < 4, 'маркер не встал туда, где нажали');
+      await raw(m, async () => {
+        await m.mouse.move(c1.x, c1.y);
+        await m.mouse.down();
+        await m.mouse.move(c1.x - 15, c1.y + 5, { steps: 6 });
+        await m.mouse.move(c1.x - 30, c1.y + 10, { steps: 6 });
+        await m.mouse.up();
+      });
+      await settle(m, 800);
+      const b2 = await marker.boundingBox();
+      const c2 = { x: b2.x + b2.width / 2, y: b2.y + b2.height / 2 };
+      ctx.notes.push(`после перетаскивания: ${Math.round(c2.x - c1.x)}, ${Math.round(c2.y - c1.y)} px (ждали −30, 10)`);
+      assert(Math.abs(c2.x - c1.x + 30) < 4 && Math.abs(c2.y - c1.y - 10) < 4, 'маркер не перетащился');
+      await ctx.shot(m, 'picker-moved');
+      await clickAction(m, /^Готово/);
+      await see(m, /3 этаж · 301 · Переговорная.* · Изменить/).waitFor({ timeout: 10000 });
+      // 3. Сохранить → в базе этаж 602, точка внутри переговорной, монтаж в meta.
+      await clickAction(m, /^Сохранить/);
+      const saved = await waitDb(`select id || '|' || floor_id || '|' || plan_x || '|' || plan_y || '|' || location_id || '|'
+        || coalesce(meta->>'mount', '-') || '|' || coalesce(meta->>'height_m', '-') from assets where name = '${NAME}'`,
+      (v) => v.split('|').length === 7, 20000);
+      const [assetId, fl, sx, sy, loc, mount, height] = saved.split('|');
+      const [ax, ay] = [Number(sx), Number(sy)];
+      ctx.notes.push(`в базе: этаж ${fl === floor ? '602' : fl}, точка ${ax}, ${ay}, монтаж ${mount}, высота ${height}`);
+      assert(fl === floor && loc === room, 'этаж или помещение сохранились не те');
+      assert(mount === 'ceiling' && height === '2.8', 'монтаж и высота не сохранились в meta');
+      // Переговорная на схеме: rect [120, 120, 640, 560] из 2400×1600.
+      assert(ax > 0.05 && ax < 0.317 && ay > 0.075 && ay < 0.425, 'точка вне переговорной');
+      const [rx, ry] = sql(`select plan_x || ',' || plan_y from locations where id = '${room}'`).split(',').map(Number);
+      assert(ax > rx && ay > ry, 'точка не сдвинулась вправо-вниз от точки помещения');
+      // 4. План 3 этажа: маркер оборудования там же — пересчёт по двум помещениям.
+      await openApp(m, base, `#/objects/${uuid(10)}/floors/${floor}`);
+      await see(m, /На плане · \d/).waitFor({ timeout: 30000 });
+      await settle(m, 2000);
+      const ref = sql(`select code || '|' || name || '|' || plan_x || '|' || plan_y from locations
+        where floor_id = '${floor}' and plan_x is not null and code is not null order by plan_x limit 1`) + '\n'
+        + sql(`select code || '|' || name || '|' || plan_x || '|' || plan_y from locations
+        where floor_id = '${floor}' and plan_x is not null and code is not null order by plan_x desc limit 1`);
+      const [p1, p2] = ref.split('\n').map((r) => r.split('|'));
+      const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const centre = async (name) => {
+        const bb = await m.getByRole('button', { name: new RegExp(`^${name}`) }).first().boundingBox();
+        return bb && { x: bb.x + bb.width / 2, y: bb.y + 22 }; // 22 — половина цели нажатия маркера
+      };
+      const q1 = await centre(`${esc(p1[0])} · ${esc(p1[1])}, `);
+      const q2 = await centre(`${esc(p2[0])} · ${esc(p2[1])}, `);
+      const qa = await centre(`${esc(NAME)}, `);
+      assert(q1 && q2 && qa, 'маркеры на плане не найдены');
+      // Экранных px на долю: по x — из двух помещений; по y — тот же масштаб
+      // на высоту картинки (план не растягивается).
+      const [pw, ph] = sql(`select plan_w || ',' || plan_h from floors where id = '${floor}'`).split(',').map(Number);
+      const kx = (q2.x - q1.x) / (Number(p2[2]) - Number(p1[2]));
+      const ky = kx * ph / pw;
+      const want = { x: q1.x + (ax - Number(p1[2])) * kx, y: q1.y + (ay - Number(p1[3])) * ky };
+      ctx.notes.push(`маркер на плане: ${Math.round(qa.x)}, ${Math.round(qa.y)}; по точке из базы: ${Math.round(want.x)}, ${Math.round(want.y)}`);
+      assert(Math.abs(qa.x - want.x) < 6 && Math.abs(qa.y - want.y) < 6, 'маркер на плане не там, где поставили');
+      // Выбранный маркер: под названием «потолок · 2,8 м» (видно на снимке;
+      // шторка маркера закрывает план от диктора — текстом не проверить).
+      await m.getByRole('button', { name: new RegExp(`^${esc(NAME)}, `) }).first().click();
+      await settle(m, 1200);
+      await ctx.shot(m, 'plan');
+      sql(`delete from assets where id = '${assetId}'`);
+    },
+  },
 ];

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/app_message.dart';
@@ -6,7 +7,13 @@ import '../../core/l10n_ext.dart';
 import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import '../floors/floor_models.dart';
+import '../floors/floor_repository.dart';
+import '../floors/plan_logic.dart';
+import '../floors/plan_point_picker.dart';
 import '../regions/geo_pickers.dart';
+import 'asset_place.dart';
+import 'asset_place_widgets.dart';
 import 'equipment_import.dart';
 import 'equipment_kinds.dart';
 import 'equipment_models.dart';
@@ -117,9 +124,118 @@ class _AssetFormState extends State<_AssetForm> {
   late DateTime? _installed = widget.existing?.installedAt;
   bool _busy = false;
 
+  // ------------------------------------------- место на плане (шаг 27)
+  late final MountInfo _mount0 = widget.existing?.mount ?? MountInfo.empty;
+  late String? _mountCode = _mount0.mount;
+  late final _height = TextEditingController(
+      text: _mount0.heightM == null
+          ? ''
+          : formatHeightNumber(_mount0.heightM!, context.localeCode));
+  late final _landmark = TextEditingController(text: _mount0.landmark);
+  late PlanPoint? _point = widget.existing?.point;
+  bool _pointTouched = false;
+
+  /// Этажи и помещения объекта (этаж помещения, миниатюра плана).
+  List<Floor> _floors = const [];
+  List<PlanItem> _items = const [];
+
+  /// Фото места: новый снимок (ещё не загружен) или путь в хранилище.
+  Uint8List? _photoBytes;
+  PlanImageInfo? _photoInfo;
+  late String? _photoPath = widget.existing?.placePhoto;
+  bool _photoTouched = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlan();
+  }
+
+  Future<void> _loadPlan() async {
+    try {
+      final repo = FloorRepo();
+      final r = await Future.wait<Object>(
+          [repo.floorsOf(widget.objectId), repo.itemsOf(widget.objectId)]);
+      if (!mounted) return;
+      setState(() {
+        _floors = r[0] as List<Floor>;
+        _items = r[1] as List<PlanItem>;
+      });
+    } catch (e) {
+      // Без этажей форма работает как раньше: строка «Не указано».
+      debugPrint('Asset form plan: ${e.runtimeType}');
+    }
+  }
+
+  Floor? _floorById(String? id) {
+    for (final f in _floors) {
+      if (f.id == id) return f;
+    }
+    return null;
+  }
+
+  /// Этаж помещения (для фото места, если точки на плане нет).
+  String? get _roomFloorId {
+    for (final i in _items) {
+      if (i.isPlace && i.id == _placeId) return i.floorId;
+    }
+    return null;
+  }
+
+  Floor? get _photoFloor => _floorById(_point?.floorId ?? _roomFloorId);
+
+  Future<void> _pickPoint() async {
+    final r = await pickPlanPoint(context,
+        objectId: widget.objectId,
+        assetName: _name.text.trim().isEmpty
+            ? context.l10n.assetFormNewTitle
+            : _name.text.trim(),
+        assetId: widget.existing?.id,
+        locationId: _placeId,
+        current: _point,
+        kind: _kind);
+    if (r == null || !mounted) return;
+    setState(() {
+      _point = r.point;
+      _pointTouched = true;
+      if (r.locationId != null &&
+          widget.places.any((p) => p.id == r.locationId)) {
+        _placeId = r.locationId;
+      }
+    });
+  }
+
+  Future<void> _takePhoto() async {
+    final l = context.l10n;
+    try {
+      final shot = await capturePlacePhoto(
+          onBad: () => showAppMessage(context, l.eqPlacePhotoBad,
+              type: AppMessageType.error));
+      if (shot == null || !mounted) return;
+      setState(() {
+        _photoBytes = shot.$1;
+        _photoInfo = shot.$2;
+        _photoTouched = true;
+      });
+    } catch (e) {
+      debugPrint('Place photo: ${e.runtimeType}');
+      if (mounted) {
+        showAppMessage(context, l.eqPlacePhotoFailed,
+            type: AppMessageType.error);
+      }
+    }
+  }
+
+  void _removePhoto() => setState(() {
+        _photoBytes = null;
+        _photoInfo = null;
+        _photoPath = null;
+        _photoTouched = true;
+      });
+
   @override
   void dispose() {
-    for (final c in [_name, _inv, _mf, _model, _serial]) {
+    for (final c in [_name, _inv, _mf, _model, _serial, _height, _landmark]) {
       c.dispose();
     }
     super.dispose();
@@ -141,7 +257,34 @@ class _AssetFormState extends State<_AssetForm> {
       showAppMessage(context, l.assetRoomRequired);
       return;
     }
+    if (!heightTextOk(_height.text)) {
+      showAppMessage(context, l.eqPlaceHeightBad);
+      return;
+    }
     setState(() => _busy = true);
+    final repo = EquipmentRepo();
+    // Новое фото места — сначала файл (в папку этажа), потом запись.
+    String? uploaded;
+    if (_photoTouched && _photoBytes != null) {
+      final floor = _photoFloor;
+      if (floor == null) {
+        setState(() => _busy = false);
+        showAppMessage(context, l.eqPlacePhotoNeedsFloor);
+        return;
+      }
+      try {
+        uploaded =
+            await repo.uploadPlacePhoto(floor, _photoBytes!, _photoInfo!);
+      } catch (e) {
+        debugPrint('Place photo upload: ${e.runtimeType}');
+        if (mounted) {
+          setState(() => _busy = false);
+          showAppMessage(context, l.eqPlacePhotoFailed,
+              type: AppMessageType.error);
+        }
+        return;
+      }
+    }
     final draft = AssetDraft(
       name: name,
       locationId: _placeId!,
@@ -153,9 +296,17 @@ class _AssetFormState extends State<_AssetForm> {
       installedAt: _installed,
       kind: _kind,
       baseMeta: widget.existing?.meta,
+      mount: MountInfo(
+          mount: _mountCode,
+          heightM: parseHeight(_height.text),
+          landmark: _landmark.text),
+      setPoint: _pointTouched,
+      point: _point,
+      setPlacePhoto: _photoTouched,
+      placePhoto: _photoBytes != null ? uploaded : _photoPath,
     );
+    final oldPhoto = widget.existing?.placePhoto;
     try {
-      final repo = EquipmentRepo();
       final String id;
       if (widget.existing == null) {
         id = await repo.add(draft);
@@ -163,6 +314,11 @@ class _AssetFormState extends State<_AssetForm> {
         id = widget.existing!.id;
         await repo.update(id, draft);
       }
+      // Прежнее фото места заменили или убрали — файл больше не нужен.
+      if (_photoTouched && oldPhoto != null && oldPhoto != draft.placePhoto) {
+        await repo.removePlacePhoto(oldPhoto);
+      }
+      uploaded = null;
       if (mounted) Navigator.pop(context, id);
     } on MigrationMissing {
       if (mounted) showAppMessage(context, l.migrationNeeded('0015'));
@@ -172,6 +328,8 @@ class _AssetFormState extends State<_AssetForm> {
         showAppMessage(context, l.assetSaveFailed, type: AppMessageType.error);
       }
     } finally {
+      // Не сохранилось — загруженный снимок не нужен.
+      if (uploaded != null) await repo.removePlacePhoto(uploaded);
       if (mounted) setState(() => _busy = false);
     }
   }
@@ -309,12 +467,106 @@ class _AssetFormState extends State<_AssetForm> {
                     onTap: _pickDate,
                   ),
                 ]),
+                ..._placeSection(l),
               ],
             ),
           ),
         ),
       ]),
     );
+  }
+
+  /// «Место на плане», «Где именно» (монтаж, высота, ориентир), фото места.
+  List<Widget> _placeSection(AppLocalizations l) {
+    final point = _point;
+    final room = widget.places.where((p) => p.id == _placeId).firstOrNull;
+    final photoFloor = _photoFloor;
+    final hasPhoto = _photoBytes != null || _photoPath != null;
+    InputDecoration deco(String label, String hint) => InputDecoration(
+          labelText: label,
+          hintText: hint,
+          counterText: '',
+          filled: false,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+        );
+    return [
+      AppGroup(header: l.eqPlaceOnPlan, children: [
+        AssetPlanRow(
+          floor: point == null ? null : _floorById(point.floorId),
+          point: point,
+          roomLabel: room?.label,
+          onTap: _busy ? null : _pickPoint,
+        ),
+      ]),
+      SectionHeader(l.eqPlaceWhereExactly),
+      MountChips(
+          selected: _mountCode,
+          onChanged: (v) => setState(() => _mountCode = v)),
+      const SizedBox(height: AppSpace.group),
+      AppGroup(
+        footer: heightTextOk(_height.text) ? null : l.eqPlaceHeightBad,
+        children: [
+          TextField(
+            key: const ValueKey('eqPlaceHeight'),
+            controller: _height,
+            style: AppText.body,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (_) => setState(() {}),
+            decoration: deco(l.eqPlaceHeight, l.eqPlaceHeightHint),
+          ),
+          TextField(
+            key: const ValueKey('eqPlaceLandmark'),
+            controller: _landmark,
+            style: AppText.body,
+            maxLength: kMaxLandmark,
+            decoration: deco(l.eqPlaceLandmark, l.eqPlaceLandmarkHint),
+          ),
+        ],
+      ),
+      AppGroup(
+        footer:
+            photoFloor == null && !hasPhoto ? l.eqPlacePhotoNeedsFloor : null,
+        children: [
+          if (!hasPhoto)
+            AppRow(
+              leading: const LeadingIcon(AppIcons.camera),
+              title: l.eqPlacePhoto,
+              titleStyle: photoFloor == null
+                  ? AppText.body.copyWith(color: AppColors.tertiary)
+                  : AppText.rowTitle.copyWith(color: AppColors.accentText),
+              chevron: false,
+              onTap: photoFloor == null || _busy ? null : _takePhoto,
+            )
+          else ...[
+            AppRow(
+              leading: PlacePhotoThumb(bytes: _photoBytes, path: _photoPath),
+              title: l.eqPlacePhotoTitle,
+              onTap: _photoBytes == null && _photoPath != null
+                  ? () =>
+                      openPlacePhoto(context, _photoPath!, l.eqPlacePhotoTitle)
+                  : null,
+              chevron: _photoBytes == null,
+            ),
+            if (photoFloor != null)
+              AppRow(
+                leading: const LeadingIcon(AppIcons.camera),
+                title: l.eqPlacePhotoRetake,
+                chevron: false,
+                onTap: _busy ? null : _takePhoto,
+              ),
+            AppRow(
+              leading: const LeadingIcon.danger(AppIcons.delete),
+              title: l.eqPlacePhotoRemove,
+              destructive: true,
+              chevron: false,
+              onTap: _busy ? null : _removePhoto,
+            ),
+          ],
+        ],
+      ),
+    ];
   }
 }
 
@@ -331,6 +583,9 @@ String importIssuesText(AppLocalizations l, ImportRow r) => [
           ImportIssue.badDate => l.importIssueBadDate,
           ImportIssue.tooLong => l.importIssueTooLong,
           ImportIssue.unknownKind => l.importIssueUnknownKind(r.kindText),
+          ImportIssue.badHeight => l.eqExportIssueBadHeight,
+          ImportIssue.unknownMount => l.eqExportIssueUnknownMount(r.mountText),
+          ImportIssue.otherObject => l.eqExportIssueOtherObject(r.objectText),
         }
     ].join(' · ');
 

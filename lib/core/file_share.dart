@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:share_plus/share_plus.dart';
@@ -53,4 +54,30 @@ Future<void> shareStorageFile({
       showAppMessage(context, l.fileOpenFailed, type: AppMessageType.error);
     }
   }
+}
+
+/// Файл, собранный в приложении (выгрузка Excel и т. п., шаг 27):
+/// веб — скачать файл, Android — системное окно «Поделиться».
+/// true — файл отдан (не отмена). Ошибки — наружу: текст сообщения
+/// выбирает экран.
+Future<bool> saveOrShareBytes({
+  required Uint8List bytes,
+  required String fileName,
+  required String mime,
+}) async {
+  if (kIsWeb) {
+    final dot = fileName.lastIndexOf('.');
+    final uri = await FilePicker.saveFile(
+      fileName: fileName,
+      bytes: bytes,
+      mimeType: mime,
+      type: dot < 0 ? FileType.any : FileType.custom,
+      allowedExtensions: dot < 0 ? null : [fileName.substring(dot + 1)],
+    );
+    return uri != null;
+  }
+  final r = await SharePlus.instance.share(ShareParams(
+      files: [XFile.fromData(bytes, mimeType: mime, name: fileName)],
+      fileNameOverrides: [fileName]));
+  return r.status != ShareResultStatus.dismissed;
 }

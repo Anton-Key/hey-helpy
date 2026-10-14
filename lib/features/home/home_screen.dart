@@ -14,16 +14,17 @@ import '../access/zone_logic.dart';
 import '../access/zone_repository.dart';
 import '../auth/auth_repository.dart';
 import '../directory/directory.dart';
-import '../history/history_screen.dart';
+import '../history/history_screen.dart' deferred as history;
 import '../notifications/notification_repository.dart';
-import '../notifications/notifications_screen.dart';
+import '../notifications/notifications_screen.dart' deferred as notifications;
 import '../ppr/ppr_repository.dart';
 import '../ppr/ppr_tab.dart';
-import '../profile/company_screen.dart';
+import '../profile/company_screen.dart' deferred as company;
 import '../profile/profile_repository.dart';
-import '../profile/settings_screen.dart';
-import '../reports/reports_screen.dart';
+import '../profile/settings_screen.dart' deferred as settings;
+import '../reports/reports_screen.dart' deferred as reports;
 import '../requests/requests.dart';
+import '../../core/deferred_view.dart';
 import 'home_actions.dart';
 import 'home_chrome.dart';
 import 'hotkeys.dart';
@@ -309,7 +310,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final me = _profile;
     if (me == null) return;
     setState(() => _unread = 0);
-    await _push(appRoute((_) => NotificationsScreen(me: me),
+    await _push(appRoute(
+        (_) => DeferredView(
+            load: notifications.loadLibrary,
+            builder: (_) => notifications.NotificationsScreen(me: me)),
         title: context.l10n.navHome));
     await _loadUnread();
   }
@@ -317,7 +321,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openCompany() async {
     final me = _profile;
     if (me == null) return;
-    final tab = await _push<int>(appRoute((_) => MyCompanyScreen(me: me),
+    final tab = await _push<int>(appRoute(
+        (_) => DeferredView(
+            load: company.loadLibrary,
+            builder: (_) => company.MyCompanyScreen(me: me)),
         title: context.l10n.navProfile));
     if (tab != null && mounted) {
       setState(() {
@@ -330,7 +337,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openSettings() async {
     final me = _profile;
     if (me == null) return;
-    final changed = await _push<bool>(appRoute((_) => SettingsScreen(me: me),
+    final changed = await _push<bool>(appRoute(
+        (_) => DeferredView(
+            load: settings.loadLibrary,
+            builder: (_) => settings.SettingsScreen(me: me)),
         title: context.l10n.navProfile));
     if (changed == true) await _loadProfile();
   }
@@ -467,9 +477,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _body(int section) {
     switch (section) {
       case 1:
-        return const HistoryScreen();
+        return DeferredView(
+            key: const ValueKey('history'),
+            load: history.loadLibrary,
+            builder: (_) => history.HistoryScreen());
       case 2:
-        return const ReportsScreen();
+        return DeferredView(
+            key: const ValueKey('reports'),
+            load: reports.loadLibrary,
+            builder: (_) => reports.ReportsScreen());
       case 3:
         return _profileView();
       case 4:

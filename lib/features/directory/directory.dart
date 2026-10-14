@@ -6,7 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../home/home_chrome.dart';
-import '../map/objects_map_view.dart';
+import '../map/objects_map_view.dart' deferred as mapview;
 import 'contractor_card.dart';
 import 'object_card.dart';
 import '../../core/app_message.dart';
@@ -15,6 +15,7 @@ import '../../l10n/app_localizations.dart';
 import 'city.dart' as city;
 import '../regions/countries.dart';
 import '../regions/region.dart';
+import '../../core/deferred_view.dart';
 
 class Obj {
   final String id;
@@ -603,13 +604,15 @@ class _ObjectsTabState extends State<ObjectsTab> {
             }
             return const AppLoader();
           }
-          return ObjectsMapView(
-            objects: snap.data!,
-            isManager: _isManager,
-            companyId: _companyId,
-            onReload: _reloadAndWait,
-            onShowOrders: (o) => widget.onShowOrders?.call(o),
-          );
+          return DeferredView(
+              load: mapview.loadLibrary,
+              builder: (_) => mapview.ObjectsMapView(
+                    objects: snap.data!,
+                    isManager: _isManager,
+                    companyId: _companyId,
+                    onReload: _reloadAndWait,
+                    onShowOrders: (o) => widget.onShowOrders?.call(o),
+                  ));
         },
       );
 

@@ -1,4 +1,4 @@
-import '../acts/contractor_acts_screen.dart';
+import '../acts/contractor_acts_screen.dart' deferred as acts;
 import '../acts/proof_decisions.dart';
 import '../offline/offline_banner.dart';
 import '../offline/offline_logic.dart' show isNetworkError;
@@ -28,6 +28,7 @@ import 'requests.dart';
 import 'order_form_place.dart';
 import 'package:intl/intl.dart';
 import '../reports/report_repository.dart';
+import '../../core/deferred_view.dart';
 
 /// Ширина колонки вкладки «Заявки» на ПК: рядом с поиском помещаются
 /// таблетки главных фильтров.
@@ -232,8 +233,10 @@ class _RequestsTabState extends State<RequestsTab> {
             onTap: () => Navigator.push(
                 context,
                 appRoute(
-                    (_) => ContractorActsScreen(
-                        initialContractorId: dec.contractorId),
+                    (_) => DeferredView(
+                        load: acts.loadLibrary,
+                        builder: (_) => acts.ContractorActsScreen(
+                            initialContractorId: dec.contractorId)),
                     title: l.tabRequests)));
     if (b == null || (b.photo == 0 && b.telegram == 0)) {
       return decisions == null

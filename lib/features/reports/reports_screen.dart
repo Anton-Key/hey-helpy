@@ -19,7 +19,8 @@ import '../directory/city.dart';
 import '../directory/object_picker.dart';
 // Отложенно: PDF (пакеты pdf / printing, шрифт) — только по кнопке печати.
 import 'report_pdf.dart' deferred as pdf;
-import '../acts/contractor_acts_screen.dart';
+import '../acts/contractor_acts_screen.dart' deferred as acts;
+import '../../core/deferred_view.dart';
 
 /// Вкладка «Отчёты» (только менеджер и администратор): период, фильтры,
 /// четыре главные цифры по компании и показатели по каждому подрядчику.
@@ -645,8 +646,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
           onTap: () => Navigator.push(
               context,
               appRoute(
-                  (_) =>
-                      ContractorActsScreen(initialContractorId: _contractorId),
+                  (_) => DeferredView(
+                      load: acts.loadLibrary,
+                      builder: (_) => acts.ContractorActsScreen(
+                          initialContractorId: _contractorId)),
                   title: l.navReports)),
         ),
       ]),

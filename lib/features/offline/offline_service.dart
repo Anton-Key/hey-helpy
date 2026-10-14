@@ -283,7 +283,9 @@ class OfflineService extends ChangeNotifier {
           .eq('profile_id', uid)
           .timeout(requestTimeout);
       final contractors = {for (final r in ex) r['contractor_id'] as String};
-      _cache['my_contractors'] = contractors.toList();
+      // Тот же ключ, что у RequestsRepo.myContractorIds — карточка без
+      // сети узнаёт, что пользователь — исполнитель.
+      _cache['my_contractor_rows'] = ex;
       if (contractors.isEmpty) {
         _scheduleCacheSave();
         return;

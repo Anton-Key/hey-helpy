@@ -1124,11 +1124,14 @@ export const SCENARIOS = [
       assert(denied, 'исполнитель не должен решать по оплате');
 
       // 3. Менеджер: карточка и акт — «Требует решения менеджера» → «Подтвердить к оплате».
+      const mp = await ctx.page({ width: 412, height: 915 });
+      await login(mp, base, USERS.admin);
+      await openOrder(mp, base, 'E2E-17 Без сети: фильтр');
+      await scrollTo(mp, /Снято без сети в/);
+      await settle(mp, 800);
+      await ctx.shot(mp, 'card-proof');
       const m = await ctx.page();
       await login(m, base, USERS.admin);
-      await openOrder(m, base, 'E2E-17 Без сети: фильтр');
-      await see(m, /Снято без сети в/).waitFor({ timeout: 20000 });
-      await ctx.shot(m, 'card-proof');
       await home(m, base);
       await section(m, /^Отчёты/);
       await scrollTo(m, /Акты подрядчикам/);

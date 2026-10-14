@@ -1,3 +1,5 @@
+import '../acts/contractor_acts_screen.dart';
+import '../acts/proof_decisions.dart';
 import '../offline/offline_banner.dart';
 import '../offline/offline_logic.dart' show isNetworkError;
 import '../offline/offline_service.dart';
@@ -181,6 +183,9 @@ class _RequestsTabState extends State<RequestsTab> {
   /// плашек нет.
   ({int photo, double? photoRate, int telegram})? _badges;
 
+  /// Шаг 27: «Ждут вашего решения по оплате: N» (текущий месяц).
+  ({int pending, String? contractorId})? _decisions;
+
   Future<void> _loadBadges() async {
     if (_role != 'admin' && _role != 'manager') return;
     try {
@@ -192,6 +197,16 @@ class _RequestsTabState extends State<RequestsTab> {
         _repo.countChannel('camera').catchError((_) => 0),
       ]);
       final stats = r[0] as PhotoStats?;
+      try {
+        final d = await ProofDecisionsRepo().stats(
+            DateTime(now.year, now.month), now.add(const Duration(days: 1)));
+        if (mounted) {
+          setState(() =>
+              _decisions = (pending: d.pending, contractorId: d.contractorId));
+        }
+      } catch (e) {
+        debugPrint('decisions badge: ${e.runtimeType}');
+      }
       if (!mounted) return;
       setState(() => _badges = (
             photo: stats?.total ?? (r[2] as int),
@@ -206,7 +221,27 @@ class _RequestsTabState extends State<RequestsTab> {
   Widget? _badgeRow() {
     final b = _badges;
     final l = context.l10n;
-    if (b == null || (b.photo == 0 && b.telegram == 0)) return null;
+    final dec = _decisions;
+    final decisions = dec == null || dec.pending == 0
+        ? null
+        : AppChip(
+            key: const ValueKey('badge-decisions'),
+            icon: AppIcons.act,
+            label: l.homeDecisionsBadge(dec.pending),
+            selected: false,
+            onTap: () => Navigator.push(
+                context,
+                appRoute(
+                    (_) => ContractorActsScreen(
+                        initialContractorId: dec.contractorId),
+                    title: l.tabRequests)));
+    if (b == null || (b.photo == 0 && b.telegram == 0)) {
+      return decisions == null
+          ? null
+          : Padding(
+              padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
+              child: Wrap(children: [decisions]));
+    }
     if (_filter.channels.isNotEmpty) return null;
     final pct = NumberFormat.percentPattern(l.localeName);
     void show(String channel) => _setFilter(OrderFilter.empty
@@ -214,6 +249,7 @@ class _RequestsTabState extends State<RequestsTab> {
     return Padding(
       padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
       child: Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
+        if (decisions != null) decisions,
         if (b.photo > 0)
           AppChip(
               icon: AppIcons.camera,

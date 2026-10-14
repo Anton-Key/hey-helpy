@@ -1,3 +1,4 @@
+import '../acts/proof_decisions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -113,6 +114,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
   /// «Узнавание по фото» за период (0017); null — нет данных.
   PhotoStats? _photo;
 
+  /// Шаг 27: «Сдано без сети: N · подтверждено вручную: M».
+  ({int offline, int manual})? _offline;
+
   Future<void> _load() async {
     final seq = ++_seq;
     final r = _period.range();
@@ -132,6 +136,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
         contractorOrder: [for (final c in _contractors) c.id],
       );
       final photo = await _repo.photoStats(r.from, r.to);
+      ({int offline, int manual})? off;
+      try {
+        final st = await ProofDecisionsRepo().stats(r.from, r.to);
+        off = (offline: st.offline, manual: st.manual);
+      } catch (e) {
+        debugPrint('offline stats: ${e.runtimeType}');
+      }
+      _offline = off;
       if (!mounted || seq != _seq) return;
       setState(() {
         _report = report;
@@ -623,7 +635,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
         AppRow(
           leading: const LeadingIcon(AppIcons.act),
           title: l.actsTitle,
-          subtitle: l.actsMenuHint,
+          subtitle: [
+            l.actsMenuHint,
+            if (_offline != null &&
+                (_offline!.offline > 0 || _offline!.manual > 0))
+              l.reportsOfflineLine(_offline!.offline, _offline!.manual),
+          ].join('\n'),
+          subtitleMaxLines: 3,
           onTap: () => Navigator.push(
               context,
               appRoute(

@@ -57,7 +57,7 @@ void main() {
     });
 
     test('суммы: за заявку и за визит ТО; без ставок — без сумм', () {
-      final rates = const ActRates(perOrder: 4500, perVisit: 2500);
+      const rates = ActRates(perOrder: 4500, perVisit: 2500);
       final r = buildAct(
           [o('a'), o('b', ppr: true), o('c', photo: false)], rates);
       expect(r.paid.map((x) => x.amount), [4500, 2500]);

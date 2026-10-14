@@ -15,7 +15,9 @@ import '../floors/floor_repository.dart';
 import '../floors/order_plan_link.dart';
 import '../floors/plan_logic.dart';
 import '../regions/geo_pickers.dart';
+import '../photos/live_shot_screen.dart';
 import '../photos/photo_capture.dart';
+import '../photos/photo_stamp.dart';
 import '../ppr/ppr_logic.dart';
 import '../ppr/ppr_text.dart';
 import '../documents/document_repository.dart';
@@ -521,7 +523,10 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final companyId = widget.companyId ?? (_d!['company_id'] as String);
     final CapturedPhoto? photo;
     try {
-      photo = await capturePhoto();
+      // «После» — только живой камерой со штампом (шаг 26); «до» — как раньше.
+      photo = stage == 'after'
+          ? await captureLivePhoto(context, stamp: _stamp())
+          : await capturePhoto();
     } on CaptureException catch (e) {
       _ok(
           e.problem == CaptureProblem.cameraDenied
@@ -546,6 +551,20 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
+  }
+
+  /// Штамп фото «после»: объект, помещение заявки и геозона объекта.
+  PhotoStamp _stamp() {
+    final d = _d!;
+    final objId = d['object_id'] as String?;
+    final obj = widget.objects.where((o) => o.id == objId).firstOrNull;
+    final loc = d['locations'] as Map<String, dynamic>?;
+    return PhotoStamp(
+        object: obj == null ? null : objectDisplayName(obj),
+        place: loc?['name'] == null
+            ? null
+            : placeLabel(loc!['name'] as String, loc['code'] as String?),
+        geofence: _geofence(objId));
   }
 
   /// Заявка из Telegram — автор узнает о новом статусе в чате (шаг 24).

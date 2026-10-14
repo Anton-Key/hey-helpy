@@ -673,7 +673,9 @@ class _CameraScreenState extends State<CameraScreen>
           photo: photo == null
               ? null
               : CapturedPhoto(
-                  bytes: photo, takenAt: _takenAt ?? DateTime.now()),
+                  bytes: photo,
+                  takenAt: _takenAt ?? DateTime.now(),
+                  source: 'camera'),
         );
         if (ok == true && mounted) Navigator.pop(context, true);
       });

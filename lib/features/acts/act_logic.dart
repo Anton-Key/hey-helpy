@@ -2,7 +2,8 @@
 /// Тесты — test/act_logic_test.dart.
 ///
 /// К оплате — только заявки, которые приняты менеджером и доказаны:
-///   📷 фото «после», если фото требовалось (`requires_photo`);
+///   📷 фото «после», если фото требовалось (`requires_photo`); снятое
+///      живой камерой (шаг 26) — фото «из файла» доказательством не считается;
 ///   📍 визит в геозоне, если у объекта есть координаты (геозона, 0009);
 ///   ✓ все пункты чек-листа, если чек-лист был.
 /// Остальные — «без доказательства, к оплате не принимается» с причинами.
@@ -15,6 +16,7 @@ enum ActReason {
   notAccepted,
   returned,
   noPhoto,
+  photoFromFile,
   noVisit,
   visitOutOfZone,
   checklist
@@ -33,6 +35,7 @@ class ActOrder {
     this.layerId,
     this.requiresPhoto = false,
     this.hasAfterPhoto = false,
+    this.hasFileAfterPhoto = false,
     this.visitRequired = false,
     this.visit = VisitProof.none,
     this.checklistTotal = 0,
@@ -52,7 +55,11 @@ class ActOrder {
   final String? locationId;
   final String? layerId;
   final bool requiresPhoto;
+  /// Фото «после», которое считается доказательством (не «из файла»).
   final bool hasAfterPhoto;
+
+  /// Есть фото «после» только «из файла» (0023, `attachments.source`).
+  final bool hasFileAfterPhoto;
   final bool visitRequired;
   final VisitProof visit;
   final int checklistTotal;
@@ -111,7 +118,8 @@ List<ActReason> actReasons(ActOrder o) => [
         ActReason.returned
       else if (o.status != 'done')
         ActReason.notAccepted,
-      if (o.requiresPhoto && !o.hasAfterPhoto) ActReason.noPhoto,
+      if (o.requiresPhoto && !o.hasAfterPhoto)
+        o.hasFileAfterPhoto ? ActReason.photoFromFile : ActReason.noPhoto,
       if (o.visitRequired && o.visit == VisitProof.none) ActReason.noVisit,
       if (o.visitRequired && o.visit == VisitProof.outOfZone)
         ActReason.visitOutOfZone,

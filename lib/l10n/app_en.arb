@@ -1404,5 +1404,19 @@
   "orderProgressNone": "none",
   "errExecutorOnly": "Only the contractor's technician can do this",
   "errManagerOnly": "Only a manager can accept or return the work",
-  "errSamePersonAccept": "You submitted this work — another manager must accept it"
+  "errSamePersonAccept": "You submitted this work — another manager must accept it",
+  "shotTitle": "Result photo",
+  "shotHint": "Photograph the finished work. “After” photos are camera-only",
+  "shotTake": "Take photo",
+  "shotRetake": "Retake",
+  "shotDone": "Use photo",
+  "shotPreparing": "Preparing photo…",
+  "shotPickFile": "Choose a file",
+  "shotFileWarning": "You can choose a file, but the photo will be marked “from file” and won't count as proof in the contractor act",
+  "photoFromFile": "from file",
+  "stampInZone": "in geofence",
+  "stampOutOfZone": "outside geofence",
+  "shotDenied": "No camera access. Allow it in your browser or phone settings.",
+  "shotFailed": "Couldn't start the camera. Please try again.",
+  "actReasonPhotoFromFile": "“after” photo uploaded from a file, not taken on site"
 }

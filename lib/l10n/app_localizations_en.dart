@@ -4889,4 +4889,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get actReasonPhotoFromFile =>
       '“after” photo uploaded from a file, not taken on site';
+
+  @override
+  String get cameraNoEquipment =>
+      'No equipment in the frame — point the camera at a device';
 }

@@ -90,9 +90,13 @@ class PhotoIdentification {
     this.candidates = const [],
     this.model,
     this.ms,
+    this.noEquipment = false,
   });
 
   final String kind;
+
+  /// В кадре не видно оборудования (человек, пейзаж, документ) — шаг 26.
+  final bool noEquipment;
   final String? layerId;
   final String? layerName;
   final Nameplate? nameplate;
@@ -126,6 +130,7 @@ class PhotoIdentification {
         _ => null
       },
       ms: (v['ms'] as num?)?.toInt(),
+      noEquipment: v['no_equipment'] == true,
     );
   }
 

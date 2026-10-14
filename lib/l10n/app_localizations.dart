@@ -8354,6 +8354,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'фото «после» загружено из файла, не снято на месте'**
   String get actReasonPhotoFromFile;
+
+  /// Шаг 26: нет оборудования в кадре
+  ///
+  /// In ru, this message translates to:
+  /// **'В кадре не видно оборудования — наведите камеру на прибор'**
+  String get cameraNoEquipment;
 }
 
 class _AppLocalizationsDelegate

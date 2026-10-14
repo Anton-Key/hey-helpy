@@ -4919,4 +4919,8 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get actReasonPhotoFromFile =>
       'фото «после» загружено из файла, не снято на месте';
+
+  @override
+  String get cameraNoEquipment =>
+      'В кадре не видно оборудования — наведите камеру на прибор';
 }

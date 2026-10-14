@@ -24,6 +24,9 @@ enum CameraCardKind {
 
   /// «Не тот» пролистал всех кандидатов — выбор вручную.
   manual,
+
+  /// В кадре не видно оборудования (шаг 26) — «наведите камеру на прибор».
+  noEquipment,
 }
 
 class CameraCard {
@@ -48,6 +51,9 @@ CameraCard cameraCard(
     int index = 0}) {
   if (busy) return const CameraCard(CameraCardKind.looking);
   final list = result?.candidates ?? const <IdentifyCandidate>[];
+  if (problem == null && result != null && result.noEquipment) {
+    return const CameraCard(CameraCardKind.noEquipment);
+  }
   if (problem != null || result == null || list.isEmpty) {
     return const CameraCard(CameraCardKind.notRecognized);
   }

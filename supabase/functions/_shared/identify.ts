@@ -140,6 +140,7 @@ export function resolveLayer(v: unknown, layers: LayerRef[]): LayerRef | null {
 
 const VISION_PROMPT =
   `Ты — инженер эксплуатации здания. На фото — оборудование в здании. Верни ТОЛЬКО JSON-объект, без markdown:
+- "equipment": true, если в кадре есть инженерное оборудование или его часть; false — если оборудования нет (человек, лицо, животное, пейзаж, документ, экран с текстом, пустая стена или пол). При false: "kind" — "other", "layer", "nameplate", "defect" — null.
 - "kind": ТОЛЬКО один код из «Виды», который лучше всего подходит; не уверен или нет в списке — "other".
 - "layer": ТОЛЬКО код вида s1 из «Системы», к которой относится оборудование, иначе null.
 - "nameplate": если на фото читается шильдик или наклейка — {"manufacturer", "model", "serial"} (строка или null каждое), ровно как написано. Не читается — null. Ничего не выдумывай.
@@ -152,6 +153,7 @@ const VISION_PROMPT =
 export const VISION_SCHEMA = {
   type: "object",
   properties: {
+    equipment: { type: "boolean" },
     kind: { type: "string", enum: KINDS.map((k) => k.code) },
     layer: { type: ["string", "null"] },
     nameplate: {
@@ -167,7 +169,7 @@ export const VISION_SCHEMA = {
     defect: { type: ["string", "null"] },
     confidence: { type: "number" },
   },
-  required: ["kind", "layer", "nameplate", "defect", "confidence"],
+  required: ["equipment", "kind", "layer", "nameplate", "defect", "confidence"],
   additionalProperties: false,
 } as const;
 
@@ -242,6 +244,8 @@ export interface Vision {
   nameplate: Nameplate | null;
   defect: string | null;
   confidence: number | null;
+  /** В кадре нет оборудования (человек, пейзаж, документ…) — шаг 26. */
+  noEquipment?: boolean;
 }
 
 function tidy(v: unknown, max: number): string | null {
@@ -258,6 +262,17 @@ export function normalizeVision(
   raw: Record<string, unknown>,
   layers: LayerRef[],
 ): Vision {
+  // Только явное false: старый ответ без поля — как раньше.
+  if (raw.equipment === false) {
+    return {
+      kind: "other",
+      layer: null,
+      nameplate: null,
+      defect: null,
+      confidence: null,
+      noEquipment: true,
+    };
+  }
   const kind = canonicalKind(raw.kind) ?? "other";
   let layer = resolveLayer(raw.layer, layers);
   // Система не указана — по умолчанию для вида (если такой слой есть).
@@ -468,6 +483,8 @@ export interface IdentifyResult {
   nameplate: Nameplate | null;
   defect: string | null;
   confidence: number | null;
+  /** Шаг 26: в кадре не видно оборудования — кандидатов нет. */
+  no_equipment: boolean;
   candidates: Candidate[];
 }
 
@@ -486,6 +503,9 @@ export function buildResult(
     nameplate: vision.nameplate,
     defect: vision.defect,
     confidence: vision.confidence,
-    candidates: matchCandidates(vision, assets, here, locale),
+    no_equipment: vision.noEquipment === true,
+    candidates: vision.noEquipment
+      ? []
+      : matchCandidates(vision, assets, here, locale),
   };
 }

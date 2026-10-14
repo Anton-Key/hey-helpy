@@ -1126,7 +1126,12 @@ class _CameraScreenState extends State<CameraScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(manual ? l.cameraPickManually : l.cameraNotRecognized,
+          Text(
+              manual
+                  ? l.cameraPickManually
+                  : _card.kind == CameraCardKind.noEquipment
+                      ? l.cameraNoEquipment
+                      : l.cameraNotRecognized,
               style: AppText.headline),
           if (_problem != null) ...[
             const SizedBox(height: AppSpace.xs),

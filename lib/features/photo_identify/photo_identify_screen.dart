@@ -628,6 +628,21 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
       ];
 
   List<Widget> _resultView(AppLocalizations l, PhotoIdentification r) {
+    // В кадре нет оборудования (шаг 26): ни вида, ни кандидатов.
+    if (r.noEquipment) {
+      return [
+        AppGroup(children: [
+          AppRow(
+            leading: const LeadingIcon(AppIcons.scan,
+                color: AppColors.secondary, background: AppColors.fill),
+            title: l.cameraNoEquipment,
+            titleStyle: AppText.callout,
+            subtitleMaxLines: 3,
+            chevron: false,
+          ),
+        ]),
+      ];
+    }
     final locale = context.localeCode;
     final layer = _layers.where((y) => y.id == r.layerId).firstOrNull;
     final kindIcon = equipmentKind(r.kind)?.icon ?? AppIcons.eqOther;
@@ -663,7 +678,8 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
         Padding(
           padding: const EdgeInsetsDirectional.symmetric(
               horizontal: AppSpace.rowH, vertical: AppSpace.s),
-          child: Text(l.photoNoCandidates, style: AppText.footnote),
+          child: Text(r.noEquipment ? l.cameraNoEquipment : l.photoNoCandidates,
+              style: AppText.footnote),
         )
       else
         AppGroup(header: l.photoLikely, children: [

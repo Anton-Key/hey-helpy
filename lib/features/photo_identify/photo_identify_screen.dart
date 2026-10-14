@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_message.dart';
@@ -22,12 +21,12 @@ import '../floors/floor_models.dart';
 import '../floors/floor_repository.dart';
 import '../floors/plan_logic.dart';
 import '../photos/photo_repository.dart';
-import '../regions/geo_pickers.dart';
 import '../requests/requests.dart';
 import '../voice/voice_intake_client.dart' show IntakeWait, intakeWaitStage;
 import 'identify_client.dart';
 import 'identify_log.dart';
 import 'identify_models.dart';
+import 'here_pickers.dart';
 import 'photo_compress.dart';
 import 'photo_recompress.dart' deferred as recompress;
 import '../requests/order_form_place.dart';
@@ -190,30 +189,9 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
     return null;
   }
 
-  static String _hereKey(String uid) => 'photo_here_v1_$uid';
+  Future<(String?, String?)> _loadHere() => loadPhotoHere();
 
-  Future<(String?, String?)> _loadHere() async {
-    try {
-      final uid = Supabase.instance.client.auth.currentUser?.id;
-      if (uid == null) return (null, null);
-      final p = await SharedPreferences.getInstance();
-      final v = p.getString(_hereKey(uid))?.split('|');
-      if (v == null || v.isEmpty || v[0].isEmpty) return (null, null);
-      return (v[0], v.length > 1 && v[1].isNotEmpty ? v[1] : null);
-    } catch (_) {
-      return (null, null);
-    }
-  }
-
-  Future<void> _saveHere() async {
-    try {
-      final uid = Supabase.instance.client.auth.currentUser?.id;
-      if (uid == null) return;
-      final p = await SharedPreferences.getInstance();
-      await p.setString(
-          _hereKey(uid), '${_objectId ?? ''}|${_locationId ?? ''}');
-    } catch (_) {}
-  }
+  Future<void> _saveHere() => savePhotoHere(_objectId, _locationId);
 
   IdentifyPlace get _here => IdentifyPlace(
       objectId: _objectId,
@@ -343,7 +321,7 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
     final picked = await showAppSheet<String>(
       context: context,
       builder: (_) =>
-          _ObjectPickerSheet(objects: _objects, selected: _objectId),
+          HereObjectPickerSheet(objects: _objects, selected: _objectId),
     );
     if (picked == null || !mounted) return;
     final objectId = picked.isEmpty ? null : picked;
@@ -425,7 +403,7 @@ class _PhotoIdentifyScreenState extends State<PhotoIdentifyScreen> {
     }
     final picked = await showAppSheet<PlanItem>(
       context: context,
-      builder: (_) => _AssetPickerSheet(
+      builder: (_) => HereAssetPickerSheet(
           assets: assets,
           places: {
             for (final i in _items)
@@ -792,114 +770,4 @@ class _AiBadge extends StatelessWidget {
                   color: AppColors.accentText, fontWeight: FontWeight.w600)),
         ]),
       );
-}
-
-/// Выбор объекта для «Где я»: «Без объекта — искать везде» и объекты по
-/// городам, поиск. '' — без объекта, null — закрыли.
-class _ObjectPickerSheet extends StatefulWidget {
-  const _ObjectPickerSheet({required this.objects, required this.selected});
-  final List<Obj> objects;
-  final String? selected;
-
-  @override
-  State<_ObjectPickerSheet> createState() => _ObjectPickerSheetState();
-}
-
-class _ObjectPickerSheetState extends State<_ObjectPickerSheet> {
-  String _q = '';
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final q = _q.trim().toLowerCase();
-    final list = [
-      for (final g in groupObjectsByCity(widget.objects))
-        for (final o in g.items)
-          if (q.isEmpty || objectDisplayName(o).toLowerCase().contains(q)) o
-    ];
-    return ListPickerSheet(
-      title: l.photoWhereChooseObject,
-      search: widget.objects.length < 6
-          ? null
-          : AppSearchField(
-              hint: l.formChooseObject,
-              onChanged: (v) => setState(() => _q = v)),
-      children: [
-        AppGroup(margin: EdgeInsets.zero, children: [
-          if (q.isEmpty)
-            AppCheckRow(
-                title: l.photoWhereNoObject,
-                selected: widget.selected == null,
-                onTap: () => Navigator.pop(context, '')),
-          for (final o in list)
-            AppCheckRow(
-              title: objectDisplayName(o),
-              selected: o.id == widget.selected,
-              onTap: () => Navigator.pop(context, o.id),
-            ),
-        ]),
-      ],
-    );
-  }
-}
-
-/// «Другое оборудование…»: оборудование объекта, сначала — в помещении
-/// [here], поиск по названию и инвентарному номеру.
-class _AssetPickerSheet extends StatefulWidget {
-  const _AssetPickerSheet(
-      {required this.assets, required this.places, required this.here});
-  final List<PlanItem> assets;
-  final Map<String, PlanItem> places;
-  final String? here;
-
-  @override
-  State<_AssetPickerSheet> createState() => _AssetPickerSheetState();
-}
-
-class _AssetPickerSheetState extends State<_AssetPickerSheet> {
-  String _q = '';
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final q = _q.trim().toLowerCase();
-    final list = [
-      for (final a in widget.assets)
-        if (q.isEmpty ||
-            a.name.toLowerCase().contains(q) ||
-            (a.inventoryNo ?? '').toLowerCase().contains(q))
-          a
-    ]..sort((x, y) {
-        final hx = x.locationId == widget.here ? 0 : 1;
-        final hy = y.locationId == widget.here ? 0 : 1;
-        return hx != hy ? hx - hy : naturalCompare(x.name, y.name);
-      });
-    return ListPickerSheet(
-      title: l.photoPickAsset,
-      search: AppSearchField(
-          hint: l.photoAssetSearchHint,
-          onChanged: (v) => setState(() => _q = v)),
-      children: [
-        AppGroup(margin: EdgeInsets.zero, children: [
-          for (final a in list)
-            AppRow(
-              leading:
-                  LeadingIcon(assetIcon(a.equipmentKind, a.category ?? '')),
-              title: a.name,
-              subtitle: [
-                if (widget.places[a.locationId] case final p?) p.label,
-                if (a.inventoryNo != null) a.inventoryNo!,
-              ].join(' · '),
-              onTap: () => Navigator.pop(context, a),
-            ),
-        ]),
-        if (list.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(AppSpace.l),
-            child: Text(l.equipNothingFound,
-                textAlign: TextAlign.center, style: AppText.footnote),
-          ),
-      ],
-    );
-  }
 }

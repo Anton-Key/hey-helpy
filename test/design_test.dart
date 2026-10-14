@@ -69,6 +69,11 @@ void main() {
         (AppColors.danger, AppColors.surface),
         (AppColors.danger, AppColors.fill),
         (AppColors.tabInactive, const Color(0xFFF9FAFA)),
+        // Камера: подпись на подложке (худший случай — белый кадр под ней).
+        (AppColors.onCamera,
+            Color.alphaBlend(AppColors.cameraOverlay, const Color(0xFFFFFFFF))),
+        (AppColors.secondary,
+            Color.alphaBlend(AppColors.glass, const Color(0xFF000000))),
       ];
       for (final (fg, bg) in pairs) {
         expect(_contrast(fg, bg), greaterThanOrEqualTo(4.5),

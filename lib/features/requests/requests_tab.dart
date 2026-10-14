@@ -1,3 +1,6 @@
+import '../offline/offline_banner.dart';
+import '../offline/offline_logic.dart' show isNetworkError;
+import '../offline/offline_service.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -256,8 +259,18 @@ class _RequestsTabState extends State<RequestsTab> {
       }
       final conds = _filter.serverConditions(
           now: DateTime.now(), uid: _repo.uid, myExecutorIds: _execIds);
-      final r = await Future.wait<Object>(
-          [_repo.listFiltered(conds), _repo.countAll()]);
+      List<Object> r;
+      try {
+        r = await Future.wait<Object>(
+                [_repo.listFiltered(conds), _repo.countAll()])
+            .timeout(OfflineService.requestTimeout);
+        unawaited(_off.prefetch());
+      } catch (e) {
+        // Без сети (шаг 27, APK): свои заявки исполнителя из телефона.
+        final cached = _offlineOrders(e);
+        if (cached == null) rethrow;
+        r = [cached, cached.length];
+      }
       if (!mounted || req != _req) return;
       setState(() {
         _items = r[0] as List<WorkOrder>;
@@ -278,6 +291,20 @@ class _RequestsTabState extends State<RequestsTab> {
         _error = '$e';
         _loading = false;
       });
+    }
+  }
+
+  final _off = OfflineService.instance;
+
+  /// Заявки из телефона, если ошибка — нет сети и они сохранены.
+  List<WorkOrder>? _offlineOrders(Object e) {
+    if (!OfflineService.supported || !isNetworkError(e)) return null;
+    if (_off.cached('my_orders') == null) return null;
+    _off.markOffline();
+    try {
+      return [for (final m in _off.myOrders()) WorkOrder.fromMap(m)];
+    } catch (_) {
+      return null;
     }
   }
 
@@ -436,6 +463,7 @@ class _RequestsTabState extends State<RequestsTab> {
     return Stack(children: [
       Positioned.fill(
         child: CustomScrollView(slivers: [
+          const SliverToBoxAdapter(child: OfflineBanner()),
           HomeHeader(
             title: l.tabRequests,
             maxWidth: kRequestsMaxWidth,

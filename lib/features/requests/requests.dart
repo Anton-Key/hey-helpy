@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart' show Position;
+import 'package:latlong2/latlong.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/design/design.dart';
@@ -25,6 +27,10 @@ import '../documents/documents_section.dart';
 import '../photos/photo_repository.dart';
 import '../photos/photo_section.dart';
 import '../photo_identify/identify_log.dart' show newUuid;
+import '../offline/offline_banner.dart';
+import '../offline/offline_logic.dart';
+import '../offline/offline_service.dart';
+import 'order_checklist.dart';
 import '../visits/visit_repository.dart';
 import '../visits/visit_section.dart';
 import 'contractor_picker.dart';
@@ -62,9 +68,9 @@ class RequestsRepo {
   Future<String?> myRole() async {
     final id = uid;
     if (id == null) return null;
-    final r =
-        await _c.from('profiles').select('role').eq('id', id).maybeSingle();
-    return r?['role'] as String?;
+    final r = await OfflineService.instance.cachedJson('my_role',
+        () => _c.from('profiles').select('role').eq('id', id).maybeSingle());
+    return (r as Map?)?['role'] as String?;
   }
 
   /// Заявки подрядчика, объекта или помещения (сначала новые). Сколько видно —
@@ -132,11 +138,19 @@ class RequestsRepo {
   Future<List<String>> myExecutorIds() async {
     final id = uid;
     if (id == null) return const [];
-    final rows = await _c.from('executors').select('id').eq('profile_id', id);
-    return [for (final r in rows) r['id'] as String];
+    final rows = await OfflineService.instance.cachedJson('my_executor_ids',
+        () => _c.from('executors').select('id').eq('profile_id', id));
+    return [for (final r in (rows as List)) r['id'] as String];
   }
 
-  Future<Map<String, dynamic>?> detail(String id) => SchemaCompat.run(
+  /// Без сети (шаг 27) — последняя сохранённая карточка.
+  Future<Map<String, dynamic>?> detail(String id) async {
+    final d = await OfflineService.instance
+        .cachedJson('detail:$id', () => _detail(id));
+    return d == null ? null : Map<String, dynamic>.from(d as Map);
+  }
+
+  Future<Map<String, dynamic>?> _detail(String id) => SchemaCompat.run(
       '0015',
       () => _c
           .from('work_orders')
@@ -248,12 +262,12 @@ class RequestsRepo {
     if (me == null) return const {};
     final cached = _myContractors[me];
     if (cached != null) return cached;
-    final rows = await _c
-        .from('executors')
-        .select('contractor_id')
-        .eq('profile_id', me);
+    final rows = await OfflineService.instance.cachedJson(
+        'my_contractor_rows',
+        () =>
+            _c.from('executors').select('contractor_id').eq('profile_id', me));
     return _myContractors[me] = {
-      for (final r in rows) r['contractor_id'] as String,
+      for (final r in (rows as List)) r['contractor_id'] as String,
     };
   }
 
@@ -382,8 +396,33 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _off.addListener(_onOffline);
     _load();
   }
+
+  @override
+  void dispose() {
+    _off.removeListener(_onOffline);
+    super.dispose();
+  }
+
+  /// Шаг 27: очередь без сети — статус и отметки «ждут отправки».
+  final _off = OfflineService.instance;
+  int _lastPending = 0;
+  void _onOffline() {
+    if (!mounted) return;
+    final p = _off.view(widget.order.id, _rawStatus).count;
+    // Очередь по заявке ушла на сервер — перечитать карточку.
+    if (_lastPending > 0 && p == 0 && _off.online) unawaited(_load());
+    _lastPending = p;
+    setState(() {});
+  }
+
+  String get _rawStatus => (_d?['status'] ?? widget.order.status) as String;
+
+  /// Статус с учётом действий, которые ещё не ушли на сервер.
+  PendingView get _pending => _off.view(widget.order.id, _rawStatus);
+  final _checklistKey = GlobalKey<OrderChecklistSectionState>();
 
   Future<void> _load() async {
     setState(() {
@@ -446,7 +485,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       }
     } catch (e) {
       debugPrint('photos: $e');
-      if (mounted) setState(() => _photosFailed = true);
+      // Без сети фото с сервера не показать — это не ошибка карточки.
+      if (mounted) setState(() => _photosFailed = !isNetworkError(e));
     }
   }
 
@@ -467,9 +507,12 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
 
   /// «Начать работу»: статус «в работе» и, у исполнителя, отметка посещения
   /// с координатами. Вне геозоны работать можно — база лишь помечает визит.
+  /// Без сети (шаг 27) — оба действия в очередь телефона, GPS работает и
+  /// без интернета: «📍 В геозоне» считается на телефоне.
   Future<void> _startWork() async {
     final l = context.l10n;
     final d = _d!;
+    final id = widget.order.id;
     final recordVisit = _can.isExecutor && d['object_id'] != null;
     setState(() => _starting = true);
     try {
@@ -478,44 +521,78 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
           ? ensureLocationPermission()
               .then((ok) => ok ? currentPosition() : null)
           : Future.value(null);
+      final bool queued;
       try {
-        await widget.repo.setStatus(widget.order.id, 'in_progress');
+        queued = await _off.runOrQueue(
+            orderId: id,
+            kind: OfflineKind.start,
+            online: () => widget.repo.setStatus(id, 'in_progress'));
       } catch (e) {
         _ok(l.statusError(e, to: 'in_progress'), type: AppMessageType.error);
         return;
       }
-      _notifyTelegram();
-      var message = l.toastInProgress;
+      if (!queued) _notifyTelegram();
+      var message = queued ? l.offQueuedToast : l.toastInProgress;
+      var type = queued ? AppMessageType.info : AppMessageType.success;
       if (recordVisit) {
         final position = await positionFuture;
+        final payload = <String, Object?>{
+          'lat': position?.latitude,
+          'lng': position?.longitude,
+          'accuracy': position?.accuracy,
+          'mock': position?.isMocked ?? false,
+        };
         try {
-          await _visitRepo.start(
-              workOrderId: widget.order.id,
-              companyId: widget.companyId ?? (d['company_id'] as String),
-              position: position);
-          if (position == null) message = l.visitNoLocation;
+          final visitQueued = await _off.runOrQueue(
+              orderId: id,
+              kind: OfflineKind.visit,
+              payload: payload,
+              online: () => _visitRepo.start(
+                  workOrderId: id,
+                  companyId: widget.companyId ?? (d['company_id'] as String),
+                  position: position));
+          if (visitQueued) {
+            message = '${l.offQueuedToast}\n${_zoneText(l, position)}';
+            type = AppMessageType.info;
+          } else if (position == null) {
+            message = l.visitNoLocation;
+            type = AppMessageType.info;
+          }
         } on PostgrestException catch (e) {
           // 23505 — у человека уже есть открытый визит по заявке (uq_visits_open,
           // миграция 0009): кнопку нажали повторно или с устаревшего экрана.
           debugPrint('visit: $e');
           message = e.code == '23505' ? l.visitAlreadyOpen : l.visitNotRecorded;
+          type = AppMessageType.info;
         } catch (e) {
           debugPrint('visit: $e');
           message = l.visitNotRecorded;
+          type = AppMessageType.info;
         }
       }
-      await _load();
+      if (!queued) await _load();
       // Работа начата, но визит без координат или не записан — это не успех.
-      _ok(message,
-          type: message == l.toastInProgress
-              ? AppMessageType.success
-              : AppMessageType.info);
+      _ok(message, type: type);
     } finally {
       if (mounted) setState(() => _starting = false);
     }
   }
 
-  bool get _hasAfterPhoto => _photos.any((p) => p.stage != 'before');
+  /// «📍 В геозоне» / «Вне геозоны · 240 м» / «Нет GPS» — на телефоне.
+  String _zoneText(AppLocalizations l, Position? p) {
+    final g = _geofence(_d?['object_id'] as String?);
+    if (p == null) return l.offVisitNoGps;
+    if (g == null) return l.offVisitInZone;
+    final m = const Distance().as(LengthUnit.Meter,
+        LatLng(p.latitude, p.longitude), LatLng(g.lat, g.lng));
+    final tol = p.accuracy.clamp(0, 50);
+    return m <= g.radiusM + tol
+        ? l.offVisitInZone
+        : l.offVisitOutZone(m.round());
+  }
+
+  bool get _hasAfterPhoto =>
+      _photos.any((p) => p.stage != 'before') || _pending.photos.isNotEmpty;
 
   /// Съёмка и загрузка фото «до» (автор) или «после» (исполнитель).
   Future<void> _addPhoto(String stage) async {
@@ -536,17 +613,42 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       return;
     }
     if (photo == null || !mounted) return;
+    final shot = photo;
     setState(() => _uploading = true);
+    final id = widget.order.id;
+    // Фото «после» без сети (шаг 27): файлом в каталоге приложения и в
+    // очередь; отпечаток SHA-256 — от снимка уже со штампом.
+    Future<void> queue() => _off.enqueue(
+            kind: OfflineKind.photo,
+            orderId: id,
+            companyId: companyId,
+            photo: shot.bytes,
+            device: shot.takenAt,
+            payload: {
+              'lat': shot.lat,
+              'lng': shot.lng,
+              'mock': shot.mockLocation,
+            });
+    final offlineOk =
+        stage == 'after' && OfflineService.supported && _off.attached;
     try {
+      if (offlineOk && _off.shouldQueueFor(id)) {
+        await queue();
+        _ok(l.offQueuedToast, type: AppMessageType.info);
+        return;
+      }
       await _photoRepo.upload(
-          companyId: companyId,
-          workOrderId: widget.order.id,
-          stage: stage,
-          photo: photo);
+          companyId: companyId, workOrderId: id, stage: stage, photo: photo);
       await _loadPhotos();
       _ok(l.photoUploaded);
     } catch (e) {
       debugPrint('upload: $e');
+      if (offlineOk && isNetworkError(e)) {
+        _off.markOffline();
+        await queue();
+        _ok(l.offQueuedToast, type: AppMessageType.info);
+        return;
+      }
       _ok(l.photoUploadFailed, type: AppMessageType.error);
     } finally {
       if (mounted) setState(() => _uploading = false);
@@ -564,7 +666,11 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         place: loc?['name'] == null
             ? null
             : placeLabel(loc!['name'] as String, loc['code'] as String?),
-        geofence: _geofence(objId));
+        geofence: _geofence(objId),
+        offline: OfflineService.supported && !_off.online,
+        timeFix: OfflineService.supported && _off.attached
+            ? _off.stampTimeFor
+            : null);
   }
 
   /// Заявка из Telegram — автор узнает о новом статусе в чате (шаг 24).
@@ -578,13 +684,14 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   bool get _isManager => widget.role == 'admin' || widget.role == 'manager';
   bool get _isExecutor =>
       widget.role == 'executor' || widget.role == 'contractor';
+
   /// Что можно этому пользователю с этой заявкой — одна функция (шаг 26).
   OrderActions get _can => orderActions(
         OrderActor(
             role: widget.role,
             uid: widget.uid,
             contractorIds: _myContractorIds),
-        status: (_d?['status'] ?? widget.order.status) as String,
+        status: _pending.status,
         createdBy: _d?['created_by'] as String?,
         contractorId: _d?['assigned_contractor_id'] as String?,
         submittedBy: _d?['submitted_by'] as String?,
@@ -642,6 +749,27 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     }
   }
 
+  /// «Выполнено, на проверку» — без сети в очередь (шаг 27).
+  Future<void> _submit() async {
+    final l = context.l10n;
+    final id = widget.order.id;
+    try {
+      final queued = await _off.runOrQueue(
+          orderId: id,
+          kind: OfflineKind.submit,
+          online: () => widget.repo.setStatus(id, 'on_review'));
+      if (queued) {
+        _ok(l.offQueuedToast, type: AppMessageType.info);
+        return;
+      }
+      _notifyTelegram();
+      await _load();
+      _ok(l.toastSubmitted);
+    } catch (e) {
+      _ok(l.statusError(e, to: 'on_review'), type: AppMessageType.error);
+    }
+  }
+
   Future<void> _returnForRework() async {
     final l = context.l10n;
     final c = TextEditingController();
@@ -693,6 +821,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
             context: context,
             removeBottom: bar != null,
             child: CustomScrollView(slivers: [
+              const SliverToBoxAdapter(child: OfflineBanner()),
               AppSliverHeader(
                 title: l.detailTitle,
                 large: false,
@@ -753,7 +882,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   List<Widget> _content() {
     final l = context.l10n;
     final d = _d!;
-    final status = (d['status'] ?? 'new') as String;
+    final status = _pending.status;
     final priority = (d['priority'] ?? 'normal') as String;
     final recurring = d['recurrence'] != null;
     final ppr = isPprOrder(d);
@@ -791,6 +920,9 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     return [
       Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
         StatusPill(status, large: true),
+        if (_pending.pending)
+          StatusPill('returned',
+              label: '${l.offPendingBadge} · ${_pending.count}', large: true),
         PriorityPill(priority, large: true),
         if (overdue) StatusPill('overdue', label: l.statusOverdue, large: true),
       ]),
@@ -908,6 +1040,15 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
                   color: noDesc ? AppColors.secondary : AppColors.ink)),
         ),
       ]),
+      // Чек-лист (шаг 27): отмечает исполнитель, в том числе без сети.
+      OrderChecklistSection(
+        key: _checklistKey,
+        orderId: widget.order.id,
+        canCheck: _can.addAfterPhoto,
+        pending: _pending.checked,
+      ),
+      if (_pending.photos.isNotEmpty)
+        PendingPhotosRow(actions: _pending.photos),
       if (_photos.isNotEmpty ||
           _photosFailed ||
           _can.addBeforePhoto ||
@@ -974,9 +1115,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
       );
 
   Widget _submitButton() => AppButton.primary(
-        onPressed: _needPhoto
-            ? null
-            : () => _setStatus('on_review', context.l10n.toastSubmitted),
+        onPressed: _needPhoto ? null : _submit,
         icon: AppIcons.check,
         label: context.l10n.actionSubmit,
       );
@@ -996,7 +1135,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     final d = _d;
     if (d == null) return (null, null);
     final l = context.l10n;
-    final status = (d['status'] ?? 'new') as String;
+    final status = _pending.status;
     final can = _can;
     if (can.assign && status == 'new') {
       return (

@@ -303,8 +303,9 @@ PendingView pendingView(
     n++;
     switch (a.kind) {
       case OfflineKind.start:
-        if (const {'new', 'assigned', 'returned'}.contains(s))
+        if (const {'new', 'assigned', 'returned'}.contains(s)) {
           s = 'in_progress';
+        }
       case OfflineKind.visit:
         visit = true;
       case OfflineKind.check:

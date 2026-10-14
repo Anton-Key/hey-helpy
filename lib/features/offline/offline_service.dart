@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../photo_identify/identify_log.dart' show newUuid;
+import '../requests/work_order.dart' show WorkOrder;
 import 'device_clock.dart';
 import 'offline_logic.dart';
 import 'offline_store.dart';
@@ -259,7 +259,7 @@ class OfflineService extends ChangeNotifier {
   static const _openStatuses = ['assigned', 'in_progress', 'returned'];
 
   /// Колонки строки списка — те же, что у вкладки «Заявки».
-  String listColumns = '*';
+  static const listColumns = WorkOrder.listColumns0015;
 
   /// Не чаще раза в 2 минуты (кроме [force]).
   Future<void> prefetch({bool force = false}) async {

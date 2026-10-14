@@ -86,6 +86,10 @@ class AppIcons {
   static const calendar = LucideIcons.calendarDays300;
   static const clock = LucideIcons.clock300;
   static const checklist = LucideIcons.listChecks300;
+  // Шаг 27: пункт чек-листа, «ждёт отправки».
+  static const checkboxOff = LucideIcons.square300;
+  static const checkboxOn = LucideIcons.squareCheck300;
+  static const uploadPending = LucideIcons.cloudUpload300;
   static const list = LucideIcons.list300;
   static const inbox = LucideIcons.inbox300;
 

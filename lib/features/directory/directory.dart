@@ -1,3 +1,4 @@
+import '../offline/offline_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -256,12 +257,14 @@ class DirectoryRepo {
   Future<String?> myCompanyId() async {
     final uid = _c.auth.currentUser?.id;
     if (uid == null) return null;
-    final r = await _c
-        .from('profiles')
-        .select('company_id')
-        .eq('id', uid)
-        .maybeSingle();
-    return r?['company_id'] as String?;
+    final r = await OfflineService.instance.cachedJson(
+        'my_company',
+        () => _c
+            .from('profiles')
+            .select('company_id')
+            .eq('id', uid)
+            .maybeSingle());
+    return (r as Map?)?['company_id'] as String?;
   }
 
   /// Менеджер или админ — им показываем кнопку «Добавить». Право на запись
@@ -276,7 +279,8 @@ class DirectoryRepo {
   }
 
   Future<List<Obj>> objects() async {
-    final rows = await _c.from('objects').select().order('created_at');
+    final rows = await OfflineService.instance.cachedJson(
+        'objects', () => _c.from('objects').select().order('created_at'));
     return (rows as List)
         .map((e) => Obj.fromMap(e as Map<String, dynamic>))
         .toList();
@@ -296,7 +300,8 @@ class DirectoryRepo {
   }
 
   Future<List<Contractor>> contractors() async {
-    final rows = await _c.from('contractors').select().order('created_at');
+    final rows = await OfflineService.instance.cachedJson('contractors',
+        () => _c.from('contractors').select().order('created_at'));
     return (rows as List)
         .map((e) => Contractor.fromMap(e as Map<String, dynamic>))
         .toList();
@@ -461,11 +466,13 @@ class DirectoryRepo {
   /// отображения. Добавляются в базе без изменения приложения.
   /// select() без списка полей: name_i18n появляется только после миграции 0007.
   Future<List<Layer>> layers() async {
-    final rows = await _c
-        .from('layers')
-        .select()
-        .order('sort', ascending: true)
-        .order('name', ascending: true);
+    final rows = await OfflineService.instance.cachedJson(
+        'layers',
+        () => _c
+            .from('layers')
+            .select()
+            .order('sort', ascending: true)
+            .order('name', ascending: true));
     return (rows as List)
         .map((e) => Layer.fromMap(e as Map<String, dynamic>))
         .toList();

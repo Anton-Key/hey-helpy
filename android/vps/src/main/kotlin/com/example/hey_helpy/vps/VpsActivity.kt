@@ -139,6 +139,7 @@ class VpsActivity : ComponentActivity() {
         if (arcore != null && !arcore.isSupported && !arcore.isTransient) return blocked("vpsNoArcore")
         if (!online()) showMessage("vpsNoNetwork")
 
+        arAllowed = true
         loadSite()
         if (hasPermissions()) startAr() else requestPermissions(
             arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION),
@@ -240,9 +241,15 @@ class VpsActivity : ComponentActivity() {
 
     private val hideMessage = Runnable { message.visibility = View.GONE }
 
+    private var shownIndicator: Indicator? = null
+
     private fun renderStatus() {
         val ind = VpsState.indicator(started, localizationState, anchorState)
         if (ind == Indicator.PRECISE) everPrecise = true
+        placeButton.visibility = if (canEdit && started) View.VISIBLE else View.GONE
+        // Каждый кадр — только если состояние сменилось (без лишних перерисовок).
+        if (ind == shownIndicator) return
+        shownIndicator = ind
         if (ind == Indicator.IDLE) {
             status.visibility = View.GONE
             return
@@ -259,7 +266,6 @@ class VpsActivity : ComponentActivity() {
         status.text = android.text.SpannableString(status.text).apply {
             setSpan(android.text.style.ForegroundColorSpan(dot), 0, 1, 0)
         }
-        placeButton.visibility = if (canEdit && started) View.VISIBLE else View.GONE
     }
 
     // ----------------------------------------------------- права и сеть
@@ -304,8 +310,29 @@ class VpsActivity : ComponentActivity() {
 
     // ---------------------------------------------------------- AR + NSDK
 
+    private var arAllowed = false
+    private var installRequested = false
+
+    override fun onResume() {
+        super.onResume()
+        // Вернулись из Play Маркета после установки ARCore.
+        if (arAllowed && arView == null && hasPermissions()) startAr()
+    }
+
     private fun startAr() {
-        if (arView != null) return
+        if (arView != null || !arAllowed) return
+        try {
+            // ARCore не установлен / устарел — Play Маркет предложит обновить.
+            if (ArCoreApk.getInstance().requestInstall(this, !installRequested) ==
+                ArCoreApk.InstallStatus.INSTALL_REQUESTED
+            ) {
+                installRequested = true
+                return
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "arcore install: ${e.javaClass.simpleName}")
+            return blocked("vpsNoArcore")
+        }
         try {
             val session = NSDKSession(BuildConfig.NIANTIC_TOKEN, false)
             nsdk = session
@@ -318,18 +345,23 @@ class VpsActivity : ComponentActivity() {
             return blocked("vpsFailed")
         }
 
-        val view = ARSceneView(this, sharedActivity = this, sharedLifecycle = lifecycle)
+        // Настройки сессии — параметром конструктора, как в nsdk-samples-kotlin.
+        val view = ARSceneView(
+            this,
+            sharedActivity = this,
+            sharedLifecycle = lifecycle,
+            sessionConfiguration = { session, config ->
+                config.depthMode = if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                    Config.DepthMode.AUTOMATIC
+                } else {
+                    Config.DepthMode.DISABLED
+                }
+                config.planeFindingMode = Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL
+                config.focusMode = Config.FocusMode.AUTO
+                config.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
+            },
+        )
         view.planeRenderer.isEnabled = false
-        view.configureSession { session, config ->
-            config.depthMode = if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
-                Config.DepthMode.AUTOMATIC
-            } else {
-                Config.DepthMode.DISABLED
-            }
-            config.planeFindingMode = Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL
-            config.focusMode = Config.FocusMode.AUTO
-            config.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
-        }
         view.onSessionFailed = { e ->
             Log.w(TAG, "arcore: ${e.javaClass.simpleName}")
             blocked("vpsNoArcore")

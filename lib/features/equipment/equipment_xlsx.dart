@@ -50,3 +50,22 @@ Uint8List buildTemplateXlsx(String locale, {String sheetName = 'Equipment'}) {
   }
   return Uint8List.fromList(book.encode()!);
 }
+
+/// Выгрузка реестра в .xlsx (шаг 27): строки [rows] (первая — заголовок,
+/// `buildExportRows`) на листе [sheetName], все ячейки — текст (номера
+/// «0012» и даты не превращаются в числа).
+Uint8List buildRowsXlsx(List<List<String>> rows,
+    {String sheetName = 'Equipment'}) {
+  final book = Excel.createExcel();
+  final first = book.getDefaultSheet() ?? book.tables.keys.first;
+  book.rename(first, sheetName);
+  final sheet = book[sheetName];
+  for (final r in rows) {
+    sheet.appendRow([for (final v in r) TextCellValue(v)]);
+  }
+  final cols = rows.isEmpty ? 0 : rows.first.length;
+  for (var i = 0; i < cols; i++) {
+    sheet.setColumnWidth(i, i == cols - 1 ? 38 : 22);
+  }
+  return Uint8List.fromList(book.encode()!);
+}

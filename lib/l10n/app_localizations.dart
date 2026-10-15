@@ -8360,6 +8360,756 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'В кадре не видно оборудования — наведите камеру на прибор'**
   String get cameraNoEquipment;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'нет GPS'**
+  String get stampNoGps;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'без сети'**
+  String get stampOffline;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети — сохранено на телефоне: {count, plural, one{{count} действие} few{{count} действия} many{{count} действий} other{{count} действия}}'**
+  String offBannerQueued(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети · данные на {time}'**
+  String offBannerData(String time);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети'**
+  String get offBannerNoData;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправляю сохранённое…'**
+  String get offBannerSending;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправлено ✓'**
+  String get offBannerSent;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось отправить {count, plural, one{{count} действие} few{{count} действия} many{{count} действий} other{{count} действия}}'**
+  String offBannerFailed(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подробнее'**
+  String get offDetails;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не отправлено'**
+  String get offFailuresTitle;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Понятно'**
+  String get offFailuresClear;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявку отменили, пока вы были без сети'**
+  String get offReasonCancelled;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявку передали другому подрядчику, пока вы были без сети'**
+  String get offReasonReassigned;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Менеджер уже принял работу'**
+  String get offReasonAccepted;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа уже на проверке'**
+  String get offReasonOnReview;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужно фото «после» — без него на проверку нельзя'**
+  String get offReasonPhotoRequired;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото повредилось при отправке — снимите заново'**
+  String get offReasonPhotoMismatch;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Файл фото не дошёл — снимите заново'**
+  String get offReasonPhotoMissing;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка или пункт чек-листа не найдены'**
+  String get offReasonNotFound;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет прав на это действие'**
+  String get offReasonDenied;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сервер не принял действие'**
+  String get offReasonOther;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото всё равно сохранено в заявке с пометкой'**
+  String get offPhotoKept;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Начать работу'**
+  String get offKindStart;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Отметка визита'**
+  String get offKindVisit;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Пункт чек-листа'**
+  String get offKindCheck;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото «после»'**
+  String get offKindPhoto;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'На проверку'**
+  String get offKindSubmit;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'ждёт отправки'**
+  String get offPendingBadge;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети — сохранено на телефоне, отправится само'**
+  String get offQueuedToast;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'📍 В геозоне'**
+  String get offVisitInZone;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'📍 Вне геозоны · {meters} м'**
+  String offVisitOutZone(int meters);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет GPS — визит без координат'**
+  String get offVisitNoGps;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Чек-лист'**
+  String get checklistTitle;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{done} из {total}'**
+  String checklistProgress(int done, int total);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось отметить пункт'**
+  String get checklistSaveFailed;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Снято без сети в {taken} · {trust} · отправлено в {sent}'**
+  String proofOffline(String taken, String trust, String sent);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Визит без сети в {taken} · {trust} · отправлено в {sent}'**
+  String proofVisitOffline(String taken, String trust, String sent);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время по GPS ✓'**
+  String get proofTrustGps;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время подтверждено ✓'**
+  String get proofTrustMono;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'⚠️ время только по часам телефона'**
+  String get proofTrustDevice;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'⚠️ время не подтверждено (часы телефона расходились на {drift})'**
+  String proofTrustUnverified(String drift);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'решение при формировании акта'**
+  String get proofNeedsDecision;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'прислано после отмены'**
+  String get proofLateAfterCancel;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'прислано после передачи другому подрядчику'**
+  String get proofLateAfterReassign;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'прислано после закрытия заявки'**
+  String get proofLateAfterClose;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'отпечаток фото не сверен'**
+  String get proofHashUnchecked;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} ч'**
+  String durHours(int n);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} мин'**
+  String durMinutes(int n);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сеть (тест)'**
+  String get offTestNet;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Требует решения менеджера · {count}'**
+  String actReviewTitle(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Работа принята, но доказательство под вопросом. Решите, платить ли.'**
+  String get actReviewHint;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'фото «после» загружено из файла, не снято на месте'**
+  String get actDoubtFromFile;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время снимка не подтверждено: часы телефона расходились на {drift}'**
+  String actDoubtTimeUnverified(String drift);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время снимка не подтверждено: без сети и без GPS'**
+  String get actDoubtTimeDevice;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'фото прислано, когда заявку уже закрыли или отменили'**
+  String get actDoubtLate;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'отпечаток фото не сверен сервером'**
+  String get actDoubtHash;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'время визита без сети не подтверждено'**
+  String get actDoubtVisitTime;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'не принято менеджером'**
+  String get actReasonRejectedByManager;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтвердить к оплате'**
+  String get actApprove;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Не принимать'**
+  String get actReject;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить решение'**
+  String get actDecisionChange;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Комментарий'**
+  String get actDecisionComment;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Например: звонил исполнителю, визит подтверждён охраной'**
+  String get actDecisionApproveHint;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Комментарий (необязательно)'**
+  String get actDecisionRejectHint;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Напишите, почему подтверждаете к оплате'**
+  String get actDecisionCommentRequired;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Решение сохранено'**
+  String get actDecisionSaved;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Решает менеджер — не исполнитель и не тот, кто сдавал работу'**
+  String get actDecisionDenied;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Акт уже сформирован — решение не меняется'**
+  String get actDecisionLocked;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала примите работу'**
+  String get actDecisionNotAccepted;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'✋ решение менеджера: {who}, {when} — {comment}'**
+  String actDecisionApproved(String who, String when, String comment);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'✋ не принято менеджером: {who}, {when}'**
+  String actDecisionRejected(String who, String when);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'подтверждено менеджером'**
+  String get actByManager;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} заявка ждёт} few{{count} заявки ждут} many{{count} заявок ждут} other{{count} заявки ждут}} вашего решения — они не попадут в акт'**
+  String actPendingWarn(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Решить сейчас'**
+  String get actDecideNow;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сформировать без них'**
+  String get actIssueWithout;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ожидают решения (без сумм)'**
+  String get actPendingBlock;
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'из них подтверждено вручную: {count}'**
+  String actManualLine(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Ждут вашего решения по оплате: {count}'**
+  String homeDecisionsBadge(int count);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Сдано без сети: {offline} · подтверждено вручную: {manual}'**
+  String reportsOfflineLine(int offline, int manual);
+
+  /// Шаг 27: офлайн и акты
+  ///
+  /// In ru, this message translates to:
+  /// **'Доказательства'**
+  String get proofTitle;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'Пол'**
+  String get eqPlaceMountFloor;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'Стена'**
+  String get eqPlaceMountWall;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'Потолок'**
+  String get eqPlaceMountCeiling;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'За подвесным потолком'**
+  String get eqPlaceMountAboveCeiling;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'В шкафу'**
+  String get eqPlaceMountCabinet;
+
+  /// Шаг 27: монтаж
+  ///
+  /// In ru, this message translates to:
+  /// **'Снаружи'**
+  String get eqPlaceMountOutdoor;
+
+  /// Шаг 27: высота в строке монтажа
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} м'**
+  String eqPlaceHeightValue(String value);
+
+  /// Шаг 27: строка и экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Место на плане'**
+  String get eqPlaceOnPlan;
+
+  /// Шаг 27: строка места на плане
+  ///
+  /// In ru, this message translates to:
+  /// **'Не указано · Указать на плане'**
+  String get eqPlaceNotSet;
+
+  /// Шаг 27: строка места на плане
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get eqPlaceChange;
+
+  /// Шаг 27: монтаж: заголовок
+  ///
+  /// In ru, this message translates to:
+  /// **'Где именно'**
+  String get eqPlaceWhereExactly;
+
+  /// Шаг 27: монтаж: поле
+  ///
+  /// In ru, this message translates to:
+  /// **'Высота, м'**
+  String get eqPlaceHeight;
+
+  /// Шаг 27: монтаж: подсказка
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, 2,8'**
+  String get eqPlaceHeightHint;
+
+  /// Шаг 27: монтаж: ошибка
+  ///
+  /// In ru, this message translates to:
+  /// **'Высота — число от 0 до 100 м, например 2,8'**
+  String get eqPlaceHeightBad;
+
+  /// Шаг 27: монтаж: поле
+  ///
+  /// In ru, this message translates to:
+  /// **'Ориентир'**
+  String get eqPlaceLandmark;
+
+  /// Шаг 27: монтаж: подсказка
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, над дверью, слева'**
+  String get eqPlaceLandmarkHint;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографировать, где установлено'**
+  String get eqPlacePhoto;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото места установки'**
+  String get eqPlacePhotoTitle;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Переснять'**
+  String get eqPlacePhotoRetake;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать фото'**
+  String get eqPlacePhotoRemove;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото места можно сохранить, когда помещение стоит на этаже объекта'**
+  String get eqPlacePhotoNeedsFloor;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужна фотография JPEG, PNG или WebP до 15 МБ'**
+  String get eqPlacePhotoBad;
+
+  /// Шаг 27: фото места
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить фото места'**
+  String get eqPlacePhotoFailed;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово'**
+  String get eqPlaceDone;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать с плана'**
+  String get eqPlaceRemove;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Перетащите метку или нажмите на план там, где стоит оборудование'**
+  String get eqPlaceDragHint;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Точка в помещении {room} — сменить помещение?'**
+  String eqPlaceOtherRoom(String room);
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Сменить'**
+  String get eqPlaceSwitchRoom;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставить'**
+  String get eqPlaceKeepRoom;
+
+  /// Шаг 27: экран выбора точки
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещение сменится на {room}'**
+  String eqPlaceRoomChanged(String room);
+
+  /// Шаг 27: нет плана
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузите план этажа в карточке объекта — потом здесь можно будет поставить точку'**
+  String get eqPlaceNoPlan;
+
+  /// Шаг 27: нет плана
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть карточку объекта'**
+  String get eqPlaceOpenObject;
+
+  /// Шаг 27: сообщение
+  ///
+  /// In ru, this message translates to:
+  /// **'Место на плане сохранено'**
+  String get eqPlaceSaved;
+
+  /// Шаг 27: сообщение
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить место на плане'**
+  String get eqPlaceSaveFailed;
+
+  /// Шаг 27: диктор
+  ///
+  /// In ru, this message translates to:
+  /// **'{name} — метка на плане, можно перетащить'**
+  String eqPlaceMarker(String name);
+
+  /// Шаг 27: выгрузка реестра
+  ///
+  /// In ru, this message translates to:
+  /// **'Выгрузить в Excel'**
+  String get eqExportButton;
+
+  /// Шаг 27: выгрузка реестра
+  ///
+  /// In ru, this message translates to:
+  /// **'Файл выгрузки сохранён'**
+  String get eqExportDone;
+
+  /// Шаг 27: выгрузка реестра
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось выгрузить оборудование'**
+  String get eqExportFailed;
+
+  /// Шаг 27: выгрузка реестра
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет оборудования для выгрузки'**
+  String get eqExportEmpty;
+
+  /// Шаг 27: выгрузка реестра: имя файла
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование'**
+  String get eqExportFileName;
+
+  /// Шаг 27: импорт: ошибка строки
+  ///
+  /// In ru, this message translates to:
+  /// **'высота не распознана'**
+  String get eqExportIssueBadHeight;
+
+  /// Шаг 27: импорт: ошибка строки
+  ///
+  /// In ru, this message translates to:
+  /// **'нет такого варианта «Где именно»: «{text}»'**
+  String eqExportIssueUnknownMount(String text);
+
+  /// Шаг 27: импорт: ошибка строки
+  ///
+  /// In ru, this message translates to:
+  /// **'строка другого объекта: «{text}»'**
+  String eqExportIssueOtherObject(String text);
+
+  /// Шаг 27: импорт: строка обновит существующее
+  ///
+  /// In ru, this message translates to:
+  /// **'обновится'**
+  String get eqExportWillUpdate;
+
+  /// Шаг 27: импорт: подсказка
+  ///
+  /// In ru, this message translates to:
+  /// **'Выгрузку из «Выгрузить в Excel» можно поправить и загрузить обратно: строки с ID обновят своё оборудование, без ID — добавятся.'**
+  String get eqExportReimportInfo;
 }
 
 class _AppLocalizationsDelegate

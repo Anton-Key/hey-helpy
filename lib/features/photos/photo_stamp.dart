@@ -12,10 +12,22 @@ import 'photo_stamp_encode.dart' deferred as stamp_encode;
 
 /// Что вжечь в фото «после» (шаг 26): объект и помещение заявки, геозона.
 class PhotoStamp {
-  const PhotoStamp({this.object, this.place, this.geofence});
+  const PhotoStamp(
+      {this.object,
+      this.place,
+      this.geofence,
+      this.offline = false,
+      this.timeFix});
   final String? object;
   final String? place;
   final PhotoGeofence? geofence;
+
+  /// Снято без сети (шаг 27): в штампе — маленькая пометка «без сети».
+  final bool offline;
+
+  /// Время для штампа по доверенному источнику (монотонные часы от
+  /// последней связи с сервером или GPS), иначе — часы телефона.
+  final Future<DateTime> Function(DateTime device)? timeFix;
 }
 
 /// Строка штампа: «14.10.2026 14:19 · БЦ «Демо» · 301 Переговорная · в
@@ -28,12 +40,15 @@ String stampText(AppLocalizations l, PhotoStamp s,
     final d = const Distance()
         .as(LengthUnit.Meter, LatLng(lat, lng), LatLng(g.lat, g.lng));
     zone = d <= g.radiusM ? l.stampInZone : l.stampOutOfZone;
+  } else if (g != null) {
+    zone = l.stampNoGps;
   }
   return [
     DateFormat('dd.MM.yyyy HH:mm').format(at.toLocal()),
     if (s.object?.isNotEmpty == true) s.object!,
     if (s.place?.isNotEmpty == true) s.place!,
     if (zone != null) zone,
+    if (s.offline) l.stampOffline,
   ].join(' · ');
 }
 

@@ -7,6 +7,7 @@ import 'core/design/design.dart';
 import 'core/l10n_ext.dart';
 import 'core/locale_controller.dart';
 import 'core/supabase_config.dart';
+import 'core/timeout_http_client.dart';
 import 'core/web_bridge.dart';
 import 'core/web_url.dart';
 import 'l10n/app_localizations.dart';
@@ -30,6 +31,8 @@ Future<void> main() async {
     url: SupabaseConfig.url,
     // Тот же anon-ключ: в supabase_flutter 2.17 publishableKey заменил anonKey.
     publishableKey: SupabaseConfig.anonKey,
+    // Ни один запрос не ждёт бесконечно (шаг 27).
+    httpClient: TimeoutHttpClient(),
   );
 
   // Страница «AR (демо)» (web/ar/) берёт адрес базы и вход отсюда.

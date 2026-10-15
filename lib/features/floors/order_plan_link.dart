@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
+import '../equipment/asset_place.dart';
+import '../equipment/asset_place_widgets.dart';
 import 'floor_models.dart';
 import 'floor_repository.dart';
 import 'floors_section.dart';
@@ -18,7 +20,12 @@ class OrderPlanLink extends StatefulWidget {
     required this.objectId,
     this.locationId,
     this.assetId,
+    this.showMount = true,
   });
+
+  /// Шаг 27: строка «Где именно: потолок · 2,8 м · над дверью» у
+  /// оборудования (в карточке оборудования она своя — там false).
+  final bool showMount;
 
   final String orderId;
   final String? objectId;
@@ -33,6 +40,7 @@ class _OrderPlanLinkState extends State<OrderPlanLink> {
   PlanItem? _item;
   Floor? _floor;
   int _nearby = 0;
+  MountInfo _mount = MountInfo.empty;
 
   @override
   void initState() {
@@ -60,6 +68,10 @@ class _OrderPlanLinkState extends State<OrderPlanLink> {
       PlanItem? item;
       if (widget.assetId != null) {
         item = await repo.assetById(widget.assetId!);
+        final mount = item?.mount ?? MountInfo.empty;
+        if (mounted && widget.showMount && mount != _mount) {
+          setState(() => _mount = mount);
+        }
       }
       if ((item == null || !item.placed) && widget.locationId != null) {
         item = await repo.placeById(widget.locationId!);
@@ -91,9 +103,15 @@ class _OrderPlanLinkState extends State<OrderPlanLink> {
   @override
   Widget build(BuildContext context) {
     final item = _item, floor = _floor;
-    if (item == null || floor == null) return const SizedBox.shrink();
     final l = context.l10n;
+    final mount = widget.showMount ? mountRow(l, _mount) : null;
+    if (item == null || floor == null) {
+      return mount == null
+          ? const SizedBox.shrink()
+          : AppGroup(children: [mount]);
+    }
     return AppGroup(children: [
+      if (mount != null) mount,
       AppRow(
         leading: PlanThumb(floor: floor, width: 44),
         title: l.orderShowOnPlan,

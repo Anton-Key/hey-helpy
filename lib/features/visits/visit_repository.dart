@@ -1,6 +1,8 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/schema_compat.dart';
+
 /// Посещение объекта исполнителем по заявке (таблица visits, миграция 0009).
 /// Время, расстояние до объекта и флаг геозоны считает база.
 class Visit {
@@ -23,7 +25,19 @@ class Visit {
       this.endedAt,
       this.inGeofence,
       this.distanceM,
-      this.mockLocation = false});
+      this.mockLocation = false,
+      this.offline = false,
+      this.timeTrust,
+      this.claimedAt,
+      this.syncedAt,
+      this.driftS});
+
+  /// Шаг 27 (0024): визит без сети и доверие ко времени.
+  final bool offline;
+  final String? timeTrust;
+  final DateTime? claimedAt;
+  final DateTime? syncedAt;
+  final int? driftS;
 
   /// Нужно ли предупредить менеджера.
   bool get suspicious => inGeofence == false || mockLocation;
@@ -38,6 +52,11 @@ class Visit {
         inGeofence: m['in_geofence'] as bool?,
         distanceM: (m['distance_m'] as num?)?.toDouble(),
         mockLocation: m['mock_location'] == true,
+        offline: m['offline'] == true,
+        timeTrust: m['time_trust'] as String?,
+        claimedAt: DateTime.tryParse('${m['claimed_at'] ?? ''}'),
+        syncedAt: DateTime.tryParse('${m['synced_at'] ?? ''}'),
+        driftS: (m['time_drift_s'] as num?)?.toInt(),
       );
 }
 
@@ -46,13 +65,16 @@ class VisitRepository {
 
   /// Посещения по заявке. Менеджер видит все, остальные — только свои (RLS).
   Future<List<Visit>> list(String workOrderId) async {
-    final rows = await _c
+    Future<List<dynamic>> q(String extra) => _c
         .from('visits')
-        .select(
-            'id,profile_id,started_at,ended_at,in_geofence,distance_m,mock_location,profiles(full_name)')
+        .select('id,profile_id,started_at,ended_at,in_geofence,distance_m,'
+            'mock_location,${extra}profiles(full_name)')
         .eq('work_order_id', workOrderId)
         .order('started_at');
-    return (rows as List)
+    final rows = await SchemaCompat.run('0024',
+        () => q('offline,time_trust,claimed_at,synced_at,time_drift_s,'),
+        legacy: () => q(''));
+    return rows
         .map((e) => Visit.fromMap(e as Map<String, dynamic>))
         .toList();
   }

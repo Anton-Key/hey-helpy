@@ -6,6 +6,8 @@ import '../../core/l10n_ext.dart';
 import '../directory/city.dart';
 import '../directory/directory.dart';
 import '../equipment/asset_card.dart';
+import '../equipment/equipment_export.dart';
+import '../equipment/equipment_export_action.dart';
 import '../equipment/equipment_repository.dart';
 import '../requests/order_list.dart';
 import 'system_form.dart';
@@ -157,6 +159,40 @@ class _SystemCardScreenState extends State<SystemCardScreen> {
             title: _layer.label(context.localeCode)));
   }
 
+  /// «Выгрузить в Excel» (шаг 27): оборудование системы во всех объектах
+  /// (что видно пользователю) с колонкой «Объект».
+  Future<void> _export() async {
+    final l = context.l10n;
+    final name = _layer.label(context.localeCode);
+    try {
+      final list = await EquipmentRepo().assetsOfLayer(_layer.id);
+      if (!mounted) return;
+      final objects = {for (final o in _objects) o.id: o};
+      await exportEquipmentXlsx(context,
+          items: [
+            for (final (a, loc) in list)
+              ExportItem(
+                asset: a,
+                roomText: loc == null
+                    ? null
+                    : placeLabel(
+                        (loc['name'] ?? '') as String, loc['code'] as String?),
+                objectName: switch (objects[loc?['object_id']]) {
+                  final o? => objectDisplayName(o),
+                  null => null,
+                },
+              ),
+          ],
+          layers: _layers,
+          title: name);
+    } catch (e) {
+      debugPrint('system export: ${e.runtimeType}');
+      if (mounted) {
+        showAppMessage(context, l.eqExportFailed, type: AppMessageType.error);
+      }
+    }
+  }
+
   void _openOrders() {
     final l = context.l10n;
     Navigator.push(
@@ -232,6 +268,14 @@ class _SystemCardScreenState extends State<SystemCardScreen> {
             leading: const LeadingIcon.neutral(AppIcons.wrench),
             title: l.systemAssets,
             value: '${_assets.length}'),
+        if (_assets.isNotEmpty)
+          AppRow(
+            leading: const LeadingIcon(AppIcons.fileSheet),
+            title: l.eqExportButton,
+            titleStyle: AppText.rowTitle.copyWith(color: AppColors.accentText),
+            chevron: false,
+            onTap: _export,
+          ),
         AppRow(
             leading: const LeadingIcon.neutral(AppIcons.list),
             title: l.systemOpenOrders,

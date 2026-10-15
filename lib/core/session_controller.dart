@@ -3,7 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../features/auth/auth_repository.dart';
+import '../features/offline/offline_logic.dart' show isNetworkError;
+import '../features/offline/offline_service.dart';
 import '../models/profile.dart';
 
 /// Где сейчас находится пользователь в жизненном цикле сессии.
@@ -70,6 +76,10 @@ class SessionController extends ChangeNotifier {
 
     if (!_auth.isSignedIn) {
       _profile = null;
+      // Выход из аккаунта: данные и очередь на телефоне удаляются (шаг 27).
+      unawaited(OfflineService.instance.detach());
+      unawaited(SharedPreferences.getInstance()
+          .then((p) => p.remove(_profileKey), onError: (_) => false));
       _setStatus(SessionStatus.signedOut);
       return;
     }
@@ -79,16 +89,56 @@ class SessionController extends ChangeNotifier {
     if (_profile == null) _setStatus(SessionStatus.loading);
 
     try {
-      final profile = await _auth.fetchMyProfile();
+      final row = await _auth.fetchMyProfileRow();
+      final profile = row == null ? null : Profile.fromMap(row);
       if (seq != _loadSeq) return;
       _profile = profile;
       _setStatus(profile?.companyId == null
           ? SessionStatus.needsOnboarding
           : SessionStatus.ready);
+      if (row != null && OfflineService.supported) {
+        unawaited(_saveProfile(row));
+        unawaited(OfflineService.instance.attach(row['id'] as String));
+      }
     } catch (e) {
       if (seq != _loadSeq) return;
       debugPrint('SessionController: не удалось загрузить профиль: $e');
+      // Без сети (шаг 27, APK): последний сохранённый профиль — можно
+      // работать со своими заявками из телефона.
+      final cached = isNetworkError(e) ? await _loadProfile() : null;
+      if (seq != _loadSeq) return;
+      if (cached != null && cached.companyId != null) {
+        _profile = cached;
+        _setStatus(SessionStatus.ready);
+        unawaited(OfflineService.instance.attach(cached.id));
+        OfflineService.instance.markOffline();
+        return;
+      }
       _setStatus(SessionStatus.error);
+    }
+  }
+
+  static const _profileKey = 'offline_profile';
+
+  Future<void> _saveProfile(Map<String, dynamic> row) async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString(_profileKey, jsonEncode(row));
+    } catch (_) {}
+  }
+
+  Future<Profile?> _loadProfile() async {
+    if (!OfflineService.supported) return null;
+    try {
+      final p = await SharedPreferences.getInstance();
+      final raw = p.getString(_profileKey);
+      if (raw == null) return null;
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      // Только профиль того, кто сейчас вошёл.
+      if (m['id'] != _auth.currentUser?.id) return null;
+      return Profile.fromMap(m);
+    } catch (_) {
+      return null;
     }
   }
 

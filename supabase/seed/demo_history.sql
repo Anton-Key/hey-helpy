@@ -42,6 +42,9 @@
 --     101/106/108/110 и план ТО 809 с задачей 279 этого месяца (сцена «Камеры»);
 --     (блок 5j, если применена 0018): включённые ссылки Telegram объекта
 --     «БЦ «Демо»» и компании с демо-токенами (report_links 981–982).
+--   • шаг 27 (блок 6c, нужна 0024): в акте «КлиматСервис» 109 (фото «из
+--     файла») и 112 (снято без сети, часы расходились на 2 ч) — «Требует
+--     решения менеджера»;
 --   • шаг 24 (блок 6b): доказательства для акта «КлиматСервис» (фото «после» —
 --     картинка из сборки demo/ac_after.jpg, чек-лист, визиты 317–318) и,
 --     если применена 0021, ставки трёх подрядчиков.
@@ -1453,6 +1456,42 @@ begin
                 and column_name = 'source') then
     execute $q$update public.attachments set source = 'demo'
                 where storage_path like 'demo/%' and source <> 'demo'$q$;
+  end if;
+
+  -- 6c. Шаг 27 (0024): «Требует решения менеджера» в акте «КлиматСервис»:
+  --       112 — фото «после» снято без сети, часы телефона расходились
+  --             с доверенным временем на 2 ч (time_trust = unverified);
+  --       109 — фото «после» «из файла» (вложение …a109).
+  --     Прежние решения менеджера по ним удаляются — показ начинается
+  --     с жёлтой группы и кнопок. Без 0024 — пропускаем.
+  if to_regclass('public.act_proof_decisions') is not null then
+    insert into public.attachments (id, work_order_id, kind, stage, storage_path, taken_at,
+                                    lat, lng, uploaded_by, mock_location, created_at)
+    select 'de300000-0000-4000-8000-00000000a109'::uuid, w.id, 'photo', 'after', 'demo/ac_after.jpg',
+           coalesce(w.submitted_at, w.updated_at) - interval '10 minutes', o.lat + 0.0001, o.lng,
+           v_executor, false, coalesce(w.submitted_at, w.updated_at) - interval '10 minutes'
+      from public.work_orders w
+      left join public.objects o on o.id = w.object_id
+     where w.id = 'de300000-0000-4000-8000-000000000109' and v_executor is not null
+    on conflict (id) do update set work_order_id = excluded.work_order_id, stage = 'after',
+      storage_path = excluded.storage_path, taken_at = excluded.taken_at;
+    execute $q$
+      update public.attachments set source = 'file', offline = false, time_trust = 'online',
+             trusted_at = null, time_drift_s = null, synced_at = null, sha256 = null,
+             sha256_ok = null, sync_note = null
+       where id = 'de300000-0000-4000-8000-00000000a109';
+      update public.attachments a set offline = true, time_trust = 'unverified',
+             trusted_at = a.taken_at, time_drift_s = 7200,
+             taken_at = a.taken_at + interval '2 hours',
+             synced_at = a.created_at + interval '25 minutes',
+             sha256 = repeat('5', 64), sha256_ok = true, sync_note = null
+       where a.id = 'de300000-0000-4000-8000-00000000a112';
+      delete from public.act_proof_decisions
+       where work_order_id in ('de300000-0000-4000-8000-000000000109',
+                               'de300000-0000-4000-8000-000000000112');
+    $q$;
+  else
+    raise notice 'Миграция 0024 не применена — «Требует решения менеджера» (шаг 27) пропущено.';
   end if;
 
   insert into public.checklist_items (id, work_order_id, text, is_done, done_at, done_by, created_at)

@@ -83,6 +83,29 @@ async function capturePdf(page) {
   return f;
 }
 
+// «К оплате» в акте — те же правила, что `buildAct` (act_logic.dart) и
+// `ActsRepository` (шаг 27): фото «после» не «из файла», а снятое без сети —
+// с подтверждённым временем, сверенным отпечатком и без пометки конфликта;
+// визит в геозоне (без сети — с подтверждённым временем); весь чек-лист.
+// Сомнительное — к оплате, только если менеджер последним решением
+// «Подтвердить к оплате» (таблица 0024; без неё — только строгие правила).
+const ACT_PAYABLE_SQL = `(not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done))
+  and (
+    ((not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo'
+          and a.stage = 'after' and a.source <> 'file'
+          and (not coalesce((to_jsonb(a)->>'offline')::boolean, false)
+               or (coalesce(to_jsonb(a)->>'time_trust', 'online') not in ('unverified', 'device_only')
+                   and to_jsonb(a)->>'sync_note' is null and (to_jsonb(a)->>'sha256_ok')::boolean))))
+     and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence
+          and coalesce(to_jsonb(v)->>'time_trust', 'online') not in ('unverified', 'device_only'))))
+    or (to_regclass('public.act_proof_decisions') is not null
+        and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id
+              and a.kind = 'photo' and a.stage = 'after'))
+        and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
+        and (select d->>'decision' from jsonb_path_query(
+               coalesce((select jsonb_agg(to_jsonb(x) order by x.decided_at desc)
+                         from act_proof_decisions x where x.work_order_id = w.id), '[]'::jsonb), '$[0]') d) = 'approve'))`;
+
 export const SCENARIOS = [
   {
     id: 1,
@@ -885,10 +908,7 @@ export const SCENARIOS = [
       const proven = +sql(`select count(*) from work_orders w left join objects o on o.id = w.object_id
         where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
           and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
-          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo' and a.stage = 'after'
-                                                and a.source <> 'file'))
-          and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
-          and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`);
+          and ${ACT_PAYABLE_SQL}`);
       const before = +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`);
       const m = await ctx.page();
       await login(m, base, USERS.admin);
@@ -902,10 +922,15 @@ export const SCENARIOS = [
       const shown = +(t.match(/К оплате · (\d+)/i)?.[1] ?? NaN);
       ctx.notes.push(`к оплате на экране ${shown}, по базе ${proven}`);
       assert(shown === proven && proven > 0, `«К оплате»: на экране ${shown}, доказанных в базе ${proven}`);
-      assert(/нет фото «после»|визит вне геозоны|не принята менеджером|нет отметки визита/.test(t),
-        'нет списка «без доказательства» с причинами');
+      // Группа «Без доказательства» — под «Требует решения» (шаг 27), ниже
+      // экрана: прокрутка до строки с причиной (нет — исключение).
+      await scrollTo(m, /нет фото «после»|визит вне геозоны|не принята менеджером|нет отметки визита/)
+        .catch(() => { throw new Error('нет списка «без доказательства» с причинами'); });
       await ctx.shot(m, 'act');
       await clickAction(m, /^Сформировать акт/);
+      // Есть «Требует решения» (демо 109, 112, шаг 27) — предупреждение.
+      const without = btn(m, /^Сформировать без них/);
+      if (await without.waitFor({ timeout: 4000 }).then(() => true, () => false)) await without.click();
       // PDF загружается после выдачи номера — ждём путь файла в акте.
       const act = await waitDb(`select number || '|' || (totals->>'paid') || '|' || coalesce(pdf_path, '-') from contractor_acts
         where contractor_id = '${uuid(31)}' order by created_at desc limit 1`,
@@ -1028,15 +1053,249 @@ export const SCENARIOS = [
       const proven = sql(`select string_agg(w.id::text, ',') from work_orders w left join objects o on o.id = w.object_id
         where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
           and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
-          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo'
-                                                and a.stage = 'after' and a.source <> 'file'))
-          and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
-          and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`).split(',');
+          and ${ACT_PAYABLE_SQL}`).split(',');
       ctx.notes.push(`в акте к оплате на экране ${shown}, по базе ${proven.length}, заявка среди них: ${proven.includes(id)}`);
       assert(proven.includes(id), 'заявка должна быть доказанной по правилам акта');
       assert(shown === proven.length, `«К оплате»: на экране ${shown}, по базе ${proven.length}`);
       await scrollTo(m, new RegExp(title));
       await ctx.shot(m, 'act');
+    },
+  },
+  {
+    id: 17,
+    title: 'Без сети (шаг 27): исполнитель начинает, отмечает чек-лист, снимает «после», сдаёт → сеть → «на проверке», время по монотонным часам; часы +2 ч → «Требует решения» → менеджер подтверждает',
+    async run(ctx) {
+      const { base } = ctx;
+      const mk = (title) => {
+        sql(`delete from work_orders where company_id = '${uuid(1)}' and title = '${title}'`);
+        const id = sql(`insert into work_orders(company_id, object_id, location_id, layer_id, work_type, title, status,
+            created_by, assigned_contractor_id, requires_photo)
+          select '${uuid(1)}', '${uuid(10)}', '${uuid(21)}', l.id, l.name, '${title}', 'assigned',
+            (select id from auth.users where email = '${USERS.requester}'), '${uuid(31)}', true
+            from layers l where l.company_id = '${uuid(1)}' and l.name = 'Климат' returning id`).split('\n')[0];
+        sql(`insert into checklist_items(work_order_id, text) values ('${id}', 'Очистить фильтры'), ('${id}', 'Проверить дренаж')`);
+        return id;
+      };
+      /** Открыть заявку без перезагрузки страницы (очередь в тестовом режиме — в памяти). */
+      const openInApp = async (page, title) => {
+        const search = page.getByRole('textbox').first();
+        await typeInto(page, search, title.slice(0, 24));
+        await settle(page, 1800);
+        await btn(page, new RegExp(title.slice(0, 20))).click();
+        await settle(page, 2500);
+      };
+      const net = (page) => page.getByRole('switch').first();
+      const runOffline = async (title, skewMin, shotPrefix) => {
+        const id = mk(title);
+        const e = await ctx.page({ width: 412, height: 915, geo: BC_DEMO });
+        await login(e, base, USERS.executor);
+        await openApp(e, base, `?offline=1&clockSkewMin=${skewMin}`);
+        await profileTab(e).waitFor({ timeout: 60000 });
+        await settle(e, 4000); // якорь часов и предзагрузка своих заявок
+        await openInApp(e, title);
+        // Сеть «выключена» (тест): всё — в очередь телефона.
+        await net(e).click();
+        await settle(e, 800);
+        await clickAction(e, /^Начать работу/);
+        await btn(e, /Очистить фильтры/).click();
+        await settle(e, 600);
+        await btn(e, /Проверить дренаж/).click();
+        await settle(e, 600);
+        await takeLivePhoto(e);
+        await settle(e, 1500);
+        await clickAction(e, /Выполнено, на проверку/);
+        await see(e, /Нет сети — сохранено на телефоне: \d+/).waitFor({ timeout: 15000 });
+        const t = await screenText(e);
+        const n = +(t.match(/сохранено на телефоне: (\d+)/)?.[1] ?? NaN);
+        ctx.notes.push(`${title}: в очереди ${n} действий`);
+        assert(n === 6, `в очереди должно быть 6 действий (начать, визит, 2 пункта, фото, сдать), на экране ${n}`);
+        assert(sql(`select status from work_orders where id = '${id}'`) === 'assigned', 'без сети сервер не должен меняться');
+        if (shotPrefix) {
+          await settle(e, 4000); // сообщение сверху закрывается — видна плашка
+          await e.mouse.wheel(0, -2000);
+          await settle(e, 800);
+          await ctx.shot(e, `${shotPrefix}-queued`);
+        }
+        // Сеть вернулась — очередь уходит сама.
+        await net(e).click();
+        await waitDb(`select status from work_orders where id = '${id}'`, 'on_review', 30000);
+        await see(e, /Отправлено ✓|на проверке/i).waitFor({ timeout: 15000 }).catch(() => {});
+        return { id, e };
+      };
+
+      // 1. Честные часы: время по монотонным часам, отпечаток сверен.
+      const a = await runOffline('E2E-17 Без сети: фильтр', 0, 'offline');
+      const p = sql(`select offline || ',' || time_trust || ',' || coalesce(sha256_ok::text, 'null') || ',' || source
+        from attachments where work_order_id = '${a.id}' and stage = 'after'`);
+      ctx.notes.push(`фото: ${p}`);
+      assert(p === 'true,monotonic,true,camera', `фото «после»: ${p}`);
+      const v = sql(`select offline || ',' || time_trust || ',' || coalesce(in_geofence::text, 'null') from visits where work_order_id = '${a.id}'`);
+      assert(v === 'true,monotonic,true', `визит: ${v}`);
+      assert(sql(`select count(*) from checklist_items where work_order_id = '${a.id}' and is_done`) === '2', 'оба пункта отмечены');
+      assert(sql(`select count(*) from offline_actions where work_order_id = '${a.id}'`) === '6', 'в журнале 6 действий');
+
+      // 2. Часы телефона переведены на 2 ч → время не подтверждено.
+      const b = await runOffline('E2E-17b Без сети: часы', 120, null);
+      const pb = sql(`select time_trust || ',' || time_drift_s from attachments where work_order_id = '${b.id}' and stage = 'after'`);
+      ctx.notes.push(`фото при часах +2 ч: ${pb}`);
+      assert(pb.startsWith('unverified,') && Math.abs(+pb.split(',')[1] - 7200) < 120, `ожидалось unverified ≈ 7200 с: ${pb}`);
+
+      // Исполнитель решать не может — проверка базы.
+      sql(`update work_orders set status = 'done', accepted_at = now() where id in ('${a.id}', '${b.id}')`);
+      const exUid = sql(`select id from auth.users where email = '${USERS.executor}'`);
+      let denied = false;
+      try {
+        sql(`select set_config('request.jwt.claim.sub', '${exUid}', false); set role authenticated;
+             select public.act_proof_decide('${b.id}', 'approve', 'сам себе')`);
+      } catch { denied = true; }
+      assert(denied, 'исполнитель не должен решать по оплате');
+
+      // 3. Менеджер: карточка и акт — «Требует решения менеджера» → «Подтвердить к оплате».
+      const mp = await ctx.page({ width: 412, height: 915 });
+      await login(mp, base, USERS.admin);
+      await openOrder(mp, base, 'E2E-17 Без сети: фильтр');
+      await scrollTo(mp, /Снято без сети в/);
+      await mp.mouse.move(200, 500);
+      await mp.mouse.wheel(0, 600);
+      await settle(mp, 1000);
+      await ctx.shot(mp, 'card-proof');
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await section(m, /^Отчёты/);
+      await scrollTo(m, /Акты подрядчикам/);
+      await btn(m, /^Акты подрядчикам/).click();
+      await see(m, /Требует решения менеджера · \d+/).waitFor({ timeout: 30000 });
+      await scrollTo(m, /E2E-17b/);
+      await ctx.shot(m, 'act-review');
+      const row = m.getByRole('button', { name: /Подтвердить к оплате/ });
+      const count = await row.count();
+      assert(count > 0, 'нет кнопки «Подтвердить к оплате»');
+      // Кнопка именно у E2E-17b: последняя в группе по дате (заявка сдана сейчас).
+      await row.nth(count - 1).click();
+      await settle(m, 800);
+      await typeInto(m, m.getByRole('textbox').last(), 'Звонил исполнителю, визит подтверждён охраной');
+      await btn(m, /^Подтвердить к оплате$/).click();
+      await waitDb(`select decision from act_proof_decisions where work_order_id = '${b.id}' order by decided_at desc limit 1`, 'approve', 20000);
+      await see(m, /решение менеджера/).waitFor({ timeout: 20000 });
+      await scrollTo(m, /E2E-17b/);
+      await ctx.shot(m, 'act-approved');
+    },
+  },
+  {
+    id: 18,
+    title: 'Место оборудования (шаг 27): форма → «Указать на плане» → точка (нажатие и перетаскивание) → сохранено → маркер на плане в этом месте',
+    async run(ctx) {
+      const { base } = ctx;
+      const NAME = 'E2E Датчик протечки';
+      const room = uuid(21); // 301 · Переговорная, 3 этаж (этаж 602)
+      const floor = uuid(602);
+      sql(`delete from assets where name = '${NAME}'`);
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await home(m, base);
+      await section(m, /^Локации/);
+      const list = m.getByRole('button', { name: /^Список/ }).or(m.getByText(/^Список$/)).first();
+      if (await list.isVisible().catch(() => false)) await list.click();
+      await settle(m, 1200);
+      await btn(m, /^БЦ «Демо»/).click();
+      await see(m, /Адрес|Этажи/).waitFor({ timeout: 20000 });
+      await settle(m, 1500);
+      // 1. Форма «Новое оборудование»: название, помещение, «где именно».
+      await scrollTo(m, /Добавить оборудование/);
+      await btn(m, /Добавить оборудование/).click();
+      await see(m, /Новое оборудование/).waitFor({ timeout: 15000 });
+      await settle(m, 1000);
+      await typeInto(m, m.getByRole('textbox').first(), NAME);
+      await see(m, /Выберите помещение/).click();
+      await settle(m, 800);
+      await m.getByRole('menuitem', { name: /^301 · Переговорная/ }).or(m.getByRole('option', { name: /^301 · Переговорная/ }))
+        .or(m.getByRole('button', { name: /^301 · Переговорная/ })).last().click();
+      await settle(m, 800);
+      await scrollTo(m, /^Потолок$/);
+      await btn(m, /^Потолок$/).click();
+      await typeInto(m, m.getByRole('textbox', { name: /Высота, м/ }), '2,8');
+      await ctx.shot(m, 'form');
+      // 2. «Место на плане» → экран выбора точки (план 3 этажа у переговорной).
+      await scrollTo(m, /Место на плане/);
+      await btn(m, /^Место на плане/).click();
+      const marker = m.getByRole('button', { name: /метка на плане/ }).or(m.getByLabel(/метка на плане/)).first();
+      await marker.waitFor({ timeout: 30000 });
+      await see(m, /3 этаж · 301 · Переговорная/).waitFor({ timeout: 10000 });
+      await settle(m, 1500);
+      await ctx.shot(m, 'picker');
+      // Нажатие по плану правее и ниже маркера → маркер туда; затем
+      // перетащить мышью чуть влево.
+      const b0 = await marker.boundingBox();
+      const c0 = { x: b0.x + b0.width / 2, y: b0.y + b0.height / 2 };
+      await raw(m, () => m.mouse.click(c0.x + 70, c0.y + 50));
+      await settle(m, 800);
+      await ctx.shot(m, 'picker-tap');
+      const b1 = await marker.boundingBox();
+      const c1 = { x: b1.x + b1.width / 2, y: b1.y + b1.height / 2 };
+      ctx.notes.push(`маркер после нажатия: сдвиг ${Math.round(c1.x - c0.x)}, ${Math.round(c1.y - c0.y)} px (ждали 70, 50)`);
+      assert(Math.abs(c1.x - c0.x - 70) < 4 && Math.abs(c1.y - c0.y - 50) < 4, 'маркер не встал туда, где нажали');
+      await raw(m, async () => {
+        await m.mouse.move(c1.x, c1.y);
+        await m.mouse.down();
+        await m.mouse.move(c1.x - 15, c1.y + 5, { steps: 6 });
+        await m.mouse.move(c1.x - 30, c1.y + 10, { steps: 6 });
+        await m.mouse.up();
+      });
+      await settle(m, 800);
+      const b2 = await marker.boundingBox();
+      const c2 = { x: b2.x + b2.width / 2, y: b2.y + b2.height / 2 };
+      ctx.notes.push(`после перетаскивания: ${Math.round(c2.x - c1.x)}, ${Math.round(c2.y - c1.y)} px (ждали −30, 10)`);
+      assert(Math.abs(c2.x - c1.x + 30) < 4 && Math.abs(c2.y - c1.y - 10) < 4, 'маркер не перетащился');
+      await ctx.shot(m, 'picker-moved');
+      await clickAction(m, /^Готово/);
+      await see(m, /3 этаж · 301 · Переговорная.* · Изменить/).waitFor({ timeout: 10000 });
+      // 3. Сохранить → в базе этаж 602, точка внутри переговорной, монтаж в meta.
+      await clickAction(m, /^Сохранить/);
+      const saved = await waitDb(`select id || '|' || floor_id || '|' || plan_x || '|' || plan_y || '|' || location_id || '|'
+        || coalesce(meta->>'mount', '-') || '|' || coalesce(meta->>'height_m', '-') from assets where name = '${NAME}'`,
+      (v) => v.split('|').length === 7, 20000);
+      const [assetId, fl, sx, sy, loc, mount, height] = saved.split('|');
+      const [ax, ay] = [Number(sx), Number(sy)];
+      ctx.notes.push(`в базе: этаж ${fl === floor ? '602' : fl}, точка ${ax}, ${ay}, монтаж ${mount}, высота ${height}`);
+      assert(fl === floor && loc === room, 'этаж или помещение сохранились не те');
+      assert(mount === 'ceiling' && height === '2.8', 'монтаж и высота не сохранились в meta');
+      // Переговорная на схеме: rect [120, 120, 640, 560] из 2400×1600.
+      assert(ax > 0.05 && ax < 0.317 && ay > 0.075 && ay < 0.425, 'точка вне переговорной');
+      const [rx, ry] = sql(`select plan_x || ',' || plan_y from locations where id = '${room}'`).split(',').map(Number);
+      assert(ax > rx && ay > ry, 'точка не сдвинулась вправо-вниз от точки помещения');
+      // 4. План 3 этажа: маркер оборудования там же — пересчёт по двум помещениям.
+      await openApp(m, base, `#/objects/${uuid(10)}/floors/${floor}`);
+      await see(m, /На плане · \d/).waitFor({ timeout: 30000 });
+      await settle(m, 2000);
+      const ref = sql(`select code || '|' || name || '|' || plan_x || '|' || plan_y from locations
+        where floor_id = '${floor}' and plan_x is not null and code is not null order by plan_x limit 1`) + '\n'
+        + sql(`select code || '|' || name || '|' || plan_x || '|' || plan_y from locations
+        where floor_id = '${floor}' and plan_x is not null and code is not null order by plan_x desc limit 1`);
+      const [p1, p2] = ref.split('\n').map((r) => r.split('|'));
+      const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const centre = async (name) => {
+        const bb = await m.getByRole('button', { name: new RegExp(`^${name}`) }).first().boundingBox();
+        return bb && { x: bb.x + bb.width / 2, y: bb.y + 22 }; // 22 — половина цели нажатия маркера
+      };
+      const q1 = await centre(`${esc(p1[0])} · ${esc(p1[1])}, `);
+      const q2 = await centre(`${esc(p2[0])} · ${esc(p2[1])}, `);
+      const qa = await centre(`${esc(NAME)}, `);
+      assert(q1 && q2 && qa, 'маркеры на плане не найдены');
+      // Экранных px на долю: по x — из двух помещений; по y — тот же масштаб
+      // на высоту картинки (план не растягивается).
+      const [pw, ph] = sql(`select plan_w || ',' || plan_h from floors where id = '${floor}'`).split(',').map(Number);
+      const kx = (q2.x - q1.x) / (Number(p2[2]) - Number(p1[2]));
+      const ky = kx * ph / pw;
+      const want = { x: q1.x + (ax - Number(p1[2])) * kx, y: q1.y + (ay - Number(p1[3])) * ky };
+      ctx.notes.push(`маркер на плане: ${Math.round(qa.x)}, ${Math.round(qa.y)}; по точке из базы: ${Math.round(want.x)}, ${Math.round(want.y)}`);
+      assert(Math.abs(qa.x - want.x) < 6 && Math.abs(qa.y - want.y) < 6, 'маркер на плане не там, где поставили');
+      // Выбранный маркер: под названием «потолок · 2,8 м» (видно на снимке;
+      // шторка маркера закрывает план от диктора — текстом не проверить).
+      await m.getByRole('button', { name: new RegExp(`^${esc(NAME)}, `) }).first().click();
+      await settle(m, 1200);
+      await ctx.shot(m, 'plan');
+      sql(`delete from assets where id = '${assetId}'`);
     },
   },
 ];

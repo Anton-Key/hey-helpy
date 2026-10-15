@@ -12,6 +12,8 @@ import '../directory/directory.dart';
 import '../floors/floor_models.dart';
 import '../floors/floor_repository.dart';
 import '../floors/order_plan_link.dart';
+import '../floors/plan_point_picker.dart';
+import 'asset_place_widgets.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'equipment_form.dart';
@@ -114,6 +116,34 @@ class _AssetCardScreenState extends State<AssetCardScreen> {
       await _load();
       if (mounted) {
         showAppMessage(context, l.assetSaved, type: AppMessageType.success);
+      }
+    }
+  }
+
+  /// «Место на плане» (менеджер): экран выбора точки → сразу сохранить.
+  Future<void> _pickPoint() async {
+    final l = context.l10n;
+    final r = await pickPlanPoint(context,
+        objectId: widget.object.id,
+        assetName: _asset.name,
+        assetId: _asset.id,
+        locationId: _asset.locationId,
+        current: _asset.point,
+        kind: _asset.kind,
+        category: _asset.category,
+        isManager: widget.isManager);
+    if (r == null || !mounted) return;
+    try {
+      await _repo.setPlanPoint(_asset.id, r.point, locationId: r.locationId);
+      await _load();
+      if (mounted) {
+        showAppMessage(context, l.eqPlaceSaved, type: AppMessageType.success);
+      }
+    } catch (e) {
+      debugPrint('Asset point: ${e.runtimeType}');
+      if (mounted) {
+        showAppMessage(context, l.eqPlaceSaveFailed,
+            type: AppMessageType.error);
       }
     }
   }
@@ -246,12 +276,31 @@ class _AssetCardScreenState extends State<AssetCardScreen> {
               title: l.assetCardFloor,
               value: _floor!.name,
               chevron: false),
+        // Шаг 27: где именно и фото места установки.
+        if (mountRow(l, _asset.mount) case final row?) row,
+        if (_asset.placePhoto case final photo?)
+          AppRow(
+            leading: PlacePhotoThumb(path: photo),
+            title: l.eqPlacePhotoTitle,
+            onTap: () => openPlacePhoto(context, photo, l.eqPlacePhotoTitle),
+          ),
       ]),
+      // Шаг 27: менеджер ставит точку на плане прямо из карточки.
+      if (widget.isManager)
+        AppGroup(children: [
+          AssetPlanRow(
+            floor: _asset.point == null ? null : _floor,
+            point: _asset.point,
+            roomLabel: place?.label,
+            onTap: _pickPoint,
+          ),
+        ]),
       OrderPlanLink(
         orderId: '',
         objectId: widget.object.id,
         locationId: _asset.locationId,
         assetId: _asset.id,
+        showMount: false,
       ),
       if (SchemaCompat.has('0015') != false)
         AppGroup(header: l.assetCardPlans, children: [

@@ -4923,4 +4923,467 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get cameraNoEquipment =>
       'В кадре не видно оборудования — наведите камеру на прибор';
+
+  @override
+  String get stampNoGps => 'нет GPS';
+
+  @override
+  String get stampOffline => 'без сети';
+
+  @override
+  String offBannerQueued(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count действия',
+      many: '$count действий',
+      few: '$count действия',
+      one: '$count действие',
+    );
+    return 'Нет сети — сохранено на телефоне: $_temp0';
+  }
+
+  @override
+  String offBannerData(String time) {
+    return 'Нет сети · данные на $time';
+  }
+
+  @override
+  String get offBannerNoData => 'Нет сети';
+
+  @override
+  String get offBannerSending => 'Отправляю сохранённое…';
+
+  @override
+  String get offBannerSent => 'Отправлено ✓';
+
+  @override
+  String offBannerFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count действия',
+      many: '$count действий',
+      few: '$count действия',
+      one: '$count действие',
+    );
+    return 'Не удалось отправить $_temp0';
+  }
+
+  @override
+  String get offDetails => 'Подробнее';
+
+  @override
+  String get offFailuresTitle => 'Не отправлено';
+
+  @override
+  String get offFailuresClear => 'Понятно';
+
+  @override
+  String get offReasonCancelled => 'Заявку отменили, пока вы были без сети';
+
+  @override
+  String get offReasonReassigned =>
+      'Заявку передали другому подрядчику, пока вы были без сети';
+
+  @override
+  String get offReasonAccepted => 'Менеджер уже принял работу';
+
+  @override
+  String get offReasonOnReview => 'Работа уже на проверке';
+
+  @override
+  String get offReasonPhotoRequired =>
+      'Нужно фото «после» — без него на проверку нельзя';
+
+  @override
+  String get offReasonPhotoMismatch =>
+      'Фото повредилось при отправке — снимите заново';
+
+  @override
+  String get offReasonPhotoMissing => 'Файл фото не дошёл — снимите заново';
+
+  @override
+  String get offReasonNotFound => 'Заявка или пункт чек-листа не найдены';
+
+  @override
+  String get offReasonDenied => 'Нет прав на это действие';
+
+  @override
+  String get offReasonOther => 'Сервер не принял действие';
+
+  @override
+  String get offPhotoKept => 'Фото всё равно сохранено в заявке с пометкой';
+
+  @override
+  String get offKindStart => 'Начать работу';
+
+  @override
+  String get offKindVisit => 'Отметка визита';
+
+  @override
+  String get offKindCheck => 'Пункт чек-листа';
+
+  @override
+  String get offKindPhoto => 'Фото «после»';
+
+  @override
+  String get offKindSubmit => 'На проверку';
+
+  @override
+  String get offPendingBadge => 'ждёт отправки';
+
+  @override
+  String get offQueuedToast =>
+      'Нет сети — сохранено на телефоне, отправится само';
+
+  @override
+  String get offVisitInZone => '📍 В геозоне';
+
+  @override
+  String offVisitOutZone(int meters) {
+    return '📍 Вне геозоны · $meters м';
+  }
+
+  @override
+  String get offVisitNoGps => 'Нет GPS — визит без координат';
+
+  @override
+  String get checklistTitle => 'Чек-лист';
+
+  @override
+  String checklistProgress(int done, int total) {
+    return '$done из $total';
+  }
+
+  @override
+  String get checklistSaveFailed => 'Не удалось отметить пункт';
+
+  @override
+  String proofOffline(String taken, String trust, String sent) {
+    return 'Снято без сети в $taken · $trust · отправлено в $sent';
+  }
+
+  @override
+  String proofVisitOffline(String taken, String trust, String sent) {
+    return 'Визит без сети в $taken · $trust · отправлено в $sent';
+  }
+
+  @override
+  String get proofTrustGps => 'время по GPS ✓';
+
+  @override
+  String get proofTrustMono => 'время подтверждено ✓';
+
+  @override
+  String get proofTrustDevice => '⚠️ время только по часам телефона';
+
+  @override
+  String proofTrustUnverified(String drift) {
+    return '⚠️ время не подтверждено (часы телефона расходились на $drift)';
+  }
+
+  @override
+  String get proofNeedsDecision => 'решение при формировании акта';
+
+  @override
+  String get proofLateAfterCancel => 'прислано после отмены';
+
+  @override
+  String get proofLateAfterReassign =>
+      'прислано после передачи другому подрядчику';
+
+  @override
+  String get proofLateAfterClose => 'прислано после закрытия заявки';
+
+  @override
+  String get proofHashUnchecked => 'отпечаток фото не сверен';
+
+  @override
+  String durHours(int n) {
+    return '$n ч';
+  }
+
+  @override
+  String durMinutes(int n) {
+    return '$n мин';
+  }
+
+  @override
+  String get offTestNet => 'Сеть (тест)';
+
+  @override
+  String actReviewTitle(int count) {
+    return 'Требует решения менеджера · $count';
+  }
+
+  @override
+  String get actReviewHint =>
+      'Работа принята, но доказательство под вопросом. Решите, платить ли.';
+
+  @override
+  String get actDoubtFromFile =>
+      'фото «после» загружено из файла, не снято на месте';
+
+  @override
+  String actDoubtTimeUnverified(String drift) {
+    return 'время снимка не подтверждено: часы телефона расходились на $drift';
+  }
+
+  @override
+  String get actDoubtTimeDevice =>
+      'время снимка не подтверждено: без сети и без GPS';
+
+  @override
+  String get actDoubtLate =>
+      'фото прислано, когда заявку уже закрыли или отменили';
+
+  @override
+  String get actDoubtHash => 'отпечаток фото не сверен сервером';
+
+  @override
+  String get actDoubtVisitTime => 'время визита без сети не подтверждено';
+
+  @override
+  String get actReasonRejectedByManager => 'не принято менеджером';
+
+  @override
+  String get actApprove => 'Подтвердить к оплате';
+
+  @override
+  String get actReject => 'Не принимать';
+
+  @override
+  String get actDecisionChange => 'Изменить решение';
+
+  @override
+  String get actDecisionComment => 'Комментарий';
+
+  @override
+  String get actDecisionApproveHint =>
+      'Например: звонил исполнителю, визит подтверждён охраной';
+
+  @override
+  String get actDecisionRejectHint => 'Комментарий (необязательно)';
+
+  @override
+  String get actDecisionCommentRequired =>
+      'Напишите, почему подтверждаете к оплате';
+
+  @override
+  String get actDecisionSaved => 'Решение сохранено';
+
+  @override
+  String get actDecisionDenied =>
+      'Решает менеджер — не исполнитель и не тот, кто сдавал работу';
+
+  @override
+  String get actDecisionLocked => 'Акт уже сформирован — решение не меняется';
+
+  @override
+  String get actDecisionNotAccepted => 'Сначала примите работу';
+
+  @override
+  String actDecisionApproved(String who, String when, String comment) {
+    return '✋ решение менеджера: $who, $when — $comment';
+  }
+
+  @override
+  String actDecisionRejected(String who, String when) {
+    return '✋ не принято менеджером: $who, $when';
+  }
+
+  @override
+  String get actByManager => 'подтверждено менеджером';
+
+  @override
+  String actPendingWarn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count заявки ждут',
+      many: '$count заявок ждут',
+      few: '$count заявки ждут',
+      one: '$count заявка ждёт',
+    );
+    return '$_temp0 вашего решения — они не попадут в акт';
+  }
+
+  @override
+  String get actDecideNow => 'Решить сейчас';
+
+  @override
+  String get actIssueWithout => 'Сформировать без них';
+
+  @override
+  String get actPendingBlock => 'Ожидают решения (без сумм)';
+
+  @override
+  String actManualLine(int count) {
+    return 'из них подтверждено вручную: $count';
+  }
+
+  @override
+  String homeDecisionsBadge(int count) {
+    return 'Ждут вашего решения по оплате: $count';
+  }
+
+  @override
+  String reportsOfflineLine(int offline, int manual) {
+    return 'Сдано без сети: $offline · подтверждено вручную: $manual';
+  }
+
+  @override
+  String get proofTitle => 'Доказательства';
+
+  @override
+  String get eqPlaceMountFloor => 'Пол';
+
+  @override
+  String get eqPlaceMountWall => 'Стена';
+
+  @override
+  String get eqPlaceMountCeiling => 'Потолок';
+
+  @override
+  String get eqPlaceMountAboveCeiling => 'За подвесным потолком';
+
+  @override
+  String get eqPlaceMountCabinet => 'В шкафу';
+
+  @override
+  String get eqPlaceMountOutdoor => 'Снаружи';
+
+  @override
+  String eqPlaceHeightValue(String value) {
+    return '$value м';
+  }
+
+  @override
+  String get eqPlaceOnPlan => 'Место на плане';
+
+  @override
+  String get eqPlaceNotSet => 'Не указано · Указать на плане';
+
+  @override
+  String get eqPlaceChange => 'Изменить';
+
+  @override
+  String get eqPlaceWhereExactly => 'Где именно';
+
+  @override
+  String get eqPlaceHeight => 'Высота, м';
+
+  @override
+  String get eqPlaceHeightHint => 'Например, 2,8';
+
+  @override
+  String get eqPlaceHeightBad => 'Высота — число от 0 до 100 м, например 2,8';
+
+  @override
+  String get eqPlaceLandmark => 'Ориентир';
+
+  @override
+  String get eqPlaceLandmarkHint => 'Например, над дверью, слева';
+
+  @override
+  String get eqPlacePhoto => 'Сфотографировать, где установлено';
+
+  @override
+  String get eqPlacePhotoTitle => 'Фото места установки';
+
+  @override
+  String get eqPlacePhotoRetake => 'Переснять';
+
+  @override
+  String get eqPlacePhotoRemove => 'Убрать фото';
+
+  @override
+  String get eqPlacePhotoNeedsFloor =>
+      'Фото места можно сохранить, когда помещение стоит на этаже объекта';
+
+  @override
+  String get eqPlacePhotoBad => 'Нужна фотография JPEG, PNG или WebP до 15 МБ';
+
+  @override
+  String get eqPlacePhotoFailed => 'Не удалось сохранить фото места';
+
+  @override
+  String get eqPlaceDone => 'Готово';
+
+  @override
+  String get eqPlaceRemove => 'Убрать с плана';
+
+  @override
+  String get eqPlaceDragHint =>
+      'Перетащите метку или нажмите на план там, где стоит оборудование';
+
+  @override
+  String eqPlaceOtherRoom(String room) {
+    return 'Точка в помещении $room — сменить помещение?';
+  }
+
+  @override
+  String get eqPlaceSwitchRoom => 'Сменить';
+
+  @override
+  String get eqPlaceKeepRoom => 'Оставить';
+
+  @override
+  String eqPlaceRoomChanged(String room) {
+    return 'Помещение сменится на $room';
+  }
+
+  @override
+  String get eqPlaceNoPlan =>
+      'Загрузите план этажа в карточке объекта — потом здесь можно будет поставить точку';
+
+  @override
+  String get eqPlaceOpenObject => 'Открыть карточку объекта';
+
+  @override
+  String get eqPlaceSaved => 'Место на плане сохранено';
+
+  @override
+  String get eqPlaceSaveFailed => 'Не удалось сохранить место на плане';
+
+  @override
+  String eqPlaceMarker(String name) {
+    return '$name — метка на плане, можно перетащить';
+  }
+
+  @override
+  String get eqExportButton => 'Выгрузить в Excel';
+
+  @override
+  String get eqExportDone => 'Файл выгрузки сохранён';
+
+  @override
+  String get eqExportFailed => 'Не удалось выгрузить оборудование';
+
+  @override
+  String get eqExportEmpty => 'Нет оборудования для выгрузки';
+
+  @override
+  String get eqExportFileName => 'Оборудование';
+
+  @override
+  String get eqExportIssueBadHeight => 'высота не распознана';
+
+  @override
+  String eqExportIssueUnknownMount(String text) {
+    return 'нет такого варианта «Где именно»: «$text»';
+  }
+
+  @override
+  String eqExportIssueOtherObject(String text) {
+    return 'строка другого объекта: «$text»';
+  }
+
+  @override
+  String get eqExportWillUpdate => 'обновится';
+
+  @override
+  String get eqExportReimportInfo =>
+      'Выгрузку из «Выгрузить в Excel» можно поправить и загрузить обратно: строки с ID обновят своё оборудование, без ID — добавятся.';
 }

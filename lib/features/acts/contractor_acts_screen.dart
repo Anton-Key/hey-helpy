@@ -17,6 +17,7 @@ import 'act_logic.dart';
 import 'act_pdf.dart' deferred as actpdf;
 import 'act_xlsx.dart' deferred as actxlsx;
 import 'acts_repository.dart';
+import 'proof_decisions.dart';
 
 /// «Отчёты → Акты подрядчикам» (шаг 24): «Платим подрядчику только за
 /// доказанную работу». Подрядчик и месяц → «К оплате» (принято менеджером
@@ -285,6 +286,19 @@ class _ContractorActsScreenState extends State<ContractorActsScreen> {
     final result = _result;
     final ctx = _ctx;
     if (result == null || ctx == null || _contractorId == null) return;
+    // Шаг 27: нерешённые — не блокируем, а предупреждаем.
+    if (result.review.isNotEmpty) {
+      final go = await showAppDialog<bool>(
+        context: context,
+        title: l.actReviewTitle(result.review.length),
+        message: l.actPendingWarn(result.review.length),
+        actions: [
+          AppDialogAction(l.actDecideNow, false, primary: true),
+          AppDialogAction(l.actIssueWithout, true),
+        ],
+      );
+      if (go != true || !mounted) return;
+    }
     setState(() => _issuing = true);
     try {
       final (from, to) = monthRange(_month);
@@ -526,6 +540,15 @@ class _ContractorActsScreenState extends State<ContractorActsScreen> {
               separatorInset: AppSpace.separatorInsetIcon,
               children: [for (final x in r.paid) _line(l, x)],
             ),
+            // Шаг 27: «Требует решения менеджера» — жёлтая группа.
+            if (r.review.isNotEmpty)
+              AppGroup(
+                key: const ValueKey('act-review'),
+                header: l.actReviewTitle(r.review.length),
+                footer: l.actReviewHint,
+                separatorInset: AppSpace.separatorInsetIcon,
+                children: [for (final x in r.review) _line(l, x, review: true)],
+              ),
             if (r.rejected.isNotEmpty)
               AppGroup(
                 header: l.actRejectedTitle(r.rejected.length),
@@ -564,7 +587,7 @@ class _ContractorActsScreenState extends State<ContractorActsScreen> {
     );
   }
 
-  Widget _line(AppLocalizations l, ActLine x) {
+  Widget _line(AppLocalizations l, ActLine x, {bool review = false}) {
     final o = x.order;
     final date = DateFormat.MMMd(l.localeName).format(o.date);
     final proofs = <Widget>[
@@ -572,7 +595,12 @@ class _ContractorActsScreenState extends State<ContractorActsScreen> {
       if (x.geoProof) const _Proof(AppIcons.place),
       if (x.checklistProof) const _Proof(AppIcons.check),
     ];
-    final reasons = [for (final r in x.reasons) actReasonText(l, r)].join(', ');
+    final reasons = [
+      for (final r in x.reasons) actReasonText(l, r),
+      if (review || x.reasons.contains(ActReason.rejectedByManager))
+        actDoubtsText(l, x),
+    ].where((t) => t.isNotEmpty).join(', ');
+    final decision = actDecisionText(l, x.decision);
     final narrow = MediaQuery.sizeOf(context).width < 600;
     final badge = Row(mainAxisSize: MainAxisSize.min, children: [
       ...proofs,
@@ -582,27 +610,114 @@ class _ContractorActsScreenState extends State<ContractorActsScreen> {
             style: AppText.callout.copyWith(fontWeight: FontWeight.w600)),
       ],
     ]);
+    // Кнопки решения: у «требует решения» — обе; у решённых — «Изменить».
+    final buttons = review
+        ? Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
+            AppButton.tinted(
+                small: true,
+                expand: false,
+                label: l.actApprove,
+                onPressed: () => _decide(x, approve: true)),
+            AppButton.secondary(
+                small: true,
+                expand: false,
+                label: l.actReject,
+                onPressed: () => _decide(x, approve: false)),
+          ])
+        : decision != null
+            ? AppButton.plain(
+                small: true,
+                expand: false,
+                label: l.actDecisionChange,
+                onPressed: () => _decide(x, approve: !x.decision!.approve))
+            : null;
+    final showBadge = narrow && (proofs.isNotEmpty || x.amount != null);
     return AppRow(
-      leading: x.payable
-          ? const LeadingIcon(AppIcons.success)
-          : const LeadingIcon.danger(AppIcons.warning),
+      leading: review
+          ? LeadingIcon(AppIcons.warning,
+              color: StatusColors.newOrder.foreground,
+              background: StatusColors.newOrder.background)
+          : x.payable
+              ? const LeadingIcon(AppIcons.success)
+              : const LeadingIcon.danger(AppIcons.warning),
       title: o.title,
       subtitle: [
         date,
         _objectName(o.objectId),
         if (o.overdue) l.actOverdue,
-        if (!x.payable) reasons,
-      ].join(' · '),
-      subtitleMaxLines: 3,
+        if (!x.payable || review) reasons,
+        if (decision != null) decision,
+      ].where((t) => t.isNotEmpty).join(' · '),
+      subtitleMaxLines: 5,
       // Узкий экран: значки и сумма — под строкой, название во всю ширину.
       trailing: narrow ? null : badge,
-      extra: narrow && (proofs.isNotEmpty || x.amount != null)
+      extra: showBadge || buttons != null
           ? Padding(
               padding: const EdgeInsetsDirectional.only(top: AppSpace.xs),
-              child: badge)
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (showBadge) badge,
+                    if (showBadge && buttons != null)
+                      const SizedBox(height: AppSpace.s),
+                    if (buttons != null) buttons,
+                  ]))
           : null,
       onTap: () => _openOrder(o),
     );
+  }
+
+  /// «Подтвердить к оплате» (комментарий обязателен) / «Не принимать».
+  Future<void> _decide(ActLine x, {required bool approve}) async {
+    final l = context.l10n;
+    final c = TextEditingController();
+    final ok = await showAppDialog<bool>(
+      context: context,
+      title: approve ? l.actApprove : l.actReject,
+      content: TextField(
+          key: const ValueKey('act-decision-comment'),
+          controller: c,
+          autofocus: true,
+          maxLines: 3,
+          maxLength: 500,
+          decoration: InputDecoration(
+              hintText:
+                  approve ? l.actDecisionApproveHint : l.actDecisionRejectHint,
+              fillColor: AppColors.fill)),
+      actions: [
+        AppDialogAction(approve ? l.actApprove : l.actReject, true,
+            primary: true),
+        AppDialogAction(l.commonCancel, false),
+      ],
+    );
+    final reason = c.text.trim();
+    c.dispose();
+    if (ok != true || !mounted) return;
+    if (approve && reason.length < 3) {
+      showAppMessage(context, l.actDecisionCommentRequired,
+          type: AppMessageType.info);
+      return;
+    }
+    try {
+      await ProofDecisionsRepo().decide(x.order.id,
+          approve: approve, reason: reason.isEmpty ? null : reason);
+      if (!mounted) return;
+      showAppMessage(context, l.actDecisionSaved);
+      await _load();
+    } catch (e) {
+      debugPrint('decide: $e');
+      if (!mounted) return;
+      showAppMessage(
+          context,
+          switch (decisionError(e)) {
+            DecisionError.denied => l.actDecisionDenied,
+            DecisionError.locked => l.actDecisionLocked,
+            DecisionError.reasonRequired => l.actDecisionCommentRequired,
+            DecisionError.notAccepted => l.actDecisionNotAccepted,
+            DecisionError.other => l.errorGeneric,
+          },
+          type: AppMessageType.error);
+    }
   }
 }
 

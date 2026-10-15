@@ -28,7 +28,7 @@ env:
   PROJECT_REF: oguiwftspuzmffynkykl
   # Через пробел. Каждая проверяется: без токена → 401 (telegram-bot — без
   # секрета вебхука → 401, его проверяет сама функция).
-  FUNCTIONS: voice-intake photo-identify telegram-bot telegram-notify
+  FUNCTIONS: voice-intake photo-identify telegram-bot telegram-notify offline-sync
 
 jobs:
   # Без секретов: не с main — остановка ещё до запроса одобрения.

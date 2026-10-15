@@ -75,6 +75,9 @@ extension L10nCodes on AppLocalizations {
     return durationDaysHours(n.format(d.inDays), n.format(d.inHours % 24));
   }
 
+  /// Только время («14:19») — шаг 27.
+  String time(DateTime d) => DateFormat.Hm(localeName).format(d.toLocal());
+
   /// Дата и время по правилам выбранного языка.
   String dateTime(DateTime d) =>
       DateFormat.yMMMd(localeName).add_Hm().format(d.toLocal());

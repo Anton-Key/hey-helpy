@@ -1,3 +1,8 @@
+import '../acts/contractor_acts_screen.dart' deferred as acts;
+import '../acts/proof_decisions.dart';
+import '../offline/offline_banner.dart';
+import '../offline/offline_logic.dart' show isNetworkError;
+import '../offline/offline_service.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -23,6 +28,7 @@ import 'requests.dart';
 import 'order_form_place.dart';
 import 'package:intl/intl.dart';
 import '../reports/report_repository.dart';
+import '../../core/deferred_view.dart';
 
 /// Ширина колонки вкладки «Заявки» на ПК: рядом с поиском помещаются
 /// таблетки главных фильтров.
@@ -178,6 +184,9 @@ class _RequestsTabState extends State<RequestsTab> {
   /// плашек нет.
   ({int photo, double? photoRate, int telegram})? _badges;
 
+  /// Шаг 27: «Ждут вашего решения по оплате: N» (текущий месяц).
+  ({int pending, String? contractorId})? _decisions;
+
   Future<void> _loadBadges() async {
     if (_role != 'admin' && _role != 'manager') return;
     try {
@@ -189,6 +198,16 @@ class _RequestsTabState extends State<RequestsTab> {
         _repo.countChannel('camera').catchError((_) => 0),
       ]);
       final stats = r[0] as PhotoStats?;
+      try {
+        final d = await ProofDecisionsRepo().stats(
+            DateTime(now.year, now.month), now.add(const Duration(days: 1)));
+        if (mounted) {
+          setState(() =>
+              _decisions = (pending: d.pending, contractorId: d.contractorId));
+        }
+      } catch (e) {
+        debugPrint('decisions badge: ${e.runtimeType}');
+      }
       if (!mounted) return;
       setState(() => _badges = (
             photo: stats?.total ?? (r[2] as int),
@@ -203,7 +222,29 @@ class _RequestsTabState extends State<RequestsTab> {
   Widget? _badgeRow() {
     final b = _badges;
     final l = context.l10n;
-    if (b == null || (b.photo == 0 && b.telegram == 0)) return null;
+    final dec = _decisions;
+    final decisions = dec == null || dec.pending == 0
+        ? null
+        : AppChip(
+            key: const ValueKey('badge-decisions'),
+            icon: AppIcons.act,
+            label: l.homeDecisionsBadge(dec.pending),
+            selected: false,
+            onTap: () => Navigator.push(
+                context,
+                appRoute(
+                    (_) => DeferredView(
+                        load: acts.loadLibrary,
+                        builder: (_) => acts.ContractorActsScreen(
+                            initialContractorId: dec.contractorId)),
+                    title: l.tabRequests)));
+    if (b == null || (b.photo == 0 && b.telegram == 0)) {
+      return decisions == null
+          ? null
+          : Padding(
+              padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
+              child: Wrap(children: [decisions]));
+    }
     if (_filter.channels.isNotEmpty) return null;
     final pct = NumberFormat.percentPattern(l.localeName);
     void show(String channel) => _setFilter(OrderFilter.empty
@@ -211,6 +252,7 @@ class _RequestsTabState extends State<RequestsTab> {
     return Padding(
       padding: const EdgeInsetsDirectional.only(bottom: AppSpace.m),
       child: Wrap(spacing: AppSpace.s, runSpacing: AppSpace.s, children: [
+        if (decisions != null) decisions,
         if (b.photo > 0)
           AppChip(
               icon: AppIcons.camera,
@@ -256,8 +298,18 @@ class _RequestsTabState extends State<RequestsTab> {
       }
       final conds = _filter.serverConditions(
           now: DateTime.now(), uid: _repo.uid, myExecutorIds: _execIds);
-      final r = await Future.wait<Object>(
-          [_repo.listFiltered(conds), _repo.countAll()]);
+      List<Object> r;
+      try {
+        r = await Future.wait<Object>(
+                [_repo.listFiltered(conds), _repo.countAll()])
+            .timeout(OfflineService.requestTimeout);
+        unawaited(_off.prefetch());
+      } catch (e) {
+        // Без сети (шаг 27, APK): свои заявки исполнителя из телефона.
+        final cached = _offlineOrders(e);
+        if (cached == null) rethrow;
+        r = [cached, cached.length];
+      }
       if (!mounted || req != _req) return;
       setState(() {
         _items = r[0] as List<WorkOrder>;
@@ -278,6 +330,20 @@ class _RequestsTabState extends State<RequestsTab> {
         _error = '$e';
         _loading = false;
       });
+    }
+  }
+
+  final _off = OfflineService.instance;
+
+  /// Заявки из телефона, если ошибка — нет сети и они сохранены.
+  List<WorkOrder>? _offlineOrders(Object e) {
+    if (!OfflineService.supported || !isNetworkError(e)) return null;
+    if (_off.cached('my_orders') == null) return null;
+    _off.markOffline();
+    try {
+      return [for (final m in _off.myOrders()) WorkOrder.fromMap(m)];
+    } catch (_) {
+      return null;
     }
   }
 
@@ -436,6 +502,7 @@ class _RequestsTabState extends State<RequestsTab> {
     return Stack(children: [
       Positioned.fill(
         child: CustomScrollView(slivers: [
+          const SliverToBoxAdapter(child: OfflineBanner()),
           HomeHeader(
             title: l.tabRequests,
             maxWidth: kRequestsMaxWidth,

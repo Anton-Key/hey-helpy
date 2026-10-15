@@ -89,7 +89,11 @@ Onest (SIL OFL 1.1), файлы `assets/fonts/Onest-{Regular,Medium,SemiBold,Bol
 
 Один набор: **Lucide** (ISC), вес 300 (штрих 1.55), размер 18–24. Активная вкладка
 нижнего меню — тот же значок со штрихом 2 (`AppIcons.homeActive` и т. п.): у Lucide
-нет залитых значков. Новый значок — добавить в `icons.dart` (имя с lucide.dev, суффикс 300).
+нет залитых значков. Шрифты — свои, `assets/fonts/lucide/` (семейства `AppLucide300`,
+`AppLucide600`, `AppLucide`; шаг 27: пакет `lucide_icons_flutter` грузил в веб все 7 весов,
+~870 КБ лишнего до первого кадра). Новый значок — в `icons.dart` строкой
+`IconData(0x…, fontFamily: 'AppLucide300'); // имя`: имя — с lucide.dev, код — из
+`lib/lucide_icons.dart` пакета lucide_icons_flutter 3.1.20 (`<имя>300`).
 
 ## Тема (`app_theme.dart`)
 

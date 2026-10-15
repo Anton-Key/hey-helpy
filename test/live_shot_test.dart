@@ -98,9 +98,16 @@ void main() {
               at: at, lat: 44.82, lng: 20.44942),
           '14.10.2026 14:19 · БЦ · вне геозоны');
     });
-    test('без координат — без геозоны', () {
+    test('без координат — «нет GPS» (шаг 27)', () {
       expect(stampText(l, const PhotoStamp(geofence: zone), at: at),
-          '14.10.2026 14:19');
+          '14.10.2026 14:19 · нет GPS');
+      // у объекта нет координат — про геозону молчим
+      expect(stampText(l, const PhotoStamp(), at: at), '14.10.2026 14:19');
+    });
+    test('без сети — пометка «без сети» (шаг 27)', () {
+      expect(
+          stampText(l, const PhotoStamp(object: 'БЦ', offline: true), at: at),
+          '14.10.2026 14:19 · БЦ · без сети');
     });
   });
 

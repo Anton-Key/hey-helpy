@@ -5,12 +5,13 @@ import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
 import '../access/crews_section.dart';
-import '../reports/reports_screen.dart';
+import '../reports/reports_screen.dart' deferred as reports;
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import 'city.dart';
 import 'directory.dart';
 import '../../core/app_message.dart';
+import '../../core/deferred_view.dart';
 
 /// Карточка подрядчика: контакты (исполнители), виды работ и объекты с нормой
 /// визитов, кнопки «Заявки подрядчика» и «Отчёт». Норму меняет только менеджер —
@@ -108,7 +109,10 @@ class _ContractorCardScreenState extends State<ContractorCardScreen> {
           (_) => Scaffold(
                 backgroundColor: AppColors.bg,
                 // Шапка с «назад» — у самого ReportsScreen.
-                body: ReportsScreen(initialContractorId: widget.contractor.id),
+                body: DeferredView(
+                    load: reports.loadLibrary,
+                    builder: (_) => reports.ReportsScreen(
+                        initialContractorId: widget.contractor.id)),
               ),
           title: widget.contractor.orgName));
 

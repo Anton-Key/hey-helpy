@@ -35,14 +35,14 @@ class AuthRepository {
 
   /// Загружает профиль текущего пользователя из таблицы profiles.
   Future<Profile?> fetchMyProfile() async {
+    final data = await fetchMyProfileRow();
+    return data == null ? null : Profile.fromMap(data);
+  }
+
+  /// Строка профиля как есть — её же телефон хранит для входа без сети.
+  Future<Map<String, dynamic>?> fetchMyProfileRow() async {
     final uid = currentUser?.id;
     if (uid == null) return null;
-    final data = await _client
-        .from('profiles')
-        .select()
-        .eq('id', uid)
-        .maybeSingle();
-    if (data == null) return null;
-    return Profile.fromMap(data);
+    return _client.from('profiles').select().eq('id', uid).maybeSingle();
   }
 }

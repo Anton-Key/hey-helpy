@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart' show Locale;
 
 import '../../l10n/app_localizations.dart';
 import '../directory/directory.dart';
+import 'asset_place.dart';
 import 'equipment_kinds.dart';
 import 'equipment_models.dart';
 
@@ -25,7 +26,22 @@ enum ImportColumn {
 
   /// Вид оборудования (шаг 22): код каталога или подпись RU / EN.
   kind,
+
+  /// Где именно (шаг 27): код монтажа или подпись RU / EN.
+  mount,
+
+  /// Высота, м (шаг 27): «2,8» или «2.8».
+  heightM,
+
+  /// Ориентир (шаг 27): свободный текст.
+  landmark,
 }
+
+/// Колонки выгрузки (шаг 27), которых нет в шаблоне: «Точка на плане»
+/// (только для чтения — точку ставят на плане), «Объект» (строка другого
+/// объекта не загружается) и «ID» (строка с ID оборудования этого объекта
+/// обновляет его, а не добавляет новое).
+enum ExtraColumn { onPlan, object, id }
 
 /// Заголовки шаблона по языку интерфейса. Это формат файла (данные для
 /// разбора и шаблона), а не подписи экрана — поэтому здесь, а не в .arb:
@@ -41,6 +57,9 @@ const templateHeaders = {
     ImportColumn.serialNo: 'Серийный номер',
     ImportColumn.installedAt: 'Дата ввода',
     ImportColumn.kind: 'Вид',
+    ImportColumn.mount: 'Где именно',
+    ImportColumn.heightM: 'Высота, м',
+    ImportColumn.landmark: 'Ориентир',
   },
   'en': {
     ImportColumn.name: 'Name*',
@@ -52,7 +71,30 @@ const templateHeaders = {
     ImportColumn.serialNo: 'Serial number',
     ImportColumn.installedAt: 'Installed on',
     ImportColumn.kind: 'Type',
+    ImportColumn.mount: 'Mounting',
+    ImportColumn.heightM: 'Height, m',
+    ImportColumn.landmark: 'Landmark',
   },
+};
+
+/// Заголовки колонок выгрузки сверх шаблона (шаг 27).
+const exportExtraHeaders = {
+  'ru': {
+    ExtraColumn.onPlan: 'Точка на плане',
+    ExtraColumn.object: 'Объект',
+    ExtraColumn.id: 'ID',
+  },
+  'en': {
+    ExtraColumn.onPlan: 'On floor plan',
+    ExtraColumn.object: 'Object',
+    ExtraColumn.id: 'ID',
+  },
+};
+
+/// «да» / «нет» в колонке «Точка на плане».
+const exportYesNo = {
+  'ru': ('да', 'нет'),
+  'en': ('yes', 'no'),
 };
 
 /// Строка-пример в шаблоне.
@@ -66,7 +108,10 @@ const templateExample = {
     'FTXM35R',
     'DK-E0412233',
     '2024-05-01',
-    'Кондиционер, внутренний блок'
+    'Кондиционер, внутренний блок',
+    'Потолок',
+    '2,8',
+    'над дверью, слева'
   ],
   'en': [
     'Meeting room air conditioner',
@@ -77,7 +122,10 @@ const templateExample = {
     'FTXM35R',
     'DK-E0412233',
     '2024-05-01',
-    'Air conditioner, indoor unit'
+    'Air conditioner, indoor unit',
+    'Ceiling',
+    '2.8',
+    'above the door, on the left'
   ],
 };
 
@@ -152,7 +200,55 @@ const _synonyms = {
     'kind',
     'equipment type'
   ],
+  ImportColumn.mount: [
+    'где именно',
+    'монтаж',
+    'установка',
+    'где установлено',
+    'mounting',
+    'mount',
+    'installation'
+  ],
+  ImportColumn.heightM: [
+    'высота, м',
+    'высота',
+    'высота м',
+    'высота (м)',
+    'height, m',
+    'height',
+    'height m',
+    'height (m)'
+  ],
+  ImportColumn.landmark: ['ориентир', 'landmark', 'reference point'],
 };
+
+const _extraSynonyms = {
+  ExtraColumn.onPlan: [
+    'точка на плане',
+    'на плане',
+    'on floor plan',
+    'on plan',
+    'on the plan'
+  ],
+  ExtraColumn.object: ['объект', 'object', 'site', 'building'],
+  ExtraColumn.id: ['id', 'ид', 'идентификатор'],
+};
+
+/// Номера колонок выгрузки сверх шаблона ([ExtraColumn]).
+Map<ExtraColumn, int> mapExtraHeaders(List<String> header) {
+  final out = <ExtraColumn, int>{};
+  for (var i = 0; i < header.length; i++) {
+    final h = _norm(header[i]);
+    if (h.isEmpty) continue;
+    for (final e in _extraSynonyms.entries) {
+      if (!out.containsKey(e.key) && e.value.contains(h)) {
+        out[e.key] = i;
+        break;
+      }
+    }
+  }
+  return out;
+}
 
 String _norm(String s) => s
     .toLowerCase()
@@ -329,6 +425,15 @@ enum ImportIssue {
 
   /// Вид не найден в каталоге (шаг 22).
   unknownKind,
+
+  /// Высота не число или вне 0..100 м (шаг 27).
+  badHeight,
+
+  /// «Где именно» — не из списка (шаг 27).
+  unknownMount,
+
+  /// Строка другого объекта (колонка «Объект» выгрузки, шаг 27).
+  otherObject,
 }
 
 /// Строка импорта после проверки.
@@ -347,6 +452,12 @@ class ImportRow {
     this.installedAt,
     this.kind,
     this.kindText = '',
+    this.mount,
+    this.mountText = '',
+    this.heightM,
+    this.landmark,
+    this.objectText = '',
+    this.updateId,
     required this.issues,
   });
 
@@ -366,6 +477,20 @@ class ImportRow {
   /// Код вида из каталога; [kindText] — как написано в файле.
   final String? kind;
   final String kindText;
+
+  /// Где именно (шаг 27): код монтажа ([mountText] — как в файле),
+  /// высота и ориентир.
+  final String? mount;
+  final String mountText;
+  final double? heightM;
+  final String? landmark;
+
+  /// Колонка «Объект» (выгрузка) — как в файле.
+  final String objectText;
+
+  /// ID оборудования этого объекта (колонка «ID» выгрузки): строка
+  /// обновит его; null — добавится новое.
+  final String? updateId;
   final Set<ImportIssue> issues;
 
   /// Можно импортировать: ошибок нет, кроме «нет помещения», если
@@ -376,24 +501,56 @@ class ImportRow {
           issues.length == 1 &&
           issues.contains(ImportIssue.roomNotFound));
 
-  AssetDraft draft(String locationId) => AssetDraft(
-        name: name,
-        locationId: locationId,
-        layerId: layerId,
-        inventoryNo: inventoryNo,
-        manufacturer: manufacturer,
-        model: model,
-        serialNo: serialNo,
-        installedAt: installedAt,
-        kind: kind,
-      );
+  /// Черновик для записи. Новое оборудование — всё из строки. Обновление
+  /// ([base] — оборудование с этим ID): колонки, которых нет в файле
+  /// ([columns]), берутся из [base]; остальные ключи meta и точка на плане
+  /// сохраняются.
+  AssetDraft draft(String locationId,
+      {Asset? base, Set<ImportColumn>? columns}) {
+    bool has(ImportColumn c) =>
+        base == null || columns == null || columns.contains(c);
+    T? pick<T>(ImportColumn c, T? fromFile, T? fromBase) =>
+        has(c) ? fromFile : fromBase;
+    final m0 = base?.mount ?? MountInfo.empty;
+    return AssetDraft(
+      name: name,
+      locationId: locationId,
+      layerId: pick(ImportColumn.system, layerId, base?.layerId),
+      inventoryNo:
+          pick(ImportColumn.inventoryNo, inventoryNo, base?.inventoryNo),
+      manufacturer:
+          pick(ImportColumn.manufacturer, manufacturer, base?.manufacturer),
+      model: pick(ImportColumn.model, model, base?.model),
+      serialNo: pick(ImportColumn.serialNo, serialNo, base?.serialNo),
+      installedAt:
+          pick(ImportColumn.installedAt, installedAt, base?.installedAt),
+      kind: pick(ImportColumn.kind, kind, base?.kind),
+      baseMeta: base?.meta,
+      mount: MountInfo(
+        mount: pick(ImportColumn.mount, mount, m0.mount),
+        heightM: pick(ImportColumn.heightM, heightM, m0.heightM),
+        landmark: pick(ImportColumn.landmark, landmark, m0.landmark),
+      ),
+    );
+  }
 }
 
 /// Итог проверки файла.
 class ImportPreview {
   const ImportPreview(
-      {required this.rows, required this.missingColumns, this.empty = false});
+      {required this.rows,
+      required this.missingColumns,
+      this.empty = false,
+      this.columns = const {}});
   final List<ImportRow> rows;
+
+  /// Какие колонки есть в файле (обновление не трогает остальные поля).
+  final Set<ImportColumn> columns;
+
+  /// Сколько готовых строк обновят существующее оборудование.
+  int updateCount({bool createRooms = false}) => rows
+      .where((r) => r.updateId != null && r.ok(createRooms: createRooms))
+      .length;
 
   /// Обязательные колонки, которых нет в заголовке (название, помещение).
   final List<ImportColumn> missingColumns;
@@ -467,6 +624,9 @@ ImportPreview validateImport(
   required List<Layer> layers,
   Set<String> existingInventory = const {},
   Map<String, String> kindNames = const {},
+  Iterable<Asset> existing = const [],
+  Set<String> objectNames = const {},
+  Map<String, String> mountNames = const {},
 }) {
   if (rows.isEmpty) {
     return const ImportPreview(
@@ -483,6 +643,10 @@ ImportPreview validateImport(
     return ImportPreview(rows: const [], missingColumns: missing);
   }
   final names = kindNames.isEmpty ? defaultKindNames() : kindNames;
+  final mounts = mountNames.isEmpty ? defaultMountNames() : mountNames;
+  final extra = mapExtraHeaders(rows.first);
+  final byId = {for (final a in existing) a.id: a};
+  final objects = {for (final n in objectNames) _norm(n)};
   final taken = {for (final i in existingInventory) _norm(i)};
   final inFile = <String, int>{};
   for (var i = 1; i < rows.length; i++) {
@@ -495,6 +659,13 @@ ImportPreview validateImport(
     final r = rows[i];
     String get(ImportColumn c) => _get(r, cols[c]);
     final issues = <ImportIssue>{};
+    final base = byId[_get(r, extra[ExtraColumn.id])];
+    final objectText = _get(r, extra[ExtraColumn.object]);
+    if (objectText.isNotEmpty &&
+        objects.isNotEmpty &&
+        !objects.contains(_norm(objectText))) {
+      issues.add(ImportIssue.otherObject);
+    }
     final name = get(ImportColumn.name);
     if (name.isEmpty) issues.add(ImportIssue.noName);
 
@@ -526,8 +697,26 @@ ImportPreview validateImport(
       if ((inFile[_norm(inv)] ?? 0) > 1) {
         issues.add(ImportIssue.duplicateInFile);
       }
-      if (taken.contains(_norm(inv))) issues.add(ImportIssue.duplicateInDb);
+      // Своё же оборудование (обновление по ID) — не повтор.
+      final own = base != null && _norm(base.inventoryNo ?? '') == _norm(inv);
+      if (taken.contains(_norm(inv)) && !own) {
+        issues.add(ImportIssue.duplicateInDb);
+      }
     }
+
+    final mountText = get(ImportColumn.mount);
+    String? mount;
+    if (mountText.isNotEmpty) {
+      final k = _norm(mountText);
+      mount = kMountCodes.contains(k) ? k : mounts[k];
+      if (mount == null) issues.add(ImportIssue.unknownMount);
+    }
+    final heightText = get(ImportColumn.heightM);
+    final height = parseHeight(heightText);
+    if (heightText.isNotEmpty && height == null) {
+      issues.add(ImportIssue.badHeight);
+    }
+    final landmarkText = get(ImportColumn.landmark);
 
     final dateText = get(ImportColumn.installedAt);
     final date = parseImportDate(dateText);
@@ -545,7 +734,10 @@ ImportPreview validateImport(
       get(ImportColumn.model),
       get(ImportColumn.serialNo)
     ];
-    if (values.any((v) => v.length > 120)) issues.add(ImportIssue.tooLong);
+    if (values.any((v) => v.length > 120) ||
+        landmarkText.length > kMaxLandmark) {
+      issues.add(ImportIssue.tooLong);
+    }
 
     out.add(ImportRow(
       line: i + 1,
@@ -561,10 +753,17 @@ ImportPreview validateImport(
       installedAt: date,
       kind: kind,
       kindText: kindText,
+      mount: mount,
+      mountText: mountText,
+      heightM: height,
+      landmark: cleanLandmark(landmarkText),
+      objectText: objectText,
+      updateId: base?.id,
       issues: issues,
     ));
   }
-  return ImportPreview(rows: out, missingColumns: const []);
+  return ImportPreview(
+      rows: out, missingColumns: const [], columns: cols.keys.toSet());
 }
 
 String _get(List<String> row, int? i) =>
@@ -585,6 +784,13 @@ Map<String, String> defaultKindNames() => kindNamesFor([
       for (final code in const ['ru', 'en'])
         (k) => equipmentKindLabel(lookupAppLocalizations(Locale(code)), k)
     ]);
+
+/// Подписи «Где именно» на русском и английском → код (шаг 27).
+Map<String, String> defaultMountNames() => {
+      for (final code in const ['ru', 'en'])
+        for (final m in kMountCodes)
+          _norm(mountLabel(lookupAppLocalizations(Locale(code)), m)): m
+    };
 
 /// Ключ для сравнения названий помещений при создании недостающих.
 String importRoomKey(String s) => _norm(s);

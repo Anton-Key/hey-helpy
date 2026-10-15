@@ -22,3 +22,8 @@ verify_jwt = false
 # JWT после смены статуса; без токена — 401 шлюзом.
 [functions.telegram-notify]
 verify_jwt = true
+
+# Сверка отпечатков фото из очереди без сети (шаг 27): вызывает приложение
+# со своим JWT; без токена — 401 шлюзом.
+[functions.offline-sync]
+verify_jwt = true

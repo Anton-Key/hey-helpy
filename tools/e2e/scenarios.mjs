@@ -83,6 +83,29 @@ async function capturePdf(page) {
   return f;
 }
 
+// «К оплате» в акте — те же правила, что `buildAct` (act_logic.dart) и
+// `ActsRepository` (шаг 27): фото «после» не «из файла», а снятое без сети —
+// с подтверждённым временем, сверенным отпечатком и без пометки конфликта;
+// визит в геозоне (без сети — с подтверждённым временем); весь чек-лист.
+// Сомнительное — к оплате, только если менеджер последним решением
+// «Подтвердить к оплате» (таблица 0024; без неё — только строгие правила).
+const ACT_PAYABLE_SQL = `(not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done))
+  and (
+    ((not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo'
+          and a.stage = 'after' and a.source <> 'file'
+          and (not coalesce((to_jsonb(a)->>'offline')::boolean, false)
+               or (coalesce(to_jsonb(a)->>'time_trust', 'online') not in ('unverified', 'device_only')
+                   and to_jsonb(a)->>'sync_note' is null and (to_jsonb(a)->>'sha256_ok')::boolean))))
+     and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence
+          and coalesce(to_jsonb(v)->>'time_trust', 'online') not in ('unverified', 'device_only'))))
+    or (to_regclass('public.act_proof_decisions') is not null
+        and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id
+              and a.kind = 'photo' and a.stage = 'after'))
+        and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
+        and (select d->>'decision' from jsonb_path_query(
+               coalesce((select jsonb_agg(to_jsonb(x) order by x.decided_at desc)
+                         from act_proof_decisions x where x.work_order_id = w.id), '[]'::jsonb), '$[0]') d) = 'approve'))`;
+
 export const SCENARIOS = [
   {
     id: 1,
@@ -885,10 +908,7 @@ export const SCENARIOS = [
       const proven = +sql(`select count(*) from work_orders w left join objects o on o.id = w.object_id
         where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
           and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
-          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo' and a.stage = 'after'
-                                                and a.source <> 'file'))
-          and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
-          and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`);
+          and ${ACT_PAYABLE_SQL}`);
       const before = +sql(`select count(*) from contractor_acts where contractor_id = '${uuid(31)}'`);
       const m = await ctx.page();
       await login(m, base, USERS.admin);
@@ -902,10 +922,15 @@ export const SCENARIOS = [
       const shown = +(t.match(/К оплате · (\d+)/i)?.[1] ?? NaN);
       ctx.notes.push(`к оплате на экране ${shown}, по базе ${proven}`);
       assert(shown === proven && proven > 0, `«К оплате»: на экране ${shown}, доказанных в базе ${proven}`);
-      assert(/нет фото «после»|визит вне геозоны|не принята менеджером|нет отметки визита/.test(t),
-        'нет списка «без доказательства» с причинами');
+      // Группа «Без доказательства» — под «Требует решения» (шаг 27), ниже
+      // экрана: прокрутка до строки с причиной (нет — исключение).
+      await scrollTo(m, /нет фото «после»|визит вне геозоны|не принята менеджером|нет отметки визита/)
+        .catch(() => { throw new Error('нет списка «без доказательства» с причинами'); });
       await ctx.shot(m, 'act');
       await clickAction(m, /^Сформировать акт/);
+      // Есть «Требует решения» (демо 109, 112, шаг 27) — предупреждение.
+      const without = btn(m, /^Сформировать без них/);
+      if (await without.waitFor({ timeout: 4000 }).then(() => true, () => false)) await without.click();
       // PDF загружается после выдачи номера — ждём путь файла в акте.
       const act = await waitDb(`select number || '|' || (totals->>'paid') || '|' || coalesce(pdf_path, '-') from contractor_acts
         where contractor_id = '${uuid(31)}' order by created_at desc limit 1`,
@@ -1028,10 +1053,7 @@ export const SCENARIOS = [
       const proven = sql(`select string_agg(w.id::text, ',') from work_orders w left join objects o on o.id = w.object_id
         where w.assigned_contractor_id = '${uuid(31)}' and w.status = 'done'
           and coalesce(w.accepted_at, w.submitted_at, w.updated_at) >= date_trunc('month', now())
-          and (not w.requires_photo or exists (select 1 from attachments a where a.work_order_id = w.id and a.kind = 'photo'
-                                                and a.stage = 'after' and a.source <> 'file'))
-          and (o.lat is null or exists (select 1 from visits v where v.work_order_id = w.id and v.in_geofence))
-          and not exists (select 1 from checklist_items c where c.work_order_id = w.id and not c.is_done)`).split(',');
+          and ${ACT_PAYABLE_SQL}`).split(',');
       ctx.notes.push(`в акте к оплате на экране ${shown}, по базе ${proven.length}, заявка среди них: ${proven.includes(id)}`);
       assert(proven.includes(id), 'заявка должна быть доказанной по правилам акта');
       assert(shown === proven.length, `«К оплате»: на экране ${shown}, по базе ${proven.length}`);

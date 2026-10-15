@@ -96,6 +96,9 @@ class VpsActivity : ComponentActivity() {
     private var started = false
     private var everPrecise = false
     private var placing = false
+
+    /** Касание «Поставить метку»: hit-test — на следующем (свежем) кадре ARCore. */
+    private var pendingTap: Pair<Float, Float>? = null
     private val lastMessageAt = HashMap<String, Long>()
 
     // Views
@@ -334,7 +337,7 @@ class VpsActivity : ComponentActivity() {
         view.onSessionUpdated = { _, frame -> onFrame(frame) }
         view.setOnTouchListener { _, e ->
             if (placing && e.action == MotionEvent.ACTION_UP) {
-                onPlaceTap(e.x, e.y)
+                pendingTap = e.x to e.y
                 true
             } else {
                 false
@@ -372,6 +375,10 @@ class VpsActivity : ComponentActivity() {
         }
         renderStatus()
         renderLabels(frame)
+        pendingTap?.let { (x, y) ->
+            pendingTap = null
+            onPlaceTap(frame, x, y)
+        }
     }
 
     private fun startTracking() {
@@ -544,8 +551,7 @@ class VpsActivity : ComponentActivity() {
         placeButton.text = if (placing) t("commonCancel") else t("vpsPlaceMark")
     }
 
-    private fun onPlaceTap(x: Float, y: Float) {
-        val frame = arFrame ?: return
+    private fun onPlaceTap(frame: Frame, x: Float, y: Float) {
         val anchor = anchorPose ?: return showMessage("vpsNeedPrecise")
         val hit = try {
             frame.hitTest(x, y).firstOrNull { r ->

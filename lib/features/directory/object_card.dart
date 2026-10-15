@@ -274,7 +274,8 @@ class _ObjectCardScreenState extends State<ObjectCardScreen> {
                 context,
                 appRoute(
                     (_) => ReportLinkScreen(
-                        objectId: _obj.id, placeName: objectDisplayName(_obj)),
+                        objectId: _obj.id,
+                        placeName: objectDisplayName(_obj)),
                     title: _obj.name)),
           ),
         ]),

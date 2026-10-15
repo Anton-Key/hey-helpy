@@ -1,6 +1,7 @@
 package com.example.hey_helpy
 
 import android.content.Context
+import android.content.Intent
 import android.location.LocationManager
 import android.os.Build
 import android.os.SystemClock
@@ -16,6 +17,8 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // Шаг 28: VPS-эксперимент — только в сборке с -PwithVps=true.
+        VpsHook.register(this, flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hey_helpy/clock")
             .setMethodCallHandler { call, result ->
                 if (call.method != "read") {
@@ -43,5 +46,11 @@ class MainActivity : FlutterActivity() {
                 }
                 result.success(m)
             }
+    }
+
+    @Deprecated("FlutterActivity передаёт результат экрана VPS сюда")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (VpsHook.onActivityResult(requestCode, resultCode, data)) return
+        super.onActivityResult(requestCode, resultCode, data)
     }
 }

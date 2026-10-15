@@ -5386,4 +5386,192 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get eqExportReimportInfo =>
       'Выгрузку из «Выгрузить в Excel» можно поправить и загрузить обратно: строки с ID обновят своё оборудование, без ID — добавятся.';
+
+  @override
+  String get vpsMarksButton => 'Метки VPS (эксперимент)';
+
+  @override
+  String get vpsSiteTitle => 'VPS-скан помещения';
+
+  @override
+  String get vpsSiteState => 'Скан';
+
+  @override
+  String get vpsSiteNone => 'нет';
+
+  @override
+  String vpsSiteMarks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'есть · $count метки',
+      many: 'есть · $count меток',
+      few: 'есть · $count метки',
+      one: 'есть · $count метка',
+      zero: 'есть · меток нет',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vpsSiteIntro =>
+      'Отсканируйте помещение в Scaniverse, в портале Niantic Spatial переведите скан в «production» и вставьте сюда его anchor payload. Тогда в VPS-версии приложения метки оборудования будут висеть на своих местах — и после перезапуска.';
+
+  @override
+  String get vpsPayload => 'Anchor payload';
+
+  @override
+  String get vpsPayloadHint => 'Вставьте строку из портала Niantic';
+
+  @override
+  String get vpsPayloadInvalid =>
+      'Это не похоже на anchor payload — скопируйте строку из портала целиком';
+
+  @override
+  String get vpsSiteName => 'Название скана (необязательно)';
+
+  @override
+  String get vpsSiteAdd => 'Добавить скан';
+
+  @override
+  String get vpsSiteEdit => 'Заменить скан';
+
+  @override
+  String get vpsSiteUpdated => 'Обновлён';
+
+  @override
+  String get vpsSiteSaved => 'Скан сохранён';
+
+  @override
+  String get vpsSiteRescanHint =>
+      'Скан заменён. Метки привязаны к прежнему скану — поставьте их заново в VPS-версии.';
+
+  @override
+  String get vpsSiteDelete => 'Удалить скан';
+
+  @override
+  String get vpsSiteDeleteConfirm =>
+      'Метки оборудования этого скана тоже удалятся.';
+
+  @override
+  String get vpsSiteDeleted => 'Скан удалён';
+
+  @override
+  String get vpsReadOnly => 'Добавить или заменить скан может менеджер.';
+
+  @override
+  String get vpsTokenMissing =>
+      'В этой сборке нет токена VPS — соберите VPS-APK с секретом NIANTIC_DEV_TOKEN';
+
+  @override
+  String get vpsTokenExpired =>
+      'Токен VPS истёк — обновите в портале Niantic и пересоберите VPS-APK';
+
+  @override
+  String vpsTokenSoon(int days) {
+    return 'Токен VPS истекает через $days дн. — обновите в портале Niantic';
+  }
+
+  @override
+  String get vpsNoArcore =>
+      'Этот телефон не поддерживает ARCore — метки VPS недоступны';
+
+  @override
+  String get vpsNoSite =>
+      'У помещения нет VPS-скана. Менеджер добавляет его на плане этажа: помещение → «VPS-скан помещения».';
+
+  @override
+  String get vpsNoPlace => 'Сначала выберите помещение в «Где я»';
+
+  @override
+  String get vpsFindPlace => 'Найти место';
+
+  @override
+  String get vpsSearching => 'Ищу… медленно ведите камерой по комнате';
+
+  @override
+  String get vpsCoarse => 'Примерно';
+
+  @override
+  String get vpsPrecise => 'Точно ✓';
+
+  @override
+  String get vpsPlaceMark => 'Поставить метку';
+
+  @override
+  String get vpsPlaceHint => 'Коснитесь оборудования на экране';
+
+  @override
+  String get vpsPickAsset => 'Какое это оборудование?';
+
+  @override
+  String get vpsMarkSaved => 'Метка сохранена';
+
+  @override
+  String get vpsMarkDeleted => 'Метка удалена';
+
+  @override
+  String get vpsDeleteMark => 'Удалить метку';
+
+  @override
+  String get vpsOpenAsset => 'Карточка оборудования';
+
+  @override
+  String get vpsNoCamera =>
+      'Нет доступа к камере — разрешите его в настройках телефона';
+
+  @override
+  String get vpsNoNetwork => 'Нет сети — VPS работает только с интернетом';
+
+  @override
+  String get vpsAuthFailed =>
+      'Niantic не принял токен VPS — обновите его в портале и пересоберите VPS-APK';
+
+  @override
+  String get vpsNoMap =>
+      'Скан не найден — проверьте anchor payload (скан должен быть в «production»)';
+
+  @override
+  String get vpsQuota => 'Лимит запросов VPS исчерпан — попробуйте позже';
+
+  @override
+  String get vpsSessionExpired =>
+      'Сессия истекла — закройте экран и откройте заново';
+
+  @override
+  String get vpsFailed => 'Не получилось — попробуйте ещё раз';
+
+  @override
+  String get vpsNoHit =>
+      'Не нашёл поверхность — наведите на стену или пол рядом с оборудованием';
+
+  @override
+  String get vpsNoAssets => 'В помещении нет оборудования';
+
+  @override
+  String get vpsNeedPrecise => 'Сначала дождитесь «Точно ✓»';
+
+  @override
+  String get vpsMoveSlowly => 'Ведите камерой медленнее и чуть дальше от стены';
+
+  @override
+  String vpsOpenOrders(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count открытой заявки',
+      many: '$count открытых заявок',
+      few: '$count открытые заявки',
+      one: '$count открытая заявка',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vpsNoOpenOrders => 'Открытых заявок нет';
+
+  @override
+  String vpsMaintenance(String date) {
+    return 'ТО $date';
+  }
 }

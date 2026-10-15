@@ -1,0 +1,83 @@
+# Шаг 28: VPS-эксперимент Niantic Spatial — ОТДЕЛЬНЫЙ APK (hey-helpy-vps.apk).
+# Основной APK («Build Android APK») и «PR check» от этого workflow не зависят.
+# Запуск только вручную: Actions → «Build APK (VPS experiment)» → Run workflow.
+# Нужен секрет репозитория NIANTIC_DEV_TOKEN (developer token из Scaniverse web,
+# scope VPS API). Без него APK соберётся, но экран VPS скажет «нет токена».
+# Подробно: docs/research/vps-niantic.md.
+name: Build APK (VPS experiment)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # Чистые функции VPS (позы меток, срок токена, состояния экрана) — JUnit.
+      - name: VPS unit tests
+        working-directory: android
+        run: ./gradlew -PwithVps=true :vps:testDebugUnitTest
+
+      # Токен — только переменной окружения (android/vps/build.gradle.kts кладёт
+      # его в BuildConfig); в лог не печатается.
+      - name: Build VPS APK
+        env:
+          NIANTIC_DEV_TOKEN: ${{ secrets.NIANTIC_DEV_TOKEN }}
+        run: >
+          flutter build apk --release -PwithVps=true --target-platform android-arm64
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          --dart-define=MAP_TILE_KEY=${{ secrets.MAP_TILE_KEY }}
+
+      - name: Rename
+        run: mv build/app/outputs/flutter-apk/app-release.apk hey-helpy-vps.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hey-helpy-vps-apk
+          path: hey-helpy-vps.apk
+          retention-days: 14
+
+  # Постоянная ссылка (только запуск из main): релиз latest-vps-apk перезаписывается.
+  release:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: latest-vps-apk
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: hey-helpy-vps-apk
+
+      - name: Publish release latest-vps-apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release delete latest-vps-apk --yes --cleanup-tag || true
+          gh release create latest-vps-apk hey-helpy-vps.apk \
+            --target "$GITHUB_SHA" \
+            --title "VPS-эксперимент (Niantic Spatial)" \
+            --notes "Отдельная сборка с экраном «Метки VPS». Коммит ${GITHUB_SHA::7}. Ставится рядом с основным приложением." \
+            --prerelease

@@ -5354,4 +5354,188 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get eqExportReimportInfo =>
       'A file from \"Export to Excel\" can be edited and imported back: rows with an ID update their equipment, rows without an ID are added.';
+
+  @override
+  String get vpsMarksButton => 'VPS markers (experiment)';
+
+  @override
+  String get vpsSiteTitle => 'Room VPS scan';
+
+  @override
+  String get vpsSiteState => 'Scan';
+
+  @override
+  String get vpsSiteNone => 'none';
+
+  @override
+  String vpsSiteMarks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'added · $count markers',
+      one: 'added · $count marker',
+      zero: 'added · no markers',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vpsSiteIntro =>
+      'Scan the room in Scaniverse, make the scan \"production\" in the Niantic Spatial portal and paste its anchor payload here. The VPS build of the app will then keep equipment markers in place — even after a restart.';
+
+  @override
+  String get vpsPayload => 'Anchor payload';
+
+  @override
+  String get vpsPayloadHint => 'Paste the string from the Niantic portal';
+
+  @override
+  String get vpsPayloadInvalid =>
+      'This doesn\'t look like an anchor payload — copy the whole string from the portal';
+
+  @override
+  String get vpsSiteName => 'Scan name (optional)';
+
+  @override
+  String get vpsSiteAdd => 'Add scan';
+
+  @override
+  String get vpsSiteEdit => 'Replace scan';
+
+  @override
+  String get vpsSiteUpdated => 'Updated';
+
+  @override
+  String get vpsSiteSaved => 'Scan saved';
+
+  @override
+  String get vpsSiteRescanHint =>
+      'Scan replaced. Markers belong to the old scan — place them again in the VPS build.';
+
+  @override
+  String get vpsSiteDelete => 'Delete scan';
+
+  @override
+  String get vpsSiteDeleteConfirm =>
+      'Equipment markers of this scan will be deleted too.';
+
+  @override
+  String get vpsSiteDeleted => 'Scan deleted';
+
+  @override
+  String get vpsReadOnly => 'A manager can add or replace the scan.';
+
+  @override
+  String get vpsTokenMissing =>
+      'This build has no VPS token — build the VPS APK with the NIANTIC_DEV_TOKEN secret';
+
+  @override
+  String get vpsTokenExpired =>
+      'The VPS token has expired — renew it in the Niantic portal and rebuild the VPS APK';
+
+  @override
+  String vpsTokenSoon(int days) {
+    return 'The VPS token expires in $days days — renew it in the Niantic portal';
+  }
+
+  @override
+  String get vpsNoArcore =>
+      'This phone doesn\'t support ARCore — VPS markers are unavailable';
+
+  @override
+  String get vpsNoSite =>
+      'This room has no VPS scan. A manager adds it on the floor plan: room → \"Room VPS scan\".';
+
+  @override
+  String get vpsNoPlace => 'Choose a room in \"Where am I\" first';
+
+  @override
+  String get vpsFindPlace => 'Find location';
+
+  @override
+  String get vpsSearching => 'Searching… slowly pan the camera around the room';
+
+  @override
+  String get vpsCoarse => 'Approximate';
+
+  @override
+  String get vpsPrecise => 'Precise ✓';
+
+  @override
+  String get vpsPlaceMark => 'Place marker';
+
+  @override
+  String get vpsPlaceHint => 'Tap the equipment on screen';
+
+  @override
+  String get vpsPickAsset => 'Which equipment is this?';
+
+  @override
+  String get vpsMarkSaved => 'Marker saved';
+
+  @override
+  String get vpsMarkDeleted => 'Marker deleted';
+
+  @override
+  String get vpsDeleteMark => 'Delete marker';
+
+  @override
+  String get vpsOpenAsset => 'Equipment card';
+
+  @override
+  String get vpsNoCamera => 'No camera access — allow it in the phone settings';
+
+  @override
+  String get vpsNoNetwork => 'No network — VPS needs the internet';
+
+  @override
+  String get vpsAuthFailed =>
+      'Niantic rejected the VPS token — renew it in the portal and rebuild the VPS APK';
+
+  @override
+  String get vpsNoMap =>
+      'Scan not found — check the anchor payload (the scan must be \"production\")';
+
+  @override
+  String get vpsQuota => 'VPS request limit reached — try again later';
+
+  @override
+  String get vpsSessionExpired =>
+      'Session expired — close the screen and open it again';
+
+  @override
+  String get vpsFailed => 'That didn\'t work — try again';
+
+  @override
+  String get vpsNoHit =>
+      'No surface found — point at a wall or floor next to the equipment';
+
+  @override
+  String get vpsNoAssets => 'No equipment in this room';
+
+  @override
+  String get vpsNeedPrecise => 'Wait for \"Precise ✓\" first';
+
+  @override
+  String get vpsMoveSlowly =>
+      'Move the camera slower and a bit further from the wall';
+
+  @override
+  String vpsOpenOrders(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open work orders',
+      one: '$count open work order',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vpsNoOpenOrders => 'No open work orders';
+
+  @override
+  String vpsMaintenance(String date) {
+    return 'Maintenance $date';
+  }
 }

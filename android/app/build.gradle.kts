@@ -4,6 +4,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Шаг 28: VPS-эксперимент — только с -PwithVps=true (см. docs/research/vps-niantic.md).
+// Без флага подключается пустая заглушка VpsHook, модуль :vps не собирается.
+val withVps = providers.gradleProperty("withVps").orNull == "true"
+
 android {
     namespace = "com.example.hey_helpy"
     compileSdk = flutter.compileSdkVersion
@@ -23,7 +27,13 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        if (withVps) {
+            // Ставится рядом с основным приложением.
+            applicationIdSuffix = ".vps"
+        }
     }
+
+    sourceSets.getByName("main").java.srcDir(if (withVps) "src/vps/kotlin" else "src/novps/kotlin")
 
     buildTypes {
         release {
@@ -42,4 +52,10 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    if (withVps) {
+        implementation(project(":vps"))
+    }
 }

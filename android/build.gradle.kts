@@ -1,7 +1,16 @@
+// Шаг 28: репозиторий NSDK (официальный, на GitHub) — только для VPS-сборки.
+val withVps = providers.gradleProperty("withVps").orNull == "true"
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+        if (withVps) {
+            maven {
+                url = uri("https://raw.githubusercontent.com/nianticspatial/nsdk-library-aar/main")
+                content { includeGroup("com.nianticspatial") }
+            }
+        }
     }
 }
 

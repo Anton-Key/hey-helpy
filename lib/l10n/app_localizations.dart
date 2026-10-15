@@ -9410,6 +9410,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'ТО {date}'**
   String vpsMaintenance(String date);
+
+  /// Шаг 28: настройки Telegram — пояснение про уведомления исполнителю
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнителю подрядчика бот присылает новые назначенные заявки с кнопкой «Взять в работу». Не присылать — команда /stop в чате с ботом, снова присылать — /start.'**
+  String get tgExecutorHint;
 }
 
 class _AppLocalizationsDelegate

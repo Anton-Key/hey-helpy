@@ -6,7 +6,7 @@
 
 ## Чек-лист
 - [x] 1. VPS-эксперимент: отдельный вариант сборки (`-PwithVps=true`, модуль `android/vps`), `VpsActivity`, канал `hey_helpy/vps`, миграция 0025 (`vps_sites`, `vps_marks`), «VPS-скан помещения», документ `docs/research/vps-niantic.md` — **VPS-APK собирается локально**, CI-сборку запускает пользователь
-- [ ] 2. Telegram: уведомление исполнителю о новой заявке + «Взять в работу»
+- [x] 2. Telegram: уведомление исполнителю о новой заявке + «Взять в работу» (0025 раздел 2, `telegram-notify` kind `assigned`, кнопка `tk:` в боте)
 - [ ] 3. Офлайн-хвосты: миниатюры фото «до», план этажа без сети, `work_logs`, телефоны сотрудников
 - [ ] 4. Кадры 18 / 21 / 28, `DEMO_DAY_CHECKLIST.md`, регрессия, `/check`, `/screens`
 
@@ -14,6 +14,9 @@
 - 10:45 · ветка `step-28`, отчёт, «Применённые миграции» += 0023 0024 · первый коммит
 - 12:05 · блок 1: модуль `android/vps` (NSDK 4.1.0 из официального Maven на GitHub), мост `hey_helpy/vps`, `VpsActivity`, 0025 раздел 1 + `tools/db_test/vps.sql`, Flutter `lib/features/vps/`, workflow «Build APK (VPS experiment)», `docs/research/vps-niantic.md` · коммит «Шаг 28 (блок 1)»
 
+- 12:50 · блок 2: `tg_notify_assign_claim` / `_release` / `tg_take_order` + `tools/db_test/tg_take.sql` (17/17), `telegram-bot/assign.ts`, кнопка «Взять в работу», режим `assigned` в `telegram-notify`, вызовы из приложения; deno 95/95, Flutter 504/504 · коммит «Шаг 28 (блок 2)»
+
 ## Где остановился
 - Блок 1 готов: VPS-APK собран локально (`flutter build apk --release -PwithVps=true --target-platform android-arm64`, 70,7 МБ), обычный APK без флага собирается как раньше; JUnit 12/12, Dart 504/504, база — все наборы зелёные (vps 25/25).
-- Следующее: блок 2 — уведомление исполнителю в Telegram (`supabase/functions/telegram-notify`, `tg_*` в 0025, кнопка «Взять в работу» в боте).
+- Блок 2 готов (нужен Deploy functions: `telegram-notify` и `telegram-bot`).
+- Следующее: блок 4 — кадры 18 и 21 на рабочей базе (`tools/screens/screens.mjs --pitch --only=18,21`), кадр 28 (HTML-макет).

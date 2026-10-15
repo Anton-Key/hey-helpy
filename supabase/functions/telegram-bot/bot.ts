@@ -24,6 +24,8 @@ import {
 } from "../_shared/intake.ts";
 import { type AssetRef, buildResult, type Vision } from "../_shared/identify.ts";
 import { kindLabel } from "../_shared/kinds.ts";
+import { notice, type Target } from "../telegram-notify/notify.ts";
+import { type AssignInfo, notifyAssigned, parseTake, takeReply } from "./assign.ts";
 import {
   NOTIFY_OFF,
   BOT_USERNAME,
@@ -95,6 +97,13 @@ export interface Db {
   sessionPut(chat: number, state: Session | null): Promise<void>;
   /** «Не присылать уведомления» (true) / снова присылать (false) — 0022. */
   notifyOptout?(chat: number, off: boolean): Promise<void>;
+  /** Автору заявки: чат и отметка «уже отправлено» — tg_notify_claim (0022). */
+  notifyClaim?(orderId: string, status: string): Promise<Target | null>;
+  /** Исполнителям: «Новая заявка» — tg_notify_assign_claim / _release (0025). */
+  assignClaim?(orderId: string, actor: string | null): Promise<AssignInfo | null>;
+  assignRelease?(orderId: string, contractorId: string, profileId: string): Promise<void>;
+  /** «Взять в работу» от имени исполнителя этого чата — tg_take_order (0025). */
+  takeOrder?(chat: number, orderId: string): Promise<J>;
 }
 
 export { NOTIFY_OFF };
@@ -752,6 +761,9 @@ async function handleCallback(cb: TgCallback, deps: Deps, log: J) {
   const turn: Turn = { deps, chat, group, lang, from: cb.from, log };
   const data = cb.data ?? "";
   log.action = data.split(":")[0];
+  // «Взять в работу» в уведомлении исполнителю (шаг 28): права — в базе.
+  const takeId = parseTake(data);
+  if (takeId) return void await take(takeId, cb, turn, msg.message_id);
   // Кнопка в уведомлении о статусе: черновик и привязка не нужны.
   if (data === NOTIFY_OFF) {
     await deps.db.notifyOptout?.(chat, true);
@@ -842,6 +854,41 @@ async function handleCallback(cb: TgCallback, deps: Deps, log: J) {
   await deps.tg.answer(cb.id);
 }
 
+async function take(orderId: string, cb: TgCallback, turn: Turn, messageId: number) {
+  const { deps, chat, lang } = turn;
+  turn.log.action = "take";
+  if (!deps.db.takeOrder) return void await deps.tg.answer(cb.id);
+  const r = await deps.db.takeOrder(chat, orderId);
+  const key = takeReply(r as { ok?: boolean; error?: string });
+  turn.log.result = r.ok ? "taken" : String(r.error ?? "failed");
+  const vars = { number: String(r.number ?? ""), title: String(r.title ?? "") };
+  await deps.tg.answer(cb.id, r.ok ? undefined : t(lang, key, vars));
+  if (!r.ok) {
+    if (r.error === "already" || r.error === "bad_status" || r.error === "not_found") {
+      // Кнопка больше не нужна — оставляем только «Открыть».
+      await deps.tg.edit(chat, messageId, esc(t(lang, key, vars)), openButton(deps, orderId, lang)).catch(() => {});
+    } else {
+      await deps.tg.send(chat, esc(t(lang, key, vars)));
+    }
+    return;
+  }
+  await deps.tg.edit(chat, messageId, esc(t(lang, key, vars)), openButton(deps, orderId, lang));
+  // Автору заявки из Telegram — «взята в работу» (как после кнопки в приложении).
+  await notifyAuthor(deps, orderId, "in_progress").catch(() => {});
+}
+
+function openButton(deps: Deps, orderId: string, lang: Lang): ReplyMarkup {
+  return { inline_keyboard: [[{ text: t(lang, "bOpen"), url: `${deps.appUrl}#/orders/${orderId}` }]] };
+}
+
+/** Уведомление автору о статусе (логика telegram-notify, без JWT: статус уже в базе). */
+async function notifyAuthor(deps: Deps, orderId: string, status: string) {
+  const target = await deps.db.notifyClaim?.(orderId, status);
+  if (!target) return;
+  const { html, markup } = notice(target, orderId, deps.appUrl);
+  await deps.tg.send(target.chat_id, html, markup);
+}
+
 async function create(s: Session, who: Who, turn: Turn, cardId: number) {
   const { deps, chat, group, lang } = turn;
   const d = s.draft!;
@@ -896,6 +943,18 @@ async function create(s: Session, who: Who, turn: Turn, cardId: number) {
     ? { inline_keyboard: [[{ text: t(lang, "openInApp"), url: `${deps.appUrl}#/orders/${id}` }]] }
     : undefined;
   await deps.tg.edit(chat, cardId, html, markup);
+  // Заявку сразу назначили подрядчику (по системе и объекту) — его
+  // исполнителям «Новая заявка» (шаг 28). Ошибка не мешает автору.
+  if (r.contractor && deps.db.assignClaim) {
+    const db = deps.db;
+    const sent = await notifyAssigned(id, who.kind === "user" ? who.profile_id ?? null : null, {
+      claim: (o, a) => db.assignClaim!(o, a),
+      release: (o, c, p) => db.assignRelease?.(o, c, p) ?? Promise.resolve(),
+      send: (c, h, m) => deps.tg.send(c, h, m),
+      appUrl: deps.appUrl,
+    }).catch(() => null);
+    if (sent) turn.log.assigned = sent.sent;
+  }
 }
 
 export function toBase64(bytes: Uint8Array): string {

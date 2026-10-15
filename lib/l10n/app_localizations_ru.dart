@@ -5574,4 +5574,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String vpsMaintenance(String date) {
     return 'ТО $date';
   }
+
+  @override
+  String get tgExecutorHint =>
+      'Исполнителю подрядчика бот присылает новые назначенные заявки с кнопкой «Взять в работу». Не присылать — команда /stop в чате с ботом, снова присылать — /start.';
 }

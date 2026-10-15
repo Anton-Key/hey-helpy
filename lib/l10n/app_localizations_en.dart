@@ -5538,4 +5538,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String vpsMaintenance(String date) {
     return 'Maintenance $date';
   }
+
+  @override
+  String get tgExecutorHint =>
+      'A contractor\'s worker gets newly assigned work orders from the bot with a \"Start work\" button. To stop — send /stop to the bot, to resume — /start.';
 }

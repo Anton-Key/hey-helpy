@@ -457,7 +457,10 @@ class OfflineService extends ChangeNotifier {
         wanted: [
           for (final f in floorIds)
             if (floors[f]?['plan_path'] != null)
-              (offlinePlanName(f), '${floors[f]!['plan_path']}')
+              (
+                offlinePlanName(f, '${floors[f]!['plan_path']}'),
+                '${floors[f]!['plan_path']}'
+              )
         ],
         isKind: isOfflinePlanName,
         bucket: _planBucket,
@@ -532,8 +535,8 @@ class OfflineService extends ChangeNotifier {
   }
 
   /// План этажа с телефона (байты картинки); null — не сохранён.
-  Future<Uint8List?> planBytes(String floorId) =>
-      _mediaBytes(offlinePlanName(floorId));
+  Future<Uint8List?> planBytes(String floorId, String path) =>
+      _mediaBytes(offlinePlanName(floorId, path));
 
   /// Строки места из предзагрузки: помещение, оборудование, этаж.
   Map<String, dynamic>? cachedPlace(String kind, String? id) {

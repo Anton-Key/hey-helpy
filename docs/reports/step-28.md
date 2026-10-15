@@ -7,7 +7,7 @@
 ## Чек-лист
 - [x] 1. VPS-эксперимент: отдельный вариант сборки (`-PwithVps=true`, модуль `android/vps`), `VpsActivity`, канал `hey_helpy/vps`, миграция 0025 (`vps_sites`, `vps_marks`), «VPS-скан помещения», документ `docs/research/vps-niantic.md` — **VPS-APK собирается локально**, CI-сборку запускает пользователь
 - [x] 2. Telegram: уведомление исполнителю о новой заявке + «Взять в работу» (0025 раздел 2, `telegram-notify` kind `assigned`, кнопка `tk:` в боте)
-- [ ] 3. Офлайн-хвосты: миниатюры фото «до», план этажа без сети, `work_logs`, телефоны сотрудников
+- [x] 3. Офлайн-хвосты: фото «до» и план этажа без сети (байты при предзагрузке, бюджеты 30 / 20 МБ), `work_logs` — только база, телефоны — `profile_contacts` (0025 раздел 3); ⚠️ новая заявка без сети — не делал
 - [ ] 4. Кадры 18 / 21 / 28, `DEMO_DAY_CHECKLIST.md`, регрессия, `/check`, `/screens`
 
 ## Журнал
@@ -18,8 +18,11 @@
 
 - 11:55 UTC · блок 4 (часть): кадры 18 и 21 пересняты на рабочей базе (проверены глазами), кадр 28 — макет `tools/screens/tg_assign_mock.mjs`, README кадров; блок 3 (начало): предзагрузка фото «до» и планов этажей байтами (`OfflineService._prefetchMedia`, бюджеты в `offline_logic.dart`, тесты `test/offline_media_test.dart`) · коммит «Шаг 28 (блок 4, 3)»
 
+- 12:20 UTC · блок 3: фото «до» в карточке без сети (`WorkPhoto.offline`, `Image.memory`), план без сети (`PlanPicture` → сохранённый, `OrderPlanLink` → `OfflinePlanScreen`), 0025 раздел 3 + `tools/db_test/privacy.sql` (13/13), чтение телефонов через `profile_contacts(phone)`; Flutter 508/508 · коммит «Шаг 28 (блок 3)»
+
 ## Где остановился
 - Блок 1 готов: VPS-APK собран локально (`flutter build apk --release -PwithVps=true --target-platform android-arm64`, 70,7 МБ), обычный APK без флага собирается как раньше; JUnit 12/12, Dart 504/504, база — все наборы зелёные (vps 25/25).
 - Блок 2 готов (нужен Deploy functions: `telegram-notify` и `telegram-bot`).
 - Кадры 18, 21, 28 готовы.
-- Сейчас: блок 3 — показ сохранённых фото «до» в карточке без сети (`WorkPhoto.bytes`, `_loadPhotos` → `OfflineService.offlineBeforePhotos`) и плана (`OrderPlanLink` → `OfflineService.planBytes`, простой экран плана без сети); затем `work_logs` и телефоны в 0025 раздел 3.
+- Блок 3 готов.
+- Следующее: блок 4 — `DEMO_DAY_CHECKLIST.md`, полная регрессия `tools/e2e`, `/check`, `/screens`, итоговый отчёт.

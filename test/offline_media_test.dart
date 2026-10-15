@@ -7,14 +7,14 @@ void main() {
     final stored = {
       offlinePhotoName('a'): 100,
       offlinePhotoName('b'): 200,
-      offlinePlanName('f1'): 5000,
+      offlinePlanName('f1', 'c/o/f1/plan.png'): 5000,
       'off_q1.jpg': 999, // снимок очереди — не трогаем
     };
     final r = mediaCleanup([offlinePhotoName('a')], stored, isOfflinePhotoName);
     expect(r.drop, [offlinePhotoName('b')]);
     expect(r.used, 100);
     final p = mediaCleanup(<String>[], stored, isOfflinePlanName);
-    expect(p.drop, [offlinePlanName('f1')]);
+    expect(p.drop, [offlinePlanName('f1', 'c/o/f1/plan.png')]);
     expect(p.used, 0);
   });
 
@@ -61,5 +61,11 @@ void main() {
     final keep = beforePhotosToKeep(['o1', 'o2'], rows);
     expect([for (final r in keep) r['storage_path']],
         ['c/o1/2.jpg', 'c/o2/0.jpg', 'c/o2/1.jpg']);
+  });
+
+  test('имя плана зависит от файла на сервере', () {
+    expect(offlinePlanName('f1', 'c/o/f1/plan v2.png'), 'plan_f1_plan_v2.png');
+    expect(offlinePlanName('f1', 'a.png') == offlinePlanName('f1', 'b.png'),
+        isFalse);
   });
 }

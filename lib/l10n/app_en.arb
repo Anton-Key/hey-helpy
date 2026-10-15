@@ -1771,5 +1771,7 @@
   "vpsMaintenance": "Maintenance {date}",
   "@vpsMaintenance": {"description": "Шаг 28: подпись метки, дата ближайшего ТО", "placeholders": {"date": {"type": "String"}}},
   "tgExecutorHint": "A contractor's worker gets newly assigned work orders from the bot with a \"Start work\" button. To stop — send /stop to the bot, to resume — /start.",
-  "@tgExecutorHint": {"description": "Шаг 28: настройки Telegram — пояснение про уведомления исполнителю"}
+  "@tgExecutorHint": {"description": "Шаг 28: настройки Telegram — пояснение про уведомления исполнителю"},
+  "planOfflineNote": "Offline — the floor plan saved on this phone",
+  "@planOfflineNote": {"description": "Шаг 28: экран плана без сети, подпись"}
 }

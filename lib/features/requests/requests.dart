@@ -508,7 +508,17 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     } catch (e) {
       debugPrint('photos: $e');
       // Без сети фото с сервера не показать — это не ошибка карточки.
-      if (mounted) setState(() => _photosFailed = !isNetworkError(e));
+      // Шаг 28: фото «до» своих заявок исполнитель видит с телефона.
+      final offline = isNetworkError(e)
+          ? await OfflineService.instance.offlineBeforePhotos(widget.order.id)
+          : null;
+      if (!mounted) return;
+      setState(() {
+        if (offline != null) {
+          _photos = [for (final (r, b) in offline) WorkPhoto.offline(r, b)];
+        }
+        _photosFailed = !isNetworkError(e);
+      });
     }
   }
 

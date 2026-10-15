@@ -5578,4 +5578,7 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get tgExecutorHint =>
       'Исполнителю подрядчика бот присылает новые назначенные заявки с кнопкой «Взять в работу». Не присылать — команда /stop в чате с ботом, снова присылать — /start.';
+
+  @override
+  String get planOfflineNote => 'Без сети — план, сохранённый на телефоне';
 }

@@ -218,19 +218,28 @@ class _Thumb extends StatelessWidget {
               : photo.asset != null
                   ? Image.asset(photo.asset!,
                       fit: BoxFit.cover, cacheWidth: square ? 240 : 480)
-                  // Миниатюра: тот же файл, но декодируется уменьшенным —
-                  // меньше памяти; сам файл кэширует браузер / система.
-                  : Image.network(photo.url!,
-                      // Не смог раскодировать сам (бывает в Яндекс Браузере) —
-                      // картинка обычным элементом <img> браузера (шаг 24).
-                      webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
-                      fit: BoxFit.cover,
-                      cacheWidth: square ? 240 : 480,
-                      loadingBuilder: (_, child, progress) => progress == null
-                          ? child
-                          : const ColoredBox(
-                              color: AppColors.fill, child: AppLoader()),
-                      errorBuilder: (_, __, ___) => broken),
+                  // Шаг 28: без сети — снимок с телефона.
+                  : photo.url == null && photo.bytes != null
+                      ? Image.memory(photo.bytes!,
+                          fit: BoxFit.cover,
+                          cacheWidth: square ? 240 : 480,
+                          errorBuilder: (_, __, ___) => broken)
+                      // Миниатюра: тот же файл, но декодируется уменьшенным —
+                      // меньше памяти; сам файл кэширует браузер / система.
+                      : Image.network(photo.url!,
+                          // Не смог раскодировать сам (бывает в Яндекс Браузере) —
+                          // картинка обычным элементом <img> браузера (шаг 24).
+                          webHtmlElementStrategy:
+                              WebHtmlElementStrategy.fallback,
+                          fit: BoxFit.cover,
+                          cacheWidth: square ? 240 : 480,
+                          loadingBuilder: (_, child, progress) =>
+                              progress == null
+                                  ? child
+                                  : const ColoredBox(
+                                      color: AppColors.fill,
+                                      child: AppLoader()),
+                          errorBuilder: (_, __, ___) => broken),
           // Фото «после» из файла — не доказательство (шаг 26).
           if (photo.stage != 'before' && photo.fromFile)
             PositionedDirectional(
@@ -530,6 +539,14 @@ class _ZoomPhoto extends StatelessWidget {
           minScale: 1,
           maxScale: 5,
           child: Center(child: Image.asset(photo.asset!, fit: BoxFit.contain)));
+    }
+    if (photo.url == null && photo.bytes != null) {
+      return InteractiveViewer(
+          transformationController: controller,
+          minScale: 1,
+          maxScale: 5,
+          child:
+              Center(child: Image.memory(photo.bytes!, fit: BoxFit.contain)));
     }
     if (photo.url == null) {
       return const Center(

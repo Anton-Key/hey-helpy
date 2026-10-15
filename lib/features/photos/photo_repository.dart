@@ -37,6 +37,10 @@ class WorkPhoto {
   final String? syncNote;
   final bool? sha256Ok;
 
+  /// Шаг 28: снимок с телефона (предзагрузка для работы без сети) — когда
+  /// ссылки на сервер нет.
+  final Uint8List? bytes;
+
   const WorkPhoto(
       {required this.id,
       required this.stage,
@@ -55,9 +59,24 @@ class WorkPhoto {
       this.syncedAt,
       this.driftS,
       this.syncNote,
-      this.sha256Ok});
+      this.sha256Ok,
+      this.bytes});
 
-  bool get viewable => url != null || asset != null;
+  bool get viewable => url != null || asset != null || bytes != null;
+
+  /// Шаг 28: строка вложения из предзагрузки (без сети) + байты с телефона.
+  factory WorkPhoto.offline(Map<String, dynamic> r, Uint8List? bytes) =>
+      WorkPhoto(
+        id: '${r['id']}',
+        stage: (r['stage'] ?? 'before') as String,
+        storagePath: '${r['storage_path'] ?? ''}',
+        takenAt: DateTime.tryParse('${r['taken_at'] ?? ''}'),
+        lat: (r['lat'] as num?)?.toDouble(),
+        lng: (r['lng'] as num?)?.toDouble(),
+        mockLocation: r['mock_location'] == true,
+        asset: demoAsset('${r['storage_path'] ?? ''}'),
+        bytes: bytes,
+      );
 
   bool get hasLocation => lat != null && lng != null;
 

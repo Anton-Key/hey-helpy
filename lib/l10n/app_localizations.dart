@@ -9416,6 +9416,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Исполнителю подрядчика бот присылает новые назначенные заявки с кнопкой «Взять в работу». Не присылать — команда /stop в чате с ботом, снова присылать — /start.'**
   String get tgExecutorHint;
+
+  /// Шаг 28: экран плана без сети, подпись
+  ///
+  /// In ru, this message translates to:
+  /// **'Без сети — план, сохранённый на телефоне'**
+  String get planOfflineNote;
 }
 
 class _AppLocalizationsDelegate

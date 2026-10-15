@@ -11,6 +11,7 @@ import 'contractor_card.dart';
 import 'object_card.dart';
 import '../../core/app_message.dart';
 import '../../core/schema_compat.dart';
+import '../../models/profile.dart' show phoneFromRow;
 import '../../l10n/app_localizations.dart';
 import 'city.dart' as city;
 import '../regions/countries.dart';
@@ -125,7 +126,7 @@ class ExecutorPerson {
     return ExecutorPerson(
       id: m['id'] as String,
       name: p?['full_name'] as String?,
-      phone: p?['phone'] as String?,
+      phone: phoneFromRow(p),
     );
   }
 }
@@ -453,12 +454,16 @@ class DirectoryRepo {
 
   /// Исполнители подрядчика с именем и телефоном.
   Future<List<ExecutorPerson>> executorsOf(String contractorId) async {
-    final rows = await _c
+    // Шаг 28: телефоны — из profile_contacts (0025), видят менеджеры.
+    Future<List<dynamic>> query(String cols) => _c
         .from('executors')
-        .select('id,profiles(full_name,phone)')
+        .select(cols)
         .eq('contractor_id', contractorId)
         .order('created_at');
-    return (rows as List)
+    final rows = await SchemaCompat.run(
+        '0025', () => query('id,profiles(full_name,profile_contacts(phone))'),
+        legacy: () => query('id,profiles(full_name,phone)'));
+    return rows
         .map((e) => ExecutorPerson.fromMap(e as Map<String, dynamic>))
         .toList();
   }

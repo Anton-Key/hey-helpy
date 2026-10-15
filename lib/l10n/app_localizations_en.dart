@@ -5542,4 +5542,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tgExecutorHint =>
       'A contractor\'s worker gets newly assigned work orders from the bot with a \"Start work\" button. To stop — send /stop to the bot, to resume — /start.';
+
+  @override
+  String get planOfflineNote => 'Offline — the floor plan saved on this phone';
 }

@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../models/profile.dart';
+import '../../core/schema_compat.dart';
 
 /// Тонкая обёртка над Supabase Auth + загрузка профиля пользователя.
 class AuthRepository {
@@ -27,7 +28,9 @@ class AuthRepository {
     return _client.auth.signUp(
       email: email,
       password: password,
-      data: {if (fullName != null && fullName.isNotEmpty) 'full_name': fullName},
+      data: {
+        if (fullName != null && fullName.isNotEmpty) 'full_name': fullName
+      },
     );
   }
 
@@ -43,6 +46,15 @@ class AuthRepository {
   Future<Map<String, dynamic>?> fetchMyProfileRow() async {
     final uid = currentUser?.id;
     if (uid == null) return null;
-    return _client.from('profiles').select().eq('id', uid).maybeSingle();
+    // Шаг 28: свой телефон — из profile_contacts (0025); без 0025 — как было.
+    return SchemaCompat.run(
+        '0025',
+        () => _client
+            .from('profiles')
+            .select('*,profile_contacts(phone)')
+            .eq('id', uid)
+            .maybeSingle(),
+        legacy: () =>
+            _client.from('profiles').select().eq('id', uid).maybeSingle());
   }
 }

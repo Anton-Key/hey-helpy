@@ -371,3 +371,74 @@ begin
     execute format('grant execute on function %s to service_role', f);
   end loop;
 end $$;
+
+-- ---------------------------------------------------------------------
+-- 3. Мелочи из docs/security/review-2026-10.md (Н-4)
+-- ---------------------------------------------------------------------
+
+-- 3.1 История заявки (work_logs) пишет только база. Раньше (0008) любой,
+-- кто видит заявку, мог добавить строку «on_review → done, принято» от
+-- своего имени. Приложение work_logs не пишет и не читает; база сама в
+-- неё сейчас тоже не пишет — таблица остаётся для будущей истории.
+drop policy if exists work_logs_insert on public.work_logs;
+drop policy if exists work_logs_update on public.work_logs;
+drop policy if exists work_logs_delete on public.work_logs;
+revoke insert, update, delete on public.work_logs from authenticated, anon;
+
+-- 3.2 Телефоны сотрудников видят сам человек и менеджеры (админ) своей
+-- компании, а не все в компании (исполнители подрядчиков, заявители).
+-- ⚠️ Решение: отдельная таблица profile_contacts, а не запрет столбца
+-- (revoke select (phone)): приложение и уже установленные APK читают свой
+-- профиль через select * — запрет столбца сломал бы вход. Старое поле
+-- profiles.phone остаётся, но всегда пустое: запись в него (экран
+-- «Настройки», и в старых версиях) триггер переносит в profile_contacts.
+create table if not exists public.profile_contacts (
+  profile_id uuid primary key references public.profiles(id) on delete cascade,
+  company_id uuid references public.companies(id) on delete cascade,
+  phone      text not null check (char_length(btrim(phone)) between 1 and 40),
+  updated_at timestamptz not null default now()
+);
+create index if not exists idx_profile_contacts_company on public.profile_contacts (company_id);
+alter table public.profile_contacts enable row level security;
+
+drop policy if exists profile_contacts_select on public.profile_contacts;
+create policy profile_contacts_select on public.profile_contacts for select using (
+  profile_contacts.profile_id = auth.uid()
+  or (profile_contacts.company_id = (select public.my_company_id()) and (select public.is_manager())));
+-- Писать — только свой телефон и только через profiles (триггер ниже,
+-- security definer); прямой записи у приложения нет.
+revoke insert, update, delete on public.profile_contacts from authenticated, anon;
+grant select on public.profile_contacts to authenticated;
+
+create or replace function public.trg_profiles_phone()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.phone is not null then
+    if btrim(new.phone) = '' then
+      delete from profile_contacts where profile_id = new.id;
+    else
+      insert into profile_contacts(profile_id, company_id, phone, updated_at)
+      values (new.id, new.company_id, left(btrim(new.phone), 40), now())
+      on conflict (profile_id) do update
+        set phone = excluded.phone, company_id = excluded.company_id, updated_at = now();
+    end if;
+    new.phone := null;
+  end if;
+  -- Человек перешёл в другую компанию (приглашение) — телефон за ним.
+  if tg_op = 'UPDATE' and new.company_id is distinct from old.company_id then
+    update profile_contacts set company_id = new.company_id where profile_id = new.id;
+  end if;
+  return new;
+end $$;
+drop trigger if exists trg_profiles_phone on public.profiles;
+create trigger trg_profiles_phone before insert or update on public.profiles
+  for each row execute function public.trg_profiles_phone();
+
+-- Перенос уже записанных телефонов (повторный запуск — ничего не меняет:
+-- в profiles.phone к этому времени пусто).
+insert into public.profile_contacts(profile_id, company_id, phone)
+select p.id, p.company_id, left(btrim(p.phone), 40)
+  from public.profiles p
+ where p.phone is not null and btrim(p.phone) <> ''
+on conflict (profile_id) do update set phone = excluded.phone, company_id = excluded.company_id;
+update public.profiles set phone = null where phone is not null;

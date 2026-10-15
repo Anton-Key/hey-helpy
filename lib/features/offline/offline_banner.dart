@@ -45,8 +45,8 @@ class OfflineBanner extends StatelessWidget {
                     Pressable(
                       onTap: () => showSyncFailures(context, s),
                       child: Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                            start: AppSpace.s),
+                        padding:
+                            const EdgeInsetsDirectional.only(start: AppSpace.s),
                         child: Text(l.offDetails,
                             style: AppText.footnote.copyWith(
                                 color: colors.foreground,

@@ -2512,5 +2512,7 @@
   "vpsMaintenance": "ТО {date}",
   "@vpsMaintenance": {"description": "Шаг 28: подпись метки, дата ближайшего ТО", "placeholders": {"date": {"type": "String"}}},
   "tgExecutorHint": "Исполнителю подрядчика бот присылает новые назначенные заявки с кнопкой «Взять в работу». Не присылать — команда /stop в чате с ботом, снова присылать — /start.",
-  "@tgExecutorHint": {"description": "Шаг 28: настройки Telegram — пояснение про уведомления исполнителю"}
+  "@tgExecutorHint": {"description": "Шаг 28: настройки Telegram — пояснение про уведомления исполнителю"},
+  "planOfflineNote": "Без сети — план, сохранённый на телефоне",
+  "@planOfflineNote": {"description": "Шаг 28: экран плана без сети, подпись"}
 }

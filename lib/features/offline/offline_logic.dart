@@ -363,9 +363,14 @@ const kOfflinePhotoMax = 4 * 1024 * 1024;
 const kOfflinePlanBudget = 20 * 1024 * 1024;
 const kOfflinePlanMax = 8 * 1024 * 1024;
 
-/// Имя файла на телефоне: фото «до» — по id вложения, план — по этажу.
+/// Имя файла на телефоне: фото «до» — по id вложения; план — по этажу и
+/// имени файла на сервере (заменили план — имя другое, старый удалится).
 String offlinePhotoName(String attachmentId) => 'pre_$attachmentId.jpg';
-String offlinePlanName(String floorId) => 'plan_$floorId.img';
+String offlinePlanName(String floorId, String path) {
+  final file = path.split('/').last.replaceAll(RegExp(r'[^A-Za-z0-9_.-]'), '_');
+  return 'plan_${floorId}_$file';
+}
+
 bool isOfflinePhotoName(String n) => n.startsWith('pre_');
 bool isOfflinePlanName(String n) => n.startsWith('plan_');
 

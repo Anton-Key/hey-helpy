@@ -14,7 +14,7 @@
 - [x] 5. Проверки, сквозные сценарии 17–18, `CLAUDE.md`, `DEMO_SCRIPT.md`, кадры 25–27
 - [x] 6. Оборудование точно на плане (экран выбора точки, лупа, «где именно», фото места)
 - [~] 7. Хвосты: README кадров 1–27, инструкция по второму менеджеру — да; пересъёмка 17 / 18 / 21 на рабочей базе — нет (см. ниже)
-- [x] 8. Надёжность: документ по правам (найдено и исправлено 3 дыры); первая загрузка и ошибки — см. раздел «Блок 8»
+- [x] 8. Надёжность: документ по правам (найдено и исправлено 3 дыры); первая загрузка 21,5 → 17,0 с; предел ожидания ответа сервера; регрессия 18/18
 - [x] 9. Экспорт реестра оборудования в Excel (и обратно импортом)
 - [x] 10. Чек-лист утра показа `docs/DEMO_DAY_CHECKLIST.md`
 
@@ -135,8 +135,10 @@
 - 15.10 · блок 8: первая загрузка 21,5 → 17,0 с (шрифты Lucide, отложенные разделы) · «Шаг 27 (блок 8): первая загрузка сайта…»
 - 15.10 · тесты базы 1 276 / 0, итоговые разделы отчёта
 
+- 15.10 · регрессия 18/18 (исправлены тесты 14, 16), `/check` ✅, `/screens` 287 / 0 · «Шаг 27: проверки, снимки экранов»
+
 ## Где остановился
-Полная регрессия `tools/e2e` (идёт), затем `/check`, `/screens`, итог в «Проверках», PR из черновика — в готовый.
+Шаг закончен: все блоки 1–10 сделаны (кроме пересъёмки кадров 17/18/21 на рабочей базе — ждёт 0023/0024 и Deploy functions), PR готов к проверке.
 
 ## Новые и изменённые файлы
 **База и функции**
@@ -161,13 +163,26 @@
 - Новые: `lib/features/equipment/asset_place.dart`, `asset_place_widgets.dart`, `equipment_export.dart`, `equipment_export_action.dart`, `lib/features/floors/plan_point_picker.dart`, `point_picker_logic.dart`.
 - Изменённые: `equipment_models.dart`, `equipment_form.dart`, `asset_card.dart`, `equipment_repository.dart`, `equipment_import.dart`, `equipment_import_screen.dart`, `equipment_xlsx.dart`, `equipment_section.dart`, `lib/features/systems/system_card.dart`, `floor_models.dart`, `plan_canvas.dart`, `order_plan_link.dart`, `lib/features/camera/camera_screen.dart`, `lib/core/file_share.dart`.
 
+**Приложение — блок 8 (загрузка и ошибки)**
+- `lib/core/timeout_http_client.dart` (новый) — предел ожидания ответа сервера; `lib/main.dart` — подключён; `pubspec.yaml` — `http` прямой зависимостью, пакет `lucide_icons_flutter` удалён, свои шрифты значков.
+- `lib/core/deferred_view.dart` (новый) — отложенный раздел с «Повторить»; `home_screen.dart`, `directory.dart`, `requests_tab.dart`, `reports_screen.dart`, `contractor_card.dart` — `deferred as …`; `directory.dart` — «Повторить» в «Локациях» и «Подрядчиках».
+- `lib/core/design/icons.dart` — коды значков Lucide со своими семействами; `assets/fonts/lucide/` (новые: `Lucide.ttf`, `Lucide300.ttf`, `Lucide600.ttf`, `LICENSE.txt`).
+- Тесты: `test/timeout_http_client_test.dart`, `test/deferred_view_test.dart` (новые).
+- `tools/e2e/first_load.mjs` (новый) — замер первой загрузки; `tools/e2e/scenarios.mjs` — сценарии 14, 16 по правилам акта шага 27.
+- `docs/design/DESIGN.md` — как добавить значок; `CLAUDE.md` — первая загрузка, `DeferredView`, `TimeoutHttpClient`.
+- `docs/screens/latest/` — снимки `/screens`.
+
 **Переводы**: `lib/l10n/app_ru.arb`, `app_en.arb` (+ сгенерированные).
 **Тесты**: `test/offline_logic_test.dart`, `asset_place_test.dart`, `plan_point_picker_test.dart`, `equipment_export_test.dart` — новые; `act_logic_test.dart`, `live_shot_test.dart`.
 **Сквозные**: `tools/e2e/scenarios.mjs` (17, 18), `build.sh` (`OFFLINE_TEST`), `tools/screens/local_backend.mjs` (`offline-sync`).
 **Документы**: `CLAUDE.md`, `docs/DEMO_SCRIPT.md`, `docs/DEMO_SETUP.md`, `docs/DEMO_DAY_CHECKLIST.md` (новый), `docs/security/review-2026-10.md` (новый), `docs/screens/pitch/README.md` + кадры 25–27.
 
 ## Проверки
-<!-- PROVERKI -->
+- `/check` (15.10, после блока 8): ✅ анализ `lib` и `test` — без замечаний; ✅ тесты — **496 прошли, 0 упали**; ✅ веб-сборка `--base-href /hey-helpy/` собирается; ✅ строк интерфейса вне переводов нет (19 мест с кириллицей — нормализация «ё», ключевые слова систем, имя файла акта, названия языков, фраза заглушки VOICE_MOCK; «проверить»: `contractor_acts_screen.dart:66` — демо-подрядчик по умолчанию, с шага 24); ✅ название продукта — нарушений нет.
+- Тесты базы `bash tools/db_test/run.sh`: **1 276 проверок, 0 ошибок** (11 наборов, в т. ч. `offline_sync` 54, `order_roles` 58, `tenant_isolation` 890).
+- **Полная регрессия `tools/e2e` — 18 из 18** ✅. В полном прогоне упали 14 и 16 — ⚠️ ошибка была в самих тестах, не в приложении: их подсчёт «К оплате» в SQL не знал про группу «Требует решения» шага 27 (демо 112 — время фото не сверено), а кнопка «Сформировать акт» теперь сначала предупреждает о нерешённых. Исправил подсчёт (`ACT_PAYABLE_SQL` в `scenarios.mjs` — те же правила, что `buildAct`), добавил «Сформировать без них» и прокрутку к группе «Без доказательства»; 14 и 16 перезапущены отдельно — ✅ («к оплате на экране 4, по базе 4; акт АКТ-2026-001»). «Page crashed» не было.
+- Замер первой загрузки — `tools/e2e/first_load.mjs` (таблица — в «Блок 8: загрузка и ошибки»).
+- `/screens` (рабочая база): **287 снимков, проблем 0**, файлов больше 300 КБ нет. Проверены глазами `manager-1280-reports`, `manager-412-order`, `executor-412-requests` — значки (новые шрифты) на месте, пустых экранов и ошибок нет. ⚠️ Первый запуск я сам оборвал пределом 25 минут — полный прогон занимает ~45 минут; второй прошёл целиком.
 
 ## Что сделать вам (по порядку)
 1. Проверить и слить PR (кнопка Merge в GitHub).

@@ -11,12 +11,15 @@
 - [ ] 4. Кадры 18 / 21 / 28, `DEMO_DAY_CHECKLIST.md`, регрессия, `/check`, `/screens`
 
 ## Журнал
-- 10:45 · ветка `step-28`, отчёт, «Применённые миграции» += 0023 0024 · первый коммит
-- 12:05 · блок 1: модуль `android/vps` (NSDK 4.1.0 из официального Maven на GitHub), мост `hey_helpy/vps`, `VpsActivity`, 0025 раздел 1 + `tools/db_test/vps.sql`, Flutter `lib/features/vps/`, workflow «Build APK (VPS experiment)», `docs/research/vps-niantic.md` · коммит «Шаг 28 (блок 1)»
+- 10:45 UTC · ветка `step-28`, отчёт, «Применённые миграции» += 0023 0024 · первый коммит
+- 11:20 UTC · блок 1: модуль `android/vps` (NSDK 4.1.0 из официального Maven на GitHub), мост `hey_helpy/vps`, `VpsActivity`, 0025 раздел 1 + `tools/db_test/vps.sql`, Flutter `lib/features/vps/`, workflow «Build APK (VPS experiment)», `docs/research/vps-niantic.md` · коммит «Шаг 28 (блок 1)»
 
-- 12:50 · блок 2: `tg_notify_assign_claim` / `_release` / `tg_take_order` + `tools/db_test/tg_take.sql` (17/17), `telegram-bot/assign.ts`, кнопка «Взять в работу», режим `assigned` в `telegram-notify`, вызовы из приложения; deno 95/95, Flutter 504/504 · коммит «Шаг 28 (блок 2)»
+- 11:30 UTC · блок 2: `tg_notify_assign_claim` / `_release` / `tg_take_order` + `tools/db_test/tg_take.sql` (17/17), `telegram-bot/assign.ts`, кнопка «Взять в работу», режим `assigned` в `telegram-notify`, вызовы из приложения; deno 95/95, Flutter 504/504 · коммит «Шаг 28 (блок 2)»
+
+- 11:55 UTC · блок 4 (часть): кадры 18 и 21 пересняты на рабочей базе (проверены глазами), кадр 28 — макет `tools/screens/tg_assign_mock.mjs`, README кадров; блок 3 (начало): предзагрузка фото «до» и планов этажей байтами (`OfflineService._prefetchMedia`, бюджеты в `offline_logic.dart`, тесты `test/offline_media_test.dart`) · коммит «Шаг 28 (блок 4, 3)»
 
 ## Где остановился
 - Блок 1 готов: VPS-APK собран локально (`flutter build apk --release -PwithVps=true --target-platform android-arm64`, 70,7 МБ), обычный APK без флага собирается как раньше; JUnit 12/12, Dart 504/504, база — все наборы зелёные (vps 25/25).
 - Блок 2 готов (нужен Deploy functions: `telegram-notify` и `telegram-bot`).
-- Следующее: блок 4 — кадры 18 и 21 на рабочей базе (`tools/screens/screens.mjs --pitch --only=18,21`), кадр 28 (HTML-макет).
+- Кадры 18, 21, 28 готовы.
+- Сейчас: блок 3 — показ сохранённых фото «до» в карточке без сети (`WorkPhoto.bytes`, `_loadPhotos` → `OfflineService.offlineBeforePhotos`) и плана (`OrderPlanLink` → `OfflineService.planBytes`, простой экран плана без сети); затем `work_logs` и телефоны в 0025 раздел 3.

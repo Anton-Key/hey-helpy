@@ -350,3 +350,64 @@ bool isNetworkError(Object e) {
       s.contains('Network is unreachable') ||
       s.contains('ClientException');
 }
+
+// ---------------------------------------------------------------------------
+// Шаг 28: фото «до» и планы этажей на телефоне (предзагрузка)
+// ---------------------------------------------------------------------------
+
+/// ⚠️ Решение: фото «до» своих заявок — всего до 30 МБ, одно — до 4 МБ;
+/// планы этажей — всего до 20 МБ, один — до 8 МБ (демо-схемы ~0,3 МБ,
+/// реальные планы в PNG бывают 5–10 МБ; больше — не держим на телефоне).
+const kOfflinePhotoBudget = 30 * 1024 * 1024;
+const kOfflinePhotoMax = 4 * 1024 * 1024;
+const kOfflinePlanBudget = 20 * 1024 * 1024;
+const kOfflinePlanMax = 8 * 1024 * 1024;
+
+/// Имя файла на телефоне: фото «до» — по id вложения, план — по этажу.
+String offlinePhotoName(String attachmentId) => 'pre_$attachmentId.jpg';
+String offlinePlanName(String floorId) => 'plan_$floorId.img';
+bool isOfflinePhotoName(String n) => n.startsWith('pre_');
+bool isOfflinePlanName(String n) => n.startsWith('plan_');
+
+/// Что из сохранённого больше не нужно ([drop]: заявку закрыли, передали
+/// другому, этаж больше не нужен) и сколько займёт оставшееся ([used]) —
+/// по видам ([isKind]: фото или планы).
+({List<String> drop, int used}) mediaCleanup(Iterable<String> wanted,
+    Map<String, int> stored, bool Function(String) isKind) {
+  final want = wanted.toSet();
+  final drop = <String>[];
+  var used = 0;
+  for (final e in stored.entries) {
+    if (!isKind(e.key)) continue;
+    if (want.contains(e.key)) {
+      used += e.value;
+    } else {
+      drop.add(e.key);
+    }
+  }
+  return (drop: drop, used: used);
+}
+
+/// Влезает ли ещё один файл размера [size] в бюджет.
+bool mediaFits(int used, int size, int budget, int max) =>
+    size > 0 && size <= max && used + size <= budget;
+
+/// Фото «до», которые нужны на телефоне: заявки по порядку (новые первыми),
+/// внутри заявки — по времени снимка; демо-картинки (путь `demo/`) — в
+/// сборке, качать не нужно.
+List<Map<String, dynamic>> beforePhotosToKeep(
+    List<String> orderIds, List<Map<String, dynamic>> rows) {
+  final byOrder = <String, List<Map<String, dynamic>>>{};
+  for (final r in rows) {
+    if (r['stage'] != 'before') continue;
+    final p = '${r['storage_path'] ?? ''}';
+    if (p.isEmpty || p.startsWith('demo/')) continue;
+    byOrder.putIfAbsent('${r['work_order_id']}', () => []).add(r);
+  }
+  return [
+    for (final id in orderIds)
+      ...(byOrder[id] ?? const <Map<String, dynamic>>[])
+        ..sort((a, b) =>
+            '${a['created_at'] ?? ''}'.compareTo('${b['created_at'] ?? ''}')),
+  ];
+}

@@ -386,7 +386,7 @@ ${h.ctaBlock()}
       ['Where is the data stored?', 'Currently in a cloud PostgreSQL database (Supabase) on servers in the EU; company data is isolated by database access policies. Hosting in Russia on Yandex Cloud is planned. Dedicated cloud and on-premise options are discussed during a pilot.'],
       ['Which devices does it run on?', 'In a browser on desktop and mobile (voice input in Chrome and Edge) and in the Android app. There is no iPhone app yet.'],
       ['Which languages does the interface support?', 'Russian and English; the language is switched in settings.'],
-      ['How much does it cost?', 'Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites.'],
+      ['How much does it cost?', 'Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.'],
     ],
     body: (h, page) => `
 <h1>Frequently asked questions</h1>
@@ -423,7 +423,7 @@ ${h.contact()}
     slug: 'en/privacy/',
     nav: 'Privacy',
     title: 'Website privacy policy — Hey Helpy',
-    description: 'The Hey Helpy website uses no cookies, no analytics and no forms that send data to a server.',
+    description: 'The Hey Helpy website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.',
     h1: 'Website privacy policy',
     body: (h) => `
 <h1>Website privacy policy</h1>
@@ -431,15 +431,15 @@ ${h.contact()}
 <section aria-labelledby="collect"><h2 id="collect">What the website collects</h2>
   <ul>
     <li>The website uses no cookies, visit counters, advertising or analytics services.</li>
-    <li>There are no forms that send data to a server. A demo request is sent from your own e-mail program — you see the text before sending.</li>
+    <li>There are no forms that send data to a server. The “Request a demo” button opens Telegram — you decide what to write.</li>
     <li>Fonts, images and video are loaded from the same address as the website, with no third-party services.</li>
   </ul>
 </section>
 <section aria-labelledby="hosting"><h2 id="hosting">Hosting</h2>
   <p>The website is hosted on GitHub Pages. Like any web server, the host may keep technical request logs (e.g. IP address) under GitHub’s terms.</p>
 </section>
-<section aria-labelledby="letters"><h2 id="letters">E-mails</h2>
-  <p>If you write to us, we use your address and message only to reply and discuss a demo or pilot, and we do not share them with third parties.</p>
+<section aria-labelledby="letters"><h2 id="letters">Demo requests in Telegram</h2>
+  <p>If you message our bot @HeyHelpy_bot via the “Request a demo” link, we store your message text, your Telegram name and username, language and chat ID — only to reply and discuss a demo or pilot. Only the Hey Helpy team can see this data, and we do not share it with third parties. To have it deleted, send a request the same way — via the “Request a demo” link.</p>
 </section>
 <section aria-labelledby="app"><h2 id="app">The app</h2>
   <p>Data processing in the ${h.appLink('Hey Helpy')} app (work orders, photos, location when checking in) is governed by the contract with the customer company. How data access works is described on the ${h.link('security', 'Security')} page.</p>

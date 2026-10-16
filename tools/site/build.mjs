@@ -61,37 +61,20 @@ function helpers(lang, slug) {
     img: (name, alt, { eager = false, cls = '' } = {}) => `<figure class="shot ${cls}">${imgTag(name, alt, eager)}</figure>`,
     figure: (name, alt, caption) => `<figure class="big">${imgTag(name, alt)}<figcaption>${caption}. ${ui.shotNote}.</figcaption></figure>`,
     card: (name, title, text, alt) => `<article class="card"><h3>${title}</h3><p>${text}</p>${imgTag(name, alt)}</article>`,
-    cta: (kind) => `<a class="btn${kind === 'primary' ? '' : ' ghost'}" href="${href('contact')}">${ui.demo}</a>`,
+    cta: (kind) => `<a class="btn${kind === 'primary' ? '' : ' ghost'}" href="${CONTACT.demoUrl}">${ui.demo}</a>`,
     video: (label) => `<figure class="video"><video controls preload="none" playsinline width="${VIDEO.width}" height="${VIDEO.height}" poster="${rel}${VIDEO.poster}" aria-label="${esc(label)}"><source src="${rel}${VIDEO.file}" type="video/mp4"><a href="${rel}${VIDEO.file}">${esc(label)}</a></video><figcaption>${ui.videoNote}</figcaption></figure>`,
     ctaBlock: () => lang === 'ru'
-      ? `<section class="cta" aria-labelledby="cta"><h2 id="cta">Попробуйте на своих объектах</h2><p>Покажем Эй, Helpy на демо-данных и обсудим пилот: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p><p class="actions"><a class="btn" href="${href('contact')}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`
-      : `<section class="cta" aria-labelledby="cta"><h2 id="cta">Try it at your sites</h2><p>We will show Hey Helpy on demo data and discuss a pilot: your sites, your contractors, payment only for proven work.</p><p class="actions"><a class="btn" href="${href('contact')}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`,
+      ? `<section class="cta" aria-labelledby="cta"><h2 id="cta">Попробуйте на своих объектах</h2><p>Покажем Эй, Helpy на демо-данных и обсудим пилот: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`
+      : `<section class="cta" aria-labelledby="cta"><h2 id="cta">Try it at your sites</h2><p>We will show Hey Helpy on demo data and discuss a pilot: your sites, your contractors, payment only for proven work.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`,
     contact: () => contactBlock(lang),
   };
 }
 
 function contactBlock(lang) {
   const t = lang === 'ru'
-    ? { name: 'Имя', company: 'Компания', msg: 'Объекты и задача', send: 'Написать письмо', subject: 'Демо / пилот Эй, Helpy', or: 'Или напишите напрямую:', tg: 'Telegram:', soon: 'Адрес для запросов демо и пилота появится здесь в ближайшие дни.', hint: 'Кнопка откроет вашу почтовую программу с готовым письмом — сайт ничего не отправляет сам.' }
-    : { name: 'Name', company: 'Company', msg: 'Sites and task', send: 'Write an e-mail', subject: 'Hey Helpy demo / pilot', or: 'Or write directly:', tg: 'Telegram:', soon: 'The contact address for demo and pilot requests will appear here shortly.', hint: 'The button opens your e-mail program with a pre-filled message — the website sends nothing itself.' };
-  if (!CONTACT.email && !CONTACT.telegram) {
-    // TODO (владелец): контакты — tools/site/config.mjs → CONTACT, затем node tools/site/build.mjs
-    return `<div class="notice"><p>${t.soon}</p></div>\n<!-- TODO: контакты владельца — tools/site/config.mjs (CONTACT) -->`;
-  }
-  let html = '';
-  if (CONTACT.email) {
-    const mail = esc(CONTACT.email);
-    html += `<form class="form" action="mailto:${mail}?subject=${encodeURIComponent(t.subject)}" method="post" enctype="text/plain">
-  <label>${t.name}<input name="name" autocomplete="name"></label>
-  <label>${t.company}<input name="company" autocomplete="organization"></label>
-  <label>${t.msg}<textarea name="message"></textarea></label>
-  <button class="btn" type="submit">${t.send}</button>
-  <p class="note">${t.hint}</p>
-</form>
-<p>${t.or} <a href="mailto:${mail}">${mail}</a></p>`;
-  }
-  if (CONTACT.telegram) html += `<p>${t.tg} <a href="https://t.me/${esc(CONTACT.telegram)}">@${esc(CONTACT.telegram)}</a></p>`;
-  return html;
+    ? { btn: 'Написать в Telegram', how: `Откроется чат с нашим ботом @${CONTACT.bot}. Он попросит одно сообщение: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы ответим там же, в Telegram.`, no: 'Нет Telegram? Ссылку можно открыть на компьютере в браузере — Telegram предложит веб-версию.' }
+    : { btn: 'Message us on Telegram', how: `A chat with our bot @${CONTACT.bot} will open. It will ask for one message: your company, how many sites and in which cities, and what you would like to see. We will reply there, in Telegram.`, no: 'No Telegram app? The link also opens in a desktop browser — Telegram offers its web version.' };
+  return `<div class="notice"><p>${t.how}</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${t.btn}</a></p><p class="note">${t.no}</p></div>`;
 }
 
 function org(lang) {
@@ -103,7 +86,8 @@ function org(lang) {
     url: SITE_URL,
     logo: { '@type': 'ImageObject', url: abs('img/icon-512.png'), width: 512, height: 512 },
   };
-  if (CONTACT.email) o.contactPoint = { '@type': 'ContactPoint', contactType: 'sales', email: CONTACT.email, availableLanguage: ['ru', 'en'] };
+  o.contactPoint = { '@type': 'ContactPoint', contactType: 'sales', url: CONTACT.demoUrl, availableLanguage: ['ru', 'en'] };
+  o.sameAs = [`https://t.me/${CONTACT.bot}`];
   return o;
 }
 
@@ -128,7 +112,7 @@ function softwareApp(lang) {
     screenshot: ['voice', 'camera', 'act'].map((n) => abs(`img/${n}.webp`)),
     offers: {
       '@type': 'Offer',
-      url: abs(LANGS[lang].pages.contact.slug),
+      url: CONTACT.demoUrl,
       description: isRu ? 'Цена по запросу; доступен пилот' : 'Pricing on request; pilot available',
     },
     publisher: { '@id': abs('#organization') },
@@ -321,6 +305,7 @@ function llmsTxt() {
 Полное описание продукта одним файлом (RU и EN): ${abs('llms-full.txt')}
 Full product description in one file (RU and EN): ${abs('llms-full.txt')}
 Вход в приложение / App sign-in: ${APP_URL}
+Запросить демо или пилот / Request a demo or pilot: ${CONTACT.demoUrl} (Telegram)
 
 ## Страницы (русский)
 
@@ -338,6 +323,7 @@ ${KEYS.map((k) => L('en', k)).join('\n')}
 - ИИ / AI: YandexGPT (разбор заявки / work order parsing), мультимодальная модель Yandex AI Studio (распознавание оборудования по фото / equipment recognition)
 - Данные / Data: PostgreSQL (Supabase), ЕС / EU; размещение в РФ (Yandex Cloud) — в планах / hosting in Russia planned
 - Цена / Pricing: по запросу, пилот / on request, pilot
+- Контакт / Contact: Telegram ${CONTACT.demoUrl}; e-mail и телефон не публикуются / no e-mail or phone published
 - Стадия / Stage: MVP (октябрь 2026 / October 2026)
 - Отзывов, рейтингов и публичных клиентов на сайте нет / No reviews, ratings or public customer references are published
 
@@ -361,6 +347,7 @@ function llmsFullTxt() {
 
 Обновлено / Updated: ${UPDATED}. Источник / Source: ${SITE_URL}
 Вход в приложение / App: ${APP_URL}
+Запросить демо / Request a demo: ${CONTACT.demoUrl}
 
 # Русский
 
@@ -472,6 +459,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     }
     console.log('сайт собран:', out);
   }
-  if (!CONTACT.email && !CONTACT.telegram) console.warn('⚠️ контакты не заполнены (tools/site/config.mjs → CONTACT) — на странице «Контакты» заглушка');
   console.log('site/ обновлён, адрес:', SITE_URL);
 }

@@ -14,6 +14,8 @@ import {
   settleObject,
   toBase64,
   type Who,
+  leadsChatId,
+  leadWho,
 } from "./bot.ts";
 import {
   groupAddressed,
@@ -85,6 +87,9 @@ function world(opts: {
   take?: J;
   assign?: AssignInfo | null;
   author?: Target | null;
+  /** Шаг 29: есть 0026 — ответ tg_lead_save (или "throw" — сбой базы). */
+  lead?: J | "throw";
+  leadsChat?: number | null;
 } = {}) {
   const sent: Sent[] = [];
   const edits: Sent[] = [];
@@ -96,6 +101,7 @@ function world(opts: {
   const removed: string[] = [];
   const logs: J[] = [];
   const calls: string[] = [];
+  const leads: J[] = [];
   let msgId = 100;
   let who: Who = opts.who ?? {
     kind: "guest",
@@ -195,6 +201,14 @@ function world(opts: {
       calls.push(`take_${chat}_${orderId}`);
       return Promise.resolve(opts.take ?? { error: "not_found" });
     },
+    ...(opts.lead === undefined ? {} : {
+      leadSave(chat: number, username: string | null, name: string | null, lang: string, text: string) {
+        calls.push("lead");
+        if (opts.lead === "throw") return Promise.reject(new Error("db"));
+        leads.push({ chat, username, name, lang, text });
+        return Promise.resolve(opts.lead as J);
+      },
+    }),
   };
   let n = 0;
   const deps: Deps = {
@@ -227,8 +241,9 @@ function world(opts: {
     log: (f) => logs.push(f),
     uuid: () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`,
     appUrl: "https://app.example/",
+    leadsChat: opts.leadsChat ?? null,
   };
-  return { deps, sent, edits, answers, sessions, orders, uploads, removed, logs, calls, setWho: (w: Who) => (who = w) };
+  return { leads, deps, sent, edits, answers, sessions, orders, uploads, removed, logs, calls, setWho: (w: Who) => (who = w) };
 }
 
 let upd = 1;
@@ -852,3 +867,107 @@ Deno.test("тексты шага 28 есть на обоих языках", () =
   }
 });
 
+
+// --- Шаг 29: заявка на демо с сайта (/start demo) ---------------------------
+
+const OWNER = -100777;
+
+Deno.test("demo: /start demo — просьба написать, без компаний и объектов; текст → лид → «Спасибо»", async () => {
+  const w = world({ who: { kind: "none" }, lead: { ok: true, id: "l1" } });
+  await handleUpdate(msg({ text: "/start demo" }), w.deps);
+  assertStringIncludes(w.sent[0].html, "Расскажите в одном сообщении");
+  assertEquals(w.calls.includes("resolve"), false, "незнакомцу не показываем ни компаний, ни объектов");
+  assertEquals(w.sessions.get(CHAT)?.step, "lead");
+
+  await handleUpdate(msg({ text: "ООО Ромашка, 5 объектов в Москве и Казани, хотим посмотреть акты" }), w.deps);
+  assertEquals(w.leads.length, 1);
+  assertEquals(w.leads[0].lang, "ru");
+  assertEquals(w.leads[0].name, "Мария Ковалёва");
+  assertStringIncludes(w.sent.at(-1)!.html, "Спасибо! Мы получили заявку");
+  assertEquals(w.sessions.get(CHAT) ?? null, null, "черновик лида закрыт");
+  assertEquals(w.orders.length, 0, "заявка на работу не создаётся");
+  assertEquals(JSON.stringify(w.logs).includes("Ромашка"), false, "текст лида не пишется в лог");
+
+  // следующее сообщение — снова обычный путь (незнакомец → подсказка про ссылку)
+  await handleUpdate(msg({ text: "ещё вопрос" }), w.deps);
+  assertEquals(w.leads.length, 1);
+  assertStringIncludes(w.sent.at(-1)!.html, "нужна ссылка от работодателя");
+});
+
+Deno.test("demo: английский по языку Telegram", async () => {
+  const w = world({ who: { kind: "none" }, lead: { ok: true } });
+  await handleUpdate(msg({ text: "/start demo", lang: "en" }), w.deps);
+  assertStringIncludes(w.sent[0].html, "In one message, tell us");
+  await handleUpdate(msg({ text: "Acme, 3 sites", lang: "en" }), w.deps);
+  assertEquals(w.leads[0].lang, "en");
+  assertStringIncludes(w.sent.at(-1)!.html, "Thank you!");
+});
+
+Deno.test("demo: голос и фото — просим текстом, черновик остаётся; длинный текст — отказ", async () => {
+  const w = world({ who: { kind: "none" }, lead: { ok: true } });
+  await handleUpdate(msg({ text: "/start demo" }), w.deps);
+  await handleUpdate(msg({ voice: { file_id: "v", duration: 5, file_size: 1000 } }), w.deps);
+  assertStringIncludes(w.sent.at(-1)!.html, "Напишите, пожалуйста, текстом");
+  await handleUpdate(msg({ text: "я".repeat(2001) }), w.deps);
+  assertStringIncludes(w.sent.at(-1)!.html, "2000 символов");
+  assertEquals(w.leads.length, 0);
+  assertEquals(w.sessions.get(CHAT)?.step, "lead");
+  await handleUpdate(msg({ text: "/cancel" }), w.deps);
+  assertEquals(w.sessions.get(CHAT) ?? null, null, "/cancel работает и тут");
+});
+
+Deno.test("demo: лимит — «уже получили», черновик закрыт", async () => {
+  const w = world({ who: { kind: "none" }, lead: { ok: false, error: "rate_limited" }, leadsChat: OWNER });
+  await handleUpdate(msg({ text: "/start demo" }), w.deps);
+  await handleUpdate(msg({ text: "снова я" }), w.deps);
+  assertStringIncludes(w.sent.at(-1)!.html, "уже получили ваши заявки");
+  assertEquals(w.sent.some((x) => x.chat === OWNER), false, "сверх лимита владельцу не шлём");
+});
+
+Deno.test("demo: владельцу — «🆕 Заявка на демо: @ник · имя» с экранированным текстом", async () => {
+  const w = world({ who: { kind: "none" }, lead: { ok: true }, leadsChat: OWNER });
+  await handleUpdate(msg({ text: "/start demo" }), w.deps);
+  const u = msg({ text: "Компания <b>X</b> & Co" });
+  u.message!.from = { id: USER, first_name: "Иван", username: "ivan_x", language_code: "ru" };
+  await handleUpdate(u, w.deps);
+  const n = w.sent.find((x) => x.chat === OWNER)!;
+  assertStringIncludes(n.html, "🆕 Заявка на демо: @ivan_x · Иван");
+  assertStringIncludes(n.html, "Компания &lt;b&gt;X&lt;/b&gt; &amp; Co");
+  assertStringIncludes(w.sent.at(-1)!.html, "Спасибо!");
+});
+
+Deno.test("demo: нет 0026 — с чатом владельца всё равно «Спасибо», без него — «не получилось»", async () => {
+  const a = world({ who: { kind: "none" }, lead: "throw", leadsChat: OWNER });
+  await handleUpdate(msg({ text: "/start demo" }), a.deps);
+  await handleUpdate(msg({ text: "Компания" }), a.deps);
+  assertEquals(a.sent.some((x) => x.chat === OWNER), true);
+  assertStringIncludes(a.sent.at(-1)!.html, "Спасибо!");
+
+  const b = world({ who: { kind: "none" }, lead: "throw" });
+  await handleUpdate(msg({ text: "/start demo" }), b.deps);
+  await handleUpdate(msg({ text: "Компания" }), b.deps);
+  assertStringIncludes(b.sent.at(-1)!.html, "Не получилось сохранить");
+  assertEquals(b.sessions.get(CHAT)?.step, "lead", "можно отправить ещё раз");
+});
+
+Deno.test("demo: гость и группа не ломаются — без /start demo обычные заявки", async () => {
+  const g = world({ lead: { ok: true } }); // гость ссылки объекта
+  await handleUpdate(msg({ text: "течёт кран в лобби" }), g.deps);
+  assertEquals(g.leads.length, 0);
+  assertEquals(g.calls.includes("resolve"), true);
+
+  const gr = world({ who: { kind: "group", company_id: CO, object: { id: OBJ, name: "БЦ «Демо»" } }, lead: { ok: true } });
+  await handleUpdate(msg({ text: "/start demo", chatType: "group" }), gr.deps);
+  assertEquals(gr.sessions.get(GROUP) ?? null, null, "в группе режим демо не включается");
+  assertEquals(gr.leads.length, 0);
+});
+
+Deno.test("leadsChatId и leadWho", () => {
+  assertEquals(leadsChatId("123456"), 123456);
+  assertEquals(leadsChatId(" -1001234567890 "), -1001234567890);
+  assertEquals(leadsChatId(""), null);
+  assertEquals(leadsChatId(undefined), null);
+  assertEquals(leadsChatId("@owner"), null);
+  assertEquals(leadWho({ id: 1, username: "a", first_name: "Анна", last_name: "К." }), "@a · Анна К.");
+  assertEquals(leadWho({ id: 1 }), "—");
+});

@@ -14,7 +14,7 @@
 | `industries/` | Для кого: БЦ и ТЦ, сети и ритейл, УК и FM, госзаказчики |
 | `security/` | Безопасность и развёртывание (только то, что есть; планы помечены «в планах») |
 | `faq/` | 11 вопросов (разметка FAQPage) |
-| `contact/` | Запросить демо / пилот (пока контакты не заполнены — заглушка) |
+| `contact/` | Запросить демо / пилот — кнопка открывает Telegram-бота `https://t.me/HeyHelpy_bot?start=demo` (все кнопки «Запросить демо» ведут туда же) |
 | `privacy/` | Политика конфиденциальности сайта |
 | `404.html` | Своя страница «не найдено» (RU + EN, `noindex`) |
 | `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt`, `humans.txt`, `site.webmanifest` | Для поисковиков и ИИ |
@@ -23,7 +23,7 @@
 
 ```
 tools/site/
-  config.mjs        адрес сайта (SITE_URL), вход в приложение, контакты (CONTACT), дата обновления
+  config.mjs        адрес сайта (SITE_URL), вход в приложение, контакт (CONTACT — Telegram-бот), дата обновления
   content.ru.mjs    все тексты RU      content.en.mjs  все тексты EN
   site.css          стиль (встраивается в каждую страницу)
   build.mjs         генератор: site/*.html, robots, sitemap, llms*.txt;  --out DIR — готовый сайт с картинками
@@ -95,3 +95,12 @@ done
 curl -s "${URL}robots.txt" | head; curl -s "${URL}llms.txt" | head -5
 ```
 Ожидаемо: у всех `200 text/html`, размер одинаковый (сайт никого не блокирует и не отдаёт ботам другое).
+
+## Заявки на демо (Telegram-бот)
+
+Кнопка «Запросить демо» → `https://t.me/HeyHelpy_bot?start=demo` → бот просит одно сообщение и сохраняет его в `sales.site_leads` (миграция 0026). E-mail и телефон на сайте не публикуются.
+
+- **Посмотреть заявки:** Supabase → Table Editor → схема `sales` → `site_leads` (или SQL Editor: `select created_at, tg_username, tg_name, language, text, status from sales.site_leads order by created_at desc;`). Отметить: `update sales.site_leads set status = 'contacted' where id = '…';` (потом `closed`).
+- **Получать заявки в Telegram сразу** (необязательно): секрет `TELEGRAM_LEADS_CHAT_ID` = номер вашего чата с ботом.
+  Как узнать номер, не показывая никому токен бота: после применения 0026 откройте ссылку «Запросить демо» сами, отправьте боту «проверка» → Supabase → Table Editor → `sales.site_leads` → столбец `chat_id` вашей строки (это и есть номер; у личного чата он положительный). Затем Supabase → Edge Functions → **Secrets** → Add new secret: имя `TELEGRAM_LEADS_CHAT_ID`, значение — это число → Save. Функция подхватит секрет при следующем запуске; если заявки не приходят — Actions → Deploy functions. Тестовую строку можно удалить: `delete from sales.site_leads where text = 'проверка';`
+- Лимиты: 3 заявки в сутки с одного чата, 300 в сутки всего.

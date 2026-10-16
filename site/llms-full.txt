@@ -2,6 +2,7 @@
 
 Обновлено / Updated: 2026-10-16. Источник / Source: https://anton-key.github.io/hey-helpy/site/
 Вход в приложение / App: https://anton-key.github.io/hey-helpy/
+Запросить демо / Request a demo: https://t.me/HeyHelpy_bot?start=demo
 
 # Русский
 
@@ -388,7 +389,7 @@ Android-приложение исполнителя работает без ин
 На русском и английском; язык переключается в настройках.
 
 ### Сколько стоит?
-Цена — по запросу и зависит от числа объектов. Сейчас продукт в стадии MVP, и мы предлагаем пилот на ваших объектах.
+Цена — по запросу и зависит от числа объектов. Сейчас продукт в стадии MVP, и мы предлагаем пилот на ваших объектах. Запросить демо или пилот — кнопкой «Запросить демо»: откроется наш бот в Telegram.
 
 ---
 
@@ -397,9 +398,11 @@ URL: https://anton-key.github.io/hey-helpy/site/contact/
 
 Покажем сервис на демо-данных и обсудим пилот на ваших объектах.
 
-Адрес для запросов демо и пилота появится здесь в ближайшие дни.
+Откроется чат с нашим ботом @HeyHelpy_bot. Он попросит одно сообщение: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы ответим там же, в Telegram.
+Написать в Telegram
+Нет Telegram? Ссылку можно открыть на компьютере в браузере — Telegram предложит веб-версию.
 
-### Что написать в письме
+### Что написать в сообщении
 
 - Тип и число объектов (офисы, ТЦ, склады, отели…) и города.
 
@@ -794,7 +797,7 @@ In a browser on desktop and mobile (voice input in Chrome and Edge) and in the A
 Russian and English; the language is switched in settings.
 
 ### How much does it cost?
-Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites.
+Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.
 
 ---
 
@@ -803,7 +806,9 @@ URL: https://anton-key.github.io/hey-helpy/site/en/contact/
 
 We will show the service on demo data and discuss a pilot at your sites.
 
-The contact address for demo and pilot requests will appear here shortly.
+A chat with our bot @HeyHelpy_bot will open. It will ask for one message: your company, how many sites and in which cities, and what you would like to see. We will reply there, in Telegram.
+Message us on Telegram
+No Telegram app? The link also opens in a desktop browser — Telegram offers its web version.
 
 ### What to include in your message
 

@@ -13,13 +13,13 @@ export const APP_URL = 'https://anton-key.github.io/hey-helpy/';
 export const UPDATED = '2026-10-16';
 
 /**
- * Контакты для заявок на демо / пилот.
- * TODO (владелец): вписать рабочий e-mail и, по желанию, Telegram для связи (ник без @).
- * Пока пусто — на сайте вместо формы честная строка «контакт появится здесь», без выдуманных данных.
+ * Контакт для заявок на демо / пилот — Telegram-бот (решение владельца, шаг 29).
+ * Бот по ?start=demo просит одно сообщение и сохраняет его (sales.site_leads, миграция 0026).
+ * E-mail и телефон на сайте не указываются.
  */
 export const CONTACT = {
-  email: '', // TODO: например 'pilot@ваш-домен.ru'
-  telegram: '', // TODO: например 'heyhelpy_team' (не бот заявок)
+  bot: 'HeyHelpy_bot',
+  demoUrl: 'https://t.me/HeyHelpy_bot?start=demo',
 };
 
 /** Демо-ролик: файл в репозитории и данные для VideoObject. */

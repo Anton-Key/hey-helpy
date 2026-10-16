@@ -7,6 +7,7 @@
 Полное описание продукта одним файлом (RU и EN): https://anton-key.github.io/hey-helpy/site/llms-full.txt
 Full product description in one file (RU and EN): https://anton-key.github.io/hey-helpy/site/llms-full.txt
 Вход в приложение / App sign-in: https://anton-key.github.io/hey-helpy/
+Запросить демо или пилот / Request a demo or pilot: https://t.me/HeyHelpy_bot?start=demo (Telegram)
 
 ## Страницы (русский)
 
@@ -16,7 +17,7 @@ Full product description in one file (RU and EN): https://anton-key.github.io/he
 - [Безопасность и развёртывание](https://anton-key.github.io/hey-helpy/site/security/): Изоляция компаний на уровне базы данных (RLS), роли и разделение обязанностей, закрытые хранилища файлов, журнал изменений доступа, варианты размещения.
 - [Частые вопросы](https://anton-key.github.io/hey-helpy/site/faq/): Что будет без связи в подвале, чем Эй, Helpy отличается от Excel и мессенджера, можно ли без приложения, где хранятся данные и сколько стоит.
 - [Запросить демо или пилот](https://anton-key.github.io/hey-helpy/site/contact/): Запросите демонстрацию Эй, Helpy или пилот на ваших объектах: заявки голосом и по фото, контроль подрядчиков и оплата по доказательству.
-- [Политика конфиденциальности сайта](https://anton-key.github.io/hey-helpy/site/privacy/): Сайт Эй, Helpy не использует cookies, счётчики и формы с отправкой на сервер.
+- [Политика конфиденциальности сайта](https://anton-key.github.io/hey-helpy/site/privacy/): Сайт Эй, Helpy не использует cookies и счётчики; заявки на демо принимаются только в Telegram — что мы сохраняем и зачем.
 
 ## Pages (English)
 
@@ -26,7 +27,7 @@ Full product description in one file (RU and EN): https://anton-key.github.io/he
 - [Security and deployment](https://anton-key.github.io/hey-helpy/site/en/security/): Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.
 - [Frequently asked questions](https://anton-key.github.io/hey-helpy/site/en/faq/): What happens with no signal in the basement, how Hey Helpy differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.
 - [Request a demo or pilot](https://anton-key.github.io/hey-helpy/site/en/contact/): Request a Hey Helpy demo or a pilot at your sites: voice and photo work orders, contractor control and proof-based payment.
-- [Website privacy policy](https://anton-key.github.io/hey-helpy/site/en/privacy/): The Hey Helpy website uses no cookies, no analytics and no forms that send data to a server.
+- [Website privacy policy](https://anton-key.github.io/hey-helpy/site/en/privacy/): The Hey Helpy website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.
 
 ## Факты / Facts
 
@@ -36,6 +37,7 @@ Full product description in one file (RU and EN): https://anton-key.github.io/he
 - ИИ / AI: YandexGPT (разбор заявки / work order parsing), мультимодальная модель Yandex AI Studio (распознавание оборудования по фото / equipment recognition)
 - Данные / Data: PostgreSQL (Supabase), ЕС / EU; размещение в РФ (Yandex Cloud) — в планах / hosting in Russia planned
 - Цена / Pricing: по запросу, пилот / on request, pilot
+- Контакт / Contact: Telegram https://t.me/HeyHelpy_bot?start=demo; e-mail и телефон не публикуются / no e-mail or phone published
 - Стадия / Stage: MVP (октябрь 2026 / October 2026)
 - Отзывов, рейтингов и публичных клиентов на сайте нет / No reviews, ratings or public customer references are published
 

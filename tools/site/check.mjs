@@ -100,7 +100,7 @@ for (const f of html) {
   if (/eyJ[A-Za-z0-9_-]{10,}\.|sbp_[A-Za-z0-9]{20,}|service_role/.test(s)) err(name, 'похоже на ключ');
   if (/[A-Za-z0-9._%+-]+@(?!media\b|font-face\b|HeyHelpy_bot)[A-Za-z0-9-]+\.[A-Za-z]{2,}/.test(s.replace(/<style>[\s\S]*?<\/style>/, ''))) warns.push(`${name}: есть e-mail — проверьте, что это рабочий адрес владельца`);
   if (/Сербская Роза|Serbian Rose/i.test(s)) err(name, 'кодовое название продукта');
-  if (/TODO/.test(s)) warns.push(`${name}: TODO (контакты не заполнены — tools/site/config.mjs)`);
+  if (/TODO/.test(s)) warns.push(`${name}: TODO на странице`);
 }
 
 // robots.txt

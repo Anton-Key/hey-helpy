@@ -6,6 +6,9 @@
 //   POST { orderId, kind: "assigned" } → 200 { result: "assigned", sent, failed }
 //   (tg_notify_assign_claim / _release, 0025; без 0025 — sent: 0).
 //   400 bad_request · 401 unauthorized · 404 not_visible · 500 not_configured
+// Шаг 29: экран «Готовность к показу» (только администратор) проверяет вебхук бота:
+//   POST { kind: "webhook" } → 200 { webhook: { configured, pending, last_error_age_s } }
+//   403 forbidden — не администратор · 502 tg_unavailable (health.ts). Токен и адрес наружу не отдаются.
 //
 // Кто что делает:
 // • JWT пользователя (verify_jwt = true + проверка getUser): заявка, её
@@ -25,6 +28,7 @@ import { corsHeaders, logFn } from "../_shared/http.ts";
 import { sendPhotoBytes, telegramApi } from "../telegram-bot/telegram.ts";
 import { type AssignInfo, notifyAssigned } from "../telegram-bot/assign.ts";
 import { notifyOrder, parseNotifyInput, type Target } from "./notify.ts";
+import { getWebhookInfo, isWebhookCheck, webhookSummary } from "./health.ts";
 
 const log = logFn("telegram-notify");
 const APP_URL = "https://anton-key.github.io/hey-helpy/";
@@ -63,8 +67,9 @@ Deno.serve(async (req) => {
   } catch {
     return reply(400, { error: "bad_request" }, { code: "bad_json" });
   }
+  const webhookCheck = isWebhookCheck(body);
   const input = parseNotifyInput(body);
-  if (!input.ok) return reply(400, { error: "bad_request" }, { code: "bad_input" });
+  if (!webhookCheck && !input.ok) return reply(400, { error: "bad_request" }, { code: "bad_input" });
 
   const user = createClient(url, anonKey, {
     global: { headers: { Authorization: authHeader } },
@@ -72,6 +77,18 @@ Deno.serve(async (req) => {
   });
   const { data: u, error: ue } = await user.auth.getUser(jwt);
   if (ue || !u?.user) return reply(401, { error: "unauthorized" }, { code: "no_user" });
+
+  if (webhookCheck) {
+    const { data: me } = await user.from("profiles").select("role").eq("id", u.user.id).maybeSingle();
+    if ((me as { role?: string } | null)?.role !== "admin") return reply(403, { error: "forbidden" }, { code: "not_admin" });
+    try {
+      const webhook = webhookSummary(await getWebhookInfo(token), url, Math.floor(Date.now() / 1000));
+      return reply(200, { webhook }, { result: "webhook", configured: webhook.configured });
+    } catch {
+      return reply(502, { error: "tg_unavailable" }, { code: "tg_webhook_info" });
+    }
+  }
+  if (!input.ok) return reply(400, { error: "bad_request" }, { code: "bad_input" });
 
   const service = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const tg = telegramApi(token);

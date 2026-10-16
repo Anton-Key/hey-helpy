@@ -108,6 +108,15 @@ const RU = {
   pr_normal: "обычная",
   pr_high: "высокая",
   pr_critical: "авария",
+  // Заявка на демо с сайта (шаг 29, /start demo)
+  demoAsk:
+    "Здравствуйте! Это Эй, Helpy. Расскажите в одном сообщении: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы свяжемся с вами здесь, в Telegram.",
+  demoThanks: "Спасибо! Мы получили заявку и напишем вам здесь.",
+  demoTextOnly: "Напишите, пожалуйста, текстом — одним сообщением: компания, сколько объектов и в каких городах, что хотите посмотреть.",
+  demoTooLong: "Слишком длинно — уложитесь, пожалуйста, в 2000 символов.",
+  demoLimit: "Мы уже получили ваши заявки сегодня и скоро напишем. Новую можно отправить завтра.",
+  demoFailed: "Не получилось сохранить заявку. Попробуйте ещё раз чуть позже: откройте ссылку «Запросить демо» на сайте.",
+  demoNotice: "🆕 Заявка на демо: {who}\n\n{text}",
 };
 
 export type TextKey = keyof typeof RU;
@@ -204,6 +213,14 @@ const EN: Record<TextKey, string> = {
   pr_normal: "normal",
   pr_high: "high",
   pr_critical: "emergency",
+  demoAsk:
+    "Hello! This is Hey Helpy. In one message, tell us: your company, how many sites and in which cities, and what you would like to see. We will get back to you here in Telegram.",
+  demoThanks: "Thank you! We have received your request and will message you here.",
+  demoTextOnly: "Please write it as text, in one message: your company, how many sites and in which cities, and what you would like to see.",
+  demoTooLong: "That's too long — please keep it under 2000 characters.",
+  demoLimit: "We have already received your requests today and will be in touch soon. You can send a new one tomorrow.",
+  demoFailed: "Couldn't save your request. Please try again a bit later: open the “Request a demo” link on the website.",
+  demoNotice: "🆕 Demo request: {who}\n\n{text}",
 };
 
 export const TEXTS: Record<Lang, Record<TextKey, string>> = { ru: RU, en: EN };

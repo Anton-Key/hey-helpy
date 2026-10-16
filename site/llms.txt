@@ -1,0 +1,47 @@
+# Эй, Helpy (Hey Helpy)
+
+> Эй, Helpy (англ. Hey Helpy) — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков: заявки голосом, по фото и через Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, цена — по запросу, доступен пилот.
+>
+> Hey Helpy (Russian: «Эй, Helpy») is an AI service for property maintenance (CMMS / facility management) and contractor control: work orders by voice, by photo and via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.
+
+Полное описание продукта одним файлом (RU и EN): https://anton-key.github.io/hey-helpy/site/llms-full.txt
+Full product description in one file (RU and EN): https://anton-key.github.io/hey-helpy/site/llms-full.txt
+Вход в приложение / App sign-in: https://anton-key.github.io/hey-helpy/
+Запросить демо или пилот / Request a demo or pilot: https://t.me/HeyHelpy_bot?start=demo (Telegram)
+
+## Страницы (русский)
+
+- [ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков](https://anton-key.github.io/hey-helpy/site/): Заявки голосом, по фото и через Telegram, подрядчик назначается сам, а к оплате попадает только доказанная работа: фото «после», геозона, чек-лист. Веб и Android.
+- [Возможности](https://anton-key.github.io/hey-helpy/site/features/): Заявки голосом, по фото и из Telegram, оплата подрядчику по доказательству, разделение ролей, работа без интернета, плановое ТО, планы этажей, документы, отчёты, зоны доступа.
+- [Для кого](https://anton-key.github.io/hey-helpy/site/industries/): Эй, Helpy для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков и режимных объектов: заявки, подрядчики и оплата по доказательству.
+- [Безопасность и развёртывание](https://anton-key.github.io/hey-helpy/site/security/): Изоляция компаний на уровне базы данных (RLS), роли и разделение обязанностей, закрытые хранилища файлов, журнал изменений доступа, варианты размещения.
+- [Частые вопросы](https://anton-key.github.io/hey-helpy/site/faq/): Что будет без связи в подвале, чем Эй, Helpy отличается от Excel и мессенджера, можно ли без приложения, где хранятся данные и сколько стоит.
+- [Запросить демо или пилот](https://anton-key.github.io/hey-helpy/site/contact/): Запросите демонстрацию Эй, Helpy или пилот на ваших объектах: заявки голосом и по фото, контроль подрядчиков и оплата по доказательству.
+- [Политика конфиденциальности сайта](https://anton-key.github.io/hey-helpy/site/privacy/): Сайт Эй, Helpy не использует cookies и счётчики; заявки на демо принимаются только в Telegram — что мы сохраняем и зачем.
+
+## Pages (English)
+
+- [AI service for property maintenance and contractor control](https://anton-key.github.io/hey-helpy/site/en/): Work orders by voice, by photo and via Telegram; the contractor is assigned automatically, and only proven work gets paid: “after” photo, geofence, checklist. Web and Android.
+- [Features](https://anton-key.github.io/hey-helpy/site/en/features/): Work orders by voice, by photo and from Telegram, proof-based contractor payment, segregation of duties, offline work, preventive maintenance, floor plans, documents, reports, access zones.
+- [Who it’s for](https://anton-key.github.io/hey-helpy/site/en/industries/): Hey Helpy for business and shopping centres, chains and retail, property management and FM companies, public-sector and restricted-access sites.
+- [Security and deployment](https://anton-key.github.io/hey-helpy/site/en/security/): Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.
+- [Frequently asked questions](https://anton-key.github.io/hey-helpy/site/en/faq/): What happens with no signal in the basement, how Hey Helpy differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.
+- [Request a demo or pilot](https://anton-key.github.io/hey-helpy/site/en/contact/): Request a Hey Helpy demo or a pilot at your sites: voice and photo work orders, contractor control and proof-based payment.
+- [Website privacy policy](https://anton-key.github.io/hey-helpy/site/en/privacy/): The Hey Helpy website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.
+
+## Факты / Facts
+
+- Категория / Category: CMMS, facility management, контроль подрядчиков / contractor control (SaaS)
+- Платформы / Platforms: веб (браузер) и Android / web (browser) and Android; iPhone app — нет / not available
+- Языки интерфейса / UI languages: русский, English
+- ИИ / AI: YandexGPT (разбор заявки / work order parsing), мультимодальная модель Yandex AI Studio (распознавание оборудования по фото / equipment recognition)
+- Данные / Data: PostgreSQL (Supabase), ЕС / EU; размещение в РФ (Yandex Cloud) — в планах / hosting in Russia planned
+- Цена / Pricing: по запросу, пилот / on request, pilot
+- Контакт / Contact: Telegram https://t.me/HeyHelpy_bot?start=demo; e-mail и телефон не публикуются / no e-mail or phone published
+- Стадия / Stage: MVP (октябрь 2026 / October 2026)
+- Отзывов, рейтингов и публичных клиентов на сайте нет / No reviews, ratings or public customer references are published
+
+## Optional
+
+- [Политика конфиденциальности сайта](https://anton-key.github.io/hey-helpy/site/privacy/)
+- [Website privacy policy](https://anton-key.github.io/hey-helpy/site/en/privacy/)

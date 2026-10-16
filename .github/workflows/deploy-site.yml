@@ -1,0 +1,21 @@
+# Сайт продукта «Эй, Helpy» (папка site/, шаг 29): https://anton-key.github.io/hey-helpy/site/
+# Запускает только владелец: Actions → «Deploy site» → Run workflow (ветка main).
+# Это тот же «Deploy web»: GitHub Pages заменяет сайт целиком, поэтому приложение и сайт
+# всегда выкладываются вместе (сайт — в подпапку site/). При пуше в main «Deploy web» и так
+# выкладывает оба — этот запуск нужен, только чтобы обновить сайт без нового коммита.
+# Публикация — только если включена переменная WEB_PUBLISH_ENABLED = true (как у «Deploy web»).
+name: Deploy site
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  web-and-site:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy-web.yml
+    secrets: inherit

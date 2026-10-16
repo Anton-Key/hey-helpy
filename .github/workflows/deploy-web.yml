@@ -5,8 +5,12 @@
 # безопасности (миграция 0008), переменная должна быть выключена. Подробно — CLAUDE.md, «Веб-ссылка».
 name: Deploy web
 
+# Сайт продукта (папка site/, шаг 29) публикуется этой же выкладкой в подпапку /hey-helpy/site/:
+# GitHub Pages заменяет сайт целиком при каждой выкладке, поэтому приложение и сайт собираются вместе
+# (отдельная выкладка одного стёрла бы другое). «Deploy site» (deploy-site.yml) вызывает этот же файл.
 on:
   workflow_dispatch:
+  workflow_call:
   push:
     branches: [main]
 
@@ -61,6 +65,14 @@ jobs:
 
       # Если адрес внутри приложения открыть напрямую — Pages отдаст приложение, а не ошибку.
       - run: cp build/web/index.html build/web/404.html
+
+      # Сайт продукта: статический HTML из site/ + картинки, значки и демо-видео → build/web/site/.
+      # Несуществующий адрес внутри /site/ → страница 404 сайта (а не приложение).
+      - name: Build product site
+        run: |
+          node tools/site/build.mjs --out build/web/site
+          node -e "const f='build/web/404.html',fs=require('fs');fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('<head>','<head><script>if(location.pathname.indexOf(\'/hey-helpy/site/\')===0)location.replace(\'/hey-helpy/site/404.html\')</script>'))"
+          grep -q "/hey-helpy/site/404.html" build/web/404.html
 
       - uses: actions/upload-pages-artifact@v3
         with:

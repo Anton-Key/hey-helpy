@@ -104,6 +104,8 @@ export interface Db {
   assignRelease?(orderId: string, contractorId: string, profileId: string): Promise<void>;
   /** «Взять в работу» от имени исполнителя этого чата — tg_take_order (0025). */
   takeOrder?(chat: number, orderId: string): Promise<J>;
+  /** Заявка на демо с сайта — tg_lead_save (0026): { ok, id } | { ok: false, error }. */
+  leadSave?(chat: number, username: string | null, name: string | null, lang: Lang, text: string): Promise<J>;
 }
 
 export { NOTIFY_OFF };
@@ -137,6 +139,8 @@ export interface Deps {
   /** Адрес веб-приложения (ссылка на заявку для привязанного пользователя). */
   appUrl: string;
   bot?: string;
+  /** Чат владельца для заявок на демо (секрет TELEGRAM_LEADS_CHAT_ID); нет — только запись в базу. */
+  leadsChat?: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -162,8 +166,9 @@ export interface Draft {
 }
 
 export interface Session {
-  /** confirm — карточка; object — ждём объект; need_text — фото без текста. */
-  step: "confirm" | "object" | "need_text";
+  /** confirm — карточка; object — ждём объект; need_text — фото без текста;
+   *  lead — после /start demo ждём одно сообщение с заявкой на демо (шаг 29). */
+  step: "confirm" | "object" | "need_text" | "lead";
   draft: Draft | null;
   /** id сообщения-карточки: кнопки старых карточек не срабатывают. */
   card: number | null;
@@ -429,6 +434,12 @@ async function handleMessage(m: TgMessage, turn: Turn, bot: string) {
     await handleCommand(cmd.name, cmd.arg, m, turn, bot);
     return;
   }
+  // Заявка на демо (шаг 29): после /start demo следующее сообщение — лид.
+  // Только личный чат; кто пишет (гость, пользователь, незнакомец) — не важно.
+  if (!group && deps.db.leadSave) {
+    const s = await deps.db.sessionGet(chat);
+    if (s?.step === "lead") return void await onLead(m, turn);
+  }
   const who = await deps.db.resolve(chat, group);
   turn.log.who = who.kind;
   if (who.kind === "none") {
@@ -483,6 +494,13 @@ async function handleCommand(name: string, arg: string, m: TgMessage, turn: Turn
     case "start": {
       // Ссылка «Добавить бота в группу» (?startgroup=grp_<код>) — как /connect <код>.
       if (group && arg.startsWith("grp_")) return void await handleCommand("connect", arg.slice(4), m, turn, bot);
+      // «Запросить демо» на сайте (?start=demo, шаг 29): ни компаний, ни объектов — только просьба
+      // написать одно сообщение. Привязки чата не меняются.
+      if (!group && arg === "demo" && deps.db.leadSave) {
+        await deps.db.sessionPut(chat, { step: "lead", draft: null, card: null, author: from?.id ?? null });
+        turn.log.result = "demo_start";
+        return void await say(turn, "demoAsk");
+      }
       if (!group && arg.startsWith("link_")) {
         const r = await deps.db.linkChat(arg.slice(5), chat, from?.username ?? null, reporterName(from), lang);
         turn.log.result = r.ok ? "linked" : "bad_code";
@@ -548,6 +566,72 @@ async function handleCommand(name: string, arg: string, m: TgMessage, turn: Turn
     default:
       await say(turn, group ? "helpGroup" : "help", { bot });
   }
+}
+
+// --- Заявка на демо (шаг 29) ----------------------------------------------
+
+export const LEAD_MAX = 2000;
+
+/** Необязательный секрет TELEGRAM_LEADS_CHAT_ID — чат владельца (число, у групп — отрицательное). */
+export function leadsChatId(v: string | undefined): number | null {
+  const s = (v ?? "").trim();
+  return /^-?\d{1,20}$/.test(s) && Number.isSafeInteger(Number(s)) ? Number(s) : null;
+}
+
+/** «@ivan · Иван Петров» — кто прислал заявку на демо (для чата владельца). */
+export function leadWho(from: TgUser | undefined): string {
+  const name = [from?.first_name, from?.last_name].filter((x) => x && x.trim()).join(" ").trim();
+  const parts = [from?.username ? `@${from.username}` : "", name].filter(Boolean);
+  return parts.length ? parts.join(" · ") : "—";
+}
+
+/** Одно сообщение после /start demo → sales.site_leads (+ чат владельца, если задан). */
+async function onLead(m: TgMessage, turn: Turn) {
+  const { deps, chat, lang, from } = turn;
+  turn.log.type = "lead";
+  const text = (m.text ?? "").trim();
+  if (!text) {
+    turn.log.result = m.voice ? "lead_voice" : "lead_not_text";
+    return void await say(turn, "demoTextOnly");
+  }
+  if (text.length > LEAD_MAX) {
+    turn.log.result = "lead_too_long";
+    return void await say(turn, "demoTooLong");
+  }
+  const name = [from?.first_name, from?.last_name].filter((x) => x && x.trim()).join(" ").trim() || null;
+  let r: J;
+  try {
+    r = await deps.db.leadSave!(chat, from?.username ?? null, name, lang, text);
+  } catch {
+    r = { ok: false, error: "unavailable" };
+  }
+  if (!r.ok && r.error === "rate_limited") {
+    await deps.db.sessionPut(chat, null);
+    turn.log.result = "lead_limited";
+    return void await say(turn, "demoLimit");
+  }
+  let forwarded = false;
+  if (deps.leadsChat) {
+    try {
+      const html = esc(t("ru", "demoNotice", {})).replace(
+        /\{(\w+)\}/g,
+        (mm, k) => (k === "who" ? esc(leadWho(from)) : k === "text" ? esc(text) : mm),
+      );
+      await deps.tg.send(deps.leadsChat, html);
+      forwarded = true;
+    } catch {
+      turn.log.notify = "failed";
+    }
+  }
+  // Без 0026 (или сбой базы) заявка не потеряна, если ушла владельцу в Telegram.
+  if (!r.ok && !forwarded) {
+    turn.log.result = `lead_${String(r.error ?? "failed")}`;
+    return void await say(turn, "demoFailed");
+  }
+  await deps.db.sessionPut(chat, null);
+  turn.log.result = r.ok ? "lead_saved" : "lead_forwarded_only";
+  if (forwarded) turn.log.notify = "sent";
+  await say(turn, "demoThanks");
 }
 
 // --- Сообщения -------------------------------------------------------------

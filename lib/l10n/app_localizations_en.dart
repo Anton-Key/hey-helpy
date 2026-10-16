@@ -5545,4 +5545,160 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get planOfflineNote => 'Offline — the floor plan saved on this phone';
+
+  @override
+  String get readyTitle => 'Demo readiness';
+
+  @override
+  String get readyMenuHint =>
+      'Database, migrations, functions, bot and AI — a one-minute check';
+
+  @override
+  String get readyIntro =>
+      'Pre-demo check. Nothing is changed in the database and no work orders are created; voice and photo recognition parse a test phrase and a drawn demo image.';
+
+  @override
+  String get readyRunning => 'Checking…';
+
+  @override
+  String get readyAllOk => 'Ready for the demo';
+
+  @override
+  String get readySomeWarn => 'Some warnings — see the yellow rows';
+
+  @override
+  String get readySomeFail => 'Problems found — see the red rows';
+
+  @override
+  String get readySomeUnknown => 'Some checks gave no answer — grey rows';
+
+  @override
+  String get readyRecheck => 'Check again';
+
+  @override
+  String get readyGroupBase => 'Database';
+
+  @override
+  String get readyGroupFunctions => 'Functions';
+
+  @override
+  String get readyGroupAi => 'AI';
+
+  @override
+  String get readyGroupData => 'Demo data';
+
+  @override
+  String get readyDb => 'Database responds';
+
+  @override
+  String readyMs(int ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String get readyNoAnswer => 'No answer — check the internet connection';
+
+  @override
+  String get readyMigrations => 'Migrations 0017–0025';
+
+  @override
+  String get readyMigrationsOk => 'All applied';
+
+  @override
+  String readyMigrationsMissing(String list) {
+    return 'Not applied: $list — Actions → Apply migration';
+  }
+
+  @override
+  String get readyUnknown => 'Could not check';
+
+  @override
+  String get readyFnVoice => 'Voice (voice-intake)';
+
+  @override
+  String get readyFnPhoto => 'Photo (photo-identify)';
+
+  @override
+  String get readyFnBot => 'Bot (telegram-bot)';
+
+  @override
+  String get readyFnNotify => 'Notifications (telegram-notify)';
+
+  @override
+  String get readyFnOffline => 'Offline (offline-sync)';
+
+  @override
+  String readyFnOk(int ms) {
+    return 'Responds · $ms ms';
+  }
+
+  @override
+  String readyFnFail(int code) {
+    return 'Error $code — Actions → Deploy functions';
+  }
+
+  @override
+  String get readyWebhook => 'Telegram bot: webhook';
+
+  @override
+  String readyWebhookOk(int count) {
+    return 'Set up · waiting for delivery: $count';
+  }
+
+  @override
+  String readyWebhookError(int min) {
+    return 'Set up, but a delivery error occurred $min min ago';
+  }
+
+  @override
+  String get readyWebhookNot => 'Not set up — Actions → Telegram webhook → set';
+
+  @override
+  String get readyWebhookOld => 'Available after Deploy functions (step 29)';
+
+  @override
+  String get readyAiVoice => 'Voice: AI response';
+
+  @override
+  String get readyAiPhoto => 'Photo: AI response';
+
+  @override
+  String readyAiTime(String sec, String model) {
+    return '$sec s · model $model';
+  }
+
+  @override
+  String get readyAiVoiceFail =>
+      'AI did not answer — the dictionary will parse the request';
+
+  @override
+  String get readyAiPhotoFail =>
+      'AI did not answer — equipment is picked manually';
+
+  @override
+  String get readyPhotoLog => 'Photo recognition, last 24 hours';
+
+  @override
+  String readyPhotoLogValue(int count, String sec) {
+    return '$count recognitions · $sec s on average';
+  }
+
+  @override
+  String get readyPhotoLogEmpty => 'No recognitions';
+
+  @override
+  String get readyDemo => 'Last Refresh demo';
+
+  @override
+  String readyDemoValue(String date) {
+    return '≈ $date (from demo work order dates)';
+  }
+
+  @override
+  String readyDemoOld(String date) {
+    return '≈ $date — run Refresh demo';
+  }
+
+  @override
+  String get readyDemoNone => 'No demo work orders — run Refresh demo';
 }

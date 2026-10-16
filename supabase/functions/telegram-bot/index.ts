@@ -15,7 +15,8 @@
 // Прямых select / insert в таблицы с этим ключом нет.
 //
 // Секреты: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET, YANDEX_API_KEY,
-// YANDEX_FOLDER_ID (+ необязательные YANDEX_MODEL*, YANDEX_VISION_MODEL*).
+// YANDEX_FOLDER_ID (+ необязательные YANDEX_MODEL*, YANDEX_VISION_MODEL*,
+// TELEGRAM_LEADS_CHAT_ID — чат владельца для заявок на демо, шаг 29).
 // В лог — только тип сообщения, время этапов, модель, коды ошибок, гость /
 // пользователь. Текст, расшифровка, фото, имена и chat_id не пишутся.
 
@@ -33,7 +34,7 @@ import {
 import { logFn } from "../_shared/http.ts";
 import { callVision, visionModels } from "../_shared/vision.ts";
 import { AiError, complete, DEFAULT_MODEL, LITE_MODEL } from "../_shared/yandex.ts";
-import { type Ai, type Ctx, type Db, type Deps, handleUpdate, type Session, type Storage, type Who } from "./bot.ts";
+import { type Ai, type Ctx, type Db, type Deps, handleUpdate, leadsChatId, type Session, type Storage, type Who } from "./bot.ts";
 import type { AssignInfo } from "./assign.ts";
 import { recognize } from "./stt.ts";
 import { parseUpdate, secretMatches, telegramApi } from "./telegram.ts";
@@ -169,6 +170,10 @@ function makeDeps(): Deps | null {
     },
     takeOrder: (chat, orderId) =>
       rpc<Record<string, unknown>>("tg_take_order", { p_chat: chat, p_order: orderId }).catch(() => ({ error: "unavailable" })),
+    // Заявка на демо с сайта (шаг 29, 0026). Без 0026 — ошибка, бот отвечает «не получилось»
+    // (или только пересылает владельцу, если задан TELEGRAM_LEADS_CHAT_ID).
+    leadSave: (chat, username, name, lang, text) =>
+      rpc<Record<string, unknown>>("tg_lead_save", { p_chat: chat, p_username: username, p_name: name, p_lang: lang, p_text: text }),
   };
 
   const storage: Storage = {
@@ -221,5 +226,6 @@ function makeDeps(): Deps | null {
     log,
     uuid: () => crypto.randomUUID(),
     appUrl: APP_URL,
+    leadsChat: leadsChatId(Deno.env.get("TELEGRAM_LEADS_CHAT_ID")),
   };
 }

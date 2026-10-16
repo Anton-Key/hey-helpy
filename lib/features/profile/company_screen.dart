@@ -17,6 +17,7 @@ import 'profile_repository.dart';
 import '../../core/app_message.dart';
 import '../telegram/telegram_screens.dart';
 import '../systems/systems_screen.dart';
+import '../readiness/readiness_screen.dart';
 
 /// Сроки приглашения на выбор (дней). Больше 7 не даём: так решено в 0008.
 const _inviteDays = [1, 3, 7];
@@ -485,6 +486,17 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                     onTap: () => Navigator.push(
                         context,
                         appRoute((_) => AuditScreen(companyId: _me.companyId!),
+                            title: l.profileMyCompany)),
+                  ),
+                // Готовность к показу (шаг 29): только администратор.
+                if (_me.role == UserRole.admin)
+                  AppRow(
+                    leading: const LeadingIcon(AppIcons.check),
+                    title: l.readyTitle,
+                    subtitle: l.readyMenuHint,
+                    onTap: () => Navigator.push(
+                        context,
+                        appRoute((_) => const ReadinessScreen(),
                             title: l.profileMyCompany)),
                   ),
               ]),

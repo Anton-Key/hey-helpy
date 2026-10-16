@@ -65,3 +65,6 @@ env.json
 # Скрипт скриншотов: зависимости ставятся локально
 /tools/screens/node_modules/
 tools/e2e/out/
+
+# Сайт: зависимости разовых скриптов и собранная копия
+/tools/site/node_modules/

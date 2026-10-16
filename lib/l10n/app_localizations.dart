@@ -9422,6 +9422,270 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Без сети — план, сохранённый на телефоне'**
   String get planOfflineNote;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Готовность к показу'**
+  String get readyTitle;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'База, миграции, функции, бот и ИИ — проверка за минуту'**
+  String get readyMenuHint;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверка перед показом. В базе ничего не меняется и заявки не создаются; голос и «По фото» разбирают проверочную фразу и нарисованный демо-снимок.'**
+  String get readyIntro;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверяю…'**
+  String get readyRunning;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё готово к показу'**
+  String get readyAllOk;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Есть замечания — посмотрите жёлтые строки'**
+  String get readySomeWarn;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Есть проблемы — посмотрите красные строки'**
+  String get readySomeFail;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Часть проверок не дала ответа — серые строки'**
+  String get readySomeUnknown;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверить ещё раз'**
+  String get readyRecheck;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'База данных'**
+  String get readyGroupBase;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Функции'**
+  String get readyGroupFunctions;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'ИИ'**
+  String get readyGroupAi;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Демо-данные'**
+  String get readyGroupData;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'База отвечает'**
+  String get readyDb;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'{ms} мс'**
+  String readyMs(int ms);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет ответа — проверьте интернет'**
+  String get readyNoAnswer;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Миграции 0017–0025'**
+  String get readyMigrations;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Все применены'**
+  String get readyMigrationsOk;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Не применены: {list} — Actions → Apply migration'**
+  String readyMigrationsMissing(String list);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось проверить'**
+  String get readyUnknown;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Голос (voice-intake)'**
+  String get readyFnVoice;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'По фото (photo-identify)'**
+  String get readyFnPhoto;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Бот (telegram-bot)'**
+  String get readyFnBot;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Уведомления (telegram-notify)'**
+  String get readyFnNotify;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Без сети (offline-sync)'**
+  String get readyFnOffline;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Отвечает · {ms} мс'**
+  String readyFnOk(int ms);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Ошибка {code} — Actions → Deploy functions'**
+  String readyFnFail(int code);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Telegram-бот: вебхук'**
+  String get readyWebhook;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Настроен · ждут доставки: {count}'**
+  String readyWebhookOk(int count);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Настроен, но {min} мин назад была ошибка доставки'**
+  String readyWebhookError(int min);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Не настроен — Actions → Telegram webhook → set'**
+  String get readyWebhookNot;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверка появится после Deploy functions (шаг 29)'**
+  String get readyWebhookOld;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Голос: ответ ИИ'**
+  String get readyAiVoice;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'По фото: ответ ИИ'**
+  String get readyAiPhoto;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'{sec} с · модель {model}'**
+  String readyAiTime(String sec, String model);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'ИИ не ответил — заявку разберёт словарь'**
+  String get readyAiVoiceFail;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'ИИ не ответил — оборудование выбирают вручную'**
+  String get readyAiPhotoFail;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'По фото за 24 часа'**
+  String get readyPhotoLog;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'{count} узнаваний · в среднем {sec} с'**
+  String readyPhotoLogValue(int count, String sec);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Узнаваний не было'**
+  String get readyPhotoLogEmpty;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Последний Refresh demo'**
+  String get readyDemo;
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'≈ {date} (по датам демо-заявок)'**
+  String readyDemoValue(String date);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'≈ {date} — запустите Refresh demo'**
+  String readyDemoOld(String date);
+
+  /// Шаг 29: готовность к показу
+  ///
+  /// In ru, this message translates to:
+  /// **'Демо-заявок нет — запустите Refresh demo'**
+  String get readyDemoNone;
 }
 
 class _AppLocalizationsDelegate

@@ -1,0 +1,9 @@
+/* TEAM */
+Product: Эй, Helpy / Hey Helpy
+Built with: Claude Code
+
+/* SITE */
+Last update: 2026-10-16
+Language: Русский, English
+Standards: HTML5, CSS3, Schema.org JSON-LD
+Software: Node.js (static generator, tools/site/build.mjs)

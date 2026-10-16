@@ -5581,4 +5581,161 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get planOfflineNote => 'Без сети — план, сохранённый на телефоне';
+
+  @override
+  String get readyTitle => 'Готовность к показу';
+
+  @override
+  String get readyMenuHint =>
+      'База, миграции, функции, бот и ИИ — проверка за минуту';
+
+  @override
+  String get readyIntro =>
+      'Проверка перед показом. В базе ничего не меняется и заявки не создаются; голос и «По фото» разбирают проверочную фразу и нарисованный демо-снимок.';
+
+  @override
+  String get readyRunning => 'Проверяю…';
+
+  @override
+  String get readyAllOk => 'Всё готово к показу';
+
+  @override
+  String get readySomeWarn => 'Есть замечания — посмотрите жёлтые строки';
+
+  @override
+  String get readySomeFail => 'Есть проблемы — посмотрите красные строки';
+
+  @override
+  String get readySomeUnknown => 'Часть проверок не дала ответа — серые строки';
+
+  @override
+  String get readyRecheck => 'Проверить ещё раз';
+
+  @override
+  String get readyGroupBase => 'База данных';
+
+  @override
+  String get readyGroupFunctions => 'Функции';
+
+  @override
+  String get readyGroupAi => 'ИИ';
+
+  @override
+  String get readyGroupData => 'Демо-данные';
+
+  @override
+  String get readyDb => 'База отвечает';
+
+  @override
+  String readyMs(int ms) {
+    return '$ms мс';
+  }
+
+  @override
+  String get readyNoAnswer => 'Нет ответа — проверьте интернет';
+
+  @override
+  String get readyMigrations => 'Миграции 0017–0025';
+
+  @override
+  String get readyMigrationsOk => 'Все применены';
+
+  @override
+  String readyMigrationsMissing(String list) {
+    return 'Не применены: $list — Actions → Apply migration';
+  }
+
+  @override
+  String get readyUnknown => 'Не удалось проверить';
+
+  @override
+  String get readyFnVoice => 'Голос (voice-intake)';
+
+  @override
+  String get readyFnPhoto => 'По фото (photo-identify)';
+
+  @override
+  String get readyFnBot => 'Бот (telegram-bot)';
+
+  @override
+  String get readyFnNotify => 'Уведомления (telegram-notify)';
+
+  @override
+  String get readyFnOffline => 'Без сети (offline-sync)';
+
+  @override
+  String readyFnOk(int ms) {
+    return 'Отвечает · $ms мс';
+  }
+
+  @override
+  String readyFnFail(int code) {
+    return 'Ошибка $code — Actions → Deploy functions';
+  }
+
+  @override
+  String get readyWebhook => 'Telegram-бот: вебхук';
+
+  @override
+  String readyWebhookOk(int count) {
+    return 'Настроен · ждут доставки: $count';
+  }
+
+  @override
+  String readyWebhookError(int min) {
+    return 'Настроен, но $min мин назад была ошибка доставки';
+  }
+
+  @override
+  String get readyWebhookNot =>
+      'Не настроен — Actions → Telegram webhook → set';
+
+  @override
+  String get readyWebhookOld =>
+      'Проверка появится после Deploy functions (шаг 29)';
+
+  @override
+  String get readyAiVoice => 'Голос: ответ ИИ';
+
+  @override
+  String get readyAiPhoto => 'По фото: ответ ИИ';
+
+  @override
+  String readyAiTime(String sec, String model) {
+    return '$sec с · модель $model';
+  }
+
+  @override
+  String get readyAiVoiceFail => 'ИИ не ответил — заявку разберёт словарь';
+
+  @override
+  String get readyAiPhotoFail =>
+      'ИИ не ответил — оборудование выбирают вручную';
+
+  @override
+  String get readyPhotoLog => 'По фото за 24 часа';
+
+  @override
+  String readyPhotoLogValue(int count, String sec) {
+    return '$count узнаваний · в среднем $sec с';
+  }
+
+  @override
+  String get readyPhotoLogEmpty => 'Узнаваний не было';
+
+  @override
+  String get readyDemo => 'Последний Refresh demo';
+
+  @override
+  String readyDemoValue(String date) {
+    return '≈ $date (по датам демо-заявок)';
+  }
+
+  @override
+  String readyDemoOld(String date) {
+    return '≈ $date — запустите Refresh demo';
+  }
+
+  @override
+  String get readyDemoNone => 'Демо-заявок нет — запустите Refresh demo';
 }

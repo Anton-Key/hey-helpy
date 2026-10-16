@@ -1,0 +1,46 @@
+{
+ "act.webp": [
+  1200,
+  676
+ ],
+ "camera.webp": [
+  480,
+  1066
+ ],
+ "og-en.png": [
+  1200,
+  630
+ ],
+ "og-ru.png": [
+  1200,
+  630
+ ],
+ "photos.webp": [
+  480,
+  1066
+ ],
+ "plan.webp": [
+  1200,
+  676
+ ],
+ "ppr.webp": [
+  1200,
+  676
+ ],
+ "reports.webp": [
+  1200,
+  676
+ ],
+ "telegram.webp": [
+  480,
+  662
+ ],
+ "video-poster.webp": [
+  1280,
+  720
+ ],
+ "voice.webp": [
+  480,
+  1066
+ ]
+}

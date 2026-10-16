@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/schema_compat.dart';
+import '../../models/profile.dart' show phoneFromRow;
 import '../../models/user_role.dart';
 
 /// Сотрудник компании (строка profiles, видна коллегам по RLS).
@@ -15,7 +17,7 @@ class Member {
         id: m['id'] as String,
         role: UserRole.fromString(m['role'] as String?),
         fullName: (m['full_name'] as String?)?.trim(),
-        phone: (m['phone'] as String?)?.trim(),
+        phone: phoneFromRow(m),
       );
 }
 
@@ -74,12 +76,16 @@ class ProfileRepository {
   }
 
   Future<List<Member>> members(String companyId) async {
-    final rows = await _c
+    // Шаг 28: телефоны — из profile_contacts (видят менеджеры и сам человек).
+    Future<List<Map<String, dynamic>>> query(String cols) => _c
         .from('profiles')
-        .select('id,full_name,phone,role')
+        .select(cols)
         .eq('company_id', companyId)
         .order('full_name')
         .order('id');
+    final rows = await SchemaCompat.run(
+        '0025', () => query('id,full_name,role,profile_contacts(phone)'),
+        legacy: () => query('id,full_name,phone,role'));
     return [for (final r in rows) Member.fromMap(r)];
   }
 

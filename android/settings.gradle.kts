@@ -24,3 +24,9 @@ plugins {
 }
 
 include(":app")
+
+// Шаг 28: VPS-эксперимент (Niantic Spatial NSDK) — отдельный модуль, только
+// в сборке с -PwithVps=true. Основной APK его не содержит и собирается как раньше.
+if (providers.gradleProperty("withVps").orNull == "true") {
+    include(":vps")
+}

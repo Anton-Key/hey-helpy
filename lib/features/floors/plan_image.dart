@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../../core/design/design.dart';
+import '../offline/offline_service.dart';
 import 'floor_models.dart';
 import 'floor_repository.dart';
 import 'plan_logic.dart';
@@ -42,10 +45,15 @@ class _PlanPictureState extends State<PlanPicture> {
   @override
   Widget build(BuildContext context) {
     final url = _url;
-    if (url == null) return const PlanGrid();
+    final path = widget.floor.planPath;
+    if (url == null || path == null) return const PlanGrid();
+    // Шаг 28: без сети — план, сохранённый на телефоне при предзагрузке.
+    final saved = _SavedPlan(floor: widget.floor, path: path, fit: widget.fit);
+    if (!OfflineService.instance.online) return saved;
     return FutureBuilder<String>(
       future: url,
       builder: (context, snap) {
+        if (snap.hasError) return saved;
         if (!snap.hasData) return const PlanGrid(loading: true);
         return Image.network(
           snap.data!,
@@ -54,11 +62,37 @@ class _PlanPictureState extends State<PlanPicture> {
           gaplessPlayback: true,
           loadingBuilder: (_, child, progress) =>
               progress == null ? child : const PlanGrid(loading: true),
-          errorBuilder: (_, __, ___) => const PlanGrid(broken: true),
+          errorBuilder: (_, __, ___) => saved,
         );
       },
     );
   }
+}
+
+/// План с телефона (OfflineService.planBytes); нет — «сломанная» сетка.
+class _SavedPlan extends StatelessWidget {
+  const _SavedPlan(
+      {required this.floor, required this.path, required this.fit});
+  final Floor floor;
+  final String path;
+  final BoxFit fit;
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<Uint8List?>(
+        future: OfflineService.instance.planBytes(floor.id, path),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const PlanGrid(loading: true);
+          }
+          final b = snap.data;
+          if (b == null) return const PlanGrid(broken: true);
+          return Image.memory(b,
+              fit: fit,
+              filterQuality: FilterQuality.medium,
+              gaplessPlayback: true,
+              errorBuilder: (_, __, ___) => const PlanGrid(broken: true));
+        },
+      );
 }
 
 /// Сетка вместо плана: этаж без картинки, загрузка или ошибка.

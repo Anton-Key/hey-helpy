@@ -326,9 +326,11 @@ class OfflineService extends ChangeNotifier {
       if (objIds.isNotEmpty) {
         final r = await Future.wait([
           _c.from('locations').select().inFilter('object_id', objIds),
+          // Шаг 28: с путём плана и размером — план без сети.
           _c
               .from('floors')
-              .select('id,object_id,name,level')
+              .select(
+                  'id,object_id,company_id,name,level,sort,plan_path,plan_w,plan_h')
               .inFilter('object_id', objIds),
         ]).timeout(requestTimeout);
         final locIds = [for (final l in r[0]) l['id'] as String];
@@ -336,7 +338,8 @@ class OfflineService extends ChangeNotifier {
             ? const <Map<String, dynamic>>[]
             : await _c
                 .from('assets')
-                .select('id,name,location_id,layer_id,meta,model,serial_no')
+                .select('id,name,location_id,layer_id,meta,model,serial_no,'
+                    'category,inventory_no,floor_id,plan_x,plan_y')
                 .inFilter('location_id', locIds)
                 .timeout(requestTimeout);
         _cache['places'] = {
@@ -363,10 +366,186 @@ class OfflineService extends ChangeNotifier {
       await _saveMeta();
       _markOnline();
       notifyListeners();
+      // Шаг 28: фото «до» и планы этажей — байтами, после всего остального
+      // (без них заявки уже работают без сети).
+      await _prefetchMedia(ids, details);
     } catch (e) {
       if (isNetworkError(e)) markOffline();
       debugPrint('offline prefetch: ${e.runtimeType}');
     }
+  }
+
+  // ---------------------------------------------------------------------
+  // Шаг 28: фото «до» и планы этажей на телефоне
+  // ---------------------------------------------------------------------
+
+  static const _photoBucket = 'work-photos';
+  static const _planBucket = 'floor-plans';
+  final Map<String, Uint8List> _mediaMemo = {};
+
+  Map<String, int> get _media => {
+        for (final e in ((_cache['media'] as Map?) ?? const {}).entries)
+          '${e.key}': (e.value as num).toInt(),
+      };
+
+  /// Скачать байты (не ссылки — ссылки живут час) фото «до» своих заявок
+  /// и планов этажей их помещений, в пределах бюджетов (offline_logic.dart);
+  /// ненужное (заявку закрыли, передали) — удалить.
+  Future<void> _prefetchMedia(
+      List<String> ids, List<Map<String, dynamic>> details) async {
+    final store = _store;
+    if (store == null) return;
+    final media = _media;
+    try {
+      // 1) Фото «до»: метаданные — для карточки без сети, файлы — в бюджет.
+      final rows = ids.isEmpty
+          ? const <Map<String, dynamic>>[]
+          : await _c
+              .from('attachments')
+              .select('id,work_order_id,stage,storage_path,taken_at,lat,lng,'
+                  'mock_location,created_at')
+              .inFilter('work_order_id', ids)
+              .eq('kind', 'photo')
+              .eq('stage', 'before')
+              .timeout(requestTimeout);
+      _cache.removeWhere((k, _) => k.startsWith('photos:'));
+      for (final id in ids) {
+        _cache['photos:$id'] = [
+          for (final r in rows)
+            if (r['work_order_id'] == id) r
+        ];
+      }
+      final keep = beforePhotosToKeep(ids, rows);
+      await _syncMedia(
+        store,
+        media,
+        wanted: [
+          for (final r in keep)
+            (offlinePhotoName('${r['id']}'), '${r['storage_path']}')
+        ],
+        isKind: isOfflinePhotoName,
+        bucket: _photoBucket,
+        budget: kOfflinePhotoBudget,
+        max: kOfflinePhotoMax,
+      );
+
+      // 2) Планы этажей помещений и оборудования своих заявок.
+      final places = (_cache['places'] as Map?) ?? const {};
+      final locs = {
+        for (final l in (places['locations'] as List?) ?? const [])
+          if (l is Map) '${l['id']}': l
+      };
+      final assets = {
+        for (final a in (places['assets'] as List?) ?? const [])
+          if (a is Map) '${a['id']}': a
+      };
+      final floors = {
+        for (final f in (places['floors'] as List?) ?? const [])
+          if (f is Map) '${f['id']}': f
+      };
+      final floorIds = <String>{
+        for (final d in details) ...[
+          if (assets[d['asset_id']]?['floor_id'] != null)
+            '${assets[d['asset_id']]!['floor_id']}',
+          if (locs[d['location_id']]?['floor_id'] != null)
+            '${locs[d['location_id']]!['floor_id']}',
+        ],
+      };
+      await _syncMedia(
+        store,
+        media,
+        wanted: [
+          for (final f in floorIds)
+            if (floors[f]?['plan_path'] != null)
+              (
+                offlinePlanName(f, '${floors[f]!['plan_path']}'),
+                '${floors[f]!['plan_path']}'
+              )
+        ],
+        isKind: isOfflinePlanName,
+        bucket: _planBucket,
+        budget: kOfflinePlanBudget,
+        max: kOfflinePlanMax,
+      );
+    } catch (e) {
+      if (isNetworkError(e)) markOffline();
+      debugPrint('offline media: ${e.runtimeType}');
+    } finally {
+      _cache['media'] = media;
+      await _saveCache();
+    }
+  }
+
+  Future<void> _syncMedia(OfflineStore store, Map<String, int> media,
+      {required List<(String, String)> wanted,
+      required bool Function(String) isKind,
+      required String bucket,
+      required int budget,
+      required int max}) async {
+    final c = mediaCleanup([for (final w in wanted) w.$1], media, isKind);
+    for (final n in c.drop) {
+      await store.deletePhoto(n);
+      media.remove(n);
+      _mediaMemo.remove(n);
+    }
+    var used = c.used;
+    for (final (name, path) in wanted) {
+      if (media.containsKey(name)) continue;
+      if (used >= budget) break;
+      final Uint8List bytes;
+      try {
+        bytes = await _c.storage
+            .from(bucket)
+            .download(path)
+            .timeout(const Duration(seconds: 60));
+      } catch (e) {
+        if (isNetworkError(e)) rethrow;
+        continue; // файла нет или нет прав — пропускаем
+      }
+      if (!mediaFits(used, bytes.length, budget, max)) continue;
+      await store.putPhoto(name, bytes);
+      media[name] = bytes.length;
+      used += bytes.length;
+    }
+  }
+
+  Future<Uint8List?> _mediaBytes(String name) async {
+    final m = _mediaMemo[name];
+    if (m != null) return m;
+    if (!_media.containsKey(name)) return null;
+    final b = await _store?.getPhoto(name);
+    if (b != null && _mediaMemo.length < 40) _mediaMemo[name] = b;
+    return b;
+  }
+
+  /// Фото «до» заявки с телефона: строки вложений (как с сервера) и байты
+  /// тех, что успели сохраниться. null — заявка не предзагружена.
+  Future<List<(Map<String, dynamic>, Uint8List?)>?> offlineBeforePhotos(
+      String orderId) async {
+    final rows = _cache['photos:$orderId'];
+    if (rows is! List) return null;
+    return [
+      for (final r in rows)
+        if (r is Map)
+          (
+            Map<String, dynamic>.from(r),
+            await _mediaBytes(offlinePhotoName('${r['id']}'))
+          )
+    ];
+  }
+
+  /// План этажа с телефона (байты картинки); null — не сохранён.
+  Future<Uint8List?> planBytes(String floorId, String path) =>
+      _mediaBytes(offlinePlanName(floorId, path));
+
+  /// Строки места из предзагрузки: помещение, оборудование, этаж.
+  Map<String, dynamic>? cachedPlace(String kind, String? id) {
+    if (id == null) return null;
+    final places = (_cache['places'] as Map?) ?? const {};
+    for (final r in (places[kind] as List?) ?? const []) {
+      if (r is Map && r['id'] == id) return Map<String, dynamic>.from(r);
+    }
+    return null;
   }
 
   /// Заявки исполнителя из телефона (для списка без сети) — статус уже с

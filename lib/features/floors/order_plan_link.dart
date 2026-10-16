@@ -4,9 +4,12 @@ import '../../core/design/design.dart';
 import '../../core/l10n_ext.dart';
 import '../equipment/asset_place.dart';
 import '../equipment/asset_place_widgets.dart';
+import '../offline/offline_logic.dart' show isNetworkError;
+import '../offline/offline_service.dart';
 import 'floor_models.dart';
 import 'floor_repository.dart';
 import 'floors_section.dart';
+import 'offline_plan_screen.dart';
 import 'plan_image.dart';
 
 /// Строка «Показать на плане» в карточке заявки: если у оборудования или
@@ -41,6 +44,9 @@ class _OrderPlanLinkState extends State<OrderPlanLink> {
   Floor? _floor;
   int _nearby = 0;
   MountInfo _mount = MountInfo.empty;
+
+  /// Шаг 28: место и этаж — из предзагрузки (сети нет).
+  bool _offline = false;
 
   @override
   void initState() {
@@ -97,7 +103,32 @@ class _OrderPlanLinkState extends State<OrderPlanLink> {
       });
     } catch (e) {
       debugPrint('OrderPlanLink: ${e.runtimeType}');
+      if (isNetworkError(e)) _loadOffline();
     }
+  }
+
+  /// Без сети: точка и этаж — из предзагрузки исполнителя, картинка плана —
+  /// с телефона (PlanPicture сама возьмёт сохранённую).
+  void _loadOffline() {
+    final off = OfflineService.instance;
+    PlanItem? item;
+    final a = off.cachedPlace('assets', widget.assetId);
+    if (a != null) item = PlanItem.assetFromMap(a);
+    if (item == null || !item.placed) {
+      final l = off.cachedPlace('locations', widget.locationId);
+      if (l != null) item = PlanItem.placeFromMap(l);
+    }
+    if (item == null || !item.placed) return;
+    final f = off.cachedPlace('floors', item.floorId);
+    if (f == null || f['company_id'] == null || !mounted) return;
+    final floor = Floor.fromMap(f);
+    if (!floor.hasPlan) return;
+    setState(() {
+      _item = item;
+      _floor = floor;
+      _nearby = 0;
+      _offline = true;
+    });
   }
 
   @override
@@ -116,9 +147,14 @@ class _OrderPlanLinkState extends State<OrderPlanLink> {
         leading: PlanThumb(floor: floor, width: 44),
         title: l.orderShowOnPlan,
         titleStyle: AppText.rowTitle.copyWith(color: AppColors.accentText),
-        subtitle: l.planNearby(floor.name, _nearby),
-        onTap: () =>
-            openFloorPlan(context, widget.objectId!, floor.id, focus: item.key),
+        subtitle: _offline ? floor.name : l.planNearby(floor.name, _nearby),
+        onTap: () => _offline || !OfflineService.instance.online
+            ? Navigator.push(
+                context,
+                appRoute((_) => OfflinePlanScreen(floor: floor, item: item),
+                    title: l.orderShowOnPlan))
+            : openFloorPlan(context, widget.objectId!, floor.id,
+                focus: item.key),
       ),
     ]);
   }

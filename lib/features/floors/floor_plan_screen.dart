@@ -11,6 +11,9 @@ import '../../core/schema_compat.dart';
 import '../../l10n/app_localizations.dart';
 import '../camera/camera_entry.dart';
 import '../directory/city.dart';
+import '../equipment/asset_card.dart';
+import '../equipment/equipment_models.dart';
+import '../equipment/equipment_repository.dart';
 import '../directory/directory.dart';
 import '../map/map_logic.dart';
 import '../map/map_parts.dart';
@@ -22,6 +25,10 @@ import 'floors_section.dart';
 import 'plan_canvas.dart';
 import 'plan_logic.dart';
 import 'plan_sheets.dart';
+import '../vps/vps_channel.dart';
+import '../vps/vps_launch.dart';
+import '../vps/vps_logic.dart';
+import '../vps/vps_site_screen.dart';
 import '../requests/order_form_place.dart';
 
 /// Экран «План этажа»: картинка плана с масштабом, маркеры помещений и
@@ -65,6 +72,8 @@ enum _MarkerAction {
   delete,
   photo,
   ar,
+  vps,
+  vpsSite,
 }
 
 enum _EmptyAction { newPlace, newAsset, putHere }
@@ -96,6 +105,9 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   String _query = '';
 
   bool get _isManager => _ctx?.isManager ?? false;
+
+  /// Шаг 28: VPS-вариант APK — «Метки VPS (эксперимент)».
+  VpsStatus _vps = VpsStatus.none;
   bool get _wide => MediaQuery.sizeOf(context).width >= AppSpace.wideFrom;
 
   Floor? get _floor {
@@ -109,6 +121,9 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   void initState() {
     super.initState();
     _load();
+    VpsChannel.status().then((v) {
+      if (mounted && v.available) setState(() => _vps = v);
+    });
   }
 
   @override
@@ -435,6 +450,27 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                       label: l.cameraArDemo,
                       onPressed: () => Navigator.pop(ctx, _MarkerAction.ar)),
                 ],
+                // Шаг 28: VPS-метки — только VPS-вариант APK.
+                if (_vps.available) ...[
+                  const SizedBox(height: AppSpace.s),
+                  AppButton.tinted(
+                      icon: AppIcons.place,
+                      label: l.vpsMarksButton,
+                      onPressed: () => Navigator.pop(ctx, _MarkerAction.vps)),
+                ],
+              ],
+              // Шаг 28: anchor payload скана помещения (менеджер; хранение —
+              // во всех сборках).
+              if (_isManager &&
+                  i.isPlace &&
+                  SchemaCompat.has('0025') != false) ...[
+                const SizedBox(height: AppSpace.group),
+                AppGroup(children: [
+                  AppRow(
+                      leading: const LeadingIcon(AppIcons.scan),
+                      title: l.vpsSiteTitle,
+                      onTap: () => Navigator.pop(ctx, _MarkerAction.vpsSite)),
+                ]),
               ],
               if (_editing) ...[
                 const SizedBox(height: AppSpace.group),
@@ -516,6 +552,17 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
         await launchUrl(
             WebBridge.arPage(locationId: place?.id, objectId: widget.objectId),
             webOnlyWindowName: '_self');
+      case _MarkerAction.vps:
+        final assetId = await openVpsMarks(context,
+            locationId: place!.id, placeName: place.name, canEdit: _isManager);
+        if (assetId != null && mounted) await _openAssetCard(assetId);
+      case _MarkerAction.vpsSite:
+        await Navigator.push(
+            context,
+            appRoute(
+                (_) => VpsSiteScreen(
+                    locationId: i.id, placeName: i.name, canEdit: _isManager),
+                title: l.planTitle));
       case _MarkerAction.allOrders:
         await Navigator.push(
             context,
@@ -551,6 +598,34 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   }
 
   // ------------------------------------------- номер и область помещения
+
+  /// Шаг 28: касание VPS-метки → карточка оборудования.
+  Future<void> _openAssetCard(String assetId) async {
+    final obj = _obj;
+    if (obj == null) return;
+    try {
+      final r = await Future.wait<Object?>([
+        EquipmentRepo().asset(assetId),
+        DirectoryRepo().placesOf(obj.id),
+        DirectoryRepo().layers(),
+      ]);
+      final asset = r[0] as Asset?;
+      if (asset == null || !mounted) return;
+      await Navigator.push(
+          context,
+          appRoute(
+              (_) => AssetCardScreen(
+                  asset: asset,
+                  object: obj,
+                  places: r[1] as List<Place>,
+                  layers: r[2] as List<Layer>,
+                  isManager: _isManager),
+              title: context.l10n.planTitle));
+      await _reloadItems();
+    } catch (e) {
+      _fail(e);
+    }
+  }
 
   Future<void> _editCode(PlanItem i) async {
     final l = context.l10n;

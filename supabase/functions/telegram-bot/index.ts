@@ -34,6 +34,7 @@ import { logFn } from "../_shared/http.ts";
 import { callVision, visionModels } from "../_shared/vision.ts";
 import { AiError, complete, DEFAULT_MODEL, LITE_MODEL } from "../_shared/yandex.ts";
 import { type Ai, type Ctx, type Db, type Deps, handleUpdate, type Session, type Storage, type Who } from "./bot.ts";
+import type { AssignInfo } from "./assign.ts";
 import { recognize } from "./stt.ts";
 import { parseUpdate, secretMatches, telegramApi } from "./telegram.ts";
 import { langOf, t } from "./texts.ts";
@@ -158,6 +159,16 @@ function makeDeps(): Deps | null {
     notifyOptout: async (chat, off) => {
       await rpc("tg_notify_optout", { p_chat: chat, p_off: off });
     },
+    notifyClaim: (orderId, status) => rpc("tg_notify_claim", { p_order: orderId, p_status: status }),
+    // Шаг 28 (0025). Без 0025 — функции нет: «Новая заявка» молча не уходит,
+    // «Взять в работу» отвечает «недоступна».
+    assignClaim: (orderId, actor) =>
+      rpc<AssignInfo | null>("tg_notify_assign_claim", { p_order: orderId, p_actor: actor }),
+    assignRelease: async (orderId, contractorId, profileId) => {
+      await rpc("tg_notify_assign_release", { p_order: orderId, p_contractor: contractorId, p_profile: profileId });
+    },
+    takeOrder: (chat, orderId) =>
+      rpc<Record<string, unknown>>("tg_take_order", { p_chat: chat, p_order: orderId }).catch(() => ({ error: "unavailable" })),
   };
 
   const storage: Storage = {

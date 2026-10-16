@@ -261,6 +261,13 @@ class _TelegramAccountScreenState extends State<TelegramAccountScreen> {
               else
                 AppButton.destructive(
                     label: l.tgDisconnect, onPressed: _disconnect),
+              // Шаг 28: исполнителю — новые заявки и «Взять в работу».
+              const SizedBox(height: AppSpace.l),
+              Padding(
+                padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: AppSpace.l),
+                child: Text(l.tgExecutorHint, style: AppText.footnote),
+              ),
             ],
           ]),
         ),
@@ -361,8 +368,7 @@ class _ReportLinkScreenState extends State<ReportLinkScreen> {
             context, l.tgLinkRotate, l.tgLinkRotateConfirm, l.tgLinkRotate)) {
       return;
     }
-    await _act(() => _repo.rotate(_obj),
-        l.tgLinkCreated);
+    await _act(() => _repo.rotate(_obj), l.tgLinkCreated);
   }
 
   Future<void> _disable() async {

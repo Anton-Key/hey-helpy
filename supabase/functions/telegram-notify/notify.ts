@@ -31,9 +31,19 @@ export const NOTIFY_STATUSES = ["in_progress", "done", "returned", "cancelled"] 
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function parseNotifyInput(body: unknown): { ok: true; orderId: string } | { ok: false } {
-  const id = (body as { orderId?: unknown } | null)?.orderId;
-  return typeof id === "string" && UUID.test(id) ? { ok: true, orderId: id.toLowerCase() } : { ok: false };
+/** status — автору о смене статуса (шаг 24); assigned — исполнителям «Новая заявка» (шаг 28). */
+export type NotifyKind = "status" | "assigned";
+
+export function parseNotifyInput(
+  body: unknown,
+): { ok: true; orderId: string; kind: NotifyKind } | { ok: false } {
+  const b = body as { orderId?: unknown; kind?: unknown } | null;
+  const id = b?.orderId;
+  const kind = b?.kind ?? "status";
+  if (kind !== "status" && kind !== "assigned") return { ok: false };
+  return typeof id === "string" && UUID.test(id)
+    ? { ok: true, orderId: id.toLowerCase(), kind }
+    : { ok: false };
 }
 
 export function esc(s: string): string {

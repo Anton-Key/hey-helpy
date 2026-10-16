@@ -33,6 +33,8 @@ import { recognize, SttError } from "./stt.ts";
 import { COMMANDS, langOf, t, TEXTS } from "./texts.ts";
 import type { IntakeResult } from "../_shared/intake.ts";
 import type { Vision } from "../_shared/identify.ts";
+import { type AssignInfo, assignNotice, notifyAssigned, parseTake, takeData, takeReply } from "./assign.ts";
+import type { Target } from "../telegram-notify/notify.ts";
 
 const CO = "c0000000-0000-4000-8000-000000000001";
 const OBJ = "o0000000-0000-4000-8000-000000000010";
@@ -80,6 +82,9 @@ function world(opts: {
   stt?: string | Error;
   create?: J;
   download?: Uint8Array | Error;
+  take?: J;
+  assign?: AssignInfo | null;
+  author?: Target | null;
 } = {}) {
   const sent: Sent[] = [];
   const edits: Sent[] = [];
@@ -173,6 +178,22 @@ function world(opts: {
     notifyOptout(_chat, off) {
       calls.push(off ? "notify_off" : "notify_on");
       return Promise.resolve();
+    },
+    notifyClaim(_o, status) {
+      calls.push(`claim_${status}`);
+      return Promise.resolve(opts.author ?? null);
+    },
+    assignClaim(_o, actor) {
+      calls.push(`assign_${actor ?? "-"}`);
+      return Promise.resolve(opts.assign ?? null);
+    },
+    assignRelease() {
+      calls.push("assign_release");
+      return Promise.resolve();
+    },
+    takeOrder(chat, orderId) {
+      calls.push(`take_${chat}_${orderId}`);
+      return Promise.resolve(opts.take ?? { error: "not_found" });
     },
   };
   let n = 0;
@@ -700,3 +721,134 @@ Deno.test("уведомления: /stop и кнопка «Не присылат
   await handleUpdate(msg({ text: "/start" }), w.deps);
   assert(w.calls.includes("notify_on"));
 });
+
+// ---------------------------------------------------------------------------
+// Шаг 28: исполнителю — «Новая заявка» и «Взять в работу»
+// ---------------------------------------------------------------------------
+
+const WO = "3f2a1c00-0000-4000-8000-000000000277";
+const info = (targets: AssignInfo["targets"]): AssignInfo => ({
+  number: "3F2A1C",
+  title: "Капает вода с кондиционера",
+  object: "БЦ «Демо»",
+  place: "301 Переговорная",
+  priority: "high",
+  contractor_id: "k0000000-0000-4000-8000-000000000031",
+  targets,
+});
+
+Deno.test("кнопка «Взять в работу»: данные ≤ 64 байт, разбор", () => {
+  const d = takeData(WO);
+  assert(new TextEncoder().encode(d).length <= 64);
+  assertEquals(parseTake(d), WO);
+  assertEquals(parseTake("tk:не-uuid"), null);
+  assertEquals(parseTake("c"), null);
+});
+
+Deno.test("текст «Новая заявка»: объект, помещение, срочность, кнопки", () => {
+  const ru = assignNotice(info([]), "ru", WO, "https://app.example/");
+  assertStringIncludes(ru.html, "Новая заявка № 3F2A1C: Капает вода с кондиционера");
+  assertStringIncludes(ru.html, "БЦ «Демо» · 301 Переговорная · срочность высокая");
+  const kb = ru.markup.inline_keyboard.flat();
+  assertEquals(kb[0].callback_data, takeData(WO));
+  assertEquals(kb[1].url, `https://app.example/#/orders/${WO}`);
+  assertEquals(kb[2].callback_data, "nf:off");
+  const en = assignNotice({ ...info([]), priority: "normal", place: null }, "en", WO, "https://app.example/");
+  assertStringIncludes(en.html, "New work order #3F2A1C");
+  assertFalse(en.html.includes("priority"));
+  // HTML экранируется
+  const x = assignNotice({ ...info([]), title: "<b>щит</b>" }, "ru", WO, "u");
+  assertStringIncludes(x.html, "&lt;b&gt;щит&lt;/b&gt;");
+});
+
+Deno.test("рассылка: ошибка одному — отметка снимается, остальным уходит", async () => {
+  const sent: number[] = [];
+  const released: string[] = [];
+  const r = await notifyAssigned(WO, "actor", {
+    claim: () =>
+      Promise.resolve(info([
+        { chat_id: 1, lang: "ru", profile_id: "p1" },
+        { chat_id: 2, lang: "en", profile_id: "p2" },
+      ])),
+    release: (_o, _c, p) => {
+      released.push(p);
+      return Promise.resolve();
+    },
+    send: (chat) => (chat === 2 ? Promise.reject(new Error("blocked")) : Promise.resolve(sent.push(chat))),
+    appUrl: "u",
+  });
+  assertEquals(r, { sent: 1, failed: 1 });
+  assertEquals(sent, [1]);
+  assertEquals(released, ["p2"]);
+  const none = await notifyAssigned(WO, null, {
+    claim: () => Promise.resolve(null),
+    release: () => Promise.resolve(),
+    send: () => Promise.reject(new Error("не должен")),
+    appUrl: "u",
+  });
+  assertEquals(none, { sent: 0, failed: 0 });
+});
+
+Deno.test("ответ «Взять в работу» → текст", () => {
+  assertEquals(takeReply({ ok: true }), "takeOk");
+  assertEquals(takeReply({ error: "already" }), "takeAlready");
+  assertEquals(takeReply({ error: "not_executor" }), "takeNotExecutor");
+  assertEquals(takeReply({ error: "not_linked" }), "takeNotLinked");
+  assertEquals(takeReply({ error: "bad_status" }), "takeGone");
+});
+
+Deno.test("бот: «Взять в работу» — статус меняет база, автору уходит «в работе»", async () => {
+  const w = world({
+    take: { ok: true, number: "3F2A1C", title: "Капает вода" },
+    author: { chat_id: 9001, kind: "guest", lang: "ru", number: "3F2A1C", title: "Капает вода", status: "in_progress" },
+  });
+  await handleUpdate(press(takeData(WO), 555), w.deps);
+  assert(w.calls.includes(`take_${CHAT}_${WO}`));
+  assertFalse(w.calls.includes("resolve")); // привязку проверяет tg_take_order
+  assertStringIncludes(w.edits.at(-1)!.html, "вы взяли её в работу");
+  const kb = (w.edits.at(-1)!.markup as { inline_keyboard: { url?: string; callback_data?: string }[][] })
+    .inline_keyboard.flat();
+  assertEquals(kb.length, 1); // осталась только «Открыть»
+  assert(kb[0].url?.endsWith(WO));
+  assert(w.calls.includes("claim_in_progress"));
+  assertEquals(w.sent.at(-1)!.chat, 9001);
+  assertStringIncludes(w.sent.at(-1)!.html, "взята в работу");
+});
+
+Deno.test("бот: «Взять в работу» без прав — понятный ответ, статус не меняется", async () => {
+  const w = world({ take: { error: "not_executor" } });
+  await handleUpdate(press(takeData(WO), 555), w.deps);
+  assertEquals(w.answers.at(-1), TEXTS.ru.takeNotExecutor);
+  assertEquals(w.sent.at(-1)!.html, TEXTS.ru.takeNotExecutor);
+  assertFalse(w.calls.includes("claim_in_progress"));
+  const w2 = world({ take: { error: "already", number: "3F2A1C" } });
+  await handleUpdate(press(takeData(WO), 555), w2.deps);
+  assertEquals(w2.edits.at(-1)!.html, "Заявка № 3F2A1C уже в работе.");
+});
+
+Deno.test("бот: заявка создана и назначена — исполнителям «Новая заявка»", async () => {
+  const w = world({
+    ai: aiLeak,
+    who: { kind: "user", company_id: CO, profile_id: "me", object: { id: OBJ, name: "БЦ «Демо»", city: "Белград" } },
+    create: { ok: true, number: "3F2A1C", contractor: "КлиматСервис", status: "assigned" },
+    assign: info([{ chat_id: 4242, lang: "ru", profile_id: "p1" }]),
+  });
+  await handleUpdate(msg({ text: "в переговорной 301 капает кондиционер" }), w.deps);
+  const card = w.sessions.get(CHAT)!.card!;
+  await handleUpdate(press("c", card), w.deps);
+  assert(w.calls.includes("assign_me"), "актор — автор заявки (себе не шлём)");
+  const toExec = w.sent.find((x) => x.chat === 4242)!;
+  assertStringIncludes(toExec.html, "Новая заявка № 3F2A1C");
+  // Без подрядчика — не зовём.
+  const w2 = world({ ai: aiLeak, create: { ok: true, number: 1 } });
+  await handleUpdate(msg({ text: "в переговорной 301 капает кондиционер" }), w2.deps);
+  await handleUpdate(press("c", w2.sessions.get(CHAT)!.card!), w2.deps);
+  assertFalse(w2.calls.some((c) => c.startsWith("assign_")));
+});
+
+Deno.test("тексты шага 28 есть на обоих языках", () => {
+  for (const k of ["assignNew", "bTake", "bOpen", "bAssignOff", "takeOk", "takeAlready", "takeNotExecutor", "takeGone"] as const) {
+    assert(TEXTS.ru[k] && TEXTS.en[k], k);
+  }
+});
+

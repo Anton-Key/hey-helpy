@@ -287,3 +287,21 @@ end $$;
 
 select t.make_company27(1);
 select t.make_company27(2);
+
+-- 0025 (шаг 28): VPS-скан переговорной (021) и метка кондиционера (701).
+create or replace function t.make_company28(k int) returns void
+language plpgsql as $$
+declare
+  c uuid := t.id(k, 1);
+begin
+  insert into public.vps_sites(id, company_id, object_id, location_id, name, anchor_payload, created_by)
+  values (t.id(k, 194), c, t.id(k, 10), t.id(k, 21), 'Переговорная', format('payload-company-%s', k), t.id(k, 100));
+  insert into public.vps_marks(id, company_id, site_id, asset_id, pos_x, pos_y, pos_z, created_by)
+  values (t.id(k, 195), c, t.id(k, 194), t.id(k, 701), 1.2, 1.6, -0.4, t.id(k, 100));
+  -- телефоны (раздел 3): запись в profiles.phone переносит триггер
+  update public.profiles set phone = format('+7 900 000-%s-02', k) where id = t.id(k, 102);
+  update public.profiles set phone = format('+7 900 000-%s-03', k) where id = t.id(k, 103);
+end $$;
+
+select t.make_company28(1);
+select t.make_company28(2);

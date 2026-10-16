@@ -1,6 +1,10 @@
 // Edge Function telegram-notify (шаг 24): после смены статуса заявки
 // приложение (менеджер или исполнитель) вызывает её со своим JWT:
 //   POST { orderId } → 200 { result: sent | sent_photo | skip | no_status | send_failed }
+// Шаг 28: после назначения подрядчика (создание с автоназначением, смена
+// подрядчика) — исполнителям «Новая заявка» с кнопкой «Взять в работу»:
+//   POST { orderId, kind: "assigned" } → 200 { result: "assigned", sent, failed }
+//   (tg_notify_assign_claim / _release, 0025; без 0025 — sent: 0).
 //   400 bad_request · 401 unauthorized · 404 not_visible · 500 not_configured
 //
 // Кто что делает:
@@ -19,6 +23,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { corsHeaders, logFn } from "../_shared/http.ts";
 import { sendPhotoBytes, telegramApi } from "../telegram-bot/telegram.ts";
+import { type AssignInfo, notifyAssigned } from "../telegram-bot/assign.ts";
 import { notifyOrder, parseNotifyInput, type Target } from "./notify.ts";
 
 const log = logFn("telegram-notify");
@@ -70,6 +75,31 @@ Deno.serve(async (req) => {
 
   const service = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const tg = telegramApi(token);
+
+  if (input.kind === "assigned") {
+    try {
+      // Заявка видна вызывающему (RLS) — иначе 404, как у статусов.
+      const { data, error } = await user.from("work_orders").select("id").eq("id", input.orderId).maybeSingle();
+      if (error) return reply(500, { error: "failed" }, { code: "db_read" });
+      if (!data) return reply(404, { error: "not_visible" }, { result: "not_visible" });
+      const r = await notifyAssigned(input.orderId, u.user.id, {
+        async claim(id, actor) {
+          const { data, error } = await service.rpc("tg_notify_assign_claim", { p_order: id, p_actor: actor });
+          if (error) return null; // без 0025 — тихо ничего
+          return (data ?? null) as AssignInfo | null;
+        },
+        async release(id, contractor, profile) {
+          await service.rpc("tg_notify_assign_release", { p_order: id, p_contractor: contractor, p_profile: profile });
+        },
+        send: (chat, html, markup) => tg.send(chat, html, markup),
+        appUrl: APP_URL,
+      });
+      return reply(200, { result: "assigned", ...r }, { result: "assigned", sent: r.sent, failed: r.failed });
+    } catch (e) {
+      const code = (e as { code?: string })?.code ?? "unexpected";
+      return reply(500, { error: "failed" }, { code });
+    }
+  }
 
   try {
     const result = await notifyOrder(input.orderId, {

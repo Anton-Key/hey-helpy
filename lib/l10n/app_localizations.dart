@@ -9110,6 +9110,318 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Выгрузку из «Выгрузить в Excel» можно поправить и загрузить обратно: строки с ID обновят своё оборудование, без ID — добавятся.'**
   String get eqExportReimportInfo;
+
+  /// Шаг 28: кнопка открыть экран VPS-меток (только VPS-сборка)
+  ///
+  /// In ru, this message translates to:
+  /// **'Метки VPS (эксперимент)'**
+  String get vpsMarksButton;
+
+  /// Шаг 28: экран и строка в шторке помещения
+  ///
+  /// In ru, this message translates to:
+  /// **'VPS-скан помещения'**
+  String get vpsSiteTitle;
+
+  /// Шаг 28: строка состояния скана
+  ///
+  /// In ru, this message translates to:
+  /// **'Скан'**
+  String get vpsSiteState;
+
+  /// Шаг 28: скана нет
+  ///
+  /// In ru, this message translates to:
+  /// **'нет'**
+  String get vpsSiteNone;
+
+  /// Шаг 28: скан есть, сколько меток
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, =0{есть · меток нет} one{есть · {count} метка} few{есть · {count} метки} many{есть · {count} меток} other{есть · {count} метки}}'**
+  String vpsSiteMarks(int count);
+
+  /// Шаг 28: пояснение на экране скана
+  ///
+  /// In ru, this message translates to:
+  /// **'Отсканируйте помещение в Scaniverse, в портале Niantic Spatial переведите скан в «production» и вставьте сюда его anchor payload. Тогда в VPS-версии приложения метки оборудования будут висеть на своих местах — и после перезапуска.'**
+  String get vpsSiteIntro;
+
+  /// Шаг 28: поле строки якоря из портала Niantic
+  ///
+  /// In ru, this message translates to:
+  /// **'Anchor payload'**
+  String get vpsPayload;
+
+  /// Шаг 28: подсказка поля
+  ///
+  /// In ru, this message translates to:
+  /// **'Вставьте строку из портала Niantic'**
+  String get vpsPayloadHint;
+
+  /// Шаг 28: ошибка поля
+  ///
+  /// In ru, this message translates to:
+  /// **'Это не похоже на anchor payload — скопируйте строку из портала целиком'**
+  String get vpsPayloadInvalid;
+
+  /// Шаг 28: поле
+  ///
+  /// In ru, this message translates to:
+  /// **'Название скана (необязательно)'**
+  String get vpsSiteName;
+
+  /// Шаг 28: заголовок группы
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить скан'**
+  String get vpsSiteAdd;
+
+  /// Шаг 28: заголовок группы
+  ///
+  /// In ru, this message translates to:
+  /// **'Заменить скан'**
+  String get vpsSiteEdit;
+
+  /// Шаг 28: когда менялся скан
+  ///
+  /// In ru, this message translates to:
+  /// **'Обновлён'**
+  String get vpsSiteUpdated;
+
+  /// Шаг 28: сообщение
+  ///
+  /// In ru, this message translates to:
+  /// **'Скан сохранён'**
+  String get vpsSiteSaved;
+
+  /// Шаг 28: сообщение после замены payload
+  ///
+  /// In ru, this message translates to:
+  /// **'Скан заменён. Метки привязаны к прежнему скану — поставьте их заново в VPS-версии.'**
+  String get vpsSiteRescanHint;
+
+  /// Шаг 28: кнопка
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить скан'**
+  String get vpsSiteDelete;
+
+  /// Шаг 28: подтверждение
+  ///
+  /// In ru, this message translates to:
+  /// **'Метки оборудования этого скана тоже удалятся.'**
+  String get vpsSiteDeleteConfirm;
+
+  /// Шаг 28: сообщение
+  ///
+  /// In ru, this message translates to:
+  /// **'Скан удалён'**
+  String get vpsSiteDeleted;
+
+  /// Шаг 28: подсказка без прав
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить или заменить скан может менеджер.'**
+  String get vpsReadOnly;
+
+  /// Шаг 28: блокировка
+  ///
+  /// In ru, this message translates to:
+  /// **'В этой сборке нет токена VPS — соберите VPS-APK с секретом NIANTIC_DEV_TOKEN'**
+  String get vpsTokenMissing;
+
+  /// Шаг 28: блокировка
+  ///
+  /// In ru, this message translates to:
+  /// **'Токен VPS истёк — обновите в портале Niantic и пересоберите VPS-APK'**
+  String get vpsTokenExpired;
+
+  /// Шаг 28: предупреждение
+  ///
+  /// In ru, this message translates to:
+  /// **'Токен VPS истекает через {days} дн. — обновите в портале Niantic'**
+  String vpsTokenSoon(int days);
+
+  /// Шаг 28: блокировка
+  ///
+  /// In ru, this message translates to:
+  /// **'Этот телефон не поддерживает ARCore — метки VPS недоступны'**
+  String get vpsNoArcore;
+
+  /// Шаг 28: блокировка
+  ///
+  /// In ru, this message translates to:
+  /// **'У помещения нет VPS-скана. Менеджер добавляет его на плане этажа: помещение → «VPS-скан помещения».'**
+  String get vpsNoSite;
+
+  /// Шаг 28: камера без помещения
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала выберите помещение в «Где я»'**
+  String get vpsNoPlace;
+
+  /// Шаг 28: нативный экран
+  ///
+  /// In ru, this message translates to:
+  /// **'Найти место'**
+  String get vpsFindPlace;
+
+  /// Шаг 28: индикатор (красный)
+  ///
+  /// In ru, this message translates to:
+  /// **'Ищу… медленно ведите камерой по комнате'**
+  String get vpsSearching;
+
+  /// Шаг 28: индикатор (жёлтый)
+  ///
+  /// In ru, this message translates to:
+  /// **'Примерно'**
+  String get vpsCoarse;
+
+  /// Шаг 28: индикатор (зелёный)
+  ///
+  /// In ru, this message translates to:
+  /// **'Точно ✓'**
+  String get vpsPrecise;
+
+  /// Шаг 28: режим менеджера
+  ///
+  /// In ru, this message translates to:
+  /// **'Поставить метку'**
+  String get vpsPlaceMark;
+
+  /// Шаг 28: подсказка
+  ///
+  /// In ru, this message translates to:
+  /// **'Коснитесь оборудования на экране'**
+  String get vpsPlaceHint;
+
+  /// Шаг 28: выбор оборудования
+  ///
+  /// In ru, this message translates to:
+  /// **'Какое это оборудование?'**
+  String get vpsPickAsset;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Метка сохранена'**
+  String get vpsMarkSaved;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Метка удалена'**
+  String get vpsMarkDeleted;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить метку'**
+  String get vpsDeleteMark;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Карточка оборудования'**
+  String get vpsOpenAsset;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет доступа к камере — разрешите его в настройках телефона'**
+  String get vpsNoCamera;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети — VPS работает только с интернетом'**
+  String get vpsNoNetwork;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Niantic не принял токен VPS — обновите его в портале и пересоберите VPS-APK'**
+  String get vpsAuthFailed;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Скан не найден — проверьте anchor payload (скан должен быть в «production»)'**
+  String get vpsNoMap;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Лимит запросов VPS исчерпан — попробуйте позже'**
+  String get vpsQuota;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Сессия истекла — закройте экран и откройте заново'**
+  String get vpsSessionExpired;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Не получилось — попробуйте ещё раз'**
+  String get vpsFailed;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Не нашёл поверхность — наведите на стену или пол рядом с оборудованием'**
+  String get vpsNoHit;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'В помещении нет оборудования'**
+  String get vpsNoAssets;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала дождитесь «Точно ✓»'**
+  String get vpsNeedPrecise;
+
+  /// Шаг 28
+  ///
+  /// In ru, this message translates to:
+  /// **'Ведите камерой медленнее и чуть дальше от стены'**
+  String get vpsMoveSlowly;
+
+  /// Шаг 28: подпись метки
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{{count} открытая заявка} few{{count} открытые заявки} many{{count} открытых заявок} other{{count} открытой заявки}}'**
+  String vpsOpenOrders(int count);
+
+  /// Шаг 28: подпись метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Открытых заявок нет'**
+  String get vpsNoOpenOrders;
+
+  /// Шаг 28: подпись метки, дата ближайшего ТО
+  ///
+  /// In ru, this message translates to:
+  /// **'ТО {date}'**
+  String vpsMaintenance(String date);
+
+  /// Шаг 28: настройки Telegram — пояснение про уведомления исполнителю
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнителю подрядчика бот присылает новые назначенные заявки с кнопкой «Взять в работу». Не присылать — команда /stop в чате с ботом, снова присылать — /start.'**
+  String get tgExecutorHint;
+
+  /// Шаг 28: экран плана без сети, подпись
+  ///
+  /// In ru, this message translates to:
+  /// **'Без сети — план, сохранённый на телефоне'**
+  String get planOfflineNote;
 }
 
 class _AppLocalizationsDelegate

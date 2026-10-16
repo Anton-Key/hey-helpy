@@ -181,9 +181,11 @@ class RequestsRepo {
       String? locationId,
       String? assetId,
       String inputChannel = 'button'}) async {
+    // id — из приложения: после вставки по нему зовём telegram-notify.
+    final oid = id ?? newUuid();
     // Слой передаём явно: тогда назначение подрядчика не зависит от языка интерфейса.
     await _c.from('work_orders').insert({
-      if (id != null) 'id': id,
+      'id': oid,
       'company_id': companyId,
       'title': title,
       'description': description,
@@ -198,6 +200,9 @@ class RequestsRepo {
       'recurrence': recurring ? {'kind': 'regular'} : null,
       'created_by': uid,
     });
+    // База могла сразу назначить подрядчика (по системе и объекту) — его
+    // исполнителям «Новая заявка» в Telegram (шаг 28; нет подрядчика — ничего).
+    notifyAssigned(oid);
   }
 
   Future<void> update(String id,
@@ -255,6 +260,7 @@ class RequestsRepo {
       'assigned_by': 'manager',
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }).eq('id', id);
+    notifyAssigned(id);
   }
 
   /// Подрядчики, где текущий пользователь — исполнитель (`executors`).
@@ -285,6 +291,17 @@ class RequestsRepo {
   void notifyTelegram(String id) {
     unawaited(_c.functions
         .invoke('telegram-notify', body: {'orderId': id})
+        .timeout(const Duration(seconds: 20))
+        .then((_) {},
+            onError: (e) => debugPrint('telegram-notify: ${e.runtimeType}')));
+  }
+
+  /// Шаг 28: исполнителям назначенного подрядчика — «Новая заявка» в Telegram
+  /// с кнопкой «Взять в работу» (telegram-notify, kind: assigned). Кому —
+  /// решает база (бригады, отписка, повтор не шлёт); ошибки — тихо.
+  void notifyAssigned(String id) {
+    unawaited(_c.functions
+        .invoke('telegram-notify', body: {'orderId': id, 'kind': 'assigned'})
         .timeout(const Duration(seconds: 20))
         .then((_) {},
             onError: (e) => debugPrint('telegram-notify: ${e.runtimeType}')));
@@ -491,7 +508,17 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     } catch (e) {
       debugPrint('photos: $e');
       // Без сети фото с сервера не показать — это не ошибка карточки.
-      if (mounted) setState(() => _photosFailed = !isNetworkError(e));
+      // Шаг 28: фото «до» своих заявок исполнитель видит с телефона.
+      final offline = isNetworkError(e)
+          ? await OfflineService.instance.offlineBeforePhotos(widget.order.id)
+          : null;
+      if (!mounted) return;
+      setState(() {
+        if (offline != null) {
+          _photos = [for (final (r, b) in offline) WorkPhoto.offline(r, b)];
+        }
+        _photosFailed = !isNetworkError(e);
+      });
     }
   }
 

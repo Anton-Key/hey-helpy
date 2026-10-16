@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Шаг 28: VPS-эксперимент. Разрешения камеры и геопозиции уже есть
+         в манифесте приложения; ARCore там — optional. -->
+    <uses-feature android:glEsVersion="0x00030000" android:required="false"/>
+
+    <application>
+        <activity
+            android:name=".VpsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+            android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen"/>
+    </application>
+</manifest>

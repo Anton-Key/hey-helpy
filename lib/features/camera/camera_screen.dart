@@ -29,6 +29,9 @@ import '../photos/photo_repository.dart';
 import '../requests/order_form_place.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
+import '../vps/vps_channel.dart';
+import '../vps/vps_launch.dart';
+import '../vps/vps_logic.dart';
 import 'asset_facts_repository.dart';
 import 'camera_logic.dart';
 import 'live_camera.dart';
@@ -92,6 +95,9 @@ class _CameraScreenState extends State<CameraScreen>
   // Справочники и «Где я».
   String? _companyId;
   bool _manager = false;
+
+  /// Шаг 28: VPS-вариант APK — кнопка «Метки VPS (эксперимент)».
+  VpsStatus _vps = VpsStatus.none;
   List<Obj> _objects = const [];
   List<Layer> _layers = const [];
   OrderContext? _ctx;
@@ -233,6 +239,7 @@ class _CameraScreenState extends State<CameraScreen>
       _companyId = r[0] as String?;
       final role = r[1] as String?;
       _manager = role == 'manager' || role == 'admin';
+      _vps = await VpsChannel.status();
       _objects = r[2] as List<Obj>;
       _layers = r[3] as List<Layer>;
     } catch (e) {
@@ -681,29 +688,52 @@ class _CameraScreenState extends State<CameraScreen>
         if (ok == true && mounted) Navigator.pop(context, true);
       });
 
+  /// Шаг 28: «Метки VPS» для помещения из «Где я». Камеру Flutter выключаем
+  /// заранее: ARCore нужна та же камера.
+  Future<void> _openVps() async {
+    final room = _locationId;
+    if (room == null) {
+      showAppMessage(context, context.l10n.vpsNoPlace);
+      return;
+    }
+    await _camera.stop();
+    if (!mounted) return;
+    final assetId = await openVpsMarks(context,
+        locationId: room,
+        placeName: _place(room)?.name ?? '',
+        canEdit: _manager);
+    if (!mounted) return;
+    if (_cam != _Cam.frozen) unawaited(_startCamera());
+    if (assetId != null) await _act(() => _openAssetById(assetId));
+  }
+
   Future<void> _openAssetCard(IdentifyCandidate c) => _act(() async {
         _decide(c.assetId);
-        final asset = await EquipmentRepo().asset(c.assetId);
-        if (asset == null || !mounted) return;
-        final objectId = await _objectOfPlace(asset.locationId);
-        final obj = _objects.where((o) => o.id == objectId).firstOrNull;
-        if (obj == null || !mounted) return;
-        final places = await DirectoryRepo().placesOf(obj.id);
-        if (!mounted) return;
-        await Navigator.push(
-            context,
-            appRoute(
-                (_) => AssetCardScreen(
-                    asset: asset,
-                    object: obj,
-                    places: places,
-                    layers: _layers,
-                    isManager: _manager),
-                title: context.l10n.cameraTitle));
-        // Вернулись — данные могли измениться (новая заявка из карточки).
-        _factsFor = null;
-        if (mounted) unawaited(_loadFacts());
+        await _openAssetById(c.assetId);
       });
+
+  Future<void> _openAssetById(String assetId) async {
+    final asset = await EquipmentRepo().asset(assetId);
+    if (asset == null || !mounted) return;
+    final objectId = await _objectOfPlace(asset.locationId);
+    final obj = _objects.where((o) => o.id == objectId).firstOrNull;
+    if (obj == null || !mounted) return;
+    final places = await DirectoryRepo().placesOf(obj.id);
+    if (!mounted) return;
+    await Navigator.push(
+        context,
+        appRoute(
+            (_) => AssetCardScreen(
+                asset: asset,
+                object: obj,
+                places: places,
+                layers: _layers,
+                isManager: _manager),
+            title: context.l10n.cameraTitle));
+    // Вернулись — данные могли измениться (новая заявка из карточки).
+    _factsFor = null;
+    if (mounted) unawaited(_loadFacts());
+  }
 
   Future<void> _openOrder(Map<String, dynamic> row) async {
     final ctx = _ctx;
@@ -1030,6 +1060,23 @@ class _CameraScreenState extends State<CameraScreen>
                   ]),
                 ),
               ),
+              // Шаг 28: только VPS-вариант APK.
+              if (_vps.available) ...[
+                const SizedBox(height: AppSpace.s),
+                Pressable(
+                  onTap: _openVps,
+                  child: _Bubble(
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(AppIcons.place,
+                          size: AppSizes.iconS, color: AppColors.onCamera),
+                      const SizedBox(width: AppSpace.xs),
+                      Text(l.vpsMarksButton,
+                          style: AppText.footnote
+                              .copyWith(color: AppColors.onCamera)),
+                    ]),
+                  ),
+                ),
+              ],
             ]),
           ),
         ),

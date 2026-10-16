@@ -239,6 +239,7 @@ ${canonical ? `<meta property="og:url" content="${canonical}">` : ''}
 <link rel="apple-touch-icon" href="${rel}img/icon-192.png">
 <link rel="manifest" href="${rel}site.webmanifest">
 <link rel="preload" href="${rel}fonts/onest-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="${rel}fonts/onest-600.woff2" as="font" type="font/woff2" crossorigin>
 <style>${css(rel)}</style>
 ${ld ? `<script type="application/ld+json">\n${json(ld)}\n</script>` : ''}
 </head>`;
@@ -277,7 +278,7 @@ ${header('ru', 'home', h).replace(' aria-current="page"', '')}
 <main id="main"><div class="wrap err">
 <h1>${ru.notFound.h1} · <span lang="en">${en.notFound.h1}</span></h1>
 <p>${ru.notFound.text} <span lang="en">${en.notFound.text}</span></p>
-<p class="actions" style="justify-content:center"><a class="btn" href="${SITE_URL}">Главная</a> <a class="btn ghost" href="${abs('en/')}" lang="en">Home (English)</a></p>
+<p class="actions center"><a class="btn" href="${SITE_URL}">Главная</a> <a class="btn ghost" href="${abs('en/')}" lang="en">Home (English)</a></p>
 </div></main>
 ${footer('ru', h)}
 </body>

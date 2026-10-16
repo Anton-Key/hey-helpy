@@ -269,7 +269,7 @@ ${footer(lang, h)}
 function render404() {
   const h = { rel: SITE_URL };
   return `${head({
-    lang: 'ru', title: `${ru.notFound.title}`, description: ru.notFound.text, rel: SITE_URL,
+    lang: 'ru', title: `${ru.notFound.title}`, description: `${ru.notFound.text} ${en.notFound.text}`, rel: SITE_URL,
     noindex: true, ogImage: abs('img/og-ru.png'),
   })}
 <body>

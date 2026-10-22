@@ -144,6 +144,8 @@ class ArLabelLogicTest {
         assertEquals(0f, lt.second, 0.5f)
         // Рамка у самого края снимка, который обрезан, — за экраном.
         assertNull(ArLabelLogic.boxCenterOnView(Box(0.0, 0.45, 0.04, 0.1), 90, ref, 1080, 2400))
+        // Опорные точки не получены (нули) — рамку не используем.
+        assertNull(ArLabelLogic.boxCenterOnView(Box(0.4, 0.4, 0.2, 0.2), 90, FloatArray(6), 1080, 2400))
     }
 
     @Test

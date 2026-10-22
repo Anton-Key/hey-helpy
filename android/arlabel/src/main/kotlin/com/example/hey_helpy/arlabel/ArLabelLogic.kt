@@ -192,8 +192,15 @@ object ArLabelLogic {
         return Pair((ox + u * ux + v * vx).toFloat(), (oy + u * uy + v * vy).toFloat())
     }
 
-    /** Центр рамки ИИ → точка экрана; null — за пределами экрана. */
+    /**
+     * Центр рамки ИИ → точка экрана; null — за пределами экрана или опорные
+     * точки не получены (ARCore не пересчитал — тогда метка остаётся в прицеле).
+     */
     fun boxCenterOnView(box: Box, rotation: Int, ref: FloatArray, width: Int, height: Int): Pair<Float, Float>? {
+        if (ref.size < 6) return null
+        val ux = ref[2] - ref[0]; val uy = ref[3] - ref[1]
+        val vx = ref[4] - ref[0]; val vy = ref[5] - ref[1]
+        if (kotlin.math.abs(ux * vy - uy * vx) < 1f) return null
         val (su, sv) = uprightToSensor(box.cx, box.cy, rotation)
         val p = sensorToView(su, sv, ref)
         if (p.first < 0 || p.second < 0 || p.first > width || p.second > height) return null

@@ -33,7 +33,8 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":arcommon"))
+    // api — приложению (ArLabelHook) тоже нужен ArTexts.
+    api(project(":arcommon"))
     // Тот же ARCore, что у VPS-эксперимента (шаг 28). Без SceneView / Filament:
     // камеру рисуем сами (GLES 2), таблички — обычные View.
     implementation("com.google.ar:core:1.47.0")

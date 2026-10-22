@@ -2,7 +2,9 @@
 // видимая неисправность и до 3 кандидатов из реестра («какая это единица»).
 //
 // POST { image: base64 JPEG/PNG/WebP (≤ 1,5 МБ), locale: "ru" | "en",
-//        objectId?, floorId?, locationId?, orderId? }
+//        objectId?, floorId?, locationId?, orderId?, box?: true }
+//   box: true (шаг 31, «AR-метки») — в ответе ещё box: {x, y, w, h} | null —
+//   рамка оборудования долями кадра; выключается секретом YANDEX_VISION_BOX=off.
 //   200 { source: "ai", kind, kind_label, layer_id, layer, nameplate, defect,
 //         confidence, candidates: [{ asset_id, name, location_id,
 //         location_label, floor_label, score, reasons[], reason_text }],
@@ -33,7 +35,13 @@ import {
 import { parseModelJson } from "../_shared/intake.ts";
 import { corsHeaders, logFn } from "../_shared/http.ts";
 import { loadAssets, loadLayers, resolveHere } from "../_shared/registry.ts";
-import { callVision, visionModels } from "../_shared/vision.ts";
+import {
+  boxEnabled,
+  callVision,
+  VISION_FORMAT,
+  VISION_FORMAT_BOX,
+  visionModels,
+} from "../_shared/vision.ts";
 import { AiError } from "../_shared/yandex.ts";
 
 const log = logFn("photo-identify");
@@ -84,6 +92,7 @@ Deno.serve(async (req) => {
     return reply(400, { error: parsed.error }, { code: parsed.error });
   }
   const input = parsed.value;
+  const wantBox = input.box === true && boxEnabled((k) => Deno.env.get(k));
 
   const supabase = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authHeader } },
@@ -111,7 +120,9 @@ Deno.serve(async (req) => {
     const aiStarted = Date.now();
     const ai = await callVision(
       { apiKey, folderId, model, liteModel },
-      buildVisionMessages(input, layers),
+      buildVisionMessages(input, layers, { box: wantBox }),
+      fetch,
+      wantBox ? VISION_FORMAT_BOX : VISION_FORMAT,
     );
     const aiMs = Date.now() - aiStarted;
     const which = {
@@ -132,7 +143,7 @@ Deno.serve(async (req) => {
     }
     const { here, assets } = await registry;
     const result = buildResult(
-      normalizeVision(raw, layers),
+      normalizeVision(raw, layers, { box: wantBox }),
       assets,
       here,
       input.locale,
@@ -148,6 +159,8 @@ Deno.serve(async (req) => {
       candidates: result.candidates.length,
       kind: result.kind,
       plate: result.nameplate !== null,
+      // Шаг 31: только есть ли рамка (без координат).
+      box: wantBox ? (result.box ? "yes" : "no") : undefined,
     });
   } catch (e) {
     const code = e instanceof AiError ? e.code : "unexpected";

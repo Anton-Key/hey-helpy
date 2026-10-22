@@ -1,4 +1,4 @@
-package com.example.hey_helpy.vps
+package com.example.hey_helpy.arcommon
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -78,5 +78,52 @@ class PoseMathTest {
         val a = FloatArray(16) { it.toFloat() }
         assertTrue(a.contentEquals(PoseMath.multiply(id, a)))
         assertTrue(a.contentEquals(PoseMath.multiply(a, id)))
+    }
+
+    // Шаг 31: перспектива как у ARCore (камера в начале координат, смотрит в -Z).
+    private fun perspective(fovYDeg: Double, aspect: Double, near: Double, far: Double): FloatArray {
+        val f = 1.0 / kotlin.math.tan(Math.toRadians(fovYDeg) / 2)
+        val m = FloatArray(16)
+        m[0] = (f / aspect).toFloat(); m[5] = f.toFloat()
+        m[10] = ((far + near) / (near - far)).toFloat(); m[11] = -1f
+        m[14] = (2 * far * near / (near - far)).toFloat()
+        return m
+    }
+
+    @Test
+    fun invertRoundTrip() {
+        val p = perspective(60.0, 0.5, 0.05, 100.0)
+        val inv = PoseMath.invert(p)!!
+        val id = PoseMath.multiply(p, inv)
+        for (i in 0 until 16) assertEquals(if (i % 5 == 0) 1f else 0f, id[i], 1e-4f)
+        assertNull(PoseMath.invert(FloatArray(16)))
+    }
+
+    @Test
+    fun rayThroughCenterLooksForward() {
+        val inv = PoseMath.invert(perspective(60.0, 0.5, 0.05, 100.0))!!
+        val (o, d) = PoseMath.rayThrough(inv, 500f, 1000f, 1000, 2000)!!
+        assertVec(Vec3(0.0, 0.0, -0.05), o, 1e-4)
+        assertVec(Vec3(0.0, 0.0, -1.0), d, 1e-4)
+    }
+
+    @Test
+    fun rayThroughProjectsBack() {
+        // Точка экрана → луч → точка на луче проецируется в ту же точку экрана.
+        val vp = perspective(60.0, 0.5, 0.05, 100.0)
+        val inv = PoseMath.invert(vp)!!
+        val (o, d) = PoseMath.rayThrough(inv, 120f, 1700f, 1000, 2000)!!
+        val p = o + Vec3(d.x * 3, d.y * 3, d.z * 3)
+        val s = PoseMath.project(vp, p, 1000, 2000)!!
+        assertEquals(120f, s.first, 0.5f)
+        assertEquals(1700f, s.second, 0.5f)
+        assertNull(PoseMath.rayThrough(inv, 1f, 1f, 0, 0))
+    }
+
+    @Test
+    fun labelScaleByDistance() {
+        assertEquals(1.2f, PoseMath.labelScale(0.5), 1e-6f)
+        assertEquals(0.6f, PoseMath.labelScale(10.0), 1e-6f)
+        assertEquals(0.75f, PoseMath.labelScale(2.0), 1e-6f)
     }
 }

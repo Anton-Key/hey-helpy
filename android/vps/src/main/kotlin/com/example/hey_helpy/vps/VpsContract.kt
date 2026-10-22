@@ -3,9 +3,9 @@ package com.example.hey_helpy.vps
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import com.example.hey_helpy.arcommon.ArTexts
 import com.google.ar.core.ArCoreApk
 import org.json.JSONArray
-import org.json.JSONObject
 
 /** Шаг 28: что Flutter передаёт экрану VPS и что получает обратно. */
 object VpsContract {
@@ -20,16 +20,7 @@ object VpsContract {
     const val TEXTS = "texts" // JSON {ключ: текст} — все строки экрана из lib/l10n
     const val RESULT_ASSET = "assetId"
 
-    fun putArgs(intent: Intent, args: Map<String, Any?>) {
-        for ((k, v) in args) {
-            when (v) {
-                is String -> intent.putExtra(k, v)
-                is Boolean -> intent.putExtra(k, v)
-                is Int -> intent.putExtra(k, v)
-                is Long -> intent.putExtra(k, v)
-            }
-        }
-    }
+    fun putArgs(intent: Intent, args: Map<String, Any?>) = ArTexts.putArgs(intent, args)
 
     fun readResult(resultCode: Int, data: Intent?): Map<String, Any?> {
         val m = HashMap<String, Any?>()
@@ -83,23 +74,8 @@ object VpsContract {
         }
     }
 
-    fun parseTexts(json: String?): Map<String, String> {
-        if (json.isNullOrBlank()) return emptyMap()
-        return try {
-            val o = JSONObject(json)
-            o.keys().asSequence().associateWith { o.optString(it) }
-        } catch (_: Exception) {
-            emptyMap()
-        }
-    }
+    fun parseTexts(json: String?): Map<String, String> = ArTexts.parseTexts(json)
 
     /** «#RRGGBB» → ARGB; иначе бирюзовый бренда. */
-    fun parseColor(s: String?): Int {
-        val h = s?.trim()?.removePrefix("#") ?: ""
-        return if (h.length == 6 && h.all { it.isDigit() || it.lowercaseChar() in 'a'..'f' }) {
-            (0xFF000000 or h.toLong(16)).toInt()
-        } else {
-            0xFF2DB89A.toInt()
-        }
-    }
+    fun parseColor(s: String?): Int = ArTexts.parseColor(s)
 }

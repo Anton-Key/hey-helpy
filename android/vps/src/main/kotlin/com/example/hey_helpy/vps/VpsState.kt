@@ -1,5 +1,7 @@
 package com.example.hey_helpy.vps
 
+import com.example.hey_helpy.arcommon.PoseMath
+
 // Шаг 28: состояния экрана VPS — чистые функции (тесты VpsStateTest).
 // Имена состояний NSDK передаются строками (enum.name), чтобы проверять без SDK.
 
@@ -46,6 +48,5 @@ object VpsState {
     }
 
     /** Чем крупнее табличка, тем ближе оборудование (0.6…1.2). */
-    fun labelScale(distanceM: Double): Float =
-        (1.5 / distanceM.coerceAtLeast(0.1)).coerceIn(0.6, 1.2).toFloat()
+    fun labelScale(distanceM: Double): Float = PoseMath.labelScale(distanceM)
 }

@@ -5701,4 +5701,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readyDemoNone => 'No demo work orders — run Refresh demo';
+
+  @override
+  String get arLabelsButton => 'AR labels';
+
+  @override
+  String get arLabelsHere => 'AR labels here';
+
+  @override
+  String get arNoPlace => 'First choose the site in “Where am I”';
+
+  @override
+  String get arHint =>
+      'Move the phone slowly, then point the crosshair at the equipment';
+
+  @override
+  String get arWhatIsIt => 'What is it?';
+
+  @override
+  String get arLooking => 'Looking…';
+
+  @override
+  String get arNoHit => 'Move closer or move the phone around';
+
+  @override
+  String get arNoEquipment => 'No equipment in view';
+
+  @override
+  String get arNotRecognized =>
+      'Couldn\'t recognize the equipment — move closer and try again';
+
+  @override
+  String get arFailed => 'Couldn\'t identify the equipment. Please try again';
+
+  @override
+  String get arNoNetwork =>
+      'An internet connection is needed to identify equipment';
+
+  @override
+  String get arSessionExpired => 'Session expired — please sign in again';
+
+  @override
+  String get arNoCamera => 'No camera access — allow it in the phone settings';
+
+  @override
+  String get arNoArcore => 'AR labels aren\'t available on this phone';
+
+  @override
+  String get arPickAsset => 'What is it? Choose the equipment';
+
+  @override
+  String get arOpenAsset => 'Equipment card';
+
+  @override
+  String get arCreateOrder => 'Create work order';
+
+  @override
+  String get arRemoveMark => 'Remove label';
+
+  @override
+  String get arLimit => 'Up to 10 labels — the oldest one was removed';
+
+  @override
+  String arOrdersOne(String n) {
+    return '$n open work order';
+  }
+
+  @override
+  String arOrdersFew(String n) {
+    return '$n open work orders';
+  }
+
+  @override
+  String arOrdersMany(String n) {
+    return '$n open work orders';
+  }
+
+  @override
+  String get arNoOpenOrders => 'No open work orders';
+
+  @override
+  String arMaintenanceDue(String date) {
+    return 'Maintenance due $date';
+  }
+
+  @override
+  String get arMaintenanceOverdue => 'Maintenance overdue';
 }

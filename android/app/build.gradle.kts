@@ -55,6 +55,8 @@ flutter {
 }
 
 dependencies {
+    // Шаг 31: «AR-метки» — экран ArLabelActivity и канал hey_helpy/arlabel.
+    implementation(project(":arlabel"))
     if (withVps) {
         implementation(project(":vps"))
     }

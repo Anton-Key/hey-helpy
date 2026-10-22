@@ -30,6 +30,9 @@ import '../requests/order_form_place.dart';
 import '../requests/order_list.dart';
 import '../requests/requests.dart';
 import '../vps/vps_channel.dart';
+import '../arlabel/arlabel_channel.dart';
+import '../arlabel/arlabel_launch.dart';
+import '../arlabel/arlabel_logic.dart';
 import '../vps/vps_launch.dart';
 import '../vps/vps_logic.dart';
 import 'asset_facts_repository.dart';
@@ -98,6 +101,9 @@ class _CameraScreenState extends State<CameraScreen>
 
   /// Шаг 28: VPS-вариант APK — кнопка «Метки VPS (эксперимент)».
   VpsStatus _vps = VpsStatus.none;
+
+  /// Шаг 31: телефон с ARCore — кнопка «AR-метки».
+  ArLabelStatus _ar = ArLabelStatus.none;
   List<Obj> _objects = const [];
   List<Layer> _layers = const [];
   OrderContext? _ctx;
@@ -240,6 +246,7 @@ class _CameraScreenState extends State<CameraScreen>
       final role = r[1] as String?;
       _manager = role == 'manager' || role == 'admin';
       _vps = await VpsChannel.status();
+      _ar = await ArLabelChannel.status();
       _objects = r[2] as List<Obj>;
       _layers = r[3] as List<Layer>;
     } catch (e) {
@@ -707,6 +714,37 @@ class _CameraScreenState extends State<CameraScreen>
     if (assetId != null) await _act(() => _openAssetById(assetId));
   }
 
+  /// Шаг 31: «AR-метки» с контекстом «Где я». Камеру Flutter выключаем
+  /// заранее: ARCore нужна та же камера.
+  Future<void> _openArLabels() async {
+    if (_objectId == null) {
+      showAppMessage(context, context.l10n.arNoPlace);
+      return;
+    }
+    await _camera.stop();
+    if (!mounted) return;
+    final r = await openArLabels(context,
+        objectId: _objectId,
+        floorId: _floorId,
+        locationId: _locationId,
+        companyId: _companyId);
+    if (!mounted) return;
+    if (_cam != _Cam.frozen) unawaited(_startCamera());
+    if (r == null) return;
+    switch (r.action) {
+      case ArLabelAction.asset:
+        await _act(() => _openAssetById(r.assetId));
+      case ArLabelAction.order:
+        final companyId = _companyId;
+        if (companyId == null) return;
+        await _act(() async {
+          final ok = await createOrderFromArLabel(context, r,
+              objects: _objects, companyId: companyId);
+          if (ok && mounted) Navigator.pop(context, true);
+        });
+    }
+  }
+
   Future<void> _openAssetCard(IdentifyCandidate c) => _act(() async {
         _decide(c.assetId);
         await _openAssetById(c.assetId);
@@ -1060,6 +1098,23 @@ class _CameraScreenState extends State<CameraScreen>
                   ]),
                 ),
               ),
+              // Шаг 31: «AR-метки» — только Android с ARCore.
+              if (_ar.available) ...[
+                const SizedBox(height: AppSpace.s),
+                Pressable(
+                  onTap: _openArLabels,
+                  child: _Bubble(
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(AppIcons.scan,
+                          size: AppSizes.iconS, color: AppColors.onCamera),
+                      const SizedBox(width: AppSpace.xs),
+                      Text(l.arLabelsButton,
+                          style: AppText.footnote
+                              .copyWith(color: AppColors.onCamera)),
+                    ]),
+                  ),
+                ),
+              ],
               // Шаг 28: только VPS-вариант APK.
               if (_vps.available) ...[
                 const SizedBox(height: AppSpace.s),

@@ -5738,4 +5738,90 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get readyDemoNone => 'Демо-заявок нет — запустите Refresh demo';
+
+  @override
+  String get arLabelsButton => 'AR-метки';
+
+  @override
+  String get arLabelsHere => 'AR-метки здесь';
+
+  @override
+  String get arNoPlace => 'Сначала выберите объект в «Где я»';
+
+  @override
+  String get arHint =>
+      'Медленно поводите телефоном, затем наведите прицел на оборудование';
+
+  @override
+  String get arWhatIsIt => 'Что это?';
+
+  @override
+  String get arLooking => 'Смотрю…';
+
+  @override
+  String get arNoHit => 'Подойдите ближе или поводите телефоном';
+
+  @override
+  String get arNoEquipment => 'В кадре не видно оборудования';
+
+  @override
+  String get arNotRecognized =>
+      'Не узнал оборудование — подойдите ближе и попробуйте ещё раз';
+
+  @override
+  String get arFailed => 'Не удалось узнать оборудование. Попробуйте ещё раз';
+
+  @override
+  String get arNoNetwork => 'Нужен интернет для узнавания оборудования';
+
+  @override
+  String get arSessionExpired => 'Сессия истекла — войдите в приложение заново';
+
+  @override
+  String get arNoCamera =>
+      'Нет доступа к камере — разрешите его в настройках телефона';
+
+  @override
+  String get arNoArcore => 'AR-метки на этом телефоне недоступны';
+
+  @override
+  String get arPickAsset => 'Что это? Выберите оборудование';
+
+  @override
+  String get arOpenAsset => 'Карточка оборудования';
+
+  @override
+  String get arCreateOrder => 'Создать заявку';
+
+  @override
+  String get arRemoveMark => 'Убрать метку';
+
+  @override
+  String get arLimit => 'Не больше 10 меток — самая старая убрана';
+
+  @override
+  String arOrdersOne(String n) {
+    return '$n открытая заявка';
+  }
+
+  @override
+  String arOrdersFew(String n) {
+    return '$n открытые заявки';
+  }
+
+  @override
+  String arOrdersMany(String n) {
+    return '$n открытых заявок';
+  }
+
+  @override
+  String get arNoOpenOrders => 'Открытых заявок нет';
+
+  @override
+  String arMaintenanceDue(String date) {
+    return 'ТО до $date';
+  }
+
+  @override
+  String get arMaintenanceOverdue => 'ТО просрочено';
 }

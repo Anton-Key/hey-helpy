@@ -5031,6 +5031,35 @@ class AppLocalizationsRu extends AppLocalizations {
   String get offKindSubmit => 'На проверку';
 
   @override
+  String get offKindCreate => 'Новая заявка';
+
+  @override
+  String get offKindPhotoBefore => 'Фото «до»';
+
+  @override
+  String get offReasonBadAction =>
+      'Заявка заполнена с ошибкой — создайте её заново';
+
+  @override
+  String get offCreatedQueued =>
+      'Нет сети — заявка сохранена на телефоне и отправится сама';
+
+  @override
+  String get offCreatedPending => 'Создано без сети · ждёт отправки';
+
+  @override
+  String offCreatedSent(String time) {
+    return 'Создано без сети · отправлено в $time';
+  }
+
+  @override
+  String get formOfflineNote =>
+      'Нет сети: заявка сохранится на телефоне и отправится, когда появится связь. ИИ без сети не работает — вид работ выберите сами.';
+
+  @override
+  String get formTakeBeforePhoto => 'Снять фото «до»';
+
+  @override
   String get offPendingBadge => 'ждёт отправки';
 
   @override

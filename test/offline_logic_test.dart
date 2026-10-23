@@ -172,4 +172,83 @@ void main() {
     expect(trustOk(TimeTrust.unverified), isFalse);
     expect(timeTrustFromDb('device_only'), TimeTrust.deviceOnly);
   });
+
+  group('новая заявка без сети (шаг 32)', () {
+    OfflineAction act(String id, OfflineKind k, String order,
+            [Map<String, Object?> p = const {}]) =>
+        OfflineAction(
+            id: id,
+            kind: k,
+            orderId: order,
+            clock: ClockReading(device: server),
+            payload: p);
+    final create = act('a1', OfflineKind.create, 'w1', {
+      'title': 'Капает вода',
+      'priority': 'high',
+      'layer_id': 'L1',
+      'work_type': 'Климат',
+      'object_id': 'o1',
+      'location_id': 'l1',
+      'location_name': 'Переговорная',
+      'location_code': '301',
+      'input_channel': 'text',
+      'created_by': 'u1',
+    });
+    final before = act('a2', OfflineKind.photo, 'w1',
+        {'stage': 'before', 'path': 'c/w1/off_a2.jpg', 'sha256': 'x'});
+
+    test('строка заявки из очереди: «Новая», поля и помещение', () {
+      final r = pendingOrderRow(create);
+      expect(r['id'], 'w1');
+      expect(r['status'], 'new');
+      expect(r['priority'], 'high');
+      expect(r['title'], 'Капает вода');
+      expect(r['created_by'], 'u1');
+      expect(r['created_at'], server.toIso8601String());
+      expect(r['locations'], {'name': 'Переговорная', 'code': '301'});
+      expect(r['offline_pending'], isTrue);
+    });
+
+    test('неотправленные новые заявки — новые первыми', () {
+      final second = act('a3', OfflineKind.create, 'w2', {'title': 'Второе'});
+      final q = [create, before, act('a4', OfflineKind.start, 'w9'), second];
+      expect([for (final r in pendingCreates(q)) r['id']], ['w2', 'w1']);
+    });
+
+    test('отправка: сначала новые заявки, порядок остальных сохраняется', () {
+      final start = act('a5', OfflineKind.start, 'w9');
+      final p = splitForSync([start, before, create]);
+      expect([for (final a in p.creates) a.id], ['a1']);
+      expect([for (final a in p.rest) a.id], ['a5', 'a2']);
+    });
+
+    test('фото «до» не считается фото «после»', () {
+      final v = pendingView('new', [create, before], 'w1');
+      expect(v.photos, isEmpty);
+      expect([for (final a in v.beforePhotos) a.id], ['a2']);
+      expect(v.status, 'new');
+      expect(v.count, 2);
+    });
+
+    test('create уходит на сервер со всеми полями и переживает перезапуск', () {
+      final j = create.toServer();
+      expect(j['kind'], 'create');
+      expect(j['order_id'], 'w1');
+      expect(j['title'], 'Капает вода');
+      expect(j['layer_id'], 'L1');
+      final back = OfflineAction.fromJson(create.toJson())!;
+      expect(back.kind, OfflineKind.create);
+      expect(back.payload['location_name'], 'Переговорная');
+    });
+
+    test('отказ: причина bad_action и пометка фото «до»', () {
+      expect(syncReasonFromDb('bad_action'), SyncReason.badAction);
+      const f = SyncFailure(
+          kind: OfflineKind.photo,
+          orderId: 'w1',
+          reason: SyncReason.cancelled,
+          before: true);
+      expect(SyncFailure.fromJson(f.toJson())!.before, isTrue);
+    });
+  });
 }

@@ -5000,6 +5000,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get offKindSubmit => 'Submit for review';
 
   @override
+  String get offKindCreate => 'New work order';
+
+  @override
+  String get offKindPhotoBefore => '“Before” photo';
+
+  @override
+  String get offReasonBadAction =>
+      'The work order has invalid fields — create it again';
+
+  @override
+  String get offCreatedQueued =>
+      'No connection — the work order is saved on the phone and will be sent automatically';
+
+  @override
+  String get offCreatedPending => 'Created offline · waiting to be sent';
+
+  @override
+  String offCreatedSent(String time) {
+    return 'Created offline · sent at $time';
+  }
+
+  @override
+  String get formOfflineNote =>
+      'No connection: the work order will be saved on the phone and sent when the connection is back. AI does not work offline — choose the type of work yourself.';
+
+  @override
+  String get formTakeBeforePhoto => 'Take a “before” photo';
+
+  @override
   String get offPendingBadge => 'waiting to send';
 
   @override

@@ -8523,6 +8523,54 @@ abstract class AppLocalizations {
   /// **'На проверку'**
   String get offKindSubmit;
 
+  /// Шаг 32: новая заявка без сети
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая заявка'**
+  String get offKindCreate;
+
+  /// Шаг 32: новая заявка без сети
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото «до»'**
+  String get offKindPhotoBefore;
+
+  /// Шаг 32: новая заявка без сети
+  ///
+  /// In ru, this message translates to:
+  /// **'Заявка заполнена с ошибкой — создайте её заново'**
+  String get offReasonBadAction;
+
+  /// Шаг 32: новая заявка без сети
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети — заявка сохранена на телефоне и отправится сама'**
+  String get offCreatedQueued;
+
+  /// Шаг 32: новая заявка без сети
+  ///
+  /// In ru, this message translates to:
+  /// **'Создано без сети · ждёт отправки'**
+  String get offCreatedPending;
+
+  /// Шаг 32: новая заявка без сети
+  ///
+  /// In ru, this message translates to:
+  /// **'Создано без сети · отправлено в {time}'**
+  String offCreatedSent(String time);
+
+  /// Шаг 32: новая заявка без сети
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет сети: заявка сохранится на телефоне и отправится, когда появится связь. ИИ без сети не работает — вид работ выберите сами.'**
+  String get formOfflineNote;
+
+  /// Шаг 32: новая заявка без сети
+  ///
+  /// In ru, this message translates to:
+  /// **'Снять фото «до»'**
+  String get formTakeBeforePhoto;
+
   /// Шаг 27: офлайн и акты
   ///
   /// In ru, this message translates to:

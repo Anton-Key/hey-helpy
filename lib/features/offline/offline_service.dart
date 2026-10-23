@@ -19,6 +19,9 @@ import 'offline_store.dart';
 /// * Кэш ответов сервера ([cachedJson]): нет сети — последний ответ.
 /// * Очередь действий исполнителя ([enqueue]): по порядку, у каждого свой
 ///   id; при появлении сети — отправка одной функцией `offline_sync`.
+/// * Шаг 32: новая заявка без сети ([createOrder]) — у любого вошедшего;
+///   справочники для формы (объекты, системы, этажи, помещения и
+///   оборудование) — в предзагрузке у всех.
 /// * Якорь часов ([anchor]) при каждой связи — для «доверенного» времени.
 class OfflineService extends ChangeNotifier {
   OfflineService._();
@@ -280,6 +283,7 @@ class OfflineService extends ChangeNotifier {
       return;
     }
     _prefetchedAt = DateTime.now();
+    await _prefetchRefs(uid);
     try {
       final ex = await _c
           .from('executors')
@@ -374,6 +378,94 @@ class OfflineService extends ChangeNotifier {
       debugPrint('offline prefetch: ${e.runtimeType}');
     }
   }
+
+  /// Шаг 32: справочники формы новой заявки — у всех ролей, по RLS (свои
+  /// объекты). Ключи — те же, что у DirectoryRepo / FloorRepo
+  /// (`objects`, `layers`, `floors_of:<объект>`, `items_of:<объект>`).
+  /// Свои открытые заявки не исполнителя — в `my_orders` (список без сети).
+  static const _refObjectsMax = 300;
+
+  Future<void> _prefetchRefs(String uid) async {
+    try {
+      final r = await Future.wait<Object>([
+        _c.from('objects').select().order('created_at').limit(_refObjectsMax),
+        _c
+            .from('layers')
+            .select()
+            .order('sort', ascending: true)
+            .order('name', ascending: true),
+      ]).timeout(requestTimeout);
+      final objects = r[0] as List;
+      _cache['objects'] = objects;
+      _cache['layers'] = r[1];
+      final ids = [for (final o in objects) '${(o as Map)['id']}'];
+      if (ids.isNotEmpty) {
+        final p = await Future.wait<List<Map<String, dynamic>>>([
+          _c.from('floors').select(_floorColumns).inFilter('object_id', ids),
+          _c
+              .from('locations')
+              .select(_placeColumns)
+              .inFilter('object_id', ids)
+              .order('name')
+              .limit(5000),
+          _c
+              .from('assets')
+              .select(_assetColumns)
+              .inFilter('locations.object_id', ids)
+              .order('name')
+              .limit(5000),
+          // Помещения с объектом — для разбора голосовой заявки словарём.
+          _c
+              .from('locations')
+              .select('id,object_id,name,code,objects(name,address)')
+              .order('name')
+              .limit(5000),
+        ]).timeout(requestTimeout);
+        _cache['all_places'] = p[3];
+        for (final id in ids) {
+          _cache['floors_of:$id'] = [
+            for (final f in p[0])
+              if (f['object_id'] == id) f
+          ];
+          _cache['items_of:$id'] = {
+            'places': [
+              for (final l in p[1])
+                if (l['object_id'] == id) l
+            ],
+            'assets': [
+              for (final a in p[2])
+                if ((a['locations'] as Map?)?['object_id'] == id) a
+            ],
+          };
+        }
+      }
+      // Не исполнитель — свои открытые заявки (у исполнителя — заявки
+      // подрядчика, ниже).
+      final mine = await _c
+          .from('work_orders')
+          .select(listColumns)
+          .eq('created_by', uid)
+          .not('status', 'in', '(done,cancelled)')
+          .order('created_at', ascending: false)
+          .limit(100)
+          .timeout(requestTimeout);
+      _cache['my_created_orders'] = mine;
+      _scheduleCacheSave();
+    } catch (e) {
+      if (isNetworkError(e)) markOffline();
+      // Без 0015 (code у помещений) — без предзагрузки, форма как раньше.
+      debugPrint('offline refs: ${e.runtimeType}');
+    }
+  }
+
+  // Колонки — как у FloorRepo (Floor.columns, PlanItem.*Columns).
+  static const _floorColumns =
+      'id,object_id,company_id,name,level,sort,plan_path,plan_w,plan_h';
+  static const _placeColumns =
+      'id,object_id,name,floor_id,plan_x,plan_y,plan_shape,code';
+  static const _assetColumns =
+      'id,location_id,name,category,inventory_no,meta,floor_id,plan_x,plan_y,'
+      'locations!inner(object_id)';
 
   // ---------------------------------------------------------------------
   // Шаг 28: фото «до» и планы этажей на телефоне
@@ -550,14 +642,44 @@ class OfflineService extends ChangeNotifier {
 
   /// Заявки исполнителя из телефона (для списка без сети) — статус уже с
   /// учётом неотправленных действий.
-  List<Map<String, dynamic>> myOrders() => [
-        for (final r in (_cache['my_orders'] as List?) ?? const [])
-          if (r is Map)
-            {
-              ...Map<String, dynamic>.from(r),
-              'status': view('${r['id']}', '${r['status']}').status,
-            }
-      ];
+  List<Map<String, dynamic>> myOrders() {
+    final seen = <String>{};
+    final out = <Map<String, dynamic>>[];
+    // Шаг 32: созданные без сети — сверху; потом заявки подрядчика
+    // (исполнитель) и свои открытые (все роли).
+    for (final r in [
+      ...pendingCreates(_queue),
+      ...((_cache['my_orders'] as List?) ?? const []),
+      ...((_cache['my_created_orders'] as List?) ?? const []),
+    ]) {
+      if (r is! Map || !seen.add('${r['id']}')) continue;
+      out.add({
+        ...Map<String, dynamic>.from(r),
+        'status': view('${r['id']}', '${r['status']}').status,
+      });
+    }
+    return out;
+  }
+
+  /// Есть ли что показать в списке без сети.
+  bool get hasOfflineList =>
+      _cache['my_orders'] != null ||
+      _cache['my_created_orders'] != null ||
+      _queue.any((a) => a.kind == OfflineKind.create);
+
+  /// Строка заявки, созданной без сети и ещё не отправленной; null — нет такой.
+  Map<String, dynamic>? pendingRow(String orderId) {
+    for (final a in _queue) {
+      if (a.kind == OfflineKind.create && a.orderId == orderId) {
+        return pendingOrderRow(a);
+      }
+    }
+    return null;
+  }
+
+  /// Заявка создана без сети и ещё не отправлена.
+  bool isPendingCreate(String orderId) =>
+      _queue.any((a) => a.kind == OfflineKind.create && a.orderId == orderId);
 
   Map<String, dynamic>? detail(String id) {
     final d = _cache['detail:$id'];
@@ -653,6 +775,42 @@ class OfflineService extends ChangeNotifier {
     return a;
   }
 
+  /// Шаг 32: новая заявка без сети — в очередь (create), строка — в кэш для
+  /// списка и карточки на телефоне, снимок [photo] — фото «до» следом
+  /// (тем же порядком отправятся на сервер).
+  Future<void> createOrder({
+    required String orderId,
+    required String companyId,
+    required Map<String, Object?> fields,
+    ({
+      Uint8List bytes,
+      DateTime takenAt,
+      double? lat,
+      double? lng,
+      bool mock
+    })? photo,
+  }) async {
+    final a = await enqueue(
+        kind: OfflineKind.create,
+        orderId: orderId,
+        payload: {...fields, 'created_by': _uid});
+    put('detail:$orderId', pendingOrderRow(a));
+    if (photo != null) {
+      await enqueue(
+          kind: OfflineKind.photo,
+          orderId: orderId,
+          companyId: companyId,
+          photo: photo.bytes,
+          device: photo.takenAt,
+          payload: {
+            'stage': 'before',
+            'lat': photo.lat,
+            'lng': photo.lng,
+            'mock': photo.mock,
+          });
+    }
+  }
+
   Future<Uint8List?> photoBytes(OfflineAction a) async =>
       a.photoFile == null ? null : _store?.getPhoto(a.photoFile!);
 
@@ -694,8 +852,14 @@ class OfflineService extends ChangeNotifier {
     notifyListeners();
     final batch = _queue.take(200).toList();
     try {
+      // Шаг 32: сначала новые заявки — снимки «до» кладутся в их папки.
+      final parts = splitForSync(batch);
+      var failed = 0;
+      if (parts.creates.isNotEmpty) {
+        failed += await _sync(parts.creates);
+      }
       final photos = <Map<String, String>>[];
-      for (final a in batch.where((a) => a.kind == OfflineKind.photo)) {
+      for (final a in parts.rest.where((a) => a.kind == OfflineKind.photo)) {
         final bytes = await photoBytes(a);
         final path = a.payload['path'] as String?;
         if (bytes == null || path == null) continue;
@@ -708,7 +872,12 @@ class OfflineService extends ChangeNotifier {
               .timeout(const Duration(seconds: 60));
         } on StorageException catch (e) {
           // уже загружено прошлой попыткой — дальше
-          if (e.statusCode != '409' && !e.message.contains('exists')) rethrow;
+          final dup = e.statusCode == '409' || e.message.contains('exists');
+          // Нет прав (заявку не создали, отменили) — не загружаем; база
+          // ответит «файл не дошёл», и действие уйдёт из очереди, а не
+          // будет повторяться вечно.
+          final denied = e.statusCode == '403' || e.statusCode == '400';
+          if (!dup && !denied) rethrow;
         }
         photos.add({'path': path, 'sha256': '${a.payload['sha256']}'});
       }
@@ -722,26 +891,7 @@ class OfflineService extends ChangeNotifier {
           debugPrint('offline-sync verify: ${e.runtimeType}');
         }
       }
-      final res = await _c.rpc('offline_sync', params: {
-        'p_actions': [for (final a in batch) a.toServer()],
-      }).timeout(const Duration(seconds: 40));
-      final results = {for (final r in SyncResult.parse(res)) r.id: r};
-      var failed = 0;
-      for (final a in batch) {
-        final r = results[a.id];
-        if (r == null) continue;
-        _queue.removeWhere((x) => x.id == a.id);
-        if (a.photoFile != null) await _store?.deletePhoto(a.photoFile!);
-        if (r.outcome != SyncOutcome.applied) {
-          failed++;
-          _failures.add(SyncFailure(
-              kind: a.kind,
-              orderId: a.orderId,
-              orderTitle: detail(a.orderId)?['title'] as String?,
-              reason: r.reason ?? SyncReason.other,
-              photoKept: r.outcome == SyncOutcome.savedLate));
-        }
-      }
+      if (parts.rest.isNotEmpty) failed += await _sync(parts.rest);
       await _saveQueue();
       await _saveMeta();
       _markOnline();
@@ -769,6 +919,38 @@ class OfflineService extends ChangeNotifier {
     if (_queue.isNotEmpty && online && !_sending && batch.length == 200) {
       unawaited(flush());
     }
+  }
+
+  /// Одна отправка `offline_sync`: принятое и отклонённое уходит из
+  /// очереди, отклонённое — в «Не отправлено». Возвращает число отказов.
+  Future<int> _sync(List<OfflineAction> actions) async {
+    final res = await _c.rpc('offline_sync', params: {
+      'p_actions': [for (final a in actions) a.toServer()],
+    }).timeout(const Duration(seconds: 40));
+    final results = {for (final r in SyncResult.parse(res)) r.id: r};
+    var failed = 0;
+    for (final a in actions) {
+      final r = results[a.id];
+      if (r == null) continue;
+      _queue.removeWhere((x) => x.id == a.id);
+      if (a.photoFile != null) await _store?.deletePhoto(a.photoFile!);
+      if (a.kind == OfflineKind.create) {
+        // Карточку перечитает сервер: строку «ждёт отправки» — убрать.
+        _cache.remove('detail:${a.orderId}');
+      }
+      if (r.outcome != SyncOutcome.applied) {
+        failed++;
+        _failures.add(SyncFailure(
+            kind: a.kind,
+            orderId: a.orderId,
+            orderTitle: (a.payload['title'] as String?) ??
+                detail(a.orderId)?['title'] as String?,
+            reason: r.reason ?? SyncReason.other,
+            photoKept: r.outcome == SyncOutcome.savedLate,
+            before: a.payload['stage'] == 'before'));
+      }
+    }
+    return failed;
   }
 
   void clearFailures() {

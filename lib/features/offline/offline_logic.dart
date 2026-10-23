@@ -4,8 +4,9 @@
 /// offline_service.dart / device_clock.dart / offline_store.dart.
 library;
 
-/// Что исполнитель сделал без сети.
-enum OfflineKind { start, visit, check, photo, submit }
+/// Что сделали без сети: create — новая заявка (шаг 32, любой вошедший),
+/// остальное — действия исполнителя (шаг 27).
+enum OfflineKind { create, start, visit, check, photo, submit }
 
 /// Показания часов телефона в момент действия.
 class ClockReading {
@@ -119,8 +120,11 @@ class OfflineAction {
   final String orderId;
   final ClockReading clock;
 
+  /// create: title, description, priority, input_channel, layer_id,
+  /// work_type, object_id, location_id, asset_id (+ для показа на телефоне:
+  /// created_by, location_name, location_code);
   /// visit: lat, lng, accuracy, mock; check: item_id, done;
-  /// photo: path, sha256, lat, lng, mock.
+  /// photo: path, sha256, lat, lng, mock, stage (before — шаг 32).
   final Map<String, Object?> payload;
 
   /// Имя файла снимка в каталоге приложения (только у photo).
@@ -187,6 +191,7 @@ enum SyncReason {
   photoMissing,
   notFound,
   denied,
+  badAction,
   other
 }
 
@@ -200,6 +205,7 @@ SyncReason syncReasonFromDb(Object? v) => switch (v) {
       'photo_missing' => SyncReason.photoMissing,
       'not_found' => SyncReason.notFound,
       'denied' => SyncReason.denied,
+      'bad_action' => SyncReason.badAction,
       _ => SyncReason.other,
     };
 
@@ -235,8 +241,12 @@ class SyncFailure {
       required this.orderId,
       required this.reason,
       this.orderTitle,
-      this.photoKept = false});
+      this.photoKept = false,
+      this.before = false});
   final OfflineKind kind;
+
+  /// Фото «до» (шаг 32), а не «после».
+  final bool before;
   final String orderId;
   final String? orderTitle;
   final SyncReason reason;
@@ -250,6 +260,7 @@ class SyncFailure {
         'title': orderTitle,
         'reason': reason.name,
         'photo_kept': photoKept,
+        'before': before,
       };
 
   static SyncFailure? fromJson(Object? j) {
@@ -262,7 +273,8 @@ class SyncFailure {
         orderId: '${j['order_id']}',
         orderTitle: j['title'] as String?,
         reason: reason.first,
-        photoKept: j['photo_kept'] == true);
+        photoKept: j['photo_kept'] == true,
+        before: j['before'] == true);
   }
 }
 
@@ -273,6 +285,7 @@ class PendingView {
       {required this.status,
       this.checked = const {},
       this.photos = const [],
+      this.beforePhotos = const [],
       this.visit = false,
       this.count = 0});
 
@@ -281,8 +294,11 @@ class PendingView {
   /// item_id → отмечен ли (последнее действие по пункту).
   final Map<String, bool> checked;
 
-  /// Действия-фото по порядку.
+  /// Действия-фото «после» по порядку.
   final List<OfflineAction> photos;
+
+  /// Фото «до» новой заявки без сети (шаг 32).
+  final List<OfflineAction> beforePhotos;
   final bool visit;
 
   /// Сколько действий по заявке ждёт отправки.
@@ -296,12 +312,15 @@ PendingView pendingView(
   var s = status;
   final checked = <String, bool>{};
   final photos = <OfflineAction>[];
+  final before = <OfflineAction>[];
   var visit = false;
   var n = 0;
   for (final a in queue) {
     if (a.orderId != orderId) continue;
     n++;
     switch (a.kind) {
+      case OfflineKind.create:
+        break; // статус «Новая» — уже в строке заявки из очереди
       case OfflineKind.start:
         if (const {'new', 'assigned', 'returned'}.contains(s)) {
           s = 'in_progress';
@@ -312,14 +331,66 @@ PendingView pendingView(
         final id = a.payload['item_id'];
         if (id is String) checked[id] = a.payload['done'] != false;
       case OfflineKind.photo:
-        photos.add(a);
+        (a.payload['stage'] == 'before' ? before : photos).add(a);
       case OfflineKind.submit:
         if (s == 'in_progress') s = 'on_review';
     }
   }
   return PendingView(
-      status: s, checked: checked, photos: photos, visit: visit, count: n);
+      status: s,
+      checked: checked,
+      photos: photos,
+      beforePhotos: before,
+      visit: visit,
+      count: n);
 }
+
+/// Строка заявки, созданной без сети и ещё не отправленной (шаг 32), — для
+/// списка и карточки на телефоне. `offline_pending` — пометка «ждёт отправки».
+Map<String, dynamic> pendingOrderRow(OfflineAction a) {
+  final p = a.payload;
+  final locName = p['location_name'];
+  return {
+    'id': a.orderId,
+    'title': p['title'] ?? '',
+    'description': p['description'],
+    'priority': p['priority'] ?? 'normal',
+    'status': 'new',
+    'layer_id': p['layer_id'],
+    'work_type': p['work_type'],
+    'object_id': p['object_id'],
+    'location_id': p['location_id'],
+    'asset_id': p['asset_id'],
+    'input_channel': p['input_channel'] ?? 'button',
+    'created_by': p['created_by'],
+    'created_at': a.clock.device.toUtc().toIso8601String(),
+    'recurrence': null,
+    'locations':
+        locName == null ? null : {'name': locName, 'code': p['location_code']},
+    'offline_pending': true,
+  };
+}
+
+/// Неотправленные новые заявки — новые первыми.
+List<Map<String, dynamic>> pendingCreates(List<OfflineAction> queue) => [
+      for (final a in queue.reversed)
+        if (a.kind == OfflineKind.create) pendingOrderRow(a),
+    ];
+
+/// Порядок отправки: сначала новые заявки — снимки «до» кладутся в папку
+/// заявки, а хранилище пускает только в папку уже существующей заявки.
+({List<OfflineAction> creates, List<OfflineAction> rest}) splitForSync(
+        List<OfflineAction> batch) =>
+    (
+      creates: [
+        for (final a in batch)
+          if (a.kind == OfflineKind.create) a
+      ],
+      rest: [
+        for (final a in batch)
+          if (a.kind != OfflineKind.create) a
+      ],
+    );
 
 /// Ставить ли действие в очередь, а не отправлять сразу: нет сети или по
 /// этой заявке уже есть неотправленные действия (порядок важен).

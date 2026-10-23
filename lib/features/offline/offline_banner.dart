@@ -45,8 +45,8 @@ class OfflineBanner extends StatelessWidget {
                     Pressable(
                       onTap: () => showSyncFailures(context, s),
                       child: Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                            start: AppSpace.s),
+                        padding:
+                            const EdgeInsetsDirectional.only(start: AppSpace.s),
                         child: Text(l.offDetails,
                             style: AppText.footnote.copyWith(
                                 color: colors.foreground,
@@ -123,10 +123,15 @@ String syncReasonText(AppLocalizations l, SyncReason r) => switch (r) {
       SyncReason.photoMissing => l.offReasonPhotoMissing,
       SyncReason.notFound => l.offReasonNotFound,
       SyncReason.denied => l.offReasonDenied,
+      SyncReason.badAction => l.offReasonBadAction,
       SyncReason.other => l.offReasonOther,
     };
 
-String offlineKindText(AppLocalizations l, OfflineKind k) => switch (k) {
+String offlineKindText(AppLocalizations l, OfflineKind k,
+        {bool before = false}) =>
+    switch (k) {
+      OfflineKind.create => l.offKindCreate,
+      OfflineKind.photo when before => l.offKindPhotoBefore,
       OfflineKind.start => l.offKindStart,
       OfflineKind.visit => l.offKindVisit,
       OfflineKind.check => l.offKindCheck,
@@ -155,7 +160,7 @@ Future<void> showSyncFailures(BuildContext context, OfflineService s) {
               AppRow(
                 leading: const LeadingIcon.danger(AppIcons.warning),
                 title: [
-                  offlineKindText(l, f.kind),
+                  offlineKindText(l, f.kind, before: f.before),
                   if (f.orderTitle != null) f.orderTitle!,
                 ].join(' · '),
                 subtitle: [

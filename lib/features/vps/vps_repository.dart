@@ -29,7 +29,9 @@ class VpsSite {
       name: (r['name'] as String?) ?? '',
       payload: (r['anchor_payload'] as String?) ?? '',
       updatedAt: DateTime.tryParse('${r['updated_at'] ?? ''}')?.toLocal(),
-      marks: m is List && m.isNotEmpty ? ((m.first as Map)['count'] as int? ?? 0) : 0,
+      marks: m is List && m.isNotEmpty
+          ? ((m.first as Map)['count'] as int? ?? 0)
+          : 0,
     );
   }
 }

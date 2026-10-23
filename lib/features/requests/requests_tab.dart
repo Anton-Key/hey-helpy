@@ -347,7 +347,8 @@ class _RequestsTabState extends State<RequestsTab> {
     _off.markOffline();
     try {
       return [for (final m in _off.myOrders()) WorkOrder.fromMap(m)];
-    } catch (_) {
+    } catch (e) {
+      debugPrint('offline list: $e');
       return null;
     }
   }
@@ -752,7 +753,9 @@ class _RequestsTabState extends State<RequestsTab> {
         onPhoto: _openPhoto);
     if (ok == true) {
       await _load(refs: false);
-      if (mounted) _snackOk(context.l10n.requestsCreated);
+      // Без сети форма уже сказала «сохранена на телефоне» (шаг 32).
+      final queued = OfflineService.supported && !_off.online;
+      if (mounted && !queued) _snackOk(context.l10n.requestsCreated);
     }
   }
 

@@ -412,7 +412,9 @@ bool isNetworkError(Object e) {
     return true;
   }
   final s = '$e';
-  return s.contains('SocketException') ||
+  // В веб-сборке имена типов сжаты — узнаём и по тексту (шаг 32).
+  return s.startsWith('TimeoutException') ||
+      s.contains('SocketException') ||
       s.contains('Failed host lookup') ||
       s.contains('XMLHttpRequest error') ||
       s.contains('Failed to fetch') ||

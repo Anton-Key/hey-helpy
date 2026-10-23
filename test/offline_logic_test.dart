@@ -162,6 +162,8 @@ void main() {
         isTrue);
     expect(isNetworkError(Exception('new row violates row-level security')),
         isFalse);
+    // Веб-сборка: имя типа сжато, остаётся текст (шаг 32).
+    expect(isNetworkError(_Minified('TimeoutException: offline')), isTrue);
   });
 
   test('доверие времени: что засчитывается автоматически', () {
@@ -251,4 +253,12 @@ void main() {
       expect(SyncFailure.fromJson(f.toJson())!.before, isTrue);
     });
   });
+}
+
+/// Ошибка, как её видит веб-сборка: тип с чужим именем, текст — исходный.
+class _Minified {
+  const _Minified(this.text);
+  final String text;
+  @override
+  String toString() => text;
 }

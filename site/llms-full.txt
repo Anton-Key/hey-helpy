@@ -197,7 +197,9 @@ _Акт: что к оплате, а что — нет и почему. Экра�
 
 ### Работа без интернета
 
-В подвале, на крыше или в техническом этаже связи часто нет. В Android-приложении исполнитель работает и без неё:
+В подвале, на крыше или в техническом этаже связи часто нет. В Android-приложении можно работать и без неё:
+
+- создать новую заявку — текстом, с фото «до» живой камерой; объект, помещение и вид работ выбираются из справочников, сохранённых на телефоне; заявка уйдёт сама, когда появится связь, и в карточке будет пометка «Создано без сети»;
 
 - свои заявки с чек-листами, помещениями, планами этажей и фото «до» заранее сохраняются на телефоне;
 
@@ -209,7 +211,7 @@ _Акт: что к оплате, а что — нет и почему. Экра�
 
 - спорные случаи (время не подтверждено, заявку отменили, пока не было связи) попадают в акт в группу «Требует решения менеджера».
 
-При выходе из аккаунта всё сохранённое удаляется с телефона. Веб-версия без интернета не работает.
+Время создания заявки, как и время действий исполнителя, — доверенное. При выходе из аккаунта всё сохранённое удаляется с телефона. Веб-версия без интернета не работает.
 
 ### Плановое ТО
 
@@ -379,7 +381,7 @@ URL: https://anton-key.github.io/hey-helpy/site/faq/
 В чате заявка теряется, а в таблице её надо заполнять руками. В Эй, Helpy заявку достаточно сказать или сфотографировать — ИИ сам заполнит место, систему и срочность, подрядчик назначится по закреплению, просрочка видна сразу. Главное отличие — доказательства: время, место и фото «после» фиксируются автоматически, и акт показывает, за что платить, а за что нет.
 
 ### А если в подвале нет связи?
-Android-приложение исполнителя работает без интернета: заявки заранее сохраняются на телефоне, действия и фото «после» встают в очередь и отправляются сами, когда появится связь. Время подтверждается по часам, которые нельзя перевести, или по GPS, а отпечаток фото сверяется на сервере. Если время подтвердить нельзя, заявка попадает в акт на решение менеджера.
+Android-приложение работает без интернета: новую заявку можно создать и без связи, а заявки исполнителя заранее сохраняются на телефоне, действия и фото «после» встают в очередь и отправляются сами, когда появится связь. Время подтверждается по часам, которые нельзя перевести, или по GPS, а отпечаток фото сверяется на сервере. Если время подтвердить нельзя, заявка попадает в акт на решение менеджера.
 
 ### Можно ли подать заявку без приложения?
 Да. На объекте вешается QR-код: любой человек пишет боту в Telegram текстом, голосовым или фото — без регистрации. Можно подключить к объекту рабочую группу в Telegram. Автор получает уведомления «взята в работу» и «выполнена» с фото.
@@ -621,7 +623,9 @@ Who does what with a work order
 
 ### Working offline
 
-Basements, roofs and plant rooms often have no signal. In the Android app the technician keeps working without it:
+Basements, roofs and plant rooms often have no signal. The Android app keeps working without it:
+
+- create a new work order — by text, with a “before” photo from the live camera; site, room and type of work are picked from reference data saved on the phone; the work order is sent automatically once the connection is back and is marked “Created offline”;
 
 - their work orders with checklists, rooms, floor plans and “before” photos are saved on the phone in advance;
 
@@ -633,7 +637,7 @@ Basements, roofs and plant rooms often have no signal. In the Android app the te
 
 - disputed cases (time not verified, work order cancelled while offline) land in the act under “Needs a manager’s decision”.
 
-Signing out deletes everything stored on the phone. The web version does not work offline.
+The creation time of a work order, like the time of the technician’s actions, is trusted time. Signing out deletes everything stored on the phone. The web version does not work offline.
 
 ### Preventive maintenance
 
@@ -803,7 +807,7 @@ An AI service for property maintenance and contractor control. Work orders come 
 In a chat requests get lost; a spreadsheet has to be filled in by hand. In Hey Helpy you just say or photograph the problem — AI fills in the place, system and priority, the contractor is assigned automatically, overdue work is visible at once. The key difference is proof: time, place and the “after” photo are captured automatically, and the act shows what to pay for and what not.
 
 ### What if there is no signal in the basement?
-The technician’s Android app works offline: work orders are saved on the phone in advance, actions and “after” photos are queued and sent automatically when the connection returns. Time is verified by a clock that cannot be changed or by GPS, and the photo fingerprint is checked on the server. If the time cannot be verified, the work order goes to a manager’s decision in the act.
+The Android app works offline: a new work order can be created without a connection, and the technician’s work orders are saved on the phone in advance, actions and “after” photos are queued and sent automatically when the connection returns. Time is verified by a clock that cannot be changed or by GPS, and the photo fingerprint is checked on the server. If the time cannot be verified, the work order goes to a manager’s decision in the act.
 
 ### Can someone report a fault without the app?
 Yes. A QR code at the site lets anyone message the Telegram bot with text, a voice note or a photo — no sign-up. A team Telegram group can also be linked to a site. The author gets “in progress” and “done” notifications with a photo.

@@ -200,15 +200,16 @@ ${h.ctaBlock()}
 
 <section aria-labelledby="offline">
   <h2 id="offline">Working offline</h2>
-  <p>Basements, roofs and plant rooms often have no signal. In the Android app the technician keeps working without it:</p>
+  <p>Basements, roofs and plant rooms often have no signal. The Android app keeps working without it:</p>
   <ul>
+    <li>create a new work order — by text, with a “before” photo from the live camera; site, room and type of work are picked from reference data saved on the phone; the work order is sent automatically once the connection is back and is marked “Created offline”;</li>
     <li>their work orders with checklists, rooms, floor plans and “before” photos are saved on the phone in advance;</li>
     <li>start, check in, tick the checklist, take the “after” photo, submit — actions are queued and sent automatically once the connection is back;</li>
     <li><strong>trusted time</strong>: the time of each action is counted from the last server contact using a clock that cannot be changed, or from GPS; if the phone clock is off by more than 5 minutes, the time is marked “not verified”;</li>
     <li><strong>photo fingerprint</strong> (SHA-256) is taken on the phone and verified on the server — a swapped file is detected;</li>
     <li>disputed cases (time not verified, work order cancelled while offline) land in the act under “Needs a manager’s decision”.</li>
   </ul>
-  <p>Signing out deletes everything stored on the phone. The web version does not work offline.</p>
+  <p>The creation time of a work order, like the time of the technician’s actions, is trusted time. Signing out deletes everything stored on the phone. The web version does not work offline.</p>
 </section>
 
 <section aria-labelledby="ppr">
@@ -390,7 +391,7 @@ ${h.ctaBlock()}
     faq: [
       ['What is Hey Helpy?', 'An AI service for property maintenance and contractor control. Work orders come in by voice, by photo and via Telegram, the contractor is assigned automatically, and only work with proof — a stamped “after” photo, a visit inside the site geofence and a completed checklist — is payable in the contractor act.'],
       ['How is it different from a spreadsheet or a group chat?', 'In a chat requests get lost; a spreadsheet has to be filled in by hand. In Hey Helpy you just say or photograph the problem — AI fills in the place, system and priority, the contractor is assigned automatically, overdue work is visible at once. The key difference is proof: time, place and the “after” photo are captured automatically, and the act shows what to pay for and what not.'],
-      ['What if there is no signal in the basement?', 'The technician’s Android app works offline: work orders are saved on the phone in advance, actions and “after” photos are queued and sent automatically when the connection returns. Time is verified by a clock that cannot be changed or by GPS, and the photo fingerprint is checked on the server. If the time cannot be verified, the work order goes to a manager’s decision in the act.'],
+      ['What if there is no signal in the basement?', 'The Android app works offline: a new work order can be created without a connection, and the technician’s work orders are saved on the phone in advance, actions and “after” photos are queued and sent automatically when the connection returns. Time is verified by a clock that cannot be changed or by GPS, and the photo fingerprint is checked on the server. If the time cannot be verified, the work order goes to a manager’s decision in the act.'],
       ['Can someone report a fault without the app?', 'Yes. A QR code at the site lets anyone message the Telegram bot with text, a voice note or a photo — no sign-up. A team Telegram group can also be linked to a site. The author gets “in progress” and “done” notifications with a photo.'],
       ['Does the contractor need to install anything?', 'Yes, the contractor’s technician receives and handles work orders in the app — on Android or in a browser: starts work, checks in, ticks the checklist, takes the “after” photo. Telegram only sends them notifications about new work orders.'],
       ['Can a manager close a work order on the contractor’s behalf?', 'No. Only a technician of the assigned contractor can start the work, take the “after” photo and submit it, and only a manager who did not submit it can accept it. This is enforced by the database, not just the interface.'],

@@ -254,15 +254,16 @@
 
 <section aria-labelledby="offline">
   <h2 id="offline">Working offline</h2>
-  <p>Basements, roofs and plant rooms often have no signal. In the Android app the technician keeps working without it:</p>
+  <p>Basements, roofs and plant rooms often have no signal. The Android app keeps working without it:</p>
   <ul>
+    <li>create a new work order — by text, with a “before” photo from the live camera; site, room and type of work are picked from reference data saved on the phone; the work order is sent automatically once the connection is back and is marked “Created offline”;</li>
     <li>their work orders with checklists, rooms, floor plans and “before” photos are saved on the phone in advance;</li>
     <li>start, check in, tick the checklist, take the “after” photo, submit — actions are queued and sent automatically once the connection is back;</li>
     <li><strong>trusted time</strong>: the time of each action is counted from the last server contact using a clock that cannot be changed, or from GPS; if the phone clock is off by more than 5 minutes, the time is marked “not verified”;</li>
     <li><strong>photo fingerprint</strong> (SHA-256) is taken on the phone and verified on the server — a swapped file is detected;</li>
     <li>disputed cases (time not verified, work order cancelled while offline) land in the act under “Needs a manager’s decision”.</li>
   </ul>
-  <p>Signing out deletes everything stored on the phone. The web version does not work offline.</p>
+  <p>The creation time of a work order, like the time of the technician’s actions, is trusted time. Signing out deletes everything stored on the phone. The web version does not work offline.</p>
 </section>
 
 <section aria-labelledby="ppr">

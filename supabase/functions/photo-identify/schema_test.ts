@@ -309,7 +309,10 @@ Deno.test("нет оборудования в кадре: без вида, си�
   assertEquals(r.candidates, []);
 
   // Есть оборудование или старый ответ без поля — как раньше.
-  const ac = normalizeVision({ equipment: true, kind: "ac", confidence: 0.9 }, layers);
+  const ac = normalizeVision(
+    { equipment: true, kind: "ac", confidence: 0.9 },
+    layers,
+  );
   assertEquals(ac.noEquipment, undefined);
   const old = buildResult(
     normalizeVision({ kind: "ac", confidence: 0.9 }, layers),
@@ -409,4 +412,155 @@ Deno.test("рассуждения <think> не мешают разбору JSON"
     layers,
   );
   assert(String(msgs[0].content).includes("/no_think"));
+});
+
+// ---------------------------------------------------------------------------
+// Шаг 31: рамка оборудования (box) — только по просьбе «AR-меток».
+// ---------------------------------------------------------------------------
+
+import { normalizeBox, VISION_SCHEMA_BOX } from "./schema.ts";
+import { boxEnabled, VISION_FORMAT, VISION_FORMAT_BOX } from "./vision.ts";
+
+const JPEG_B64 = btoa(
+  String.fromCharCode(0xff, 0xd8, 0xff, 0xe0, ...new Array(20).fill(0)),
+);
+
+Deno.test("box: вход — только явное box: true", () => {
+  const base = { image: JPEG_B64, locale: "ru" };
+  const a = parseIdentifyInput(base);
+  const b = parseIdentifyInput({ ...base, box: true });
+  const c = parseIdentifyInput({ ...base, box: "yes" });
+  assert(a.ok && b.ok && c.ok);
+  if (a.ok && b.ok && c.ok) {
+    assertEquals(a.value.box, false);
+    assertEquals(b.value.box, true);
+    assertEquals(c.value.box, false);
+  }
+});
+
+Deno.test("box: подсказка и схема без рамки — прежние", () => {
+  const input = {
+    image: JPEG_B64,
+    mime: "image/jpeg" as const,
+    locale: "ru" as const,
+  };
+  const plain = buildVisionMessages(input, []);
+  const withBox = buildVisionMessages(input, [], { box: true });
+  const sys = (m: typeof plain) => String(m[0].content);
+  assert(!sys(plain).includes('"box"'));
+  assert(sys(withBox).includes('"box"'));
+  // /no_think — по-прежнему в конце правил (перед справочниками).
+  assert(sys(withBox).indexOf("/no_think") > sys(withBox).indexOf('"box"'));
+  assertEquals(withBox[1], plain[1]);
+  assertEquals("box" in VISION_SCHEMA.properties, false);
+  assertEquals(VISION_SCHEMA_BOX.required.includes("box"), true);
+  assertEquals(VISION_FORMAT.schema, VISION_SCHEMA);
+  assertEquals(VISION_FORMAT_BOX.schema, VISION_SCHEMA_BOX);
+  assertEquals(VISION_FORMAT_BOX.ladder, true);
+});
+
+Deno.test("box: проверка значений", () => {
+  assertEquals(normalizeBox({ x: 0.2, y: 0.1, w: 0.5, h: 0.3 }), {
+    x: 0.2,
+    y: 0.1,
+    w: 0.5,
+    h: 0.3,
+  });
+  // Qwen-VL: [x1, y1, x2, y2] в тысячных.
+  assertEquals(normalizeBox([200, 100, 700, 400]), {
+    x: 0.2,
+    y: 0.1,
+    w: 0.5,
+    h: 0.3,
+  });
+  assertEquals(normalizeBox({ x: 200, y: 100, w: 500, h: 300 }), {
+    x: 0.2,
+    y: 0.1,
+    w: 0.5,
+    h: 0.3,
+  });
+  assertEquals(normalizeBox({ x: 0, y: 0, w: 1, h: 1 }), {
+    x: 0,
+    y: 0,
+    w: 1,
+    h: 1,
+  });
+  for (
+    const bad of [
+      null,
+      "0.1,0.2",
+      { x: 0.6, y: 0.1, w: 0.5, h: 0.3 }, // за правым краем
+      { x: 0.1, y: 0.1, w: 0, h: 0.3 }, // площадь 0
+      { x: -0.1, y: 0.1, w: 0.2, h: 0.3 },
+      { x: 0.1, y: 0.1, w: 0.2 },
+      { x: "0.1", y: 0.1, w: 0.2, h: 0.3 },
+      { x: NaN, y: 0.1, w: 0.2, h: 0.3 },
+      [700, 100, 200, 400], // x2 < x1
+      [100, 100, 1200, 400], // больше 1000
+      [0.1, 0.2, 0.3],
+    ]
+  ) {
+    assertEquals(normalizeBox(bad), null, JSON.stringify(bad));
+  }
+});
+
+Deno.test("box: ответ модели → результат функции", () => {
+  const raw = {
+    equipment: true,
+    kind: "ac",
+    layer: null,
+    nameplate: null,
+    defect: null,
+    confidence: 0.9,
+    box: { x: 0.3, y: 0.2, w: 0.4, h: 0.3 },
+  };
+  // Не просили — поля нет вовсе (приложение, бот, «Готовность к показу»).
+  const plain = buildResult(normalizeVision(raw, []), [], {}, "ru");
+  assertEquals("box" in plain, false);
+  const withBox = buildResult(
+    normalizeVision(raw, [], { box: true }),
+    [],
+    {},
+    "ru",
+  );
+  assertEquals(withBox.box, { x: 0.3, y: 0.2, w: 0.4, h: 0.3 });
+  // Просили, а модель не дала или дала чушь — null, остальное как раньше.
+  const junk = buildResult(
+    normalizeVision({ ...raw, box: "где-то справа" }, [], { box: true }),
+    [],
+    {},
+    "ru",
+  );
+  assertEquals(junk.box, null);
+  assertEquals(junk.kind, "ac");
+  const missing = { ...raw } as Record<string, unknown>;
+  delete missing.box;
+  assertEquals(
+    buildResult(normalizeVision(missing, [], { box: true }), [], {}, "ru").box,
+    null,
+  );
+  // Qwen иногда отвечает bbox_2d.
+  const qwen = { ...missing, bbox_2d: [300, 200, 700, 500] };
+  assertEquals(
+    buildResult(normalizeVision(qwen, [], { box: true }), [], {}, "ru").box,
+    { x: 0.3, y: 0.2, w: 0.4, h: 0.3 },
+  );
+  // Нет оборудования — рамки нет.
+  const none = buildResult(
+    normalizeVision({ equipment: false }, [], { box: true }),
+    [],
+    {},
+    "ru",
+  );
+  assertEquals(none.box, null);
+  assertEquals(none.no_equipment, true);
+});
+
+Deno.test("box: выключатель YANDEX_VISION_BOX", () => {
+  assertEquals(boxEnabled(() => undefined), true);
+  assertEquals(boxEnabled(() => "off"), false);
+  assertEquals(boxEnabled(() => " OFF "), false);
+  assertEquals(boxEnabled(() => "-"), false);
+  assertEquals(boxEnabled(() => "on"), true);
+  assertEquals(boxEnabled(() => "что-то"), true);
 });

@@ -16,7 +16,7 @@ import {
   type ReplyFormat,
   TIMEOUT_MS,
 } from "./yandex.ts";
-import { VISION_SCHEMA } from "./identify.ts";
+import { VISION_SCHEMA, VISION_SCHEMA_BOX } from "./identify.ts";
 
 export const DEFAULT_VISION_MODEL = "qwen3.6-35b-a3b";
 export const DEFAULT_VISION_LITE = "";
@@ -30,6 +30,27 @@ export const VISION_FORMAT: ReplyFormat = {
   // него — пробуем json_object и запрос как в официальном примере.
   ladder: true,
 };
+
+/** Шаг 31: то же, плюс рамка оборудования («AR-метки», `box: true`). */
+export const VISION_FORMAT_BOX: ReplyFormat = {
+  ...VISION_FORMAT,
+  name: "equipment_photo_box",
+  schema: VISION_SCHEMA_BOX,
+};
+
+/**
+ * Рамка от ИИ включена по умолчанию (её просит только экран «AR-метки»).
+ * Выключить без выкладки кода — секрет YANDEX_VISION_BOX = off: функция не
+ * просит рамку, экран ставит метку в точке прицела.
+ */
+export const BOX_DEFAULT = true;
+
+export function boxEnabled(env: (k: string) => string | undefined): boolean {
+  const v = env("YANDEX_VISION_BOX")?.trim().toLowerCase();
+  if (v === "off" || v === "0" || v === "false" || v === "-") return false;
+  if (v === "on" || v === "1" || v === "true") return true;
+  return BOX_DEFAULT;
+}
 
 /** Модели из окружения: "-" в запасной — без повтора. */
 export function visionModels(
@@ -54,12 +75,13 @@ export function callVision(
   cfg: { apiKey: string; folderId: string; model: string; liteModel: string },
   messages: ModelMessage[],
   fetchFn: typeof fetch = fetch,
+  format: ReplyFormat = VISION_FORMAT,
 ) {
   return complete(
     cfg,
     messages,
     fetchFn,
     visionTiming(cfg.liteModel, cfg.model),
-    VISION_FORMAT,
+    format,
   );
 }

@@ -1,24 +1,22 @@
 package com.example.hey_helpy.vps
 
+import com.example.hey_helpy.arcommon.Quat
+import com.example.hey_helpy.arcommon.RigidPose
+import com.example.hey_helpy.arcommon.SupabaseRest
+import com.example.hey_helpy.arcommon.Vec3
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import java.net.URLEncoder
 
 /**
  * Шаг 28: REST Supabase с JWT пользователя — всё под RLS (0025), без service-ключей.
  * Читает скан помещения и метки, ставит и удаляет метки.
+ * Шаг 31: сами запросы — общий SupabaseRest (android/arcommon).
  */
-class VpsApi(
-    private val baseUrl: String,
-    private val anonKey: String,
-    private val jwt: String,
-) {
-    class HttpError(val code: Int) : IOException("http $code")
+class VpsApi(baseUrl: String, anonKey: String, jwt: String) {
+    private val rest = SupabaseRest(baseUrl, anonKey, jwt)
 
     data class Site(val id: String, val name: String, val payload: String)
 
@@ -75,26 +73,5 @@ class VpsApi(
     private fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
 
     private suspend fun request(method: String, path: String, body: String?, prefer: String?): String =
-        withContext(Dispatchers.IO) {
-            val c = URL("${baseUrl.trimEnd('/')}/rest/v1/$path").openConnection() as HttpURLConnection
-            try {
-                c.requestMethod = method
-                c.connectTimeout = 15_000
-                c.readTimeout = 25_000
-                c.setRequestProperty("apikey", anonKey)
-                c.setRequestProperty("Authorization", "Bearer $jwt")
-                c.setRequestProperty("Accept", "application/json")
-                if (prefer != null) c.setRequestProperty("Prefer", prefer)
-                if (body != null) {
-                    c.doOutput = true
-                    c.setRequestProperty("Content-Type", "application/json")
-                    c.outputStream.use { it.write(body.toByteArray()) }
-                }
-                val code = c.responseCode
-                if (code !in 200..299) throw HttpError(code)
-                c.inputStream.use { it.readBytes().toString(Charsets.UTF_8) }.ifBlank { "[]" }
-            } finally {
-                c.disconnect()
-            }
-        }
+        withContext(Dispatchers.IO) { rest.rest(method, path, body, prefer) }
 }

@@ -9686,6 +9686,156 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Демо-заявок нет — запустите Refresh demo'**
   String get readyDemoNone;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'AR-метки'**
+  String get arLabelsButton;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'AR-метки здесь'**
+  String get arLabelsHere;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала выберите объект в «Где я»'**
+  String get arNoPlace;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Медленно поводите телефоном, затем наведите прицел на оборудование'**
+  String get arHint;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Что это?'**
+  String get arWhatIsIt;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Смотрю…'**
+  String get arLooking;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Подойдите ближе или поводите телефоном'**
+  String get arNoHit;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'В кадре не видно оборудования'**
+  String get arNoEquipment;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Не узнал оборудование — подойдите ближе и попробуйте ещё раз'**
+  String get arNotRecognized;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось узнать оборудование. Попробуйте ещё раз'**
+  String get arFailed;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужен интернет для узнавания оборудования'**
+  String get arNoNetwork;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Сессия истекла — войдите в приложение заново'**
+  String get arSessionExpired;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет доступа к камере — разрешите его в настройках телефона'**
+  String get arNoCamera;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'AR-метки на этом телефоне недоступны'**
+  String get arNoArcore;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Что это? Выберите оборудование'**
+  String get arPickAsset;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Карточка оборудования'**
+  String get arOpenAsset;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать заявку'**
+  String get arCreateOrder;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать метку'**
+  String get arRemoveMark;
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Не больше 10 меток — самая старая убрана'**
+  String get arLimit;
+
+  /// Шаг 31: AR-метки (шаблон для Kotlin)
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} открытая заявка'**
+  String arOrdersOne(String n);
+
+  /// Шаг 31: AR-метки (шаблон для Kotlin)
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} открытые заявки'**
+  String arOrdersFew(String n);
+
+  /// Шаг 31: AR-метки (шаблон для Kotlin)
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} открытых заявок'**
+  String arOrdersMany(String n);
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'Открытых заявок нет'**
+  String get arNoOpenOrders;
+
+  /// Шаг 31: AR-метки (шаблон для Kotlin)
+  ///
+  /// In ru, this message translates to:
+  /// **'ТО до {date}'**
+  String arMaintenanceDue(String date);
+
+  /// Шаг 31: AR-метки
+  ///
+  /// In ru, this message translates to:
+  /// **'ТО просрочено'**
+  String get arMaintenanceOverdue;
 }
 
 class _AppLocalizationsDelegate

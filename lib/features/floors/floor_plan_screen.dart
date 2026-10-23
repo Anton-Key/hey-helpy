@@ -27,6 +27,9 @@ import 'plan_logic.dart';
 import 'plan_sheets.dart';
 import '../vps/vps_channel.dart';
 import '../vps/vps_launch.dart';
+import '../arlabel/arlabel_channel.dart';
+import '../arlabel/arlabel_launch.dart';
+import '../arlabel/arlabel_logic.dart';
 import '../vps/vps_logic.dart';
 import '../vps/vps_site_screen.dart';
 import '../requests/order_form_place.dart';
@@ -63,6 +66,7 @@ class FloorPlanScreen extends StatefulWidget {
 
 enum _MarkerAction {
   create,
+  arLabels,
   allOrders,
   rename,
   code,
@@ -108,6 +112,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
   /// Шаг 28: VPS-вариант APK — «Метки VPS (эксперимент)».
   VpsStatus _vps = VpsStatus.none;
+  ArLabelStatus _ar = ArLabelStatus.none;
   bool get _wide => MediaQuery.sizeOf(context).width >= AppSpace.wideFrom;
 
   Floor? get _floor {
@@ -123,6 +128,10 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
     _load();
     VpsChannel.status().then((v) {
       if (mounted && v.available) setState(() => _vps = v);
+    });
+    // Шаг 31: «AR-метки здесь» — только Android с ARCore.
+    ArLabelChannel.status().then((v) {
+      if (mounted && v.available) setState(() => _ar = v);
     });
   }
 
@@ -450,6 +459,15 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                       label: l.cameraArDemo,
                       onPressed: () => Navigator.pop(ctx, _MarkerAction.ar)),
                 ],
+                // Шаг 31: «AR-метки здесь» — только Android с ARCore.
+                if (_ar.available) ...[
+                  const SizedBox(height: AppSpace.s),
+                  AppButton.tinted(
+                      icon: AppIcons.scan,
+                      label: l.arLabelsHere,
+                      onPressed: () =>
+                          Navigator.pop(ctx, _MarkerAction.arLabels)),
+                ],
                 // Шаг 28: VPS-метки — только VPS-вариант APK.
                 if (_vps.available) ...[
                   const SizedBox(height: AppSpace.s),
@@ -552,6 +570,23 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
         await launchUrl(
             WebBridge.arPage(locationId: place?.id, objectId: widget.objectId),
             webOnlyWindowName: '_self');
+      case _MarkerAction.arLabels:
+        final r = await openArLabels(context,
+            objectId: widget.objectId,
+            floorId: _floorId,
+            locationId: place?.id,
+            companyId: _ctx?.companyId);
+        if (r == null || !mounted) return;
+        if (r.action == ArLabelAction.asset) {
+          await _openAssetCard(r.assetId);
+        } else if (_ctx?.companyId != null) {
+          final ok = await createOrderFromArLabel(context, r,
+              objects: _ctx!.objects, companyId: _ctx!.companyId!);
+          if (ok) {
+            await _reloadItems();
+            _msg(l.requestsCreated, type: AppMessageType.success);
+          }
+        }
       case _MarkerAction.vps:
         final assetId = await openVpsMarks(context,
             locationId: place!.id, placeName: place.name, canEdit: _isManager);

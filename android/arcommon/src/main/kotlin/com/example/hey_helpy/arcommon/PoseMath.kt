@@ -1,9 +1,11 @@
-package com.example.hey_helpy.vps
+package com.example.hey_helpy.arcommon
 
 import kotlin.math.abs
 import kotlin.math.sqrt
 
 // Шаг 28: чистая математика меток VPS (без ARCore — проверяется JUnit-тестами).
+// Шаг 31: общий модуль arcommon — её же используют «AR-метки» (android/arlabel):
+// проекция табличек на экран, масштаб по расстоянию, луч из точки экрана.
 //
 // Метка хранится в базе ОТНОСИТЕЛЬНО VPS-якоря помещения (vps_marks: pos_*, rot_*):
 //   метка_отн = якорь⁻¹ ∘ метка_мир        (сохранить, PoseMath.relativeTo)
@@ -112,5 +114,77 @@ object PoseMath {
         val ny = y / w
         if (nx < -1.2 || nx > 1.2 || ny < -1.2 || ny > 1.2) return null
         return Pair(((nx + 1) / 2 * width).toFloat(), ((1 - ny) / 2 * height).toFloat())
+    }
+
+    /** Чем крупнее табличка, тем ближе оборудование (0.6…1.2). */
+    fun labelScale(distanceM: Double): Float =
+        (1.5 / distanceM.coerceAtLeast(0.1)).coerceIn(0.6, 1.2).toFloat()
+
+    /** Обратная матрица 4×4 (по столбцам); null — вырожденная. */
+    fun invert(m: FloatArray): FloatArray? {
+        val a = DoubleArray(16) { m[it].toDouble() }
+        val inv = DoubleArray(16)
+        inv[0] = a[5] * a[10] * a[15] - a[5] * a[11] * a[14] - a[9] * a[6] * a[15] +
+            a[9] * a[7] * a[14] + a[13] * a[6] * a[11] - a[13] * a[7] * a[10]
+        inv[4] = -a[4] * a[10] * a[15] + a[4] * a[11] * a[14] + a[8] * a[6] * a[15] -
+            a[8] * a[7] * a[14] - a[12] * a[6] * a[11] + a[12] * a[7] * a[10]
+        inv[8] = a[4] * a[9] * a[15] - a[4] * a[11] * a[13] - a[8] * a[5] * a[15] +
+            a[8] * a[7] * a[13] + a[12] * a[5] * a[11] - a[12] * a[7] * a[9]
+        inv[12] = -a[4] * a[9] * a[14] + a[4] * a[10] * a[13] + a[8] * a[5] * a[14] -
+            a[8] * a[6] * a[13] - a[12] * a[5] * a[10] + a[12] * a[6] * a[9]
+        inv[1] = -a[1] * a[10] * a[15] + a[1] * a[11] * a[14] + a[9] * a[2] * a[15] -
+            a[9] * a[3] * a[14] - a[13] * a[2] * a[11] + a[13] * a[3] * a[10]
+        inv[5] = a[0] * a[10] * a[15] - a[0] * a[11] * a[14] - a[8] * a[2] * a[15] +
+            a[8] * a[3] * a[14] + a[12] * a[2] * a[11] - a[12] * a[3] * a[10]
+        inv[9] = -a[0] * a[9] * a[15] + a[0] * a[11] * a[13] + a[8] * a[1] * a[15] -
+            a[8] * a[3] * a[13] - a[12] * a[1] * a[11] + a[12] * a[3] * a[9]
+        inv[13] = a[0] * a[9] * a[14] - a[0] * a[10] * a[13] - a[8] * a[1] * a[14] +
+            a[8] * a[2] * a[13] + a[12] * a[1] * a[10] - a[12] * a[2] * a[9]
+        inv[2] = a[1] * a[6] * a[15] - a[1] * a[7] * a[14] - a[5] * a[2] * a[15] +
+            a[5] * a[3] * a[14] + a[13] * a[2] * a[7] - a[13] * a[3] * a[6]
+        inv[6] = -a[0] * a[6] * a[15] + a[0] * a[7] * a[14] + a[4] * a[2] * a[15] -
+            a[4] * a[3] * a[14] - a[12] * a[2] * a[7] + a[12] * a[3] * a[6]
+        inv[10] = a[0] * a[5] * a[15] - a[0] * a[7] * a[13] - a[4] * a[1] * a[15] +
+            a[4] * a[3] * a[13] + a[12] * a[1] * a[7] - a[12] * a[3] * a[5]
+        inv[14] = -a[0] * a[5] * a[14] + a[0] * a[6] * a[13] + a[4] * a[1] * a[14] -
+            a[4] * a[2] * a[13] - a[12] * a[1] * a[6] + a[12] * a[2] * a[5]
+        inv[3] = -a[1] * a[6] * a[11] + a[1] * a[7] * a[10] + a[5] * a[2] * a[11] -
+            a[5] * a[3] * a[10] - a[9] * a[2] * a[7] + a[9] * a[3] * a[6]
+        inv[7] = a[0] * a[6] * a[11] - a[0] * a[7] * a[10] - a[4] * a[2] * a[11] +
+            a[4] * a[3] * a[10] + a[8] * a[2] * a[7] - a[8] * a[3] * a[6]
+        inv[11] = -a[0] * a[5] * a[11] + a[0] * a[7] * a[9] + a[4] * a[1] * a[11] -
+            a[4] * a[3] * a[9] - a[8] * a[1] * a[7] + a[8] * a[3] * a[5]
+        inv[15] = a[0] * a[5] * a[10] - a[0] * a[6] * a[9] - a[4] * a[1] * a[10] +
+            a[4] * a[2] * a[9] + a[8] * a[1] * a[6] - a[8] * a[2] * a[5]
+        val det = a[0] * inv[0] + a[1] * inv[4] + a[2] * inv[8] + a[3] * inv[12]
+        if (abs(det) < 1e-12) return null
+        return FloatArray(16) { (inv[it] / det).toFloat() }
+    }
+
+    /**
+     * Луч из камеры через точку экрана (пиксели) по обратной матрице
+     * «проекция · вид»: начало — на ближней плоскости, направление — единичное.
+     * Нужен, чтобы попасть в оборудование по рамке ИИ уже после того, как кадр
+     * сменился (Frame.hitTest(origin, direction) в ARCore).
+     */
+    fun rayThrough(invViewProj: FloatArray, sx: Float, sy: Float, width: Int, height: Int): Pair<Vec3, Vec3>? {
+        if (width <= 0 || height <= 0) return null
+        val nx = 2.0 * sx / width - 1.0
+        val ny = 1.0 - 2.0 * sy / height
+        fun unproject(nz: Double): Vec3? {
+            val m = invViewProj
+            val x = m[0] * nx + m[4] * ny + m[8] * nz + m[12]
+            val y = m[1] * nx + m[5] * ny + m[9] * nz + m[13]
+            val z = m[2] * nx + m[6] * ny + m[10] * nz + m[14]
+            val w = m[3] * nx + m[7] * ny + m[11] * nz + m[15]
+            if (abs(w) < 1e-9) return null
+            return Vec3(x / w, y / w, z / w)
+        }
+        val near = unproject(-1.0) ?: return null
+        val far = unproject(1.0) ?: return null
+        val d = far - near
+        val len = d.length()
+        if (len < 1e-9) return null
+        return Pair(near, Vec3(d.x / len, d.y / len, d.z / len))
     }
 }

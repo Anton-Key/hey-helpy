@@ -31,11 +31,23 @@ begin;
 
 -- ... изменения ...
 
+-- Новая таблица в public (шаг 31: с 30.10.2026 Supabase не выдаёт права сам):
+-- create table if not exists public.<t> (...);
+-- alter table public.<t> enable row level security;
+-- grant select, insert, update, delete on table public.<t> to authenticated;  -- только нужные действия
+-- grant select, insert, update, delete on table public.<t> to service_role;
+-- -- anon — ничего (приложение работает только после входа).
+-- -- serial / identity: grant usage, select on sequence public.<t>_id_seq to authenticated, service_role;
+-- drop policy if exists <t>_select on public.<t>;
+-- create policy <t>_select on public.<t> for select to authenticated using (company_id = public.my_company_id());
+
 commit;
 ```
 Правила (из CLAUDE.md): повторный запуск безопасен (`if not exists`, `create or replace`,
 `drop ... if exists` перед `create policy`/`create trigger`); права — через RLS и триггеры;
 у новых таблиц с данными компании — `enable row level security` и политики по `company_id`;
+**у каждой новой таблицы в `public` — явные `grant … to authenticated` и `to service_role`, anon — ничего**
+(с 30.10.2026 Supabase не выдаёт права сам; без grant — «permission denied»; тест `tools/db_test/grants.sql`);
 у `security definer` функций — `set search_path = public`; у каждой новой функции —
 `revoke all ... from public, anon` и явный `grant execute ... to authenticated`, если её вызывает
 приложение или политика (после 0008 новые функции по умолчанию закрыты для всех).

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Локальная проверка миграций и прав на настоящем PostgreSQL.
-# 1) пустая база hh_test, заглушки Supabase (00_supabase_stub.sql);
+# 1) пустая база hh_test, заглушки Supabase (00_supabase_stub.sql; после 0026 —
+#    06_supabase_after_0026.sql: новые таблицы без прав по умолчанию, шаг 31);
 # 2) миграции supabase/migrations по порядку номеров (0015+ — одной
 #    транзакцией, как workflow «Apply migration»), затем каждая новая
 #    миграция ещё раз — проверка повторного запуска;
@@ -40,6 +41,10 @@ for f in supabase/migrations/[0-9][0-9][0-9][0-9]_*.sql; do
   echo "   $(basename "$f")"
   if [ "$((10#$n))" -eq 3 ]; then
     run -f tools/db_test/05_shim_after_0003.sql
+  fi
+  if [ "$((10#$n))" -eq 26 ]; then
+    # Шаг 31: дальше — как в Supabase после 30.10.2026 (права только явные).
+    run -f tools/db_test/06_supabase_after_0026.sql
   fi
 done
 

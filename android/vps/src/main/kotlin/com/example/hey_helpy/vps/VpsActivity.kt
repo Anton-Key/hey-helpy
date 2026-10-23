@@ -20,6 +20,12 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import com.example.hey_helpy.arcommon.LabelCard
+import com.example.hey_helpy.arcommon.PoseMath
+import com.example.hey_helpy.arcommon.Quat
+import com.example.hey_helpy.arcommon.RigidPose
+import com.example.hey_helpy.arcommon.SupabaseRest
+import com.example.hey_helpy.arcommon.Vec3
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.lifecycleScope
 import com.google.ar.core.ArCoreApk
@@ -299,7 +305,7 @@ class VpsActivity : ComponentActivity() {
                 site = s
                 marks.clear()
                 marks.addAll(api.marks(s.id))
-            } catch (e: VpsApi.HttpError) {
+            } catch (e: SupabaseRest.HttpError) {
                 blocked(VpsState.httpErrorKey(e.code))
             } catch (e: Exception) {
                 Log.w(TAG, "load site: ${e.javaClass.simpleName}")
@@ -507,30 +513,8 @@ class VpsActivity : ComponentActivity() {
 
     private fun makeLabel(m: VpsApi.Mark): View {
         val a = assets.firstOrNull { it.id == m.assetId }
-        val box = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(12), dp(8), dp(12), dp(8))
-            background = GradientDrawable().apply {
-                setColor(0xF2FFFFFF.toInt())
-                cornerRadius = dp(12).toFloat()
-                setStroke(dp(3), a?.color ?: 0xFF2DB89A.toInt())
-            }
-            elevation = dp(4).toFloat()
-            setOnClickListener { onLabelTap(m) }
-            visibility = View.GONE
-        }
-        box.addView(TextView(this).apply {
-            text = a?.name ?: "—"
-            setTextColor(0xFF111111.toInt())
-            textSize = 15f
-            typeface = Typeface.DEFAULT_BOLD
-        })
-        if (!a?.line.isNullOrBlank()) {
-            box.addView(TextView(this).apply {
-                text = a!!.line
-                setTextColor(0xFF3A3A3C.toInt())
-                textSize = 13f
-            })
+        val box = LabelCard.create(this, a?.name ?: "", a?.line ?: "", a?.color ?: 0xFF2DB89A.toInt()) {
+            onLabelTap(m)
         }
         labelsLayer.addView(box, FrameLayout.LayoutParams(WRAP, WRAP))
         return box
@@ -564,7 +548,7 @@ class VpsActivity : ComponentActivity() {
                 marks.removeAll { it.id == m.id }
                 labelViews.remove(m.id)?.let { labelsLayer.removeView(it) }
                 showMessage("vpsMarkDeleted", error = false)
-            } catch (e: VpsApi.HttpError) {
+            } catch (e: SupabaseRest.HttpError) {
                 showMessage(VpsState.httpErrorKey(e.code))
             } catch (_: Exception) {
                 showMessage(VpsState.httpErrorKey(null))
@@ -621,7 +605,7 @@ class VpsActivity : ComponentActivity() {
                 marks += saved
                 showMessage("vpsMarkSaved", error = false)
                 if (placing) togglePlacing()
-            } catch (e: VpsApi.HttpError) {
+            } catch (e: SupabaseRest.HttpError) {
                 showMessage(VpsState.httpErrorKey(e.code))
             } catch (_: Exception) {
                 showMessage(VpsState.httpErrorKey(null))

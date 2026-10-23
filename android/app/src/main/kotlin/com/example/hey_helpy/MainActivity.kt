@@ -19,6 +19,8 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         // Шаг 28: VPS-эксперимент — только в сборке с -PwithVps=true.
         VpsHook.register(this, flutterEngine)
+        // Шаг 31: «AR-метки» — во всех сборках Android (кнопка — только с ARCore).
+        ArLabelHook.register(this, flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hey_helpy/clock")
             .setMethodCallHandler { call, result ->
                 if (call.method != "read") {
@@ -48,9 +50,10 @@ class MainActivity : FlutterActivity() {
             }
     }
 
-    @Deprecated("FlutterActivity передаёт результат экрана VPS сюда")
+    @Deprecated("FlutterActivity передаёт результат экранов VPS и «AR-метки» сюда")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (VpsHook.onActivityResult(requestCode, resultCode, data)) return
+        if (ArLabelHook.onActivityResult(requestCode, resultCode, data)) return
         super.onActivityResult(requestCode, resultCode, data)
     }
 }

@@ -25,6 +25,11 @@ plugins {
 
 include(":app")
 
+// Шаг 31: «AR-метки» (ARCore на телефоне, без чужих серверов) — в основной
+// сборке; arcommon — общее с VPS-экспериментом (PoseMath, REST, таблички).
+include(":arcommon")
+include(":arlabel")
+
 // Шаг 28: VPS-эксперимент (Niantic Spatial NSDK) — отдельный модуль, только
 // в сборке с -PwithVps=true. Основной APK его не содержит и собирается как раньше.
 if (providers.gradleProperty("withVps").orNull == "true") {

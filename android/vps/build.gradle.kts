@@ -49,6 +49,8 @@ dependencies {
     // (Maven-раскладка, репозиторий подключён в android/build.gradle.kts).
     // У AAR нет списка зависимостей в POM — их перечисляем сами (как в kotlin-samples).
     implementation("com.nianticspatial:nsdk:4.1.0-26051913")
+    // Шаг 31: общее с «AR-метками» — PoseMath, REST Supabase, таблички.
+    implementation(project(":arcommon"))
     implementation("com.google.ar:core:1.47.0")
     implementation("io.github.sceneview:arsceneview:2.3.1")
     implementation("com.google.android.gms:play-services-location:21.3.0")

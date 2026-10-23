@@ -10,7 +10,7 @@ export const SITE_URL = process.env.SITE_URL || 'https://anton-key.github.io/hey
 export const APP_URL = 'https://anton-key.github.io/hey-helpy/';
 
 /** Дата последнего изменения содержания (sitemap lastmod, dateModified). Менять при правке текстов. */
-export const UPDATED = '2026-10-16';
+export const UPDATED = '2026-10-23';
 
 /**
  * Контакт для заявок на демо / пилот — Telegram-бот (решение владельца, шаг 29).

@@ -81,7 +81,8 @@ figcaption{font-size:14px;color:var(--muted);margin-top:8px}
 .card{background:var(--card);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:12px}
 .card h3{margin:0}
 .card p{margin:0;font-size:16px}
-.card img{border-radius:var(--radius-s);width:100%;max-width:260px;margin:auto auto 0;border:1px solid var(--line)}
+/* Кадры карточек — одна рамка у всех (одинаковая высота, без сдвига вёрстки) */
+.card img{border-radius:var(--radius-s);width:100%;max-width:260px;aspect-ratio:480/1066;height:auto;object-fit:cover;object-position:top;margin:auto auto 0;border:1px solid var(--line)}
 .split{display:grid;gap:24px;align-items:start}
 @media (min-width:860px){.split{grid-template-columns:1fr auto}.split .shot.wide{max-width:560px}}
 .ticks{list-style:none;padding:0}
@@ -107,6 +108,11 @@ tr:last-child td{border-bottom:0}
 .cta p{color:#D5DEDA;max-width:40em}
 .cta .btn.ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px #8FD9C6}
 .notice{background:var(--card);border-radius:var(--radius);padding:20px;border-inline-start:4px solid var(--accent);margin:0 0 32px}
+.notice.contact{display:grid;gap:20px;align-items:center}
+@media (min-width:640px){.notice.contact{grid-template-columns:1fr 200px}}
+.qr{margin:0;text-align:center}
+.qr svg{width:180px;height:180px;display:block;margin:0 auto;border-radius:12px;border:1px solid var(--line)}
+.qr figcaption{margin-top:10px}
 .form{background:var(--card);border-radius:var(--radius);padding:20px;display:grid;gap:14px;max-width:560px;margin:0 0 32px}
 .form label{font-weight:600;display:grid;gap:6px}
 .form input,.form textarea{font:inherit;padding:12px;border-radius:var(--radius-s);border:1px solid #9AA8A3;background:#fff;color:var(--ink)}

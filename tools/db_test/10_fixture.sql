@@ -121,7 +121,6 @@ begin
   insert into public.visits(id, company_id, object_id, profile_id, work_order_id, lat, lng)
   values (t.id(k, 141), c, t.id(k, 10), t.id(k, 102), t.id(k, 101), 55.75, 37.61);
   insert into public.scan_tags(id, asset_id, location_id, code) values (t.id(k, 151), t.id(k, 701), t.id(k, 21), format('tag-%s', k));
-  insert into public.ar_anchors(id, asset_id, anchor_id) values (t.id(k, 161), t.id(k, 701), format('anchor-%s', k));
 
   insert into storage.buckets(id, name, public) values ('work-photos', 'work-photos', false), ('floor-plans', 'floor-plans', false)
   on conflict (id) do nothing;

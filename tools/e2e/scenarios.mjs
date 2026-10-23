@@ -49,7 +49,7 @@ export const screenText = (page) => page.evaluate(() => {
   return out.join('\n');
 });
 
-/** Плитки «Отчётов» за 30 дней: число заявок и «приняты с первого раза из N». */
+/** Плитки «Отчётов» за 30 дней: количество заявок и «приняты с первого раза из N». */
 async function reportTiles(page, base) {
   await home(page, base);
   await section(page, /^Отчёты/);
@@ -167,7 +167,7 @@ export const SCENARIOS = [
       await waitDb(`select status from work_orders where id = '${id}'`, 'done');
       const doneAfter = +sql(`select count(*) from work_orders where company_id = '${uuid(1)}' and status = 'done'`);
       assert(doneAfter === doneBefore + 1, `принятых было ${doneBefore}, стало ${doneAfter}`);
-      // Отчёт: число заявок за период и «приняты с первого раза» выросли на 1.
+      // Отчёт: количество заявок за период и «приняты с первого раза» выросли на 1.
       const after = await reportTiles(m, base);
       ctx.notes.push(`отчёт: заявок ${before.orders} → ${after.orders}, приняты с первого раза из ${before.firstTime} → ${after.firstTime}`);
       assert(after.orders === before.orders + 1 && after.firstTime === before.firstTime + 1, 'отчёт не посчитал заявку');

@@ -4892,7 +4892,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cameraNoEquipment =>
-      'No equipment in the frame — point the camera at a device';
+      'No equipment in the frame — point the camera at the equipment';
 
   @override
   String get stampNoGps => 'no GPS';

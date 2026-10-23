@@ -1419,7 +1419,7 @@
   "shotDenied": "No camera access. Allow it in your browser or phone settings.",
   "shotFailed": "Couldn't start the camera. Please try again.",
   "actReasonPhotoFromFile": "“after” photo uploaded from a file, not taken on site",
-  "cameraNoEquipment": "No equipment in the frame — point the camera at a device",
+  "cameraNoEquipment": "No equipment in the frame — point the camera at the equipment",
   "stampNoGps": "no GPS",
   "@stampNoGps": {"description": "Шаг 27: офлайн и акты"},
   "stampOffline": "offline",

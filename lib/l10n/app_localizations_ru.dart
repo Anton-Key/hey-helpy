@@ -4922,7 +4922,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cameraNoEquipment =>
-      'В кадре не видно оборудования — наведите камеру на прибор';
+      'В кадре не видно оборудования — наведите на него камеру';
 
   @override
   String get stampNoGps => 'нет GPS';

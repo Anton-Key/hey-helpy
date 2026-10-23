@@ -2159,7 +2159,7 @@
   "@shotFailed": {"description": "Шаг 26: фото «после» — живой снимок"},
   "actReasonPhotoFromFile": "фото «после» загружено из файла, не снято на месте",
   "@actReasonPhotoFromFile": {"description": "Шаг 26: акт — фото из файла"},
-  "cameraNoEquipment": "В кадре не видно оборудования — наведите камеру на прибор",
+  "cameraNoEquipment": "В кадре не видно оборудования — наведите на него камеру",
   "@cameraNoEquipment": {"description": "Шаг 26: нет оборудования в кадре"},
   "stampNoGps": "нет GPS",
   "@stampNoGps": {"description": "Шаг 27: офлайн и акты"},

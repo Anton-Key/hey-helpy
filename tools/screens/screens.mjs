@@ -760,11 +760,14 @@ const SCREENS = [
       await settle(p, 500);
     } },
   // Окно только открывается и закрывается (Escape): подрядчик не назначается.
+  // Шаг 32: список сразу с фильтром «Статус: Новая, Назначена, Возвращена»
+  // (по ссылке) — подходящая заявка наверху и на 360 px, листать не нужно.
   { key: 'picker', title: 'Выбор подрядчика', managerOnly: true, run: async (p) => {
-      await home(p);
+      await homeWith(p, 'st=assigned,new,returned');
+      await settle(p, 1500);
       const titles = [PICKER_ORDER, ...DEMO_TITLES.filter((t) => t !== PICKER_ORDER)];
       let chosen = null;
-      // На телефоне список ленивый: видны только верхние строки — листаем вниз.
+      // Запасной путь: список ленивый — если вдруг не видно, листаем вниз.
       for (let tries = 0; tries < 8 && !chosen; tries++) {
         for (const t of titles) {
           const card = p.getByRole('button', { name: t }).first();
@@ -788,8 +791,8 @@ const SCREENS = [
       await see(p, /^Подрядчики$|Закреплены за этим видом работ|никто не закреплён/i)
         .waitFor({ timeout: 20000 });
       await settle(p);
-      return `заявка «${chosen}»`;
-    }, after: async (p) => { await p.keyboard.press('Escape'); } },
+      return `заявка «${chosen}» (фильтр по статусу)`;
+    }, after: async (p) => { await p.keyboard.press('Escape'); await resetOrderFilter(p); } },
   // Голос в режиме VOICE_MOCK: фраза «произносится» по словам, ждём её конец.
   { key: 'voice', title: 'Голосовая заявка — распознавание', managerOnly: true, run: async (p) => {
       await openVoice(p);

@@ -17,21 +17,21 @@ export const ui = {
   videoNote: 'The video is in Russian with on-screen captions, 2 min 9 s, no sound.',
 };
 
-export const llmsIntro = 'Hey Helpy (Russian: «Эй, Helpy») is an AI service for property maintenance (CMMS / facility management) and contractor control: work orders by voice, by photo and via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.';
+export const llmsIntro = 'Hey Helpy (Russian: «Эй, Helpy») is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.';
 
 export const pages = {
   home: {
     slug: 'en/',
     nav: 'Home',
     title: 'Hey Helpy — AI service for property maintenance and contractor control',
-    description: 'Work orders by voice, by photo and via Telegram; the contractor is assigned automatically, and only proven work gets paid: “after” photo, geofence, checklist. Web and Android.',
+    description: 'For business and shopping centres, chains and retail, property management and FM companies, public sector: work orders by text, camera or voice; only proven work gets paid.',
     h1: 'AI service for property maintenance and contractor control',
     body: (h) => `
 <section class="hero">
   <div class="hero-text">
-    <p class="kicker">Hey Helpy — for offices, hotels, warehouses and shopping centres</p>
+    <p class="kicker">Hey Helpy — for business and shopping centres, chains and retail, property management and FM companies, public-sector customers</p>
     <h1>AI service for property maintenance and contractor control</h1>
-    <p class="lead"><strong>Pay contractors only for proven work.</strong> A work order is spoken, photographed or sent via Telegram — the service figures out what broke and where, sends it to the right contractor and collects proof of completion.</p>
+    <p class="lead"><strong>Pay contractors only for proven work.</strong> A work order is created by text, camera or voice — in the app or via Telegram, with nothing to install. The service figures out what broke and where, sends it to the right contractor and collects proof of completion.</p>
     <p class="actions">${h.cta('primary')} <a class="btn ghost" href="#video">Watch the video</a></p>
   </div>
   ${h.img('voice', 'The “Check the work order” screen: a spoken request about a broken air conditioner in a meeting room parsed by AI into system, room and priority (app in Russian)', { eager: true, cls: 'phone' })}
@@ -46,7 +46,7 @@ export const pages = {
 <section aria-labelledby="how">
   <h2 id="how">How it works</h2>
   <ol class="steps">
-    <li><h3>Intake</h3><p>Say it: “Hey, Helpy, water is dripping from the air conditioner in the third-floor meeting room.” Or point the camera at the device. Or message the Telegram bot — even without an account, via a QR code at the site.</p></li>
+    <li><h3>Intake</h3><p>Say it: “Hey, Helpy, water is dripping from the air conditioner in the third-floor meeting room.” Or point the camera at the equipment. Or message the Telegram bot — requesters need no app, just the QR code at the site.</p></li>
     <li><h3>AI parses it</h3><p>YandexGPT works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.</p></li>
     <li><h3>Contractor</h3><p>The work order goes straight to the contractor assigned to that system at that site. The technician gets a notification and takes it with one tap.</p></li>
     <li><h3>Proof</h3><p>The “after” photo can only be taken with the app’s live camera and carries a stamp: date · site · room · inside geofence. The visit is checked against the site’s geofence, the checklist item by item. No “after” photo — no hand-over.</p></li>
@@ -58,7 +58,7 @@ export const pages = {
   <h2 id="features">Highlights</h2>
   <div class="cards">
     ${h.card('camera', 'Camera assistant', 'Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.', 'Camera assistant: air conditioner KD-301 recognised at 91 %, card with an open work order, maintenance and last job (app in Russian)')}
-    ${h.card('telegram', 'Work orders from Telegram', 'A guest reports a fault via the site’s QR code; the technician receives the new work order and takes it with the “Take it” button.', 'Technician chat with the bot: a new work order and a “Take it” button (mock-up with the bot’s texts, in Russian)')}
+    ${h.card('telegram', 'Work orders from Telegram', 'A requester reports a fault in Telegram via the site’s QR code — no app needed. The contractor’s technician gets a notification from the bot and handles the work order in the app.', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)')}
     ${h.card('photos', '“Before” and “after” photos', 'The work order holds all the proof: photos before and after, time, place, documents.', 'Work order card: “before” and “after” photos and a maintenance document (app in Russian)')}
   </div>
   ${h.figure('act', 'Contractor acts: 5 work orders payable (22,500 ₽), 4 without proof, 56 % of work proven (app in Russian)', 'Contractor act: only proven work is payable')}
@@ -90,13 +90,13 @@ ${h.ctaBlock()}
     slug: 'en/features/',
     nav: 'Features',
     title: 'Features — Hey Helpy',
-    description: 'Work orders by voice, by photo and from Telegram, proof-based contractor payment, segregation of duties, offline work, preventive maintenance, floor plans, documents, reports, access zones.',
+    description: 'Work orders by text, camera or voice and from Telegram, AR labels, proof-based contractor payment, roles, offline work, preventive maintenance, floor plans, reports.',
     h1: 'Features',
     body: (h) => `
 <h1>Features</h1>
 <p class="lead">The four stages of maintenance — intake, dispatch, execution, control — in one service. Below is what already works in the product.</p>
 <nav class="toc" aria-label="On this page"><ul>
-  <li><a href="#voice">Voice work orders</a></li><li><a href="#photo">Photo and camera</a></li><li><a href="#telegram">Telegram</a></li>
+  <li><a href="#voice">Voice work orders</a></li><li><a href="#photo">Photo and camera</a></li><li><a href="#ar">AR labels</a></li><li><a href="#telegram">Telegram</a></li>
   <li><a href="#proof">Proof-based payment</a></li><li><a href="#roles">Roles</a></li><li><a href="#offline">Offline</a></li>
   <li><a href="#ppr">Preventive maintenance</a></li><li><a href="#plans">Floor plans</a></li><li><a href="#docs">Documents</a></li>
   <li><a href="#reports">Reports</a></li><li><a href="#zones">Regions and access zones</a></li>
@@ -122,17 +122,29 @@ ${h.ctaBlock()}
   <h2 id="photo">Photo and the camera assistant</h2>
   <div class="split">
     <div>
-      <p>A technician or employee points the phone camera at a device and taps “What is this?”.</p>
+      <p>A technician or employee points the phone camera at the equipment and taps “What is this?”.</p>
       <ul>
         <li>A multimodal model describes the shot: equipment type (from a catalogue of 22 types), system, readable nameplate, visible defect.</li>
         <li>Which exact unit from the register it is, the service decides itself — by serial number, model, type, room and floor. Up to three candidates with reasons.</li>
-        <li>Device card: open work orders, next preventive maintenance, last completed job.</li>
+        <li>Equipment card: open work orders, next preventive maintenance, last completed job.</li>
         <li>“Create work order” — site, room, equipment and system are pre-filled, the shot is attached as the “before” photo.</li>
         <li>If there is no equipment in the frame, the service says so. The recognition shot is neither stored nor logged.</li>
       </ul>
     </div>
     ${h.img('camera', 'Camera assistant: frozen frame labelled “KD-301 · 91 %” and the air conditioner card (app in Russian)', { cls: 'phone' })}
   </div>
+</section>
+
+<section aria-labelledby="ar">
+  <h2 id="ar">AR labels</h2>
+  <p>Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “KD-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.</p>
+  <ul>
+    <li>Tap the label to open the equipment card or create a work order with the site, room and equipment already filled in.</li>
+    <li>The equipment is recognised by the same service as in the camera assistant; the shot is neither stored nor logged.</li>
+    <li>The phone’s position in the room is calculated on the phone itself. No data goes to third-party AR services: Google’s cloud anchors and geospatial positioning are switched off.</li>
+    <li>Works in the Android app on phones that support ARCore. Other devices get the regular camera assistant.</li>
+    <li>Labels are not yet kept between sessions: after the screen is closed, equipment has to be recognised again. An internet connection is required — recognition runs on the server.</li>
+  </ul>
 </section>
 
 <section aria-labelledby="telegram">
@@ -144,10 +156,10 @@ ${h.ctaBlock()}
         <li><strong>Team groups.</strong> A Telegram group is linked to a site with a code from the app; the bot reads only messages addressed to it.</li>
         <li><strong>Employees</strong> link their account with a code and create work orders with the same permissions as in the app.</li>
         <li><strong>The requester</strong> receives “in progress” and “done ✅” — with the “after” photo. Notifications can be turned off.</li>
-        <li><strong>The technician</strong> receives each new work order with a “Take it” button.</li>
+        <li><strong>The contractor’s technician</strong> only gets a Telegram notification about a new work order; the work order itself is received and handled in the app.</li>
       </ul>
     </div>
-    ${h.img('telegram', 'Technician chat with the bot: new work order and a “Take it” button (mock-up with the bot’s texts, in Russian)', { cls: 'phone' })}
+    ${h.img('telegram', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)', { cls: 'phone' })}
   </div>
 </section>
 
@@ -188,15 +200,16 @@ ${h.ctaBlock()}
 
 <section aria-labelledby="offline">
   <h2 id="offline">Working offline</h2>
-  <p>Basements, roofs and plant rooms often have no signal. In the Android app the technician keeps working without it:</p>
+  <p>Basements, roofs and plant rooms often have no signal. The Android app keeps working without it:</p>
   <ul>
+    <li>create a new work order — by text, with a “before” photo from the live camera; site, room and type of work are picked from reference data saved on the phone; the work order is sent automatically once the connection is back and is marked “Created offline”;</li>
     <li>their work orders with checklists, rooms, floor plans and “before” photos are saved on the phone in advance;</li>
     <li>start, check in, tick the checklist, take the “after” photo, submit — actions are queued and sent automatically once the connection is back;</li>
     <li><strong>trusted time</strong>: the time of each action is counted from the last server contact using a clock that cannot be changed, or from GPS; if the phone clock is off by more than 5 minutes, the time is marked “not verified”;</li>
     <li><strong>photo fingerprint</strong> (SHA-256) is taken on the phone and verified on the server — a swapped file is detected;</li>
     <li>disputed cases (time not verified, work order cancelled while offline) land in the act under “Needs a manager’s decision”.</li>
   </ul>
-  <p>Signing out deletes everything stored on the phone. The web version does not work offline.</p>
+  <p>The creation time of a work order, like the time of the technician’s actions, is trusted time. Signing out deletes everything stored on the phone. The web version does not work offline.</p>
 </section>
 
 <section aria-labelledby="ppr">
@@ -293,7 +306,7 @@ ${h.ctaBlock()}
     <li>A contractor act where only proven work is payable — stamped “after” photo, geofenced visit, checklist.</li>
     <li>Segregation of duties: the technician submits, someone else accepts.</li>
     <li>A PDF report for the owner in one tap.</li>
-    <li>Technicians receive work orders in Telegram and work in the Android app, including offline.</li>
+    <li>Contractor technicians receive and handle work orders in the Android app, including offline; Telegram sends them notifications.</li>
   </ul>
 </section>
 
@@ -325,7 +338,7 @@ ${h.ctaBlock()}
   <h2 id="isolation">Company isolation</h2>
   <ul>
     <li>Company data is separated by PostgreSQL row-level security policies — on every table.</li>
-    <li>An automated test goes through every table and file storage bucket under every role and checks that another company’s data can be neither seen nor changed.</li>
+    <li>Companies and managers of different sites are isolated — everyone sees only their own information.</li>
     <li>A new user without an invitation sees nothing: people join a company with an invitation code (valid for 7 days).</li>
   </ul>
 </section>
@@ -378,11 +391,11 @@ ${h.ctaBlock()}
     faq: [
       ['What is Hey Helpy?', 'An AI service for property maintenance and contractor control. Work orders come in by voice, by photo and via Telegram, the contractor is assigned automatically, and only work with proof — a stamped “after” photo, a visit inside the site geofence and a completed checklist — is payable in the contractor act.'],
       ['How is it different from a spreadsheet or a group chat?', 'In a chat requests get lost; a spreadsheet has to be filled in by hand. In Hey Helpy you just say or photograph the problem — AI fills in the place, system and priority, the contractor is assigned automatically, overdue work is visible at once. The key difference is proof: time, place and the “after” photo are captured automatically, and the act shows what to pay for and what not.'],
-      ['What if there is no signal in the basement?', 'The technician’s Android app works offline: work orders are saved on the phone in advance, actions and “after” photos are queued and sent automatically when the connection returns. Time is verified by a clock that cannot be changed or by GPS, and the photo fingerprint is checked on the server. If the time cannot be verified, the work order goes to a manager’s decision in the act.'],
+      ['What if there is no signal in the basement?', 'The Android app works offline: a new work order can be created without a connection, and the technician’s work orders are saved on the phone in advance, actions and “after” photos are queued and sent automatically when the connection returns. Time is verified by a clock that cannot be changed or by GPS, and the photo fingerprint is checked on the server. If the time cannot be verified, the work order goes to a manager’s decision in the act.'],
       ['Can someone report a fault without the app?', 'Yes. A QR code at the site lets anyone message the Telegram bot with text, a voice note or a photo — no sign-up. A team Telegram group can also be linked to a site. The author gets “in progress” and “done” notifications with a photo.'],
-      ['Does the contractor need to install anything?', 'The contractor’s technician works in the Android app or in a browser: starts work, checks in, ticks the checklist, takes the “after” photo. New work orders also arrive in Telegram with a “Take it” button.'],
+      ['Does the contractor need to install anything?', 'Yes, the contractor’s technician receives and handles work orders in the app — on Android or in a browser: starts work, checks in, ticks the checklist, takes the “after” photo. Telegram only sends them notifications about new work orders.'],
       ['Can a manager close a work order on the contractor’s behalf?', 'No. Only a technician of the assigned contractor can start the work, take the “after” photo and submit it, and only a manager who did not submit it can accept it. This is enforced by the database, not just the interface.'],
-      ['How does the AI know what broke and where?', 'YandexGPT parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the device, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.'],
+      ['How does the AI know what broke and where?', 'YandexGPT parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.'],
       ['Where is the data stored?', 'Currently in a cloud PostgreSQL database (Supabase) on servers in the EU; company data is isolated by database access policies. Hosting in Russia on Yandex Cloud is planned. Dedicated cloud and on-premise options are discussed during a pilot.'],
       ['Which devices does it run on?', 'In a browser on desktop and mobile (voice input in Chrome and Edge) and in the Android app. There is no iPhone app yet.'],
       ['Which languages does the interface support?', 'Russian and English; the language is switched in settings.'],
@@ -427,7 +440,7 @@ ${h.contact()}
     h1: 'Website privacy policy',
     body: (h) => `
 <h1>Website privacy policy</h1>
-<p>Version of 16 October 2026. Applies to this website, not to the app.</p>
+<p>Version of 23 October 2026. Applies to this website; the app is covered in the last section.</p>
 <section aria-labelledby="collect"><h2 id="collect">What the website collects</h2>
   <ul>
     <li>The website uses no cookies, visit counters, advertising or analytics services.</li>
@@ -443,6 +456,7 @@ ${h.contact()}
 </section>
 <section aria-labelledby="app"><h2 id="app">The app</h2>
   <p>Data processing in the ${h.appLink('Hey Helpy')} app (work orders, photos, location when checking in) is governed by the contract with the customer company. How data access works is described on the ${h.link('security', 'Security')} page.</p>
+  <p>The “AR labels” feature in the Android app uses “Google Play Services for AR” (ARCore) — a Google app on the phone, governed by the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. ARCore calculates the phone’s position on the phone itself; our code does not call Google services, and Google’s cloud anchors and geospatial positioning are switched off. The shot used to recognise equipment goes to our server and is not stored.</p>
 </section>
 `,
   },

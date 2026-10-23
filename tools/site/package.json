@@ -2,8 +2,9 @@
   "name": "hey-helpy-site-tools",
   "private": true,
   "type": "module",
-  "description": "Сайт «Эй, Helpy»: build.mjs работает без зависимостей; subset-font нужен только fonts.mjs (разовая подготовка шрифтов).",
+  "description": "Сайт «Эй, Helpy»: build.mjs работает без зависимостей; subset-font нужен только fonts.mjs, qrcode — только qr.mjs (разовая подготовка).",
   "devDependencies": {
+    "qrcode": "^1.5.4",
     "subset-font": "^2.4.0"
   }
 }

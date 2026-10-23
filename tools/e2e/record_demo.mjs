@@ -373,7 +373,7 @@ async function v2Scenario(page) {
   await tap(page, btn(page, /^Отправить/), { pause: 1800 });
 
   // 2. «Камера-помощник».
-  await caption(page, 'Исполнитель у прибора: навёл камеру — «Что это?»');
+  await caption(page, 'Исполнитель у оборудования: навёл камеру — «Что это?»');
   await tap(page, page.getByRole('button', { name: /^(По фото|Узнать оборудование по фото)$/ }).first(), { pause: 1500 });
   await btn(page, /^Что это\?/).waitFor({ timeout: 20000 });
   await hold(page, 2500);

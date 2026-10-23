@@ -300,6 +300,11 @@ class _RequestsTabState extends State<RequestsTab> {
           now: DateTime.now(), uid: _repo.uid, myExecutorIds: _execIds);
       List<Object> r;
       try {
+        // Уже знаем, что сети нет (шаг 32), — сразу список с телефона, без
+        // ожидания ответа сервера.
+        if (OfflineService.supported && !_off.online && _off.hasOfflineList) {
+          throw TimeoutException('offline');
+        }
         r = await Future.wait<Object>(
                 [_repo.listFiltered(conds), _repo.countAll()])
             .timeout(OfflineService.requestTimeout);
@@ -338,11 +343,12 @@ class _RequestsTabState extends State<RequestsTab> {
   /// Заявки из телефона, если ошибка — нет сети и они сохранены.
   List<WorkOrder>? _offlineOrders(Object e) {
     if (!OfflineService.supported || !isNetworkError(e)) return null;
-    if (_off.cached('my_orders') == null) return null;
+    if (!_off.hasOfflineList) return null;
     _off.markOffline();
     try {
       return [for (final m in _off.myOrders()) WorkOrder.fromMap(m)];
-    } catch (_) {
+    } catch (e) {
+      debugPrint('offline list: $e');
       return null;
     }
   }
@@ -747,7 +753,9 @@ class _RequestsTabState extends State<RequestsTab> {
         onPhoto: _openPhoto);
     if (ok == true) {
       await _load(refs: false);
-      if (mounted) _snackOk(context.l10n.requestsCreated);
+      // Без сети форма уже сказала «сохранена на телефоне» (шаг 32).
+      final queued = OfflineService.supported && !_off.online;
+      if (mounted && !queued) _snackOk(context.l10n.requestsCreated);
     }
   }
 

@@ -360,3 +360,111 @@ begin
                   'Н-3: менеджер без зон видит все ссылки');
   perform t.login(null);
 end $$;
+
+-- ===== Шаг 32 (0027): новая заявка без сети и фото «до» =====
+do $$
+declare
+  c1 uuid := t.id(1, 1);
+  climate uuid := (select id from public.layers where company_id = t.id(1, 1) and name = 'Климат');
+  mgr uuid := t.id(1, 100); ex uuid := t.id(1, 102); req uuid := t.id(1, 103); mgr_zone uuid := t.id(1, 104);
+  w_new uuid := t.id(1, 461);   -- заявка заявителя без сети
+  w_z1  uuid := t.id(1, 462);   -- менеджер зоны: чужой объект
+  w_z2  uuid := t.id(1, 463);   -- менеджер зоны: свой объект
+  w_bad uuid := t.id(1, 464);   -- неверная срочность
+  w_x   uuid := t.id(1, 465);   -- объект другой компании
+  w_c   uuid := t.id(1, 466);   -- отменённая до отправки фото
+  a1 uuid := t.id(1, 471); a2 uuid := t.id(1, 472); a3 uuid := t.id(1, 473); a4 uuid := t.id(1, 474);
+  a5 uuid := t.id(1, 475); a6 uuid := t.id(1, 476); a7 uuid := t.id(1, 477); a8 uuid := t.id(1, 478);
+  a9 uuid := t.id(1, 479);
+  p_new text := format('%s/%s/off_%s.jpg', t.id(1, 1), t.id(1, 461), t.id(1, 474));
+  p_c   text := format('%s/%s/off_%s.jpg', t.id(1, 1), t.id(1, 466), t.id(1, 479));
+  gps timestamptz := date_trunc('second', now() - interval '15 minutes');
+  body jsonb;
+  r jsonb;
+  w record;
+  ok boolean;
+begin
+  perform set_config('t.suite', 'offline_sync', false);
+  body := jsonb_build_object('title', 'Без сети: капает с кондиционера', 'description', 'Подвал, связи нет',
+                             'priority', 'high', 'input_channel', 'text', 'layer_id', climate,
+                             'object_id', t.id(1, 10), 'location_id', t.id(1, 21),
+                             'status', 'done');  -- статус из телефона не принимается
+  r := t.sync(req, jsonb_build_array(t.act(a1, 'create', w_new, gps, body, p_gps => gps)));
+  perform t.check(t.res(r, a1)->>'result' = 'applied', '0027: заявитель создаёт заявку без сети: ' || r::text);
+  perform t.check(t.res(r, a1)->>'trust' = 'gps', '0027: время создания — по GPS');
+  select * into w from public.work_orders where id = w_new;
+  perform t.check(w.created_by = req and w.company_id = c1 and w.priority = 'high' and w.input_channel = 'text'
+                  and w.layer_id = climate and w.work_type = 'Климат' and w.location_id = t.id(1, 21),
+                  '0027: поля заявки — из очереди, автор — вошедший');
+  perform t.check(w.status in ('new', 'assigned'), '0027: статус из телефона не принят: ' || w.status);
+  perform t.check(abs(extract(epoch from w.created_at - gps)) < 2, '0027: created_at = доверенное время, не время отправки');
+  perform t.check(exists (select 1 from public.offline_actions where id = a1 and kind = 'create' and work_order_id = w_new),
+                  '0027: в журнале offline_actions — create');
+
+  -- повтор того же действия и та же заявка другим действием — без дублей
+  r := t.sync(req, jsonb_build_array(t.act(a1, 'create', w_new, gps, body, p_gps => gps)));
+  perform t.check((t.res(r, a1)->>'repeat')::boolean, '0027: повтор действия — тот же ответ');
+  r := t.sync(req, jsonb_build_array(t.act(a2, 'create', w_new, gps, body, p_gps => gps)));
+  perform t.check(t.res(r, a2)->>'result' = 'applied' and (select count(*) from public.work_orders where id = w_new) = 1,
+                  '0027: тот же id заявки — не дублируется');
+  r := t.sync(ex, jsonb_build_array(t.act(a3, 'create', w_new, gps, body)));
+  perform t.check(t.res(r, a3)->>'result' = 'rejected' and t.res(r, a3)->>'reason' = 'denied',
+                  '0027: чужой id заявки — отказ: ' || r::text);
+
+  -- автор видит пометку «создано без сети», менеджер — тоже
+  perform t.login(req);
+  perform t.check(exists (select 1 from public.offline_actions where work_order_id = w_new and kind = 'create'),
+                  '0027: автор видит запись create');
+  perform t.login(mgr);
+  perform t.check(exists (select 1 from public.offline_actions where work_order_id = w_new and kind = 'create'),
+                  '0027: менеджер видит запись create');
+  perform t.login(null);
+
+  -- фото «до» без сети: файл по обычной политике хранилища, затем действие
+  begin
+    perform t.login(req);
+    insert into storage.objects(bucket_id, name, owner, owner_id) values ('work-photos', p_new, req, req::text);
+    ok := true;
+  exception when others then ok := false;
+  end;
+  perform t.login(null);
+  perform t.check(ok, '0027: автор кладёт снимок очереди в папку своей заявки (политика 0006)');
+  r := t.sync(req, jsonb_build_array(t.act(a4, 'photo', w_new, gps,
+         jsonb_build_object('path', p_new, 'sha256', repeat('a', 64), 'stage', 'before'), p_gps => gps)));
+  perform t.check(t.res(r, a4)->>'result' = 'applied', '0027: фото «до» без сети принято: ' || r::text);
+  perform t.check(exists (select 1 from public.attachments where storage_path = p_new and stage = 'before'
+                            and offline and time_trust = 'gps' and uploaded_by = req and source = 'camera'),
+                  '0027: фото «до» — с пометками без сети и доверенным временем');
+
+  -- зона доступа менеджера: как политика wo_insert
+  r := t.sync(mgr_zone, jsonb_build_array(t.act(a5, 'create', w_z1, gps,
+         jsonb_build_object('title', 'Пекин', 'priority', 'normal', 'object_id', t.id(1, 11), 'layer_id', climate))));
+  perform t.check(t.res(r, a5)->>'reason' = 'denied' and not exists (select 1 from public.work_orders where id = w_z1),
+                  '0027: менеджер зоны не создаёт заявку вне зоны: ' || r::text);
+  r := t.sync(mgr_zone, jsonb_build_array(t.act(a6, 'create', w_z2, gps,
+         jsonb_build_object('title', 'Москва', 'priority', 'normal', 'object_id', t.id(1, 10), 'layer_id', climate))));
+  perform t.check(t.res(r, a6)->>'result' = 'applied', '0027: менеджер зоны создаёт заявку в своей зоне');
+
+  -- проверка полей и чужая компания
+  r := t.sync(req, jsonb_build_array(t.act(a7, 'create', w_bad, gps,
+         jsonb_build_object('title', 'x', 'priority', 'urgent'))));
+  perform t.check(t.res(r, a7)->>'reason' = 'bad_action' and not exists (select 1 from public.work_orders where id = w_bad),
+                  '0027: неверная срочность — отказ');
+  r := t.sync(req, jsonb_build_array(t.act(a8, 'create', w_x, gps,
+         jsonb_build_object('title', 'чужой объект', 'priority', 'normal', 'object_id', t.id(2, 10)))));
+  perform t.check(t.res(r, a8)->>'result' = 'rejected' and not exists (select 1 from public.work_orders where id = w_x),
+                  '0027: объект другой компании — отказ: ' || r::text);
+
+  -- фото «до» в заявку, которую отменили, пока телефон был без сети
+  perform t.login(null);
+  insert into public.work_orders(id, company_id, object_id, title, status, created_by)
+  values (w_c, c1, t.id(1, 10), 'Отменят', 'new', req);
+  insert into storage.objects(bucket_id, name, owner, owner_id) values ('work-photos', p_c, req, req::text);
+  update public.work_orders set status = 'cancelled' where id = w_c;
+  r := t.sync(req, jsonb_build_array(t.act(a9, 'photo', w_c, gps,
+         jsonb_build_object('path', p_c, 'sha256', repeat('b', 64), 'stage', 'before'))));
+  perform t.check(t.res(r, a9)->>'reason' = 'cancelled' and not exists (select 1 from public.attachments where storage_path = p_c),
+                  '0027: фото «до» в отменённую заявку — отказ с причиной: ' || r::text);
+
+  perform t.check(to_regclass('public.ar_anchors') is null, '0027: старой таблицы ar_anchors нет');
+end $$;

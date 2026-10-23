@@ -147,8 +147,11 @@ class RequestsRepo {
     return [for (final r in (rows as List)) r['id'] as String];
   }
 
-  /// Без сети (шаг 27) — последняя сохранённая карточка.
+  /// Без сети (шаг 27) — последняя сохранённая карточка; заявка, созданная
+  /// без сети и ещё не отправленная (шаг 32), — из очереди на телефоне.
   Future<Map<String, dynamic>?> detail(String id) async {
+    final pending = OfflineService.instance.pendingRow(id);
+    if (pending != null) return pending;
     final d = await OfflineService.instance
         .cachedJson('detail:$id', () => _detail(id));
     return d == null ? null : Map<String, dynamic>.from(d as Map);
@@ -169,7 +172,12 @@ class RequestsRepo {
 
   /// Новая заявка. [id] — заранее (узнавание по фото: к заявке сразу
   /// прикладывается снимок; автор видит свою заявку по RLS).
-  Future<void> create(
+  ///
+  /// Шаг 32 (APK): нет сети или связь оборвалась при отправке — заявка
+  /// встаёт в очередь на телефоне (`offline_sync`, действие create), снимок
+  /// [photo] — следом как фото «до». Возвращает true, если заявка в очереди
+  /// (тогда фото и документы вызывающий сам не загружает).
+  Future<bool> create(
       {String? id,
       required String companyId,
       required String title,
@@ -180,11 +188,46 @@ class RequestsRepo {
       required bool recurring,
       String? locationId,
       String? assetId,
-      String inputChannel = 'button'}) async {
+      String inputChannel = 'button',
+      CapturedPhoto? photo,
+      String? locationName,
+      String? locationCode}) async {
     // id — из приложения: после вставки по нему зовём telegram-notify.
     final oid = id ?? newUuid();
+    final off = OfflineService.instance;
+    Future<bool> queue() async {
+      await off.createOrder(
+          orderId: oid,
+          companyId: companyId,
+          fields: {
+            'title': title,
+            'description': description,
+            'priority': priority,
+            'input_channel': inputChannel,
+            'layer_id': layer?.id,
+            'work_type': layer?.name,
+            'object_id': objectId,
+            'location_id': locationId,
+            'asset_id': assetId,
+            'location_name': locationName,
+            'location_code': locationCode,
+          },
+          photo: photo == null
+              ? null
+              : (
+                  bytes: photo.bytes,
+                  takenAt: photo.takenAt,
+                  lat: photo.lat,
+                  lng: photo.lng,
+                  mock: photo.mockLocation
+                ));
+      return true;
+    }
+
+    final offline = OfflineService.supported && off.attached;
+    if (offline && !off.online) return queue();
     // Слой передаём явно: тогда назначение подрядчика не зависит от языка интерфейса.
-    await _c.from('work_orders').insert({
+    final insert = _c.from('work_orders').insert({
       'id': oid,
       'company_id': companyId,
       'title': title,
@@ -200,9 +243,19 @@ class RequestsRepo {
       'recurrence': recurring ? {'kind': 'regular'} : null,
       'created_by': uid,
     });
+    try {
+      await (offline ? insert.timeout(OfflineService.requestTimeout) : insert);
+    } catch (e) {
+      // Ответ мог потеряться после вставки — повтор того же id в
+      // offline_sync заявку не задвоит.
+      if (!offline || !isNetworkError(e)) rethrow;
+      off.markOffline();
+      return queue();
+    }
     // База могла сразу назначить подрядчика (по системе и объекту) — его
     // исполнителям «Новая заявка» в Telegram (шаг 28; нет подрядчика — ничего).
     notifyAssigned(oid);
+    return false;
   }
 
   Future<void> update(String id,
@@ -242,6 +295,22 @@ class RequestsRepo {
         .order('created_at', ascending: false)
         .limit(30);
     return [for (final r in rows as List) r['object_id'] as String?];
+  }
+
+  /// Шаг 32 (0027): когда заявку, созданную без сети, приняла база;
+  /// null — заявка создана обычным способом (или журнал не виден).
+  Future<DateTime?> offlineCreatedSyncedAt(String id) async {
+    final r = await _c
+        .from('offline_actions')
+        .select('synced_at')
+        .eq('work_order_id', id)
+        .eq('kind', 'create')
+        .eq('result', 'applied')
+        .order('synced_at')
+        .limit(1);
+    return r.isEmpty
+        ? null
+        : DateTime.tryParse('${r.first['synced_at']}')?.toLocal();
   }
 
   Future<String?> executorName(String executorId) async {
@@ -457,12 +526,16 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         _d = d;
         _loading = false;
       });
+      // Создана без сети и ещё не отправлена (шаг 32): на сервере её пока
+      // нет — фото, визиты и исполнителя не спрашиваем.
+      if (_off.isPendingCreate(widget.order.id)) return;
       await Future.wait([
         _loadMyContractors(),
         _loadPhotos(),
         if (_isManager) _loadVisits(),
         if (_isManager) _loadDecision(),
         _loadExecutor(d?['assigned_executor_id'] as String?),
+        _loadOfflineCreated(),
       ]);
     } catch (e) {
       debugPrint('WorkOrderDetail: $e');
@@ -972,6 +1045,23 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
             if (channel != null) channel,
           ].join(' · '),
           style: AppText.footnote),
+      if (_off.isPendingCreate(widget.order.id) || _offlineSentAt != null)
+        Padding(
+          padding: const EdgeInsetsDirectional.only(top: AppSpace.xs),
+          child: Row(children: [
+            const Icon(AppIcons.offline,
+                size: AppSizes.iconS, color: AppColors.secondary),
+            const SizedBox(width: AppSpace.xs),
+            Expanded(
+              child: Text(
+                  _off.isPendingCreate(widget.order.id)
+                      ? l.offCreatedPending
+                      : l.offCreatedSent(l.time(_offlineSentAt!)),
+                  key: const ValueKey('offline-created-note'),
+                  style: AppText.footnote),
+            ),
+          ]),
+        ),
       const SizedBox(height: AppSpace.l),
       AppGroup(children: [
         // Кто написал в Telegram (шаг 23): «Мария К. · гость».
@@ -1079,6 +1169,8 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
         canCheck: _can.addAfterPhoto,
         pending: _pending.checked,
       ),
+      if (_pending.beforePhotos.isNotEmpty)
+        PendingPhotosRow(actions: _pending.beforePhotos, before: true),
       if (_pending.photos.isNotEmpty)
         PendingPhotosRow(actions: _pending.photos),
       if (_photos.isNotEmpty ||
@@ -1122,6 +1214,18 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
   }
 
   ProofDecision? _decision;
+
+  /// «Создано без сети · отправлено в 14:25» (шаг 32).
+  DateTime? _offlineSentAt;
+  Future<void> _loadOfflineCreated() async {
+    if (_off.isPendingCreate(widget.order.id)) return;
+    try {
+      final at = await widget.repo.offlineCreatedSyncedAt(widget.order.id);
+      if (mounted) setState(() => _offlineSentAt = at);
+    } catch (e) {
+      debugPrint('offline created: ${e.runtimeType}');
+    }
+  }
 
   Future<void> _loadDecision() async {
     try {
@@ -1445,6 +1549,13 @@ Future<bool?> showOrderForm({
   final l = context.l10n;
   // Документы новой заявки (шаг 24): загружаются после создания заявки.
   var docs = <PickedDocument>[];
+  // Фото «до»: снимок узнавания или (шаг 32) «Снять фото «до»» в форме.
+  var shot = photo;
+  // Шаг 32: без сети заявка встанет в очередь на телефоне.
+  final off = OfflineService.instance;
+  bool offlineNow() => OfflineService.supported && off.attached && !off.online;
+  // Помещение выбранного объекта — для строки заявки на телефоне без сети.
+  PlanItem? pickedPlace;
   final locale = context.localeCode;
   final formTitle = isEdit ? l.formEditTitle : l.formNewTitle;
 
@@ -1470,10 +1581,15 @@ Future<bool?> showOrderForm({
             locationId: locationId);
       } else {
         // id из приложения — чтобы сразу приложить снимок и документы.
-        final id = photo == null && docs.isEmpty ? null : newUuid();
-        await repo.create(
+        final id = shot == null && docs.isEmpty ? null : newUuid();
+        final queued = await repo.create(
             id: id,
             inputChannel: photo == null ? 'button' : 'camera',
+            photo: shot,
+            locationName:
+                pickedPlace?.id == locationId ? pickedPlace?.name : null,
+            locationCode:
+                pickedPlace?.id == locationId ? pickedPlace?.code : null,
             companyId: companyId,
             title: titleC.text.trim(),
             description: descC.text.trim().isEmpty ? null : descC.text.trim(),
@@ -1483,6 +1599,14 @@ Future<bool?> showOrderForm({
             recurring: recurring,
             locationId: locationId,
             assetId: locationId == initialLocation ? assetId : null);
+        if (queued) {
+          // Снимок «до» уже в очереди; документы без сети не прикладываются.
+          if (ctx.mounted) {
+            showAppMessage(ctx, l.offCreatedQueued, type: AppMessageType.info);
+            Navigator.pop(ctx, true);
+          }
+          return;
+        }
         if (id != null && docs.isNotEmpty) {
           var failed = false;
           for (final f in docs) {
@@ -1498,13 +1622,13 @@ Future<bool?> showOrderForm({
             showAppMessage(ctx, l.docAttachFailed, type: AppMessageType.error);
           }
         }
-        if (id != null && photo != null) {
+        if (id != null && shot != null) {
           try {
             await PhotoRepository().upload(
                 companyId: companyId,
                 workOrderId: id,
                 stage: 'before',
-                photo: photo);
+                photo: shot!);
           } catch (e) {
             debugPrint('Order photo: ${e.runtimeType}');
             if (ctx.mounted) {
@@ -1541,7 +1665,42 @@ Future<bool?> showOrderForm({
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (!isEdit && onPhoto != null && photo == null)
+                    if (!isEdit && offlineNow())
+                      Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            AppSpace.rowH, 0, AppSpace.rowH, AppSpace.group),
+                        child: Text(l.formOfflineNote,
+                            key: const ValueKey('form-offline-note'),
+                            style: AppText.footnote),
+                      ),
+                    // Узнавание по фото без сети не работает (шаг 32) — вместо
+                    // него «Снять фото «до»» живой камерой.
+                    if (!isEdit && shot == null && offlineNow())
+                      AppGroup(children: [
+                        AppRow(
+                          key: const ValueKey('form-before-photo'),
+                          leading: const LeadingIcon(AppIcons.camera),
+                          title: l.formTakeBeforePhoto,
+                          chevron: false,
+                          onTap: () async {
+                            final o = objects
+                                .where((o) => o.id == objectId)
+                                .firstOrNull;
+                            final place = pickedPlace?.id == locationId
+                                ? pickedPlace
+                                : null;
+                            final p = await captureLivePhoto(ctx,
+                                stamp: PhotoStamp(
+                                    object:
+                                        o == null ? null : objectDisplayName(o),
+                                    place: place?.label,
+                                    offline: true,
+                                    timeFix: off.stampTimeFor));
+                            if (p != null) setSt(() => shot = p);
+                          },
+                        ),
+                      ])
+                    else if (!isEdit && onPhoto != null && shot == null)
                       AppGroup(children: [
                         AppRow(
                           leading: const LeadingIcon(AppIcons.camera),
@@ -1552,20 +1711,22 @@ Future<bool?> showOrderForm({
                           },
                         ),
                       ]),
-                    if (photo != null)
+                    if (shot != null)
                       AppGroup(children: [
                         AppRow(
                           leading: ClipRRect(
                             borderRadius:
                                 BorderRadius.circular(AppRadius.segmentThumb),
-                            child: Image.memory(photo.bytes,
+                            child: Image.memory(shot!.bytes,
                                 width: 44, height: 44, fit: BoxFit.cover),
                           ),
                           title: l.photoWillAttach,
                           chevron: false,
                         ),
                       ]),
-                    if (!isEdit && SchemaCompat.has('0019') != false)
+                    if (!isEdit &&
+                        SchemaCompat.has('0019') != false &&
+                        !offlineNow())
                       AppGroup(children: [
                         AppRow(
                           leading: const LeadingIcon(AppIcons.attach),
@@ -1647,6 +1808,7 @@ Future<bool?> showOrderForm({
                             key: ValueKey(objectId),
                             objectId: objectId!,
                             value: locationId,
+                            onPicked: (p) => pickedPlace = p,
                             onChanged: (v) => setSt(() => locationId = v)),
                       ]),
                     if (assetId != null &&
@@ -1808,10 +1970,14 @@ class PlaceField extends StatefulWidget {
       {super.key,
       required this.objectId,
       required this.value,
-      required this.onChanged});
+      required this.onChanged,
+      this.onPicked});
   final String objectId;
   final String? value;
   final ValueChanged<String?> onChanged;
+
+  /// Выбранное помещение целиком (название и номер — для заявки без сети).
+  final ValueChanged<PlanItem?>? onPicked;
 
   @override
   State<PlaceField> createState() => _PlaceFieldState();
@@ -1879,6 +2045,8 @@ class _PlaceFieldState extends State<PlaceField> {
                   builder: (_) => PlacePickerSheet(
                       places: places, floors: _floors, selected: widget.value));
               if (picked == null) return;
+              widget.onPicked
+                  ?.call(places.where((p) => p.id == picked).firstOrNull);
               widget.onChanged(picked.isEmpty ? null : picked);
             },
     );

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/schema_compat.dart';
+import '../offline/offline_service.dart';
 import 'floor_models.dart';
 import 'plan_logic.dart';
 
@@ -35,10 +36,16 @@ class FloorRepo {
 
   // ------------------------------------------------------------------ чтение
 
+  /// Без сети (шаг 32, APK) — из предзагрузки (`floors_of:<объект>`).
   Future<List<Floor>> floorsOf(String objectId) async {
-    final rows =
-        await _c.from('floors').select(Floor.columns).eq('object_id', objectId);
-    return sortFloors([for (final r in rows) Floor.fromMap(r)]);
+    final rows = await OfflineService.instance.cachedJson(
+        'floors_of:$objectId',
+        () =>
+            _c.from('floors').select(Floor.columns).eq('object_id', objectId));
+    return sortFloors([
+      for (final r in rows as List)
+        Floor.fromMap(Map<String, dynamic>.from(r as Map))
+    ]);
   }
 
   /// Все этажи компании (по RLS) — для строки «Этажи · N» на карте.
@@ -57,7 +64,18 @@ class FloorRepo {
   }
 
   /// Помещения и оборудование объекта (с этажом и точкой на плане).
+  /// Без сети (шаг 32, APK) — из предзагрузки (`items_of:<объект>`).
   Future<List<PlanItem>> itemsOf(String objectId) async {
+    final r = await OfflineService.instance
+        .cachedJson('items_of:$objectId', () => _itemsOf(objectId)) as Map;
+    Map<String, dynamic> m(Object? x) => Map<String, dynamic>.from(x as Map);
+    return [
+      for (final x in r['places'] as List) PlanItem.placeFromMap(m(x)),
+      for (final x in r['assets'] as List) PlanItem.assetFromMap(m(x)),
+    ];
+  }
+
+  Future<Map<String, Object?>> _itemsOf(String objectId) async {
     final r = await Future.wait([
       SchemaCompat.run(
           '0015',
@@ -77,10 +95,7 @@ class FloorRepo {
           .eq('locations.object_id', objectId)
           .order('name'),
     ]);
-    return [
-      for (final m in r[0]) PlanItem.placeFromMap(m),
-      for (final m in r[1]) PlanItem.assetFromMap(m),
-    ];
+    return {'places': r[0], 'assets': r[1]};
   }
 
   /// Открытые заявки объекта (то, что видно пользователю по RLS).

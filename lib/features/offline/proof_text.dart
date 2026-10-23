@@ -14,8 +14,7 @@ String trustText(AppLocalizations l, TimeTrust? t, int? driftS) => switch (t) {
       TimeTrust.gps => l.proofTrustGps,
       TimeTrust.monotonic || TimeTrust.online || null => l.proofTrustMono,
       TimeTrust.deviceOnly => l.proofTrustDevice,
-      TimeTrust.unverified =>
-        l.proofTrustUnverified(driftText(l, driftS ?? 0)),
+      TimeTrust.unverified => l.proofTrustUnverified(driftText(l, driftS ?? 0)),
     };
 
 /// Строка доказательства для менеджера (шаг 27): «Снято без сети в 14:19 ·

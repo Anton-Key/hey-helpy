@@ -356,8 +356,7 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
   Widget _cityChips(AppLocalizations l) {
     final groups = _regionChipList() ??
         [
-          for (final g
-              in groupObjectsByCity([for (final i in _items) i.value]))
+          for (final g in groupObjectsByCity([for (final i in _items) i.value]))
             if (g.city.isNotEmpty) (g.city, g.city, g.items)
         ];
     if (groups.length < 2) return const SizedBox.shrink();
@@ -384,8 +383,7 @@ class _ObjectsMapViewState extends State<ObjectsMapView>
         child: Row(children: [
           chip(null, all > 0 ? l.cityCount(l.cityAll, all) : l.cityAll),
           for (final (key, name, items) in groups)
-            chip(key,
-                open(items) > 0 ? l.cityCount(name, open(items)) : name),
+            chip(key, open(items) > 0 ? l.cityCount(name, open(items)) : name),
         ]),
       ),
     );
@@ -1083,8 +1081,7 @@ class _ClusteredMarkers extends StatelessWidget {
   Widget build(BuildContext context) {
     final zoom = MapCamera.of(context).zoom;
     // Мелкий масштаб — один кружок на город с подписью; крупнее — по сетке.
-    final clusters =
-        clusterMap(items, zoom, cityOf: (Obj o) => o.cityName);
+    final clusters = clusterMap(items, zoom, cityOf: (Obj o) => o.cityName);
     // Подписи городов не наезжают на соседние кружки и подписи.
     final l = context.l10n;
     final labels = cityLabelPlacement(clusters, zoom,

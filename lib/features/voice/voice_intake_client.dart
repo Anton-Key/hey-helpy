@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../directory/directory.dart';
+import '../offline/offline_service.dart';
 import 'speech_input.dart';
 import 'text_intake.dart';
 import 'voice_draft.dart';
@@ -34,8 +35,17 @@ const voiceMockAi = bool.fromEnvironment('VOICE_MOCK_AI');
 
 /// Обычно — ИИ на сервере с откатом на словарь. В режиме VOICE_MOCK
 /// (скриншоты `/screens`, без сети) — только словарь, с VOICE_MOCK_AI — ИИ.
+/// Без сети (шаг 32, APK) — сразу словарь: ИИ на сервере недоступен, а
+/// ждать 16 с, пока откажет, незачем.
 VoiceIntakeClient createVoiceIntakeClient() =>
-    voiceMock && !voiceMockAi ? const LocalVoiceIntake() : ServerVoiceIntake();
+    (voiceMock && !voiceMockAi) || _knownOffline()
+        ? const LocalVoiceIntake()
+        : ServerVoiceIntake();
+
+bool _knownOffline() {
+  final off = OfflineService.instance;
+  return OfflineService.supported && off.attached && !off.online;
+}
 
 /// Разбор на устройстве по словарю ([TextIntake]).
 class LocalVoiceIntake implements VoiceIntakeClient {

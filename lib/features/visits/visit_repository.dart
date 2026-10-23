@@ -74,9 +74,7 @@ class VisitRepository {
     final rows = await SchemaCompat.run('0024',
         () => q('offline,time_trust,claimed_at,synced_at,time_drift_s,'),
         legacy: () => q(''));
-    return rows
-        .map((e) => Visit.fromMap(e as Map<String, dynamic>))
-        .toList();
+    return rows.map((e) => Visit.fromMap(e as Map<String, dynamic>)).toList();
   }
 
   /// Отмечает начало посещения. Компанию, объект и время база берёт сама;

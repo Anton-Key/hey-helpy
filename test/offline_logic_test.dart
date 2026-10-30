@@ -163,7 +163,7 @@ void main() {
     expect(isNetworkError(Exception('new row violates row-level security')),
         isFalse);
     // Веб-сборка: имя типа сжато, остаётся текст (шаг 32).
-    expect(isNetworkError(_Minified('TimeoutException: offline')), isTrue);
+    expect(isNetworkError(const _Minified('TimeoutException: offline')), isTrue);
   });
 
   test('доверие времени: что засчитывается автоматически', () {

@@ -38,3 +38,8 @@ insert into public.executors(id, profile_id, contractor_id)
 values ('de300000-0000-4000-8000-000000000961', 'd0000000-0000-4000-8000-000000000006',
         'de300000-0000-4000-8000-000000000501')
 on conflict (id) do nothing;
+
+-- Шаг 33: Refresh demo ставит демо-пользователям английский (демо — на
+-- английском), а сценарии проверяют поведение по русским подписям.
+update public.profiles set locale = 'ru'
+ where company_id = 'de300000-0000-4000-8000-000000000001';

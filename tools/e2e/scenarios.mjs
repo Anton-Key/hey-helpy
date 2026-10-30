@@ -250,7 +250,7 @@ export const SCENARIOS = [
       const m = await ctx.page();
       await login(m, base, USERS.admin);
       // a) Заявка на оборудовании → «Показать на плане».
-      await openOrder(m, base, 'Течёт конденсат из кондиционера');
+      await openOrder(m, base, 'Condensate leaking from the server room');
       await clickAction(m, /Показать на плане/);
       await see(m, /На плане · \d/).waitFor({ timeout: 30000 });
       await settle(m, 1500);

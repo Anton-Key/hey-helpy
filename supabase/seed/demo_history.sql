@@ -320,6 +320,12 @@ begin
     from (values ('Менеджер Демо', 'Demo Manager'), ('Исполнитель Демо', 'Demo Technician'),
                  ('Заявитель Демо', 'Demo Requester'), ('Электрик Демо', 'Demo Electrician')) as v(ru, en)
    where p.company_id = c_company and p.full_name = v.ru;
+  -- Демо показывается на английском: язык интерфейса демо-пользователей — en
+  -- (в настройках можно переключить обратно; следующий Refresh demo вернёт en).
+  if exists (select 1 from information_schema.columns
+             where table_schema = 'public' and table_name = 'profiles' and column_name = 'locale') then
+    execute 'update public.profiles set locale = ''en'' where company_id = $1' using c_company;
+  end if;
 
   -- 3b. Объекты на карте (шаг 13). «Demo Tower» стоит в Белграде — адрес
   --     под его координаты. Ещё 4 объекта в разных районах Белграда

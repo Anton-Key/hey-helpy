@@ -29,7 +29,7 @@ import {
   type PlaceRef,
   PLACES_MAX,
 } from "./schema.ts";
-import { AiError, complete, DEFAULT_MODEL, LITE_MODEL } from "./yandex.ts";
+import { AiError, aiFromEnv, complete } from "./yandex.ts";
 import { corsHeaders, logFn } from "../_shared/http.ts";
 
 const log = logFn("voice-intake");
@@ -54,14 +54,11 @@ Deno.serve(async (req) => {
   }
   if (req.method !== "POST") return reply(405, { error: "method_not_allowed" });
 
-  const apiKey = Deno.env.get("YANDEX_API_KEY")?.trim();
-  const folderId = Deno.env.get("YANDEX_FOLDER_ID")?.trim();
-  const model = Deno.env.get("YANDEX_MODEL")?.trim() || DEFAULT_MODEL;
-  const liteEnv = Deno.env.get("YANDEX_MODEL_LITE")?.trim();
-  const liteModel = liteEnv === "-" ? "" : (liteEnv || LITE_MODEL);
+  // Поставщик ИИ — по секретам (шаг 33): AI_* или, как раньше, YANDEX_*.
+  const aiCfg = aiFromEnv((k) => Deno.env.get(k), "text");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!apiKey || !folderId || !supabaseUrl || !anonKey) {
+  if (!aiCfg || !supabaseUrl || !anonKey) {
     return reply(500, { error: "not_configured" }, { code: "not_configured" });
   }
 
@@ -97,11 +94,9 @@ Deno.serve(async (req) => {
   const catalog = await loadCatalog(supabase, input.objectId);
 
   try {
-    const ai = await complete(
-      { apiKey, folderId, model, liteModel },
-      buildMessages(input, catalog),
-    );
+    const ai = await complete(aiCfg, buildMessages(input, catalog));
     const which = {
+      provider: aiCfg.provider,
       model: ai.model,
       first: ai.primaryError,
       first_error: ai.primaryDetail,
@@ -130,6 +125,7 @@ Deno.serve(async (req) => {
     const code = e instanceof AiError ? e.code : "unexpected";
     return reply(502, { error: "ai_unavailable" }, {
       code,
+      provider: aiCfg.provider,
       len: input.text.length,
       // Только error.code / error.message ответа API, без base64 (≤ 300).
       ai_error: e instanceof AiError ? e.detail : undefined,

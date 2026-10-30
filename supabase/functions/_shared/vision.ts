@@ -1,6 +1,7 @@
-// Вызов мультимодальной модели Yandex AI Studio (картинка на входе) через
-// общий клиент _shared/yandex.ts — тот же OpenAI-совместимый API и те же
-// секреты YANDEX_API_KEY / YANDEX_FOLDER_ID, что у voice-intake.
+// Вызов мультимодальной модели (картинка на входе) через общий клиент
+// _shared/ai.ts — тот же OpenAI-совместимый API и тот же выбор поставщика
+// (шаг 33: AI_* или YANDEX_*), что у voice-intake. Ниже — модели Yandex по
+// умолчанию; у другого поставщика модели задают AI_MODEL_VISION(_LITE).
 //
 // Модель по умолчанию — qwen3.6-35b-a3b: на 12.10.2026 единственная модель
 // AI Studio, которая принимает изображения (base64, image_url с data:) —
@@ -10,12 +11,13 @@
 // (по умолчанию нет: второй мультимодальной модели в каталоге нет).
 
 import {
+  type AiConfig,
   complete,
   type ModelMessage,
   PRIMARY_MS,
   type ReplyFormat,
   TIMEOUT_MS,
-} from "./yandex.ts";
+} from "./ai.ts";
 import { VISION_SCHEMA, VISION_SCHEMA_BOX } from "./identify.ts";
 
 export const DEFAULT_VISION_MODEL = "qwen3.6-35b-a3b";
@@ -72,7 +74,7 @@ export function visionTiming(liteModel: string, model: string) {
 }
 
 export function callVision(
-  cfg: { apiKey: string; folderId: string; model: string; liteModel: string },
+  cfg: AiConfig,
   messages: ModelMessage[],
   fetchFn: typeof fetch = fetch,
   format: ReplyFormat = VISION_FORMAT,
@@ -81,7 +83,7 @@ export function callVision(
     cfg,
     messages,
     fetchFn,
-    visionTiming(cfg.liteModel, cfg.model),
+    visionTiming(cfg.liteModel ?? "", cfg.model),
     format,
   );
 }

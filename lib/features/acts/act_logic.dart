@@ -161,7 +161,7 @@ class ActLine {
 }
 
 class ActRates {
-  const ActRates({this.perOrder, this.perVisit, this.currency = 'RUB'});
+  const ActRates({this.perOrder, this.perVisit, this.currency = 'USD'});
   final double? perOrder;
   final double? perVisit;
   final String currency;

@@ -17,6 +17,8 @@ import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
+import { EN_INIT, englishPage } from './en_ui.mjs';
+import { startLocalBackend } from './local_backend.mjs';
 
 const ROOT = resolve(import.meta.dirname, '../..');
 // --pitch — кадры для питча (18 + 20 «Акт», шаг 24; 21, 23, 24 — шаг 25) в docs/screens/pitch/ (см. PITCH ниже):
@@ -25,19 +27,23 @@ const PITCH_MODE = process.argv.includes('--pitch');
 // --out=<папка> — снимать в другую папку (для отладки, не трогая docs/screens/latest).
 const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6)
   ?? join(ROOT, PITCH_MODE ? 'docs/screens/pitch' : 'docs/screens/latest'));
-const WEB = join(ROOT, 'build/web');
+// Шаг 33: --local — съёмка на локальной базе (tools/db_test/run.sh) с новыми
+// демо-данными, пока на рабочей базе не запущен Refresh demo. Нужен PostgREST
+// (POSTGREST=<путь>), как у local_screens.mjs. Снимки помечаются «ПРЕДПРОСМОТР».
+const LOCAL = process.argv.includes('--local');
+const WEB = join(ROOT, LOCAL ? 'build/web_local' : 'build/web');
 const MAX_PNG = 300 * 1024;
 
 // Демо-заявка из supabase/seed/demo_history.sql (её видят все три роли).
-const DEMO_ORDER = 'Шумит вентилятор в переговорной';
+const DEMO_ORDER = 'Noisy fan in the meeting room';
 
 // Окно выбора подрядчика — на заявке из демо-истории (не на тестовых заявках в базе).
 // Сначала эта («Назначена», Электрика — видно закреплённого подрядчика), иначе первая
 // из демо-истории в статусе, где менеджер может назначить подрядчика.
-const PICKER_ORDER = 'Нет питания на розетках в переговорной';
+const PICKER_ORDER = 'No power at the meeting room sockets';
 const DEMO_TITLES = [...readFileSync(join(ROOT, 'supabase/seed/demo_history.sql'), 'utf8')
   .matchAll(/^\s*\(\d{3},'\w+','\w+','([^']+)'/gm)].map((m) => m[1]);
-const ASSIGNABLE = /(Новая|Назначена|Возвращена)\s*$/;
+const ASSIGNABLE = /(Новая|Назначена|Возвращена|New|Assigned|Returned)\s*$/;
 
 // ---------------------------------------------------------------------------
 // ПРЕДПРОСМОТР объектов по миру (шаг 13d): объекты 401–415, помещения 421–465,
@@ -170,7 +176,7 @@ async function routeWorldPreview(page) {
       case 'contractors': return W_CONTRACTORS;
       case 'contractor_layers': return W_BINDINGS.map(({ layer: k, ...b }) => ({ ...b, layer_id: layer(k)?.id,
         contractors: { org_name: W_CONTRACTORS.find((c) => c.id === b.contractor_id)?.org_name
-          ?? (b.contractor_id.endsWith('31') ? 'КлиматСервис' : 'ЭлектроПро') },
+          ?? (b.contractor_id.endsWith('31') ? 'ClimaService' : 'ElectroPro') },
         objects: { name: W_OBJ[b.object_id].name, address: W_OBJ[b.object_id].address }, layers: layer(k) }));
       case 'work_orders': return W_ORDERS.map(({ layer: k, ...o }) => ({ ...o, layer_id: layer(k)?.id, work_type: LAYER_NAMES[k] }));
     }
@@ -316,10 +322,10 @@ async function openMap(page, preview) {
 
 const previewNote = (text) => text;
 
-// Чип города над картой («Белград · 3» или «Белград») — приблизить к городу.
+// Чип города над картой («Belgrade · 3» или «Belgrade») — приблизить к городу.
 // После 0015 над картой — чипы регионов, а не городов (если регионы заданы).
-// В демо в «СНГ» только Москва, в «Европе» — только Белград.
-const REGION_OF_CITY = { 'Москва': 'СНГ', 'Белград': 'Европа' };
+// В демо в «North America» только New York, в «Европе» — только Belgrade.
+const REGION_OF_CITY = { 'New York': 'North America', 'Belgrade': 'Europe' };
 async function openCity(page, city) {
   const cityChip = page.getByRole('button', { name: new RegExp(`^${city}( · \\d+)?$`) }).first();
   const region = REGION_OF_CITY[city];
@@ -355,11 +361,16 @@ function readEnv(file) {
   return out;
 }
 
-if (!existsSync(ENV_FILE)) {
+if (!LOCAL && !existsSync(ENV_FILE)) {
   console.error('Нет файла .env.demo в корне репозитория. Нужны строки: ' + NEED.join(', '));
   process.exit(2);
 }
-const env = readEnv(ENV_FILE);
+// Локальная база: пользователи-заглушки tools/db_test (пароль бэкенд не проверяет).
+const env = LOCAL
+  ? { DEMO_MANAGER_EMAIL: 'manager@example.com', DEMO_MANAGER_PASSWORD: 'local',
+      DEMO_EXECUTOR_EMAIL: 'executor@example.com', DEMO_EXECUTOR_PASSWORD: 'local',
+      DEMO_REQUESTER_EMAIL: 'requester@example.com', DEMO_REQUESTER_PASSWORD: 'local' }
+  : readEnv(ENV_FILE);
 const missing = NEED.filter((k) => !env[k]);
 if (missing.length) {
   console.error('В .env.demo не заполнено: ' + missing.join(', '));
@@ -369,7 +380,19 @@ if (missing.length) {
 // ---------------------------------------------------------------------------
 // Сборка и локальный сервер
 // ---------------------------------------------------------------------------
-if (!process.argv.includes('--no-build')) {
+const backend = LOCAL ? await startLocalBackend({ port: 54321 }) : null;
+if (LOCAL && !process.argv.includes('--no-build')) {
+  const defines = [`--dart-define=SUPABASE_URL=${backend.url}`, `--dart-define=SUPABASE_ANON_KEY=${backend.anonKey}`,
+    '--dart-define=VOICE_MOCK=true'];
+  const envJson = join(ROOT, 'env.json');
+  if (existsSync(envJson)) {
+    const key = JSON.parse(readFileSync(envJson, 'utf8')).MAP_TILE_KEY;
+    if (key) defines.push(`--dart-define=MAP_TILE_KEY=${key}`);
+  }
+  console.log('Сборка веб-версии для локального бэкенда…');
+  execFileSync('flutter', ['build', 'web', '--release', '--output', WEB, ...defines],
+    { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] });
+} else if (!process.argv.includes('--no-build')) {
   if (!existsSync(join(ROOT, 'env.json'))) {
     console.error('Нет env.json (SUPABASE_URL, SUPABASE_ANON_KEY) — без него сайт не подключится к базе.');
     process.exit(2);
@@ -703,30 +726,30 @@ const SCREENS = [
       await settle(p, 800);
       return 'ссылка #/?rec=recurring&pri=critical';
     }, after: async (p) => { await resetOrderFilter(p); } },
-  // Фильтр «Объект»: секции по городам, поиск «Москва», «Весь город».
+  // Фильтр «Объект»: секции по городам, поиск «New York», «Весь город».
   // Окно закрывается без «Применить»; затем тот же выбор — по ссылке.
-  { key: 'filter-object', title: 'Фильтр «Объект»: секции по городам, «Весь город» (Москва)', managerOnly: true, run: async (p) => {
+  { key: 'filter-object', title: 'Фильтр «Объект»: секции по городам, «Весь город» (New York)', managerOnly: true, run: async (p) => {
       await home(p);
       await openFilterKind(p, 'Объект');
       await see(p, 'Применить').waitFor({ timeout: 10000 });
       await settle(p, 600);
-      await p.getByRole('button', { name: 'Весь город: Москва' }).first().click();
+      await p.getByRole('button', { name: 'Весь город: New York' }).first().click();
       await see(p, 'Применить (5)').waitFor({ timeout: 5000 });
       await settle(p, 800);
-      return 'отмечен «Весь город» у Москвы — «Применить (5)»; закрыто без применения';
+      return 'отмечен «Весь город» у New York — «Применить (5)»; закрыто без применения';
     }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
-  // Таблетка «Москва (5)» и строки заявок «Москва · Офис 3 · …» — по ссылке.
-  { key: 'filter-object-city', title: 'Заявки с фильтром «Москва (5)», строки «Москва · Офис N»', managerOnly: true, run: async (p) => {
+  // Таблетка «New York (5)» и строки заявок «New York · Office 3 · …» — по ссылке.
+  { key: 'filter-object-city', title: 'Заявки с фильтром «New York (5)», строки «New York · Office N»', managerOnly: true, run: async (p) => {
       await homeWith(p, `obj=${[403, 404, 405, 406, 407].map(uuid).join(',')}`);
-      await p.getByRole('button', { name: /^Объект: Москва \(5\)/ }).first().waitFor({ timeout: 15000 });
+      await p.getByRole('button', { name: /^Объект: New York \(5\)/ }).first().waitFor({ timeout: 15000 });
       await settle(p, 800);
-      return 'ссылка #/?obj=<5 объектов Москвы>';
+      return 'ссылка #/?obj=<5 объектов New York>';
     }, after: async (p) => { await resetOrderFilter(p); } },
-  // Подрядчики: под названием — города и число объектов; карточка «ЭлектроСити».
-  { key: 'contractor-card', title: 'Карточка подрядчика «ЭлектроСити» (2 объекта из 5 в Москве)', managerOnly: true, run: async (p) => {
+  // Подрядчики: под названием — города и число объектов; карточка «CityElectric».
+  { key: 'contractor-card', title: 'Карточка подрядчика «CityElectric» (2 объекта из 5 в New York)', managerOnly: true, run: async (p) => {
       await home(p);
       await nav(p, 'Подрядчики').click();
-      await p.getByRole('button', { name: /ЭлектроСити/ }).first().click();
+      await p.getByRole('button', { name: /CityElectric/ }).first().click();
       await see(p, /Виды работ/).waitFor({ timeout: 15000 });
       await settle(p, 1200);
       return 'виды работ; объекты по городам: МОСКВА · 2';
@@ -927,16 +950,16 @@ const SCREENS = [
       await openMap(p, p.role === 'manager');
       return previewNote('все объекты, маркер — число открытых заявок');
     }, after: async (p) => { await unrouteMapPreview(p); } },
-  // Чип «Москва» над картой: карта плавно приближается к объектам города.
-  { key: 'map-city', jpeg: true, title: 'Локации — карта, выбран регион «СНГ» (Москва)', managerOnly: true, run: async (p) => {
+  // Чип «New York» над картой: карта плавно приближается к объектам города.
+  { key: 'map-city', jpeg: true, title: 'Локации — карта, выбран регион «North America» (New York)', managerOnly: true, run: async (p) => {
       await openMap(p, true);
-      await openCity(p, 'Москва');
-      return 'чип региона «СНГ» (в нём только Москва) — объекты города; список — секции по городам';
+      await openCity(p, 'New York');
+      return 'чип региона «North America» (в нём только New York) — объекты города; список — секции по городам';
     } },
   { key: 'map-selected', jpeg: true, title: 'Локации — карта, выбранный объект', managerOnly: true, run: async (p) => {
       await openMap(p, true);
-      await openCity(p, 'Белград');
-      await p.getByRole('button', { name: 'БЦ «Демо»' }).first().click();
+      await openCity(p, 'Belgrade');
+      await p.getByRole('button', { name: 'Demo Tower' }).first().click();
       await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
       await settle(p, 1500);
       await waitTiles(p);
@@ -944,7 +967,7 @@ const SCREENS = [
     }, after: async (p) => { await unrouteMapPreview(p); } },
   { key: 'map-area', jpeg: true, title: 'Локации — карта, выделенная область', managerOnly: true, run: async (p) => {
       await openMap(p, true);
-      await openCity(p, 'Белград');
+      await openCity(p, 'Belgrade');
       await btn(p, 'Выделить область').click();
       await see(p, 'Протяните рамку по карте').waitFor({ timeout: 5000 });
       const vp = p.viewportSize();
@@ -979,7 +1002,7 @@ const SCREENS = [
   // Правый клик по карте → «Объекты рядом»: круг и ползунок радиуса.
   { key: 'map-nearby', jpeg: true, title: 'Локации — карта, «Объекты рядом» (правый клик)', managerOnly: true, run: async (p) => {
       await openMap(p, true);
-      await openCity(p, 'Белград');
+      await openCity(p, 'Belgrade');
       const vp = p.viewportSize();
       const [x, y] = vp.width >= 900 ? [820, 470] : [200, 420];
       await p.mouse.click(x, y, { button: 'right' });
@@ -992,7 +1015,7 @@ const SCREENS = [
   // «Отмена» — место НЕ сохраняется.
   { key: 'map-place', jpeg: true, title: 'Локации — карта, «Изменить место на карте»', managerOnly: true, run: async (p) => {
       await openMap(p, false);
-      await p.getByRole('button', { name: 'БЦ «Демо»' }).first().click();
+      await p.getByRole('button', { name: 'Demo Tower' }).first().click();
       await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
       await btn(p, 'Изменить место на карте').click();
       await btn(p, 'Сохранить здесь').waitFor({ timeout: 5000 });
@@ -1006,14 +1029,14 @@ const SCREENS = [
   // Карточка объекта → «Заявки»: вкладка «Заявки» с фильтром по объекту (крестик снимает).
   { key: 'map-orders', title: 'Карта → «Заявки» объекта (фильтр)', managerOnly: true, run: async (p) => {
       await openMap(p, false);
-      await p.getByRole('button', { name: 'БЦ «Демо»' }).first().click();
+      await p.getByRole('button', { name: 'Demo Tower' }).first().click();
       await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
       await settle(p, 800);
       await p.getByRole('button', { name: 'Заявки', exact: true }).last().click();
       await chip(p, 'Объект').waitFor({ timeout: 15000 });
-      await btn(p, 'Объект: Белград · БЦ «Демо»').waitFor({ timeout: 15000 });
+      await btn(p, 'Объект: Belgrade · Demo Tower').waitFor({ timeout: 15000 });
       await settle(p, 2000);
-      return 'фильтр «Объект» = БЦ «Демо» (та же таблетка, что в строке фильтров), снимается крестиком';
+      return 'фильтр «Объект» = Demo Tower (та же таблетка, что в строке фильтров), снимается крестиком';
     }, after: async (p) => {
       await resetOrderFilter(p);
       await nav(p, 'Локации').click().catch(() => {});
@@ -1023,14 +1046,14 @@ const SCREENS = [
     } },
   // ---- Планы этажей (шаг 14b). Пока Refresh demo и загрузка картинок не
   // сделаны — ПРЕДПРОСМОТР из plans.json и assets/demo_plans/*.png.
-  // Карточка объекта «БЦ «Демо»»: раздел «Этажи · 2», помещения с этажами.
+  // Карточка объекта «Demo Tower»: раздел «Этажи · 2», помещения с этажами.
   { key: 'plan-object', title: 'Карточка объекта — «Этажи · N» и помещения с этажами', run: async (p) => {
       await home(p);
       await nav(p, 'Локации').click();
       await settle(p, 1500);
       await p.getByRole('button', { name: 'Список', exact: true }).first().click().catch(() => {});
       await settle(p, 800);
-      await p.getByRole('button', { name: /БЦ «Демо»/ }).first().click();
+      await p.getByRole('button', { name: /Demo Tower/ }).first().click();
       await see(p, /Этажи · \d/).waitFor({ timeout: 20000 });
       await settle(p, 1500);
       // До раздела «Этажи» (под адресом и координатами).
@@ -1042,26 +1065,26 @@ const SCREENS = [
       return p.role === 'manager' ? 'у менеджера — «+ Этаж», «+» и «⋯» у этажа' : 'только чтение: без «+» и «⋯»';
     } },
   // План по ссылке (как от коллеги): /objects/<объект>/floors/<этаж>.
-  { key: 'plan', title: 'План этажа «3 этаж» (открыт по ссылке)', run: async (p) => {
+  { key: 'plan', title: 'План этажа «Floor 3» (открыт по ссылке)', run: async (p) => {
       await openPlan(p, 10, 602);
       return p.role === 'manager' ? 'ссылка #/objects/…/floors/…; маркеры помещений и оборудования, фильтр, список'
         : 'только чтение: нет «Редактировать»';
     } },
   // Шторка оборудования с просроченной заявкой (на телефоне при «вписать»
-  // маркер помещения «Серверная» закрыт маркером стойки — берём кондиционер).
-  { key: 'plan-marker', title: 'План — шторка маркера «Кондиционер серверной»', run: async (p) => {
+  // маркер помещения «Server room» закрыт маркером стойки — берём кондиционер).
+  { key: 'plan-marker', title: 'План — шторка маркера «Air conditioner, server room»', run: async (p) => {
       await openPlan(p, 10, 602);
-      await p.getByRole('button', { name: /^Кондиционер серверной, / }).first().click({ force: true });
+      await p.getByRole('button', { name: /^Air conditioner, server room, / }).first().click({ force: true });
       await see(p, 'Создать заявку здесь').waitFor({ timeout: 10000 });
       await settle(p, 1000);
-      return 'подзаголовок без повтора этажа («… · Серверная, 3 этаж»), открытая просроченная заявка, «Создать заявку здесь»';
+      return 'подзаголовок без повтора этажа («… · Server room, floor 3»), открытая просроченная заявка, «Создать заявку здесь»';
     }, after: async (p) => { await p.keyboard.press('Escape'); await settle(p, 400); } },
   // Шаг 15 (H): оборудование цвета статуса с бейджем, просроченное «дышит».
   { key: 'plan-overdue', title: 'План — оборудование с просроченной заявкой (красное, «дышит»)', managerOnly: true, run: async (p) => {
       await openPlan(p, 10, 602);
       await p.mouse.move(5, 5);
       await settle(p, 1200);
-      return 'план целиком: квадраты оборудования — цвет статуса и бейдж числа заявок, «Кондиционер серверной» (просрочено) — красный ореол «дышит»; подписи помещений скрыты (они на картинке)';
+      return 'план целиком: квадраты оборудования — цвет статуса и бейдж числа заявок, «Air conditioner, server room» (просрочено) — красный ореол «дышит»; подписи помещений скрыты (они на картинке)';
     } },
   { key: 'plan-edit', title: 'План — режим расстановки', managerOnly: true, run: async (p) => {
       await openPlan(p, 10, 601);
@@ -1070,7 +1093,7 @@ const SCREENS = [
       await settle(p, 800);
       return 'плашка «Режим расстановки · Готово»; маркеры перетаскиваются (здесь ничего не меняется)';
     } },
-  // Загрузка плана с экрана плана (шаг 15): этаж «1 этаж» показывается без
+  // Загрузка плана с экрана плана (шаг 15): этаж «Floor 1» показывается без
   // картинки (ответ сервера в браузере без plan_path), «Загрузить план» →
   // файл assets/demo_plans/bc-demo-floor-1.png. ВСЕ записи (загрузка в
   // Storage, этаж, перенос маркера) перехватываются в браузере и в базу НЕ
@@ -1100,8 +1123,8 @@ const SCREENS = [
       await settle(p, 1200);
       // Перетащить маркер помещения мышью на 60 px вправо и 40 px вниз.
       // Маркер — не строка списка слева (на ПК у неё та же подпись): подпись
-      // маркера — «Кафе, 1 этаж, нет открытых заявок» одной строкой.
-      const marker = p.getByRole('button', { name: /^(\d+ · )?Кафе, 1 этаж, / }).first();
+      // маркера — «Café, floor 1, нет открытых заявок» одной строкой.
+      const marker = p.getByRole('button', { name: /^(\d+ · )?Café, floor 1, / }).first();
       const box = await marker.boundingBox();
       if (!box) throw new Error('Маркер «Кафе» не найден');
       const x = box.x + box.width / 2, y = box.y + 22;
@@ -1127,7 +1150,7 @@ const SCREENS = [
         await settle(p, 1200);
       }
       await see(p, /Не размещены · \d/).waitFor({ timeout: 5000 });
-      return '«Open space, 2 этаж» — без этажа, в «Не размещены»';
+      return '«Open space, floor 2» — без этажа, в «Не размещены»';
     } },
   { key: 'plan-info', title: 'Подсказка ⓘ «Что значат маркеры»', managerOnly: true, run: async (p) => {
       await openPlan(p, 10, 602);
@@ -1138,21 +1161,21 @@ const SCREENS = [
   // Карточка заявки на оборудовании этажа: «Показать на плане».
   { key: 'plan-order', title: 'Карточка заявки — «Показать на плане»', managerOnly: true, run: async (p) => {
       await home(p);
-      await openOrder(p, 'Течёт конденсат из кондиционера серверной');
+      await openOrder(p, 'Condensate leaking from the server room AC');
       await see(p, 'Показать на плане').waitFor({ timeout: 20000 });
       await see(p, 'Показать на плане').scrollIntoViewIfNeeded().catch(() => {});
       await settle(p, 1500);
-      return 'превью плана, «3 этаж · N открытых заявок рядом»';
+      return 'превью плана, «Floor 3 · N открытых заявок рядом»';
     } },
   { key: 'plan-from-order', title: 'План, открытый из заявки (маркер подсвечен)', managerOnly: true, run: async (p) => {
       await home(p);
-      await openOrder(p, 'Течёт конденсат из кондиционера серверной');
+      await openOrder(p, 'Condensate leaking from the server room AC');
       await btn(p, 'Показать на плане').click();
       await see(p, /Не размещены|На плане/).waitFor({ timeout: 20000 });
       // Волны идут 4 с после открытия: кадр — пока они видны (после
       // приближения ~0,6 с), затем — спокойный ореол.
       await settle(p, 1400);
-      return 'план центрирован на «Кондиционер серверной»: красные волны (просрочено), маркер ×1,25, подпись полужирная';
+      return 'план центрирован на «Air conditioner, server room»: красные волны (просрочено), маркер ×1,25, подпись полужирная';
     } },
   { key: 'profile', title: 'Профиль', run: async (p) => {
       await home(p);
@@ -1167,7 +1190,7 @@ const SCREENS = [
       await settle(p, 2500);
     } },
   // ---- Разделы шагов 16–17 на рабочей базе (после 0015 и 0016, шаг 19).
-  // Снимаются у менеджера (в «Демо БЦ» он администратор) на ширинах NEW_WIDTHS.
+  // Снимаются у менеджера (в «Demo Properties» он администратор) на ширинах NEW_WIDTHS.
   ...NEW_SCREENS(),
 ];
 
@@ -1222,7 +1245,7 @@ async function openLocationsList(page) {
   await settle(page, 1500);
 }
 
-async function openObjectCard(page, name = 'БЦ «Демо»') {
+async function openObjectCard(page, name = 'Demo Tower') {
   await openLocationsList(page);
   await page.getByRole('button', { name: new RegExp(name) }).first().click();
   await see(page, /Этажи · \d|Адрес/).waitFor({ timeout: 20000 });
@@ -1270,11 +1293,11 @@ async function openCrew(page, contractor, crew) {
 // Функции, а не константы: NEW_SCREENS() вызывается при создании SCREENS (выше).
 function NEW_WIDTHS() { return [1920, 1280, 412]; }
 // Оборудование с заявками в демо: кондиционер серверной («Течёт конденсат…»).
-function DEMO_ASSET_NAME() { return 'Кондиционер серверной'; }
+function DEMO_ASSET_NAME() { return 'Air conditioner, server room'; }
 
 /**
  * «Узнать по фото» (шаг 22): кнопка с камерой рядом с «+» (телефон) или
- * «По фото» в боковом меню (ПК) → «Где я»: БЦ «Демо» · 301. Снимок — заглушка
+ * «По фото» в боковом меню (ПК) → «Где я»: Demo Tower · 301. Снимок — заглушка
  * VOICE_MOCK: нарисованный кондиционер (assets/demo_photos), ответ без модели.
  */
 async function openPhoto(page, { here = true } = {}) {
@@ -1290,14 +1313,14 @@ async function openPhoto(page, { here = true } = {}) {
   if (!here) return;
   // «Где я» запоминается на устройстве: уже выбрано (второй экран подряд) —
   // не открываем окно, иначе нажатие на отмеченный объект его не закрывает.
-  if (await see(page, /БЦ «Демо» · 301 · Переговорная/).isVisible().catch(() => false)) return;
-  await page.getByRole('button', { name: /Без объекта|весь объект|Переговорная/ }).first().click();
+  if (await see(page, /Demo Tower · 301 · Meeting room/).isVisible().catch(() => false)) return;
+  await page.getByRole('button', { name: /Без объекта|весь объект|Meeting room/ }).first().click();
   await see(page, 'Выберите объект').waitFor({ timeout: 10000 });
   await settle(page, 500);
-  await see(page, /Белград · БЦ «Демо»/).click();
-  await see(page, /301 · Переговорная/).waitFor({ timeout: 15000 });
+  await see(page, /Belgrade · Demo Tower/).click();
+  await see(page, /301 · Meeting room/).waitFor({ timeout: 15000 });
   await settle(page, 500);
-  await see(page, /301 · Переговорная/).click();
+  await see(page, /301 · Meeting room/).click();
   await settle(page, 1200);
 }
 
@@ -1307,21 +1330,21 @@ async function openCamera(page) {
   await page.getByRole('button', { name: /^(Узнать оборудование по фото|По фото)$/ }).first().click();
   await btn(page, /^Что это\?/).waitFor({ timeout: 20000 });
   await settle(page, 1200);
-  if (await see(page, /БЦ «Демо» · 301 · Переговорная/).isVisible().catch(() => false)) return;
+  if (await see(page, /Demo Tower · 301 · Meeting room/).isVisible().catch(() => false)) return;
   await page.getByRole('button', { name: /^Где я/ }).first().click();
   await see(page, 'Выберите объект').waitFor({ timeout: 10000 });
   await settle(page, 500);
-  await see(page, /Белград · БЦ «Демо»/).click();
-  await see(page, /301 · Переговорная/).waitFor({ timeout: 15000 });
+  await see(page, /Belgrade · Demo Tower/).click();
+  await see(page, /301 · Meeting room/).waitFor({ timeout: 15000 });
   await settle(page, 500);
-  await see(page, /301 · Переговорная/).click();
+  await see(page, /301 · Meeting room/).click();
   await settle(page, 1200);
 }
 
 async function cameraCard(page) {
   await openCamera(page);
   await btn(page, /^Что это\?/).click();
-  await see(page, /КД-301 · \d+ %/).waitFor({ timeout: 30000 });
+  await see(page, /AC-301 · \d+ %/).waitFor({ timeout: 30000 });
   await see(page, /Плановое ТО|ТО не запланировано/).waitFor({ timeout: 20000 });
   await settle(page, 1500);
 }
@@ -1339,18 +1362,18 @@ function NEW_SCREENS() {
         await openPpr(p);
         return 'сводка — ' + ((await see(p, /выполнено \d+ из \d+/).textContent().catch(() => '')) || 'есть');
       } },
-    { key: 'ppr-card', title: 'ППР — карточка плана «ТО кондиционеров» (история периодов)', run: async (p) => {
-        await openPlanCard(p, 'ТО кондиционеров');
+    { key: 'ppr-card', title: 'ППР — карточка плана «AC maintenance» (история периодов)', run: async (p) => {
+        await openPlanCard(p, 'AC maintenance');
       } },
     { key: 'ppr-task', title: 'Задача периода — карточка заявки «ППР · октябрь 2026 · до 31 окт.»', run: async (p) => {
-        await openPlanCard(p, 'ТО кондиционеров');
+        await openPlanCard(p, 'AC maintenance');
         await btn(p, /Плановое ТО · .* · до/).click();
         await see(p, /Подрядчик/).waitFor({ timeout: 20000 });
         await settle(p, 1500);
       } },
     { key: 'locations-regions', title: 'Локации по регионам → страна → город', run: async (p) => {
         await openLocationsList(p);
-        await see(p, /Европа/).waitFor({ timeout: 20000 });
+        await see(p, /Europe/).waitFor({ timeout: 20000 });
       } },
     { key: 'object-picker', title: 'Окно выбора объектов: «Весь регион», «Вся страна», «Весь город»', run: async (p) => {
         await home(p);
@@ -1377,7 +1400,7 @@ function NEW_SCREENS() {
     // Шаг 22 — «Узнать по фото» (заглушка ответа VOICE_MOCK, без модели).
     { key: 'photo-start', title: '«Узнать по фото» — «Где я» и «Сфотографировать»', run: async (p) => {
         await openPhoto(p);
-        return 'Где я: БЦ «Демо» · 3 этаж · 301; ответ — заглушка (ПРЕДПРОСМОТР)';
+        return 'Где я: Demo Tower · Floor 3 · 301; ответ — заглушка (ПРЕДПРОСМОТР)';
       } },
     { key: 'photo-result', title: '«Узнать по фото» — вид, система, «Скорее всего» и «Это он»', run: async (p) => {
         await photoResult(p);
@@ -1394,7 +1417,7 @@ function NEW_SCREENS() {
         await openCamera(p);
         return 'камера — заглушка: нарисованный кадр (ПРЕДПРОСМОТР)';
       } },
-    { key: 'camera-card', title: '«Камера-помощник»: стоп-кадр, «КД-301 · 91 %», карточка поверх кадра', run: async (p) => {
+    { key: 'camera-card', title: '«Камера-помощник»: стоп-кадр, «AC-301 · 91 %», карточка поверх кадра', run: async (p) => {
         await cameraCard(p);
         return 'нарисованный кадр; ответ ИИ — заглушка VOICE_MOCK; заявки и ТО — рабочая база';
       } },
@@ -1405,13 +1428,13 @@ function NEW_SCREENS() {
         await see(p, /Оборудование: \d+/).waitFor({ timeout: 20000 });
         await settle(p, 1500);
       } },
-    { key: 'order-photos', title: 'Заявка «КлиматСервис» 111: «Фото · 2» — «До» и «После», документы', run: async (p) => {
+    { key: 'order-photos', title: 'Заявка «ClimaService» 111: «Фото · 2» — «До» и «После», документы', run: async (p) => {
         await home(p);
-        await openOrder(p, 'Плановое ТО: проверка давления хладагента');
+        await openOrder(p, 'Scheduled maintenance: refrigerant pressure check');
         await scrollTo(p, /Фото · \d+|ФОТО · \d+/);
         await settle(p, 2500);
       } },
-    { key: 'plan-areas', title: 'План этажа «3 этаж»: области и номера помещений', run: async (p) => {
+    { key: 'plan-areas', title: 'План этажа «Floor 3»: области и номера помещений', run: async (p) => {
         await openPlan(p, 10, 602);
       } },
     { key: 'audit', title: '«Моя компания» → «Журнал изменений доступа»', run: async (p) => {
@@ -1420,13 +1443,13 @@ function NEW_SCREENS() {
         await btn(p, /Журнал изменений доступа/).click();
         await settle(p, 3000);
       } },
-    { key: 'crews', title: 'Карточка подрядчика Huaxin FM → «Бригады»', run: async (p) => {
-        await openContractor(p, 'Huaxin FM');
+    { key: 'crews', title: 'Карточка подрядчика Riyadh FM → «Бригады»', run: async (p) => {
+        await openContractor(p, 'Riyadh FM');
         // «Бригады» — последний раздел карточки.
         await toBottom(p);
       } },
-    { key: 'crew-zone', title: 'Бригада «Пекин» у Huaxin FM: исполнители и зона (как «Зона доступа»)', run: async (p) => {
-        await openCrew(p, 'Huaxin FM', 'Пекин');
+    { key: 'crew-zone', title: 'Бригада «Riyadh» у Riyadh FM: исполнители и зона (как «Зона доступа»)', run: async (p) => {
+        await openCrew(p, 'Riyadh FM', 'Riyadh');
         return 'закрыто без сохранения';
       } },
   ];
@@ -1494,9 +1517,7 @@ const RUNS = [
   { role: 'manager', label: 'Менеджер', width: 360, height: 780 },
   { role: 'executor', label: 'Исполнитель', width: 412, height: 915 },
   { role: 'requester', label: 'Заявитель', width: 412, height: 915 },
-  // Английский интерфейс — главные экраны (шаг 19).
-  { role: 'manager', label: 'Менеджер (EN)', width: 1280, height: 800, en: true },
-  { role: 'manager', label: 'Менеджер (EN)', width: 412, height: 915, en: true },
+  // Шаг 33: все снимки — на английском; отдельных прогонов «(EN)» больше нет.
 ];
 
 // ---------------------------------------------------------------------------
@@ -1520,7 +1541,7 @@ const PITCH = [
   // План целиком на 1920: из заявки, затем «Вписать план».
   { file: '06-floor-plan-desktop', width: 1920, key: 'plan-from-order', run: async (p) => {
       await home(p);
-      await openOrder(p, 'Течёт конденсат из кондиционера серверной');
+      await openOrder(p, 'Condensate leaking from the server room AC');
       await btn(p, 'Показать на плане').click();
       await see(p, /Не размещены|На плане/).waitFor({ timeout: 20000 });
       await settle(p, 200);
@@ -1534,11 +1555,11 @@ const PITCH = [
   { file: '08-world-map-desktop', width: 1920, key: 'map' },
   { file: '09-moscow-map-phone', width: 412, key: 'map-city' },
   { file: '10-reports-desktop', width: 1920, key: 'reports' },
-  // Подрядчик в двух городах (Шэньчжэнь и Пекин) — видны секции по городам.
+  // Подрядчик в двух городах (Abu Dhabi и Riyadh) — видны секции по городам.
   { file: '11-contractor-card-desktop', width: 1920, key: 'contractor-card', run: async (p) => {
       await home(p);
       await nav(p, 'Подрядчики').click();
-      await p.getByRole('button', { name: /Huaxin FM/ }).first().click();
+      await p.getByRole('button', { name: /Riyadh FM/ }).first().click();
       await see(p, /Виды работ/).waitFor({ timeout: 15000 });
       await settle(p, 1200);
     } },
@@ -1556,14 +1577,14 @@ const PITCH = [
       await p.mouse.wheel(0, 250);
       await settle(p, 1200);
     } },
-  // Второго менеджера в рабочей базе нет — та же модель зоны у бригады «Пекин».
+  // Второго менеджера в рабочей базе нет — та же модель зоны у бригады «Riyadh».
   { file: '17-crew-zone-desktop', width: 1920, key: 'crew-zone' },
   // Шаг 22: «Узнать по фото» — результат (нарисованный снимок, заглушка ответа).
   { file: '18-photo-identify-phone', width: 412, key: 'photo-result' },
-  // Шаг 24: «Акт: к оплате только доказанное» — «КлиматСервис», текущий месяц
+  // Шаг 24: «Акт: к оплате только доказанное» — «ClimaService», текущий месяц
   // (нужны 0021 и Refresh demo: доказательства и ставки в демо-истории).
   // Шаг 25: «Камера-помощник» — карточка поверх стоп-кадра (кадр — нарисованный,
-  // ответ — заглушка VOICE_MOCK; заявки и ТО КД-301 — рабочая база после Refresh demo).
+  // ответ — заглушка VOICE_MOCK; заявки и ТО AC-301 — рабочая база после Refresh demo).
   { file: '21-camera-card-phone', width: 412, key: 'camera-card' },
   // 22 — макет уведомления Telegram: tools/screens/tg_notify_mock.mjs.
   { file: '23-systems-desktop', width: 1920, key: 'systems' },
@@ -1628,7 +1649,9 @@ if (PITCH_MODE) {
   try {
     for (const width of [412, 1920].filter((w) => PITCH.some((x) => x.width === w && (!ONLY || ONLY.split(",").some((o) => x.file.startsWith(o)))))) {
       const ctx = await browser.newContext({ viewport: { width, height: width > 600 ? 1080 : 915 },
-        locale: 'ru-RU', deviceScaleFactor: width > 600 ? 1 : 2 });
+        locale: 'en-US', deviceScaleFactor: width > 600 ? 1 : 2 });
+      // Шаг 33: кадры питча — только на английском.
+      await ctx.addInitScript(EN_INIT);
       // PDF отчёта: запомнить Blob для окна печати, само окно не открывать.
       await ctx.addInitScript(() => {
         const orig = URL.createObjectURL;
@@ -1641,9 +1664,10 @@ if (PITCH_MODE) {
         };
         window.print = () => {};
       });
-      const page = await ctx.newPage();
+      const page = englishPage(await ctx.newPage());
       trackTiles(page);
       page.role = 'manager';
+      await routeEnglishProfile(page);
       await login(page, env.DEMO_MANAGER_EMAIL, env.DEMO_MANAGER_PASSWORD);
       for (const f of PITCH.filter((x) => x.width === width && (!ONLY || ONLY.split(",").some((o) => x.file.startsWith(o))))) {
         const s = SCREENS.find((x) => x.key === f.key);
@@ -1670,6 +1694,7 @@ if (PITCH_MODE) {
   } finally {
     await browser.close();
     server.close();
+    backend?.stop();
   }
   for (const f of readdirSync(OUT).filter((f) => f.endsWith('.png'))) {
     try { execFileSync('pngquant', ['--force', '--skip-if-larger', '--quality=70-95', '--ext', '.png', join(OUT, f)]); } catch {}
@@ -1691,10 +1716,14 @@ try {
     if (WIDTH && r.width !== WIDTH) continue;
     const up = r.role.toUpperCase();
     const ctx = await browser.newContext({
-      viewport: { width: r.width, height: r.height }, locale: 'ru-RU', deviceScaleFactor: 1 });
-    const page = await ctx.newPage();
+      viewport: { width: r.width, height: r.height }, locale: 'en-US', deviceScaleFactor: 1 });
+    // Шаг 33: снимки — только на английском интерфейсе.
+    await ctx.addInitScript(EN_INIT);
+    const page = englishPage(await ctx.newPage());
     trackTiles(page);
     page.role = r.role;
+    // Язык из профиля (у демо-администратора мог остаться «ru») — en.
+    await routeEnglishProfile(page);
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 200)));
     let loggedIn = true;
@@ -1714,8 +1743,7 @@ try {
       await routeWorldPreview(page);
       if (r.role !== 'manager') page.worldPreview = 'off';
     }
-    if (loggedIn && r.en) await routeEnglishProfile(page);
-    for (const s of (r.en ? EN_SCREENS : SCREENS)) {
+    for (const s of SCREENS) {
       if (!loggedIn) break;
       if (s.widths && !s.widths.includes(r.width)) continue;
       page.previewUsed = false;
@@ -1749,6 +1777,7 @@ try {
 } finally {
   await browser.close();
   server.close();
+  backend?.stop();
 }
 
 // ---------------------------------------------------------------------------
@@ -1769,8 +1798,9 @@ const kb = (f) => (f && existsSync(join(OUT, f)) ? Math.round(statSync(join(OUT,
 const lines = [
   '# Скриншоты веб-версии',
   '',
-  `Снято: ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC, команда \`/screens\` (\`tools/screens/screens.mjs\`).`,
+  `Снято: ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC, команда \`/screens\` (\`tools/screens/screens.mjs\`). Интерфейс — английский (шаг 33).`,
   '',
+  ...(LOCAL ? ['**ПРЕДПРОСМОТР:** локальная база (`tools/db_test/run.sh`: все миграции + новые английские демо-данные), не рабочая база. После Refresh demo на рабочей базе — переснять: `cd tools/screens && node screens.mjs`.', ''] : []),
   '| Роль | Ширина | Экран | Итог | Файл | Примечание |',
   '|---|---|---|---|---|---|',
   ...results.map((x) => `| ${x.label} | ${x.width} | ${x.title} | ${mark(x.ok)} | ${x.file ? `[${x.file}](${x.file}) ${kb(x.file)}` : ''} | ${x.note ?? ''} |`),

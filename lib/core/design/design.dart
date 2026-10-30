@@ -1,4 +1,4 @@
-/// Дизайн-система «Эй, Helpy» — одним импортом:
+/// Дизайн-система «Hey Helpy» — одним импортом:
 /// `import '../../core/design/design.dart';`.
 /// Описание и правила — `docs/design/DESIGN.md`.
 library;
@@ -9,6 +9,7 @@ export 'controls.dart';
 export 'filters.dart';
 export 'group.dart';
 export 'icons.dart';
+export 'illustration.dart';
 export 'info.dart';
 export 'nav_bar.dart';
 export 'pressable.dart';

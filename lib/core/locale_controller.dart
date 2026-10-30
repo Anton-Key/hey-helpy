@@ -1,13 +1,12 @@
-import 'dart:ui';
-
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Язык интерфейса.
 ///
-/// При запуске берётся сохранённый на телефоне выбор, иначе язык
-/// устройства (если он поддерживается), иначе английский. После входа
+/// При запуске берётся сохранённый на телефоне выбор, иначе английский —
+/// основной язык продукта (шаг 33; язык устройства больше не берётся,
+/// русский выбирается в настройках). После входа
 /// язык из профиля (profiles.locale) имеет приоритет — так выбор
 /// переезжает на другой телефон вместе с аккаунтом.
 class LocaleController extends ChangeNotifier {
@@ -31,10 +30,11 @@ class LocaleController extends ChangeNotifier {
     try {
       prefs = await SharedPreferences.getInstance();
     } catch (_) {}
-    final saved = _supportedOrNull(prefs?.getString(_prefsKey));
-    final device = _supportedOrNull(PlatformDispatcher.instance.locale.languageCode);
-    return LocaleController._(prefs, saved ?? device ?? fallback);
+    return LocaleController._(prefs, initial(prefs?.getString(_prefsKey)));
   }
+
+  /// Язык при запуске: сохранённый выбор, иначе [fallback] (английский).
+  static Locale initial(String? saved) => _supportedOrNull(saved) ?? fallback;
 
   static Locale? _supportedOrNull(String? code) {
     if (code == null) return null;

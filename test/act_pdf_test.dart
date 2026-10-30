@@ -32,7 +32,7 @@ ActResult _result() => buildAct([
           requiresPhoto: true,
           visitRequired: true,
           visit: VisitProof.inZone),
-    ], const ActRates(perOrder: 4500, currency: 'RUB'));
+    ], const ActRates(perOrder: 4500, currency: 'USD'));
 
 ActDoc _doc(AppLocalizations l) => buildActDoc(
       l: l,

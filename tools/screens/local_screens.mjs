@@ -124,7 +124,7 @@ async function openPpr(page) {
   await settle(page, 1200);
 }
 
-async function openPlanCard(page, title = 'ТО кондиционеров') {
+async function openPlanCard(page, title = 'AC maintenance') {
   await openPpr(page);
   await btn(page, new RegExp('^' + title)).click();
   await see(page, /История периодов/).waitFor({ timeout: 20000 });
@@ -141,7 +141,7 @@ async function openLocations(page) {
   await settle(page, 1500);
 }
 
-async function openObjectCard(page, name = 'БЦ «Демо»') {
+async function openObjectCard(page, name = 'Demo Tower') {
   await openLocations(page);
   await btn(page, new RegExp('^' + name)).click();
   await see(page, /Адрес|Этажи/).waitFor({ timeout: 20000 });
@@ -186,13 +186,13 @@ const SCREENS16 = [
   } },
   { key: 'ppr-orders', title: 'Заявки с фильтром «Тип: ППР»', run: async (page) => {
     await home(page, '?rec=ppr');
-    // У исполнителя «КлиматСервиса» задач ППР в демо нет — пустой список тоже годится.
+    // У исполнителя «ClimaServiceа» задач ППР в демо нет — пустой список тоже годится.
     await see(page, /ППР · |Нет заявок|ничего не найдено|Ничего не найдено/).waitFor({ timeout: 20000 });
     await settle(page);
   } },
   { key: 'locations-regions', title: 'Локации по регионам → страна → город', run: async (page) => {
     await openLocations(page);
-    await see(page, /ЕВРОПА|Европа/).waitFor({ timeout: 20000 });
+    await see(page, /ЕВРОПА|Europe/).waitFor({ timeout: 20000 });
   } },
   { key: 'object-picker', title: 'Окно выбора объектов: «Весь регион», «Вся страна», «Весь город»', run: async (page) => {
     await home(page);
@@ -219,8 +219,8 @@ const SCREENS16 = [
   } },
   { key: 'asset-card', title: 'Карточка оборудования: паспорт, где стоит, ППР, заявки', run: async (page) => {
     await openObjectCard(page);
-    await scrollTo(page, /ИБП серверной 10 кВА/);
-    await btn(page, /^ИБП серверной 10 кВА/).click();
+    await scrollTo(page, /Server room UPS 10 kVA/);
+    await btn(page, /^Server room UPS 10 kVA/).click();
     await see(page, /Создать заявку/).waitFor({ timeout: 20000 });
     await settle(page, 1500);
   } },
@@ -232,10 +232,10 @@ const SCREENS16 = [
     const csv = join(tmpdir(), 'hh-import-demo.csv');
     writeFileSync(csv, [
       'Название;Помещение;Система;Инвентарный номер;Производитель;Модель;Серийный номер;Дата ввода',
-      'Кондиционер №3;Переговорная, 3 этаж;Климат;KL-3-010;Daikin;FTXM25R;DK-1;2025-03-01',
+      'Air conditioner №3;Meeting room, floor 3;Климат;KL-3-010;Daikin;FTXM25R;DK-1;2025-03-01',
       'Светильник;Нет такой комнаты;Электрика;EL-9-001;Philips;RC132V;PH-1;2025-03-01',
-      'Насос;Кухня, 3 этаж;Лифты;PL-3-001;Grundfos;UPS;GR-1;2025-03-01',
-      'ИБП;Серверная, 3 этаж;Электрика;ЭЛ-3-001;APC;SRT;AS-1;2025-13-40',
+      'Насос;Kitchen, floor 3;Лифты;PL-3-001;Grundfos;UPS;GR-1;2025-03-01',
+      'ИБП;Server room, floor 3;Электрика;EL-3-001;APC;SRT;AS-1;2025-13-40',
     ].join('\n'));
     const chooser = page.waitForEvent('filechooser', { timeout: 15000 });
     await btn(page, /Выбрать файл/).click();
@@ -270,7 +270,7 @@ const SCREENS16 = [
     await settle(page, 2000);
     await scrollTo(page, /Регионы компании/);
     await btn(page, /Регионы компании/).click();
-    await see(page, /Европа/).waitFor({ timeout: 20000 });
+    await see(page, /Europe/).waitFor({ timeout: 20000 });
     await settle(page);
   } },
   { key: 'region-similar', title: 'Новый регион «Европпа» → «Похоже, такой регион уже есть»', run: async (page) => {
@@ -281,7 +281,7 @@ const SCREENS16 = [
     await settle(page, 2000);
     await scrollTo(page, /Регионы компании/);
     await btn(page, /Регионы компании/).click();
-    await see(page, /Европа/).waitFor({ timeout: 20000 });
+    await see(page, /Europe/).waitFor({ timeout: 20000 });
     await btn(page, /^Добавить|Новый регион/).click();
     await settle(page, 800);
     const box = page.getByRole('textbox').first();
@@ -296,24 +296,24 @@ const SCREENS16 = [
 // ---------------------------------------------------------------------------
 // Экраны шага 17 (--step=17): зона доступа, шаблоны, бригады, вид менеджера
 // с зоной. В локальной базе hh_test17 перед съёмкой — второй менеджер
-// «Менеджер Москва» (manager2@example.com) с зоной «Климат + Сантехника ·
-// город Москва» (только локально; в рабочей базе его заводит владелец).
+// «Менеджер New York» (manager2@example.com) с зоной «Климат + Сантехника ·
+// город New York» (только локально; в рабочей базе его заводит владелец).
 // ---------------------------------------------------------------------------
 const PREP17 = `
--- Как в рабочей базе после 0016: в «Демо БЦ» без администратора им становится
+-- Как в рабочей базе после 0016: в «Demo Properties» без администратора им становится
 -- демо-менеджер (локально демо-данные заливаются уже после миграций).
 update public.profiles set role = 'admin'
  where id = (select id from auth.users where email = 'manager@example.com')
    and not exists (select 1 from public.profiles a where a.company_id = '${uuid(1)}' and a.role = 'admin');
 insert into auth.users(id, email) values ('d0000000-0000-4000-8000-000000000004', 'manager2@example.com')
   on conflict do nothing;
-update public.profiles set company_id = '${uuid(1)}', role = 'manager', full_name = 'Менеджер Москва'
+update public.profiles set company_id = '${uuid(1)}', role = 'manager', full_name = 'Менеджер New York'
  where id = 'd0000000-0000-4000-8000-000000000004';
 delete from public.access_zones where profile_id = 'd0000000-0000-4000-8000-000000000004';
 insert into public.access_zones(company_id, profile_id, layer_ids, scope_kind, scope_ref)
 select '${uuid(1)}', 'd0000000-0000-4000-8000-000000000004',
        array(select id from public.layers where company_id = '${uuid(1)}' and name in ('Климат', 'Сантехника') order by sort),
-       'city', 'Москва';
+       'city', 'New York';
 `;
 
 async function openMembers(page) {
@@ -321,14 +321,14 @@ async function openMembers(page) {
   await profileTab(page).click();
   await settle(page, 1000);
   await btn(page, /^Моя компания/).click();
-  await see(page, /Менеджер Москва/).waitFor({ timeout: 20000 });
-  await scrollTo(page, /Менеджер Москва/);
+  await see(page, /Менеджер New York/).waitFor({ timeout: 20000 });
+  await scrollTo(page, /Менеджер New York/);
   await settle(page, 800);
 }
 
 async function openZone(page) {
   await openMembers(page);
-  await btn(page, /Менеджер Москва/).click();
+  await btn(page, /Менеджер New York/).click();
   await settle(page, 800);
   await btn(page, /^Зона доступа/).click();
   await see(page, /Вся компания/).waitFor({ timeout: 20000 });
@@ -342,23 +342,23 @@ const SCREENS17 = [
     await btn(page, /Шаблоны/).click();
     await settle(page, 1200);
   } },
-  { key: 'crews', title: 'Карточка подрядчика Huaxin FM → «Бригады»', role: 'admin', run: async (page) => {
+  { key: 'crews', title: 'Карточка подрядчика Riyadh FM → «Бригады»', role: 'admin', run: async (page) => {
     await home(page);
     await page.getByRole('button', { name: /^Подрядчики/ }).or(page.getByRole('tab', { name: /^Подрядчики/ }))
       .or(page.getByText(/^Подрядчики$/)).first().click();
     await settle(page, 2000);
-    await scrollTo(page, /Huaxin FM/);
-    await btn(page, /Huaxin FM/).click();
+    await scrollTo(page, /Riyadh FM/);
+    await btn(page, /Riyadh FM/).click();
     await settle(page, 2000);
     await scrollTo(page, /Бригады|БРИГАДЫ/);
     await page.mouse.wheel(0, 300);
     await settle(page, 1000);
   } },
-  { key: 'restricted-requests', title: 'Менеджер с зоной «Климат, Сантехника · Москва» — заявки', role: 'manager2', run: async (page) => {
+  { key: 'restricted-requests', title: 'Менеджер с зоной «Климат, Сантехника · New York» — заявки', role: 'manager2', run: async (page) => {
     await home(page);
     await settle(page, 1500);
   } },
-  { key: 'restricted-locations', title: 'Менеджер с зоной — «Локации» (только Москва)', role: 'manager2', run: openLocations },
+  { key: 'restricted-locations', title: 'Менеджер с зоной — «Локации» (только New York)', role: 'manager2', run: openLocations },
   { key: 'restricted-contractors', title: 'Менеджер с зоной — подрядчики (только с закреплениями в зоне)', role: 'manager2', run: async (page) => {
     await home(page);
     await page.getByRole('button', { name: /^Подрядчики/ }).or(page.getByRole('tab', { name: /^Подрядчики/ }))
@@ -440,7 +440,7 @@ const SCREENS23 = [
 // контекст), фото и документы в карточке, просмотр фото, «Системы»
 // (администратор и менеджер с зоной), карточка и форма системы, акты
 // подрядчикам, плашки главной. Перед съёмкой — PREP17 (администратор и
-// «Менеджер Москва») и PREP24: документ в заявке 113 и узнавания по фото.
+// «Менеджер New York») и PREP24: документ в заявке 113 и узнавания по фото.
 // ---------------------------------------------------------------------------
 const PREP24 = `
 insert into public.attachments(id, work_order_id, kind, storage_path, uploaded_by, file_name, mime, size_bytes, created_at)
@@ -507,8 +507,8 @@ const SCREENS24 = [
     } },
   { key: 'form-context', title: 'Новая заявка из карточки оборудования: «из карточки оборудования»', role: 'admin', run: async (page) => {
       await openObjectCard(page);
-      await scrollTo(page, /Кондиционер КД-301/);
-      await btn(page, /^Кондиционер КД-301/).click();
+      await scrollTo(page, /Air conditioner AC-301/);
+      await btn(page, /^Air conditioner AC-301/).click();
       await see(page, /Паспорт|Показать на плане/).waitFor({ timeout: 20000 });
       await scrollTo(page, /Создать заявку/);
       await btn(page, /^Создать заявку/).click();
@@ -544,7 +544,7 @@ const SCREENS24 = [
       await see(page, /Новая система/).waitFor({ timeout: 15000 });
       await settle(page, 1000);
     } },
-  { key: 'acts', title: 'Отчёты → «Акты подрядчикам»: «КлиматСервис», к оплате только доказанное', role: 'admin', run: openActs },
+  { key: 'acts', title: 'Отчёты → «Акты подрядчикам»: «ClimaService», к оплате только доказанное', role: 'admin', run: openActs },
   { key: 'acts-rejected', title: 'Акт: «Без доказательства — к оплате не принимается» с причинами', role: 'admin', run: async (page) => {
       await openActs(page);
       await scrollTo(page, /Без доказательства/);
@@ -629,14 +629,14 @@ const GEO_BC = { latitude: 44.80507, longitude: 20.44942, accuracy: 10 };
 const RUNS = STEP === '24' ? [
   { role: 'admin', label: 'Администратор', width: 1280, height: 800, except: ['form-gps'] },
   { role: 'admin', label: 'Администратор', width: 412, height: 915, except: ['form-gps'] },
-  { role: 'admin', label: 'Администратор (GPS у «БЦ «Демо»»)', width: 412, height: 915, geo: GEO_BC, only: ['form-gps'] },
-  { role: 'manager2', label: 'Менеджер с зоной «Климат + Сантехника · Москва»', width: 1280, height: 800, only: ['systems'] },
+  { role: 'admin', label: 'Администратор (GPS у «Demo Tower»)', width: 412, height: 915, geo: GEO_BC, only: ['form-gps'] },
+  { role: 'manager2', label: 'Менеджер с зоной «Климат + Сантехника · New York»', width: 1280, height: 800, only: ['systems'] },
 ] : STEP === '23' ? [
   { role: 'admin', label: 'Администратор', width: 1280, height: 800 },
   { role: 'admin', label: 'Администратор', width: 412, height: 915 },
   { role: 'requester', label: 'Заявитель', width: 412, height: 915, only: ['tg-settings', 'tg-code'] },
 ] : STEP === '17' ? [
-  // После 0016 демо-менеджер — администратор «Демо БЦ» (в компании не было администратора).
+  // После 0016 демо-менеджер — администратор «Demo Properties» (в компании не было администратора).
   { role: 'admin', label: 'Администратор', width: 1280, height: 800 },
   { role: 'admin', label: 'Администратор', width: 412, height: 915 },
   { role: 'manager2', label: 'Менеджер с зоной', width: 1280, height: 800 },

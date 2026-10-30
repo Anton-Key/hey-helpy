@@ -24,7 +24,7 @@ async function phone(browser) {
   return page;
 }
 
-/** «Где я» запоминается на устройстве: переговорная 301 «БЦ «Демо»». */
+/** «Где я» запоминается на устройстве: переговорная 301 «Demo Tower». */
 async function hereMeetingRoom(page) {
   const uid = sql(`select id from auth.users where email = '${USERS.admin}'`);
   await page.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
@@ -39,10 +39,10 @@ const FRAMES = [
       await home(page, web.base);
       await btn(page, /Узнать оборудование по фото/).click();
       await btn(page, /^Что это\?/).waitFor({ timeout: 30000 });
-      await see(page, /Переговорная/).waitFor({ timeout: 15000 });
+      await see(page, /Meeting room/).waitFor({ timeout: 15000 });
       await settle(page, 1000);
       await btn(page, /^Что это\?/).click();
-      await see(page, /КД-301 · \d+ %/).waitFor({ timeout: 30000 });
+      await see(page, /AC-301 · \d+ %/).waitFor({ timeout: 30000 });
       await see(page, /Открытые заявки · 1/).waitFor({ timeout: 20000 });
       await settle(page, 1500);
     },

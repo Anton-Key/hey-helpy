@@ -15,7 +15,7 @@ const font = (w) => `@font-face{font-family:Onest;font-weight:${w};src:url(data:
 const img = (n) => `data:image/webp;base64,${b64(`assets/site/${n}.webp`)}`;
 
 const T = {
-  ru: { brand: 'Эй, Helpy', h: 'ИИ-сервис эксплуатации недвижимости и контроля подрядчиков', s: 'Платим подрядчику только за доказанную работу' },
+  ru: { brand: 'Hey Helpy', h: 'ИИ-сервис эксплуатации недвижимости и контроля подрядчиков', s: 'Платим подрядчику только за доказанную работу' },
   en: { brand: 'Hey Helpy', h: 'AI service for property maintenance and contractor control', s: 'Pay contractors only for proven work' },
 };
 

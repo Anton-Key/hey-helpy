@@ -414,7 +414,7 @@ Deno.test("тексты: RU и EN — одни и те же ключи и под
   for (const k of Object.keys(ru) as (keyof typeof ru)[]) {
     assertEquals(vars(ru[k]), vars(en[k]), k);
   }
-  assertStringIncludes(ru.startUnknown, "«Эй, Helpy»");
+  assertStringIncludes(ru.startUnknown, "«Hey Helpy»");
   assertStringIncludes(en.startUnknown, "Hey Helpy");
   assertEquals(langOf("ru-RU"), "ru");
   assertEquals(langOf("de"), "en");

@@ -40,6 +40,12 @@ for (const s of SCENARIOS) {
           return orig.call(URL, obj);
         };
         window.print = () => {};
+        // Шаг 33: по умолчанию приложение на английском; сценарии проверяют
+        // поведение по русским подписям — язык интерфейса задаём заранее
+        // (как сохранённый выбор, shared_preferences в браузере).
+        try { if (!localStorage.getItem('flutter.locale')) localStorage.setItem('flutter.locale', JSON.stringify('ru')); } catch {}
+        // Шторка «Как работают AR-метки» (шаг 33) — уже «просмотрена».
+        try { localStorage.setItem('flutter.ar_intro_seen', 'true'); } catch {}
       });
       contexts.push(c);
       const p = await c.newPage();

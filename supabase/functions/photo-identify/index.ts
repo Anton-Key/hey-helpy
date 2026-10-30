@@ -42,7 +42,7 @@ import {
   VISION_FORMAT_BOX,
   visionModels,
 } from "../_shared/vision.ts";
-import { AiError } from "../_shared/yandex.ts";
+import { AiError, aiFromEnv } from "../_shared/ai.ts";
 
 const log = logFn("photo-identify");
 
@@ -66,12 +66,12 @@ Deno.serve(async (req) => {
   }
   if (req.method !== "POST") return reply(405, { error: "method_not_allowed" });
 
-  const apiKey = Deno.env.get("YANDEX_API_KEY")?.trim();
-  const folderId = Deno.env.get("YANDEX_FOLDER_ID")?.trim();
-  const { model, liteModel } = visionModels((k) => Deno.env.get(k));
+  // Поставщик ИИ — по секретам (шаг 33): AI_* или, как раньше, YANDEX_*.
+  const env = (k: string) => Deno.env.get(k);
+  const aiCfg = aiFromEnv(env, "vision", visionModels(env));
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!apiKey || !folderId || !supabaseUrl || !anonKey) {
+  if (!aiCfg || !supabaseUrl || !anonKey) {
     return reply(500, { error: "not_configured" }, { code: "not_configured" });
   }
 
@@ -119,13 +119,14 @@ Deno.serve(async (req) => {
   try {
     const aiStarted = Date.now();
     const ai = await callVision(
-      { apiKey, folderId, model, liteModel },
+      aiCfg,
       buildVisionMessages(input, layers, { box: wantBox }),
       fetch,
       wantBox ? VISION_FORMAT_BOX : VISION_FORMAT,
     );
     const aiMs = Date.now() - aiStarted;
     const which = {
+      provider: aiCfg.provider,
       model: ai.model === "pro" ? "main" : "lite",
       first: ai.primaryError,
       first_error: ai.primaryDetail,
@@ -166,6 +167,7 @@ Deno.serve(async (req) => {
     const code = e instanceof AiError ? e.code : "unexpected";
     return reply(502, { error: "ai_unavailable" }, {
       code,
+      provider: aiCfg.provider,
       bytes: input.bytes,
       // Только error.code / error.message ответа API, без base64 (≤ 300).
       ai_error: e instanceof AiError ? e.detail : undefined,

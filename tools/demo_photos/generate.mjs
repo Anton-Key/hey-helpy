@@ -63,11 +63,11 @@ const draw = (leak) => `
   <!-- трасса и подтёк воды под блоком (видимая неисправность) -->
   <rect x="1060" y="470" width="26" height="490" fill="#ecebe7" stroke="#d2d0ca" stroke-width="2"/>
   ${leak ? `<path d="M640 548 C 636 600, 646 640, 640 700 C 637 740, 650 760, 644 800" stroke="#7fb3c8" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.65"/>
-  <ellipse cx="644" cy="812" rx="16" ry="10" fill="#7fb3c8" opacity="0.6"/>` : `<rect x="560" y="600" width="160" height="44" rx="10" fill="#ffffff" stroke="#2DB89A" stroke-width="3"/>
-  <text x="640" y="630" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#0B7A62" text-anchor="middle">ТО ✓ 10.2026</text>`}
+  <ellipse cx="644" cy="812" rx="16" ry="10" fill="#7fb3c8" opacity="0.6"/>` : `<rect x="520" y="600" width="240" height="44" rx="10" fill="#ffffff" stroke="#2DB89A" stroke-width="3"/>
+  <text x="640" y="630" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#0B7A62" text-anchor="middle">Serviced ✓ 10.2026</text>`}
   <!-- наклейка-шильдик сбоку -->
   <rect x="1000" y="452" width="56" height="20" rx="3" fill="#ffffff" stroke="#bdbdb8"/>
-  <text x="1028" y="466" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#555" text-anchor="middle">KD-301</text>
+  <text x="1028" y="466" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#555" text-anchor="middle">AC-301</text>
   <!-- розетка на стене -->
   <rect x="140" y="760" width="90" height="90" rx="12" fill="#f6f5f2" stroke="#cfcac1" stroke-width="3"/>
   <circle cx="170" cy="805" r="7" fill="#9b968d"/><circle cx="200" cy="805" r="7" fill="#9b968d"/>

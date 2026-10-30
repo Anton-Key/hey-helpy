@@ -70,11 +70,14 @@ function helpers(lang, slug) {
   };
 }
 
+/** QR-код ссылки «Запросить демо» — SVG из assets/site/qr-demo.svg (node tools/site/qr.mjs), встраивается в страницу. */
+const QR_DEMO = readFileSync(join(root, 'assets/site/qr-demo.svg'), 'utf8').trim();
+
 function contactBlock(lang) {
   const t = lang === 'ru'
-    ? { btn: 'Написать в Telegram', how: `Откроется чат с нашим ботом @${CONTACT.bot}. Он попросит одно сообщение: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы ответим там же, в Telegram.`, no: 'Нет Telegram? Ссылку можно открыть на компьютере в браузере — Telegram предложит веб-версию.' }
-    : { btn: 'Message us on Telegram', how: `A chat with our bot @${CONTACT.bot} will open. It will ask for one message: your company, how many sites and in which cities, and what you would like to see. We will reply there, in Telegram.`, no: 'No Telegram app? The link also opens in a desktop browser — Telegram offers its web version.' };
-  return `<div class="notice"><p>${t.how}</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${t.btn}</a></p><p class="note">${t.no}</p></div>`;
+    ? { btn: 'Написать в Telegram', how: `Откроется чат с нашим ботом @${CONTACT.bot}. Он попросит одно сообщение: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы ответим там же, в Telegram.`, no: 'Нет Telegram? Ссылку можно открыть на компьютере в браузере — Telegram предложит веб-версию.', qr: 'Наведите камеру телефона — откроется чат с ботом.' }
+    : { btn: 'Message us on Telegram', how: `A chat with our bot @${CONTACT.bot} will open. It will ask for one message: your company, how many sites and in which cities, and what you would like to see. We will reply there, in Telegram.`, no: 'No Telegram app? The link also opens in a desktop browser — Telegram offers its web version.', qr: 'Point your phone camera — the chat with the bot will open.' };
+  return `<div class="notice contact"><div><p>${t.how}</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${t.btn}</a></p><p class="note">${t.no}</p></div><figure class="qr">${QR_DEMO}<figcaption>${t.qr}</figcaption></figure></div>`;
 }
 
 function org(lang) {
@@ -194,7 +197,7 @@ function head({ lang, title, description, canonical, alternates, rel, ld, noinde
   const alt = alternates
     ? Object.entries(alternates).map(([l, u]) => `<link rel="alternate" hreflang="${l}" href="${u}">`).join('\n')
     : '';
-  return `<!doctype html>
+  return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
 <meta charset="utf-8">

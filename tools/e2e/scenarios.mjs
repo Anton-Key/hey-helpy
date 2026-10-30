@@ -49,7 +49,7 @@ export const screenText = (page) => page.evaluate(() => {
   return out.join('\n');
 });
 
-/** Плитки «Отчётов» за 30 дней: число заявок и «приняты с первого раза из N». */
+/** Плитки «Отчётов» за 30 дней: количество заявок и «приняты с первого раза из N». */
 async function reportTiles(page, base) {
   await home(page, base);
   await section(page, /^Отчёты/);
@@ -167,7 +167,7 @@ export const SCENARIOS = [
       await waitDb(`select status from work_orders where id = '${id}'`, 'done');
       const doneAfter = +sql(`select count(*) from work_orders where company_id = '${uuid(1)}' and status = 'done'`);
       assert(doneAfter === doneBefore + 1, `принятых было ${doneBefore}, стало ${doneAfter}`);
-      // Отчёт: число заявок за период и «приняты с первого раза» выросли на 1.
+      // Отчёт: количество заявок за период и «приняты с первого раза» выросли на 1.
       const after = await reportTiles(m, base);
       ctx.notes.push(`отчёт: заявок ${before.orders} → ${after.orders}, приняты с первого раза из ${before.firstTime} → ${after.firstTime}`);
       assert(after.orders === before.orders + 1 && after.firstTime === before.firstTime + 1, 'отчёт не посчитал заявку');
@@ -1180,6 +1180,86 @@ export const SCENARIOS = [
       await see(m, /решение менеджера/).waitFor({ timeout: 20000 });
       await scrollTo(m, /E2E-17b/);
       await ctx.shot(m, 'act-approved');
+    },
+  },
+  {
+    id: 19,
+    title: 'Новая заявка без сети (шаг 32): заявитель создаёт заявку с фото «до» → она на телефоне, на сервере её нет → сеть → заявка на сервере, время доверенное, у менеджера «Создано без сети · отправлено в …»',
+    async run(ctx) {
+      const { base } = ctx;
+      const TITLE = 'E2E-19 Без сети: течёт кран';
+      sql(`delete from work_orders where company_id = '${uuid(1)}' and title = '${TITLE}'`);
+      const net = (page) => page.getByRole('switch').first();
+      const r = await ctx.page({ geo: BC_DEMO });
+      await login(r, base, USERS.requester);
+      await openApp(r, base, '?offline=1');
+      await profileTab(r).waitFor({ timeout: 60000 });
+      await settle(r, 5000); // якорь часов и предзагрузка справочников
+      // Сеть «выключена» (тест).
+      await net(r).click();
+      await settle(r, 800);
+      await clickAction(r, /^(\+ )?Заявка$/);
+      await see(r, /Новая заявка/).waitFor({ timeout: 10000 });
+      await see(r, /Нет сети: заявка сохранится на телефоне/).waitFor({ timeout: 10000 });
+      await typeInto(r, r.getByRole('textbox').first(), TITLE);
+      // Объект: по GPS («Рядом с вами») или вручную — справочник с телефона.
+      await settle(r, 3500);
+      if (await btn(r, /^Выберите объект/).isVisible().catch(() => false)) {
+        await btn(r, /^Выберите объект/).click();
+        await settle(r, 800);
+        await r.getByRole('menuitem', { name: /БЦ «Демо»/ }).or(r.getByRole('option', { name: /БЦ «Демо»/ }))
+          .or(r.getByText(/БЦ «Демо»/)).first().click();
+        await settle(r, 800);
+      }
+      await btn(r, /^Сантехника$/).click();
+      await settle(r, 500);
+      // Фото «до» — живой камерой (в сборке e2e — заглушка камеры).
+      await clickAction(r, /Снять фото «до»/);
+      await btn(r, /^Снять/).waitFor({ timeout: 20000 });
+      await btn(r, /^Снять/).click();
+      await clickAction(r, /^Готово/);
+      await see(r, /Снимок будет приложен/).waitFor({ timeout: 10000 });
+      await ctx.shot(r, 'form');
+      await r.getByRole('button', { name: /^Создать заявку$/ }).last().click();
+      await settle(r, 2500);
+      assert(sql(`select count(*) from work_orders where title = '${TITLE}'`) === '0', 'без сети на сервере заявки быть не должно');
+      await see(r, /Нет сети — сохранено на телефоне: 2/).waitFor({ timeout: 15000 });
+      let t = await screenText(r);
+      assert(t.includes(TITLE), 'заявка, созданная без сети, должна быть в списке на телефоне');
+      ctx.notes.push('без сети: заявка в списке на телефоне, в очереди 2 действия (заявка и фото «до»)');
+      await settle(r, 3500); // сообщение сверху закрывается — видна плашка
+      await ctx.shot(r, 'queued');
+      // Карточка до отправки — «ждёт отправки».
+      await btn(r, new RegExp(TITLE.slice(0, 20))).click();
+      await see(r, /Создано без сети · ждёт отправки/).waitFor({ timeout: 10000 });
+      await ctx.shot(r, 'card-pending');
+
+      // Сеть вернулась — очередь уходит сама: сначала заявка, потом фото «до».
+      await net(r).click();
+      const id = await waitDb(`select id from work_orders where title = '${TITLE}'`, (v) => v.length > 0, 30000);
+      await waitDb(`select count(*) from attachments where work_order_id = '${id}' and stage = 'before'`, '1', 30000);
+      const row = sql(`select w.status || ',' || w.input_channel || ',' || l.name || ',' || (w.created_by = u.id)
+          from work_orders w join layers l on l.id = w.layer_id, auth.users u
+         where w.id = '${id}' and u.email = '${USERS.requester}'`);
+      ctx.notes.push(`заявка на сервере: ${row}`);
+      assert(/^(new|assigned),button,Сантехника,true$/.test(row), `поля заявки: ${row}`);
+      const act = sql(`select result || ',' || time_trust from offline_actions where work_order_id = '${id}' and kind = 'create'`);
+      assert(act.startsWith('applied,') && act !== 'applied,device_only', `журнал create: ${act}`);
+      const ph = sql(`select offline || ',' || time_trust || ',' || source from attachments where work_order_id = '${id}' and stage = 'before'`);
+      ctx.notes.push(`create: ${act}; фото «до»: ${ph}`);
+      assert(/^true,(monotonic|gps),camera$/.test(ph), `фото «до»: ${ph}`);
+      const drift = +sql(`select abs(extract(epoch from w.created_at - o.trusted_at))::int from work_orders w
+          join offline_actions o on o.work_order_id = w.id and o.kind = 'create' where w.id = '${id}'`);
+      assert(drift <= 1, `время создания заявки — доверенное время действия (разница ${drift} с)`);
+
+      // Менеджер видит заявку и пометку.
+      const m = await ctx.page();
+      await login(m, base, USERS.admin);
+      await openOrder(m, base, TITLE);
+      await see(m, /Создано без сети · отправлено в \d{1,2}:\d{2}/).waitFor({ timeout: 20000 });
+      t = await screenText(m);
+      ctx.notes.push('у менеджера: ' + (t.match(/Создано без сети · отправлено в \d{1,2}:\d{2}/)?.[0] ?? '?'));
+      await ctx.shot(m, 'manager');
     },
   },
   {

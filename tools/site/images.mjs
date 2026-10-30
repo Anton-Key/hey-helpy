@@ -16,7 +16,7 @@ mkdirSync(out, { recursive: true });
 export const SHOTS = [
   ['04-voice-ai-check-phone.png', 'voice', 480],
   ['21-camera-card-phone.png', 'camera', 480],
-  ['28-telegram-assign-phone.png', 'telegram', 480, 'crop=iw:ih*0.62:0:ih*0.38,'],
+  ['28-telegram-assign-phone.png', 'telegram', 480], // целиком: пропорции как у соседних карточек (шаг 32)
   ['24-order-photos-phone.png', 'photos', 480],
   ['20-act-proven-desktop.png', 'act', 1200],
   ['06-floor-plan-desktop.png', 'plan', 1200],
@@ -30,8 +30,9 @@ for (const [src, name, w, pre = ''] of SHOTS) {
   ff(['-i', join(pitch, src), '-vf', `${pre}scale=${w}:-2:flags=lanczos`, '-c:v', 'libwebp', '-quality', '78',
     '-compression_level', '6', join(out, `${name}.webp`)]);
 }
-// Постер видео — кадр демо-ролика на 20-й секунде.
-ff(['-ss', '20', '-i', join(root, 'docs/demo/hey-helpy-demo-v2.mp4'), '-frames:v', '1', '-vf', 'scale=1280:-2',
+// Постер видео — кадр демо-ролика на 32-й секунде: готовая карточка «Разобрано ИИ», без индикатора загрузки
+// и служебных надписей (шаг 32). Другой ролик — подобрать кадр заново.
+ff(['-ss', '32', '-i', join(root, 'docs/demo/hey-helpy-demo-v2.mp4'), '-frames:v', '1', '-vf', 'scale=1280:-2',
   '-c:v', 'libwebp', '-quality', '75', join(out, 'video-poster.webp')]);
 console.log('готово:', out);
 

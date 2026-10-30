@@ -118,14 +118,19 @@ class OrderChecklistSectionState extends State<OrderChecklistSection> {
 
 /// Снимки «после», которые ещё на телефоне: миниатюры «ждёт отправки».
 class PendingPhotosRow extends StatelessWidget {
-  const PendingPhotosRow({super.key, required this.actions});
+  const PendingPhotosRow(
+      {super.key, required this.actions, this.before = false});
   final List<OfflineAction> actions;
+
+  /// Фото «до» (шаг 32), иначе «после».
+  final bool before;
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
     return AppGroup(
-      header: '${l.offKindPhoto} · ${l.offPendingBadge}',
+      header:
+          '${before ? l.offKindPhotoBefore : l.offKindPhoto} · ${l.offPendingBadge}',
       children: [
         Padding(
           padding: const EdgeInsetsDirectional.all(AppSpace.m),

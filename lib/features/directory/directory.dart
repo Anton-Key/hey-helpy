@@ -316,18 +316,17 @@ class DirectoryRepo {
         .insert({'org_name': orgName, 'company_id': companyId});
   }
 
-  /// Помещения всех объектов компании (доступ ограничен RLS).
+  /// Помещения всех объектов компании (доступ ограничен RLS). Без сети
+  /// (шаг 32, APK) — из предзагрузки: голосовая заявка разбирается словарём.
   Future<List<Place>> places() async {
-    final rows = await SchemaCompat.run(
-        '0015',
-        () => _c
-            .from('locations')
-            .select('id,object_id,name,code,objects(name,address)')
-            .order('name'),
-        legacy: () => _c
-            .from('locations')
-            .select('id,object_id,name,objects(name,address)')
-            .order('name'));
+    final rows = await OfflineService.instance.cachedJson(
+        'all_places',
+        () => SchemaCompat.run('0015',
+            () => _c.from('locations').select(placesColumns).order('name'),
+            legacy: () => _c
+                .from('locations')
+                .select('id,object_id,name,objects(name,address)')
+                .order('name')));
     return (rows as List)
         .map((e) => Place.fromMap(e as Map<String, dynamic>))
         .toList();
@@ -358,6 +357,8 @@ class DirectoryRepo {
   }
 
   /// Помещения одного объекта.
+  static const placesColumns = 'id,object_id,name,code,objects(name,address)';
+
   Future<List<Place>> placesOf(String objectId) async {
     final rows = await SchemaCompat.run(
         '0015',

@@ -1,8 +1,8 @@
 # Эй, Helpy (Hey Helpy)
 
-> Эй, Helpy (англ. Hey Helpy) — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков: заявки голосом, по фото и через Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, цена — по запросу, доступен пилот.
+> Эй, Helpy (англ. Hey Helpy) — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, цена — по запросу, доступен пилот.
 >
-> Hey Helpy (Russian: «Эй, Helpy») is an AI service for property maintenance (CMMS / facility management) and contractor control: work orders by voice, by photo and via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.
+> Hey Helpy (Russian: «Эй, Helpy») is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.
 
 Полное описание продукта одним файлом (RU и EN): https://anton-key.github.io/hey-helpy/site/llms-full.txt
 Full product description in one file (RU and EN): https://anton-key.github.io/hey-helpy/site/llms-full.txt
@@ -11,8 +11,8 @@ Full product description in one file (RU and EN): https://anton-key.github.io/he
 
 ## Страницы (русский)
 
-- [ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков](https://anton-key.github.io/hey-helpy/site/): Заявки голосом, по фото и через Telegram, подрядчик назначается сам, а к оплате попадает только доказанная работа: фото «после», геозона, чек-лист. Веб и Android.
-- [Возможности](https://anton-key.github.io/hey-helpy/site/features/): Заявки голосом, по фото и из Telegram, оплата подрядчику по доказательству, разделение ролей, работа без интернета, плановое ТО, планы этажей, документы, отчёты, зоны доступа.
+- [ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков](https://anton-key.github.io/hey-helpy/site/): Для бизнес-центров и ТЦ, сетей и ритейла, УК и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, подрядчик назначается сам, к оплате — только доказанная работа.
+- [Возможности](https://anton-key.github.io/hey-helpy/site/features/): Заявки текстом, камерой или голосом и из Telegram, AR-метки, оплата подрядчику по доказательству, роли, работа без интернета, плановое ТО, планы этажей, отчёты.
 - [Для кого](https://anton-key.github.io/hey-helpy/site/industries/): Эй, Helpy для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков и режимных объектов: заявки, подрядчики и оплата по доказательству.
 - [Безопасность и развёртывание](https://anton-key.github.io/hey-helpy/site/security/): Изоляция компаний на уровне базы данных (RLS), роли и разделение обязанностей, закрытые хранилища файлов, журнал изменений доступа, варианты размещения.
 - [Частые вопросы](https://anton-key.github.io/hey-helpy/site/faq/): Что будет без связи в подвале, чем Эй, Helpy отличается от Excel и мессенджера, можно ли без приложения, где хранятся данные и сколько стоит.
@@ -21,8 +21,8 @@ Full product description in one file (RU and EN): https://anton-key.github.io/he
 
 ## Pages (English)
 
-- [AI service for property maintenance and contractor control](https://anton-key.github.io/hey-helpy/site/en/): Work orders by voice, by photo and via Telegram; the contractor is assigned automatically, and only proven work gets paid: “after” photo, geofence, checklist. Web and Android.
-- [Features](https://anton-key.github.io/hey-helpy/site/en/features/): Work orders by voice, by photo and from Telegram, proof-based contractor payment, segregation of duties, offline work, preventive maintenance, floor plans, documents, reports, access zones.
+- [AI service for property maintenance and contractor control](https://anton-key.github.io/hey-helpy/site/en/): For business and shopping centres, chains and retail, property management and FM companies, public sector: work orders by text, camera or voice; only proven work gets paid.
+- [Features](https://anton-key.github.io/hey-helpy/site/en/features/): Work orders by text, camera or voice and from Telegram, AR labels, proof-based contractor payment, roles, offline work, preventive maintenance, floor plans, reports.
 - [Who it’s for](https://anton-key.github.io/hey-helpy/site/en/industries/): Hey Helpy for business and shopping centres, chains and retail, property management and FM companies, public-sector and restricted-access sites.
 - [Security and deployment](https://anton-key.github.io/hey-helpy/site/en/security/): Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.
 - [Frequently asked questions](https://anton-key.github.io/hey-helpy/site/en/faq/): What happens with no signal in the basement, how Hey Helpy differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.

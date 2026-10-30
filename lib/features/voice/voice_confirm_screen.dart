@@ -163,9 +163,10 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
       return;
     }
     String? objectId, locationId;
+    Place? place;
     final w = _where;
     if (w != null && w.startsWith('p:')) {
-      final place = _places.firstWhere((p) => p.id == w.substring(2));
+      place = _places.firstWhere((p) => p.id == w.substring(2));
       locationId = place.id;
       objectId = place.objectId;
     } else if (w != null && w.startsWith('o:')) {
@@ -173,7 +174,7 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
     }
     setState(() => _saving = true);
     try {
-      await _repo.create(
+      final queued = await _repo.create(
         companyId: widget.companyId,
         title: title,
         description: _descC.text.trim().isEmpty ? null : _descC.text.trim(),
@@ -183,8 +184,16 @@ class _VoiceConfirmScreenState extends State<VoiceConfirmScreen> {
         locationId: locationId,
         recurring: false,
         inputChannel: widget.typed ? 'text' : 'voice',
+        locationName: place?.name,
+        locationCode: place?.code,
       );
-      if (mounted) Navigator.pop(context, true);
+      if (!mounted) return;
+      // Без сети (шаг 32) — заявка на телефоне, отправится сама.
+      if (queued) {
+        showAppMessage(context, context.l10n.offCreatedQueued,
+            type: AppMessageType.info);
+      }
+      Navigator.pop(context, true);
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);

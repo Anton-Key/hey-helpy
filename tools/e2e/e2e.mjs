@@ -1,7 +1,7 @@
 // Сквозные сценарии на локальной базе (шаг 18). Запуск — tools/e2e/run.sh.
 //   node e2e.mjs [--only=1,3] [--shots]   (--shots — снимок после каждого шага)
 // Итоги — tools/e2e/out/results.json и results.md (таблица для отчёта).
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { startLocalBackend } from '../screens/local_backend.mjs';
 import { DB, chromium, startWeb } from './lib.mjs';
@@ -44,6 +44,8 @@ for (const s of SCENARIOS) {
       contexts.push(c);
       const p = await c.newPage();
       p.on('pageerror', (e) => errors.push(String(e.message).slice(0, 200)));
+      // Сообщения приложения (debugPrint) — в out/console-<сценарий>.log, для разбора падений.
+      p.on('console', (m) => appendFileSync(join(OUT, `console-${s.id}.log`), m.text() + '\n'));
       return p;
     },
     async shot(page, name) {

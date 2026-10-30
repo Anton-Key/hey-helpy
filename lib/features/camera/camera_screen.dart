@@ -36,6 +36,7 @@ import '../arlabel/arlabel_logic.dart';
 import '../vps/vps_launch.dart';
 import '../vps/vps_logic.dart';
 import 'asset_facts_repository.dart';
+import '../arlabel/ar_intro.dart';
 import 'camera_logic.dart';
 import 'live_camera.dart';
 
@@ -157,6 +158,10 @@ class _CameraScreenState extends State<CameraScreen>
     WidgetsBinding.instance.addObserver(this);
     unawaited(_startCamera());
     if (!widget.offline) unawaited(_init());
+    // Шаг 33: при первом открытии — «Как работают AR-метки».
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(maybeShowArIntro(context));
+    });
   }
 
   @override

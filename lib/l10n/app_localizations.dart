@@ -9884,6 +9884,114 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'ТО просрочено'**
   String get arMaintenanceOverdue;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Иллюстрация'**
+  String get illustrationNote;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Платите подрядчикам только за доказанную работу'**
+  String get loginHeroCaption;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Гостиничный номер: над кондиционером — AR-метка с диагностикой и заявкой'**
+  String get loginHeroAlt;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Навели камеру — видно заявки и плановое ТО оборудования'**
+  String get onbSlide1;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Телефон наведён на кондиционер, над ним — табличка с заявками'**
+  String get onbSlide1Alt;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Любое оборудование — один сценарий: заявка и чек-лист у места'**
+  String get onbSlide2;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Офисный холодильник с AR-карточкой и чек-листом ТО'**
+  String get onbSlide2Alt;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё здание на одном плане: каждая заявка привязана к месту'**
+  String get onbSlide3;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Изометрия офисного этажа с метками заявок'**
+  String get onbSlide3Alt;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Как работает {app}'**
+  String onbSlidesLabel(String app);
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Как работают AR-метки'**
+  String get arIntroTitle;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Наведите камеру на оборудование и нажмите «Что это?» — над ним появится табличка с открытыми заявками и плановым ТО. Коснитесь таблички, чтобы открыть карточку оборудования или создать заявку.'**
+  String get arIntroText;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Телефон наведён на офисный кондиционер, над ним — табличка с заявками и ТО'**
+  String get arIntroAlt;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Понятно'**
+  String get arIntroOk;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Протекающий кран с AR-меткой'**
+  String get requestsEmptyAlt;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Неисправная LED-панель с AR-меткой'**
+  String get equipEmptyAlt;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Предыдущий слайд'**
+  String get onbSlidePrev;
+
+  /// Шаг 33: иллюстрации
+  ///
+  /// In ru, this message translates to:
+  /// **'Следующий слайд'**
+  String get onbSlideNext;
 }
 
 class _AppLocalizationsDelegate

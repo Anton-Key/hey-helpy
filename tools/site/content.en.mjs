@@ -14,6 +14,7 @@ export const ui = {
   footerNote: 'AI service for property maintenance and contractor control. The product is at the MVP stage.',
   footerAi: 'For AI assistants',
   shotNote: 'App screen, demo data',
+  illNote: 'Illustration',
   videoNote: 'The video is in Russian with on-screen captions, 2 min 9 s, no sound.',
 };
 
@@ -34,7 +35,7 @@ export const pages = {
     <p class="lead"><strong>Pay contractors only for proven work.</strong> A work order is created by text, camera or voice — in the app or via Telegram, with nothing to install. The service figures out what broke and where, sends it to the right contractor and collects proof of completion.</p>
     <p class="actions">${h.cta('primary')} <a class="btn ghost" href="#video">Watch the video</a></p>
   </div>
-  ${h.img('voice', 'The “Check the work order” screen: a spoken request about a broken air conditioner in a meeting room parsed by AI into system, room and priority (app in Russian)', { eager: true, cls: 'phone' })}
+  ${h.ill('hotel_ac', 'Hotel room: an AR label above the air conditioner with diagnostics and an open work order', { eager: true })}
 </section>
 
 <section aria-labelledby="problem">
@@ -52,6 +53,18 @@ export const pages = {
     <li><h3>Proof</h3><p>The “after” photo can only be taken with the app’s live camera and carries a stamp: date · site · room · inside geofence. The visit is checked against the site’s geofence, the checklist item by item. No “after” photo — no hand-over.</p></li>
     <li><h3>Contractor act</h3><p>At month-end the contractor act is built automatically: only accepted work with proof is payable, disputed items go to a manager’s decision, the rest show why they are not payable.</p></li>
   </ol>
+  ${h.ill('phone', 'A hand holds a phone pointed at an office air conditioner: a label above it shows work orders and maintenance', { cls: 'tall' })}
+</section>
+
+<section aria-labelledby="any-unit">
+  <h2 id="any-unit">Any unit, same flow</h2>
+  <p>A fridge, a faucet, a light or a lobby camera — the technician points the camera, the service recognises the equipment from the register and shows its work orders and preventive maintenance. A new work order takes one tap, with the place and equipment already filled in.</p>
+  <div class="ills">
+    <div>${h.ill('fridge', 'Office fridge with an AR card and a maintenance checklist')}<h3>Office fridge</h3><p>The preventive maintenance checklist right at the unit.</p></div>
+    <div>${h.ill('faucet', 'Leaking faucet with a plumbing AR label')}<h3>Leaking faucet</h3><p>A work order with a “before” photo goes to the contractor assigned to plumbing at the site.</p></div>
+    <div>${h.ill('led', 'Faulty LED ceiling panel with an AR label')}<h3>Light fixture</h3><p>The fault is visible in the shot; due date and contractor are in the work order.</p></div>
+    <div>${h.ill('cctv', 'Lobby security camera with an AR card')}<h3>Lobby camera</h3><p>Security systems have their own contractor, equipment and history.</p></div>
+  </div>
 </section>
 
 <section aria-labelledby="features">
@@ -63,6 +76,18 @@ export const pages = {
   </div>
   ${h.figure('act', 'Contractor acts: 5 work orders payable, 4 without proof, 56 % of work proven', 'Contractor act: only proven work is payable')}
   <p>${h.link('features', 'All features →')}</p>
+</section>
+
+<section aria-labelledby="spatial">
+  <h2 id="spatial">Hey Helpy Spatial — work orders on the plan and in space</h2>
+  <p>Rooms and equipment are pinned on the floor plan, and anything overdue stands out. On ARCore phones, AR labels show work orders and maintenance right above the equipment. The illustration shows where we are taking this: the whole floor, with every work order tied to its place.</p>
+  ${h.ill('iso', 'Isometric office floor: rooms, equipment and work order markers')}
+</section>
+
+<section aria-labelledby="proof-home">
+  <h2 id="proof-home">Proof of completion</h2>
+  <p>The “after” photo comes only from the app’s live camera, with a stamp: date, site, room, “inside geofence”. The visit is checked against the site’s geofence, the checklist item by item. Only proven work goes into the contractor act as payable.</p>
+  ${h.ill('pipe', 'Pipes in a plant room with an inspection AR label')}
 </section>
 
 <section aria-labelledby="video">

@@ -5816,4 +5816,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get arMaintenanceOverdue => 'Maintenance overdue';
+
+  @override
+  String get illustrationNote => 'Illustration';
+
+  @override
+  String get loginHeroCaption => 'Pay contractors only for proven work';
+
+  @override
+  String get loginHeroAlt =>
+      'Hotel room: an AR label above the air conditioner with diagnostics and a work order';
+
+  @override
+  String get onbSlide1 =>
+      'Point the camera — see the equipment\'s work orders and maintenance';
+
+  @override
+  String get onbSlide1Alt =>
+      'A phone pointed at an air conditioner with a label showing work orders';
+
+  @override
+  String get onbSlide2 =>
+      'Any unit, same flow: work order and checklist on the spot';
+
+  @override
+  String get onbSlide2Alt =>
+      'Office fridge with an AR card and a maintenance checklist';
+
+  @override
+  String get onbSlide3 =>
+      'The whole building on one plan: every work order tied to its place';
+
+  @override
+  String get onbSlide3Alt => 'Isometric office floor with work order markers';
+
+  @override
+  String onbSlidesLabel(String app) {
+    return 'How $app works';
+  }
+
+  @override
+  String get arIntroTitle => 'How AR labels work';
+
+  @override
+  String get arIntroText =>
+      'Point the camera at the equipment and tap “What is this?” — a label with open work orders and maintenance appears above it. Tap the label to open the equipment card or create a work order.';
+
+  @override
+  String get arIntroAlt =>
+      'A phone pointed at an office air conditioner with a label showing work orders and maintenance';
+
+  @override
+  String get arIntroOk => 'Got it';
+
+  @override
+  String get requestsEmptyAlt => 'Leaking faucet with an AR label';
+
+  @override
+  String get equipEmptyAlt => 'Faulty LED panel with an AR label';
+
+  @override
+  String get onbSlidePrev => 'Previous slide';
+
+  @override
+  String get onbSlideNext => 'Next slide';
 }

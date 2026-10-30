@@ -89,6 +89,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Text(l.onboardingChoose(l.appName),
                   style: AppText.callout.copyWith(color: AppColors.secondary)),
             ),
+            // Шаг 33: три слайда «как это работает» — иллюстрации-концепт.
+            const SizedBox(height: AppSpace.l),
+            const _Slides(),
             _Section(
               icon: AppIcons.building,
               title: l.onboardingCreateTitle,
@@ -204,6 +207,88 @@ class _Section extends StatelessWidget {
           const SizedBox(height: AppSpace.s),
         ],
       ),
+    );
+  }
+}
+
+/// Три слайда онбординга: картинка, короткая подпись, точки и стрелки
+/// (на ПК листать мышью неудобно). Иллюстрации — концепт, с пометкой.
+class _Slides extends StatefulWidget {
+  const _Slides();
+
+  @override
+  State<_Slides> createState() => _SlidesState();
+}
+
+class _SlidesState extends State<_Slides> {
+  final _ctrl = PageController();
+  int _page = 0;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _go(int i) => _ctrl.animateToPage(i,
+      duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final slides = [
+      (AppIllustrationName.phone, l.onbSlide1, l.onbSlide1Alt),
+      (AppIllustrationName.fridge, l.onbSlide2, l.onbSlide2Alt),
+      (AppIllustrationName.iso, l.onbSlide3, l.onbSlide3Alt),
+    ];
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Semantics(
+      label: l.onbSlidesLabel(l.appName),
+      container: true,
+      child: Column(children: [
+        SizedBox(
+          height: 300,
+          child: PageView(
+            controller: _ctrl,
+            onPageChanged: (i) => setState(() => _page = i),
+            children: [
+              for (final (name, text, alt) in slides)
+                Padding(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AppSpace.xs),
+                  child: AppIllustration(name,
+                      note: l.illustrationNote,
+                      semanticLabel: alt,
+                      caption: text,
+                      maxHeight: 200,
+                      fit: BoxFit.contain),
+                ),
+            ],
+          ),
+        ),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          AppIconButton(
+              icon: rtl ? AppIcons.chevronRight : AppIcons.chevronLeft,
+              label: l.onbSlidePrev,
+              onPressed: _page == 0 ? null : () => _go(_page - 1)),
+          const SizedBox(width: AppSpace.s),
+          for (var i = 0; i < slides.length; i++)
+            Container(
+              width: 8,
+              height: 8,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: i == _page ? AppColors.accent : AppColors.separator),
+            ),
+          const SizedBox(width: AppSpace.s),
+          AppIconButton(
+              icon: rtl ? AppIcons.chevronLeft : AppIcons.chevronRight,
+              label: l.onbSlideNext,
+              onPressed:
+                  _page == slides.length - 1 ? null : () => _go(_page + 1)),
+        ]),
+      ]),
     );
   }
 }

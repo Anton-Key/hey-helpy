@@ -59,6 +59,8 @@ function helpers(lang, slug) {
     link: (key, text, hash = '') => `<a href="${href(key, hash)}">${text}</a>`,
     appLink: (text) => `<a href="${APP_URL}">${text}</a>`,
     img: (name, alt, { eager = false, cls = '' } = {}) => `<figure class="shot ${cls}">${imgTag(name, alt, eager)}</figure>`,
+    // Шаг 33: иллюстрации-концепт (assets/site/ill-*.webp) — с подписью «Иллюстрация».
+    ill: (name, alt, { eager = false, cls = '' } = {}) => `<figure class="ill ${cls}">${imgTag(`ill-${name}`, alt, eager)}<figcaption>${ui.illNote}</figcaption></figure>`,
     figure: (name, alt, caption) => `<figure class="big">${imgTag(name, alt)}<figcaption>${caption}. ${ui.shotNote}.</figcaption></figure>`,
     card: (name, title, text, alt) => `<article class="card"><h3>${title}</h3><p>${text}</p>${imgTag(name, alt)}</article>`,
     cta: (kind) => `<a class="btn${kind === 'primary' ? '' : ' ghost'}" href="${CONTACT.demoUrl}">${ui.demo}</a>`,

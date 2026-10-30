@@ -42,5 +42,37 @@
  "voice.webp": [
   480,
   1066
+ ],
+ "ill-hotel_ac.webp": [
+  1600,
+  900
+ ],
+ "ill-fridge.webp": [
+  1600,
+  900
+ ],
+ "ill-faucet.webp": [
+  1600,
+  900
+ ],
+ "ill-led.webp": [
+  1600,
+  900
+ ],
+ "ill-cctv.webp": [
+  1600,
+  900
+ ],
+ "ill-pipe.webp": [
+  1600,
+  900
+ ],
+ "ill-phone.webp": [
+  900,
+  1600
+ ],
+ "ill-iso.webp": [
+  1600,
+  900
  ]
 }

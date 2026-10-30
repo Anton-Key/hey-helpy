@@ -352,10 +352,14 @@ class AppEmptyState extends StatelessWidget {
     this.actionLabel,
     this.onAction,
     this.error = false,
+    this.image,
   });
 
   final String text;
   final IconData icon;
+
+  /// Небольшая иллюстрация вместо значка (шаг 33, [AppIllustration]).
+  final Widget? image;
   final String? actionLabel;
   final VoidCallback? onAction;
 
@@ -367,8 +371,14 @@ class AppEmptyState extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(AppSpace.xxl),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(error ? AppIcons.error : icon,
-                size: 36, color: error ? AppColors.danger : AppColors.tertiary),
+            if (image != null && !error)
+              ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 280),
+                  child: image)
+            else
+              Icon(error ? AppIcons.error : icon,
+                  size: 36,
+                  color: error ? AppColors.danger : AppColors.tertiary),
             const SizedBox(height: AppSpace.m),
             Text(text,
                 textAlign: TextAlign.center,

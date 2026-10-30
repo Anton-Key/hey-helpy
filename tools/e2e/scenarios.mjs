@@ -120,10 +120,12 @@ export const SCENARIOS = [
       const m = await ctx.page();
       await login(m, base, USERS.admin);
       const before = await reportTiles(m, base);
-      await home(m, base);
+      // Шаг 33: демо-данные на английском — фраза тоже английская (помещение
+      // «Meeting room, floor 3» находит разбор по словарю в приложении).
+      await home(m, base, `?voice=${encodeURIComponent('Hey, Helpy, the air conditioner in the meeting room on the third floor is not working, very hot')}`);
       await ctx.shot(m, 'home');
       await clickAction(m, /Нажми и говори/);
-      await see(m, /не работает кондиционер/).waitFor({ timeout: 15000 });
+      await see(m, /air conditioner in the meeting room/).waitFor({ timeout: 15000 });
       await settle(m, 1500);
       await ctx.shot(m, 'listening');
       await clickAction(m, /^Готово/);
@@ -334,11 +336,11 @@ export const SCENARIOS = [
   },
   {
     id: 4,
-    title: 'Регионы: «Европпа» → «Использовать «Europe»»; объединение регионов; «Весь регион» в заявках и отчётах',
+    title: 'Регионы: «Europpe» → «Использовать «Europe»»; объединение регионов; «Весь регион» в заявках и отчётах',
     async run(ctx) {
       const { base } = ctx;
-      sql(`update objects set region_id = '${uuid(901)}' where region_id in (select id from regions where name in ('Европпа', 'Балканы'))`);
-      sql(`delete from regions where company_id = '${uuid(1)}' and name in ('Европпа', 'Балканы')`);
+      sql(`update objects set region_id = '${uuid(901)}' where region_id in (select id from regions where name in ('Europpe', 'Балканы'))`);
+      sql(`delete from regions where company_id = '${uuid(1)}' and name in ('Europpe', 'Балканы')`);
       const m = await ctx.page();
       await login(m, base, USERS.admin);
       const openRegions = async () => {
@@ -358,12 +360,12 @@ export const SCENARIOS = [
         await clickAction(m, /^Сохранить|^Создать|^Готово|^Добавить/);
       };
       await openRegions();
-      await addRegion('Европпа');
+      await addRegion('Europpe');
       await see(m, /Похоже/).waitFor({ timeout: 10000 });
       await ctx.shot(m, 'similar');
       await clickAction(m, /Использовать «Europe»/);
-      assert(sql(`select count(*) from regions where company_id = '${uuid(1)}' and name = 'Европпа'`) === '0', '«Европпа» создан, хотя выбрали «Europe»');
-      ctx.notes.push('«Европпа» → предложено «Europe», дубль не создан');
+      assert(sql(`select count(*) from regions where company_id = '${uuid(1)}' and name = 'Europpe'`) === '0', '«Europpe» создан, хотя выбрали «Europe»');
+      ctx.notes.push('«Europpe» → предложено «Europe», дубль не создан');
 
       // Объединение: новый «Балканы», объект «Belgrade · Hub 1» в нём → объединить с «Europe».
       await addRegion('Балканы');

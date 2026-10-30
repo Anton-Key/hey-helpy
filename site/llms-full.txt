@@ -17,7 +17,9 @@ Hey Helpy — for business and shopping centres, chains and retail, property man
 
 Request a demo Watch the video
 
-[Screenshot: The “Check the work order” screen: a spoken request about a broken air conditioner in a meeting room parsed by AI into system, room and priority (app in Russian)]
+[Screenshot: Hotel room: an AR label above the air conditioner with diagnostics and an open work order]
+
+_Illustration_
 
 ### How many people does it take to fix one lock?
 
@@ -47,6 +49,42 @@ The “after” photo can only be taken with the app’s live camera and carries
 #### Contractor act
 At month-end the contractor act is built automatically: only accepted work with proof is payable, disputed items go to a manager’s decision, the rest show why they are not payable.
 
+[Screenshot: A hand holds a phone pointed at an office air conditioner: a label above it shows work orders and maintenance]
+
+_Illustration_
+
+### Any unit, same flow
+
+A fridge, a faucet, a light or a lobby camera — the technician points the camera, the service recognises the equipment from the register and shows its work orders and preventive maintenance. A new work order takes one tap, with the place and equipment already filled in.
+
+[Screenshot: Office fridge with an AR card and a maintenance checklist]
+
+_Illustration_
+
+#### Office fridge
+The preventive maintenance checklist right at the unit.
+
+[Screenshot: Leaking faucet with a plumbing AR label]
+
+_Illustration_
+
+#### Leaking faucet
+A work order with a “before” photo goes to the contractor assigned to plumbing at the site.
+
+[Screenshot: Faulty LED ceiling panel with an AR label]
+
+_Illustration_
+
+#### Light fixture
+The fault is visible in the shot; due date and contractor are in the work order.
+
+[Screenshot: Lobby security camera with an AR card]
+
+_Illustration_
+
+#### Lobby camera
+Security systems have their own contractor, equipment and history.
+
 ### Highlights
 
 #### Camera assistant
@@ -69,6 +107,22 @@ The work order holds all the proof: photos before and after, time, place, docume
 _Contractor act: only proven work is payable. App screen, demo data._
 
 All features →
+
+### Hey Helpy Spatial — work orders on the plan and in space
+
+Rooms and equipment are pinned on the floor plan, and anything overdue stands out. On ARCore phones, AR labels show work orders and maintenance right above the equipment. The illustration shows where we are taking this: the whole floor, with every work order tied to its place.
+
+[Screenshot: Isometric office floor: rooms, equipment and work order markers]
+
+_Illustration_
+
+### Proof of completion
+
+The “after” photo comes only from the app’s live camera, with a stamp: date, site, room, “inside geofence”. The visit is checked against the site’s geofence, the checklist item by item. Only proven work goes into the contractor act as payable.
+
+[Screenshot: Pipes in a plant room with an inspection AR label]
+
+_Illustration_
 
 ### Two-minute demo
 
@@ -443,7 +497,9 @@ Hey Helpy — для бизнес-центров и ТЦ, сетей и рите
 
 Запросить демо Смотреть видео
 
-[Кадр: Экран «Проверьте заявку»: фраза «в переговорной на третьем этаже не работает кондиционер» разобрана ИИ — вид работ «Климат», помещение 301, срочность «Высокий»]
+[Кадр: Гостиничный номер: над кондиционером — AR-метка с диагностикой и открытой заявкой]
+
+_Иллюстрация_
 
 ### Сколько нужно человек, чтобы повесить один замок?
 
@@ -473,6 +529,42 @@ Hey Helpy — для бизнес-центров и ТЦ, сетей и рите
 #### Акт
 В конце месяца — акт подрядчику: «к оплате» только принятые работы с доказательствами, спорные — на решение менеджера, остальные — с причиной, почему не к оплате.
 
+[Кадр: Телефон в руке наведён на офисный кондиционер: над ним — табличка с заявками и плановым ТО]
+
+_Иллюстрация_
+
+### Любое оборудование — один сценарий
+
+Холодильник, кран, светильник или камера в лобби — исполнитель наводит камеру, сервис узнаёт оборудование из реестра и показывает его заявки и плановое ТО. Новая заявка — одним касанием, место и оборудование уже заполнены.
+
+[Кадр: Офисный холодильник с AR-карточкой и чек-листом ТО]
+
+_Иллюстрация_
+
+#### Холодильник в офисе
+Чек-лист планового ТО — прямо у оборудования.
+
+[Кадр: Протекающий кран с AR-меткой сантехники]
+
+_Иллюстрация_
+
+#### Протекающий кран
+Заявка с фото «до» уходит подрядчику, закреплённому за сантехникой на объекте.
+
+[Кадр: Неисправная LED-панель на потолке с AR-меткой]
+
+_Иллюстрация_
+
+#### Светильник
+Неисправность видна на снимке, срок и подрядчик — в заявке.
+
+[Кадр: Камера видеонаблюдения в лобби с AR-карточкой]
+
+_Иллюстрация_
+
+#### Камера в лобби
+Системы безопасности — со своим подрядчиком, оборудованием и историей.
+
 ### Главное
 
 #### Камера-помощник
@@ -495,6 +587,22 @@ Hey Helpy — для бизнес-центров и ТЦ, сетей и рите
 _Акт подрядчику: к оплате — только доказанная работа. Экран приложения, демо-данные._
 
 Все возможности →
+
+### Hey Helpy Spatial — заявки на плане и в пространстве
+
+Помещения и оборудование стоят точками на плане этажа, просроченное видно сразу. На телефонах с ARCore AR-метки показывают заявки и ТО прямо над оборудованием. Иллюстрация — куда мы развиваем это направление: весь этаж, где каждая заявка привязана к месту.
+
+[Кадр: Изометрия офисного этажа: помещения, оборудование и метки заявок]
+
+_Иллюстрация_
+
+### Доказательство выполнения
+
+Фото «после» — только живой камерой, со штампом: дата, объект, помещение, «в геозоне». Визит отмечается по геозоне объекта, чек-лист — по пунктам. В акт к оплате попадает только доказанная работа.
+
+[Кадр: Трубы в техническом помещении с AR-меткой проверки]
+
+_Иллюстрация_
 
 ### Демо за две минуты
 

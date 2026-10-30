@@ -36,8 +36,8 @@ void showAppMessage(BuildContext context, String text,
     VoidCallback? onAction}) {
   final overlay = Overlay.maybeOf(context, rootOverlay: true);
   if (overlay == null) return;
-  _AppMessages.instance
-      .show(overlay, text, type, actionLabel: actionLabel, onAction: onAction);
+  _AppMessages.instance.show(overlay, text, type,
+      actionLabel: actionLabel, onAction: onAction);
 }
 
 class _Msg {
@@ -205,8 +205,7 @@ class _MessageCardState extends State<_MessageCard>
                     },
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
-                          minHeight: AppSizes.minTap,
-                          minWidth: AppSizes.minTap),
+                          minHeight: AppSizes.minTap, minWidth: AppSizes.minTap),
                       child: Center(
                         widthFactor: 1,
                         child: Padding(

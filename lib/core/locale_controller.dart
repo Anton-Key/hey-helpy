@@ -32,8 +32,7 @@ class LocaleController extends ChangeNotifier {
       prefs = await SharedPreferences.getInstance();
     } catch (_) {}
     final saved = _supportedOrNull(prefs?.getString(_prefsKey));
-    final device =
-        _supportedOrNull(PlatformDispatcher.instance.locale.languageCode);
+    final device = _supportedOrNull(PlatformDispatcher.instance.locale.languageCode);
     return LocaleController._(prefs, saved ?? device ?? fallback);
   }
 
@@ -61,9 +60,7 @@ class LocaleController extends ChangeNotifier {
     final uid = client.auth.currentUser?.id;
     if (uid == null) return true;
     try {
-      await client
-          .from('profiles')
-          .update({'locale': l.languageCode}).eq('id', uid);
+      await client.from('profiles').update({'locale': l.languageCode}).eq('id', uid);
       return true;
     } catch (_) {
       return false;
@@ -81,8 +78,7 @@ class LocaleController extends ChangeNotifier {
 
 /// Доступ к [LocaleController] из любого экрана.
 class LocaleScope extends InheritedNotifier<LocaleController> {
-  const LocaleScope(
-      {super.key, required LocaleController controller, required super.child})
+  const LocaleScope({super.key, required LocaleController controller, required super.child})
       : super(notifier: controller);
 
   static LocaleController of(BuildContext context) =>

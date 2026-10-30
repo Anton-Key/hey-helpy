@@ -38,8 +38,7 @@ class OnboardingRepository {
   /// Создаёт компанию. Текущий пользователь становится её админом.
   Future<String> createCompany(String name) async {
     try {
-      final id =
-          await _c.rpc('create_company', params: {'p_name': name.trim()});
+      final id = await _c.rpc('create_company', params: {'p_name': name.trim()});
       return id as String;
     } on PostgrestException catch (e) {
       throw OnboardingException(_humanize(e.message));
@@ -50,8 +49,7 @@ class OnboardingRepository {
   /// Возвращает id созданной записи исполнителя.
   Future<String> acceptInvite(String token) async {
     try {
-      final id =
-          await _c.rpc('accept_invite', params: {'p_token': token.trim()});
+      final id = await _c.rpc('accept_invite', params: {'p_token': token.trim()});
       return id as String;
     } on PostgrestException catch (e) {
       throw OnboardingException(_humanize(e.message));
@@ -80,8 +78,7 @@ class OnboardingRepository {
           .from('invites')
           .insert({
             'contractor_id': contractorId,
-            'expires_at':
-                DateTime.now().add(validFor).toUtc().toIso8601String(),
+            'expires_at': DateTime.now().add(validFor).toUtc().toIso8601String(),
           })
           .select('token')
           .single();

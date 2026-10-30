@@ -1,27 +1,27 @@
 -- =====================================================================
 -- Hey Helpy · демо-история за последние 30 дней (НЕ миграция)
 --
--- Что делает: добавляет в компанию «Демо БЦ» 91 заявку (72 + 19 задач ППР шага 16) и 16 визитов,
+-- Что делает: добавляет в компанию «Demo Properties» 91 заявку (72 + 19 задач ППР шага 16) и 16 визитов,
 -- чтобы на демо «История» и «Отчёты» были наполнены, и 4 объекта на карте:
---   • «КлиматСервис» (Климат) — 15 заявок, всё в срок, приёмка почти всегда
+--   • «ClimaService» (Климат) — 15 заявок, всё в срок, приёмка почти всегда
 --     с первого раза, 15 визитов при норме 4 в месяц;
---   • «ЭлектроПро» (Электрика) — 10 заявок, 2 просрочены, 3 возвращали
+--   • «ElectroPro» (Электрика) — 10 заявок, 2 просрочены, 3 возвращали
 --     на доработку, визитов меньше нормы 2 в месяц (один — с подменой GPS).
---   • эти 25 заявок — на «БЦ «Демо»» (Белград, Савски венац);
+--   • эти 25 заявок — на «Demo Tower» (Белград, Савски венац);
 --   • ещё 10 заявок (211–220) — на 4 новых объектах в Белграде
---     («ТЦ «Демо Плаза»», «Склад «Демо Логистик»», «Офис «Демо Сити»»,
---     «Отель «Демо Парк»»; 11 помещений) — для карты во вкладке «Локации»:
+--     («Demo Plaza Mall», «Demo Logistics Warehouse», «Demo City Office»,
+--     «Demo Park Hotel»; 11 помещений) — для карты во вкладке «Локации»:
 --     у «Плазы» просроченная critical (красный маркер), у склада открытых
---     заявок нет (серо-зелёный). Из них 5 — «ЭлектроПро» (+1 просрочка в отчёте).
---   • ещё 2 повторяющиеся заявки (221–222) на «БЦ «Демо»» — для фильтра
+--     заявок нет (серо-зелёный). Из них 5 — «ElectroPro» (+1 просрочка в отчёте).
+--   • ещё 2 повторяющиеся заявки (221–222) на «Demo Tower» — для фильтра
 --     «Ещё → Тип → Повторяющаяся» (шаг 13c).
 --   • объекты по миру (шаг 13d): 15 офисов (401–415) в Белграде, Москве, Дубае,
 --     Стамбуле, Абиджане, Шэньчжэне и Пекине, 45 помещений (421–465),
 --     10 региональных подрядчиков (501–510) с закреплениями по объектам и видам
 --     работ, 31 заявка (223–253): 4 просрочены, 3 без подрядчика, 2 повторяющиеся.
---     «ЭлектроПро» переводится с «всех объектов» на белградские.
+--     «ElectroPro» переводится с «всех объектов» на белградские.
 --   • планы этажей (шаг 14b, блок 5d — генерирует tools/demo_plans/generate.mjs):
---     этажи 601 «1 этаж» и 602 «3 этаж» у «БЦ «Демо»», 603 «15 этаж» у «Skyline»,
+--     этажи 601 «1 этаж» и 602 «3 этаж» у «Demo Tower», 603 «15 этаж» у «Skyline»,
 --     7 новых помещений (052–056, 466–467), точки помещений на ДЕМО-СХЕМАХ,
 --     оборудование 701–720, 4 заявки на нём (254–257, 254 просрочена).
 --     Картинки планов (plan_path) скрипт не трогает — их загружают через приложение.
@@ -30,22 +30,22 @@
 --     721–735, номера и области помещений на схемах (5d), планы ППР 801–808,
 --     задачи периодов 258–276 (266 и 270 просрочены), 234 и 241 — задачи планов.
 --   • шаг 22: у всех 37 единиц оборудования — вид (meta.kind, каталог
---     supabase/functions/_shared/kinds.ts); на этаже 3 «БЦ «Демо»» — «Кондиционер
---     КД-301» и огнетушитель 737 в переговорной 301, «Кондиционер КД-302» 736
+--     supabase/functions/_shared/kinds.ts); на этаже 3 «Demo Tower» — «Кондиционер
+--     AC-301» и огнетушитель 737 в переговорной 301, «Air conditioner AC-302» 736
 --     в кабинете 302 (сценарий «Узнать по фото»).
 --   • шаг 17 (блок 5f, если применена 0016): бригады «Пекин» и «Шэньчжэнь»
---     подрядчика Huaxin FM (950–951) с зонами по городу (970–971).
+--     подрядчика Riyadh FM (950–951) с зонами по городу (970–971).
 --   • шаг 23 (блок 5g, если применена 0018): заявки из Telegram-бота 277
 --     (гость по QR-коду) и 278 (сотрудник с привязанным аккаунтом).
 --   • шаг 24 (блок 5h, если применена 0020): значки и цвета систем.
---   • шаг 25 (блок 5i): у «Кондиционера КД-301» — открытая заявка 277, принятые
+--   • шаг 25 (блок 5i): у «Кондиционера AC-301» — открытая заявка 277, принятые
 --     101/106/108/110 и план ТО 809 с задачей 279 этого месяца (сцена «Камеры»);
 --     (блок 5j, если применена 0018): включённые ссылки Telegram объекта
---     «БЦ «Демо»» и компании с демо-токенами (report_links 981–982).
---   • шаг 27 (блок 6c, нужна 0024): в акте «КлиматСервис» 109 (фото «из
+--     «Demo Tower» и компании с демо-токенами (report_links 981–982).
+--   • шаг 27 (блок 6c, нужна 0024): в акте «ClimaService» 109 (фото «из
 --     файла») и 112 (снято без сети, часы расходились на 2 ч) — «Требует
 --     решения менеджера»;
---   • шаг 24 (блок 6b): доказательства для акта «КлиматСервис» (фото «после» —
+--   • шаг 24 (блок 6b): доказательства для акта «ClimaService» (фото «после» —
 --     картинка из сборки demo/ac_after.jpg, чек-лист, визиты 317–318) и,
 --     если применена 0021, ставки трёх подрядчиков.
 --
@@ -72,7 +72,7 @@
 --     правилам, что и база (радиус объекта + погрешность GPS не больше 50 м).
 --
 -- УБОРКА ТЕСТОВЫХ ЗАЯВОК — блок 0 ниже, выполняется всегда: перед питчем
--- в «Демо БЦ» остаются только заявки этого скрипта.
+-- в «Demo Properties» остаются только заявки этого скрипта.
 -- УДАЛЕНИЕ ИСТОРИИ — блок 1 ниже, по умолчанию выключен.
 -- =====================================================================
 
@@ -90,10 +90,10 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------
--- Блок 0. Удалить все НЕдемо-заявки компании «Демо БЦ» (всегда)
+-- Блок 0. Удалить все НЕдемо-заявки компании «Demo Properties» (всегда)
 -- Демо-заявки — только из этого скрипта, с постоянными id
 -- de300000-0000-4000-8000-000000000101 … 299 (в demo.sql заявок нет).
--- Всё остальное в «Демо БЦ» — тестовые заявки, созданные руками или
+-- Всё остальное в «Demo Properties» — тестовые заявки, созданные руками или
 -- голосом на показах; они удаляются вместе с визитами, вложениями,
 -- чек-листами и историей (каскад внешних ключей, поэтому блок стоит ДО
 -- выключения триггеров). Файлы фото остаются в Storage (work-photos):
@@ -108,7 +108,13 @@ begin
    where company_id = c_company
      and id::text !~ '^de300000-0000-4000-8000-000000000[12][0-9]{2}$';
   get diagnostics v_orders = row_count;
-  raise notice 'Тестовые (недемо) заявки «Демо БЦ» удалены: %.', v_orders;
+  raise notice 'Тестовые (недемо) заявки «Demo Properties» удалены: %.', v_orders;
+  -- Шаг 33: сформированные акты — снимки строк с прежними (русскими)
+  -- названиями и суммами в рублях. Удаляются: в демо их формируют заново
+  -- (Отчёты → Акты подрядчикам). Файлы PDF остаются в Storage (contractor-acts).
+  if to_regclass('public.contractor_acts') is not null then
+    delete from public.contractor_acts where company_id = c_company;
+  end if;
 end $$;
 
 -- ---------------------------------------------------------------------
@@ -161,9 +167,9 @@ declare
                                      'executor@example.com');
   v_requester_email text := coalesce(nullif(current_setting('demo.requester_email', true), ''),
                                      'requester@example.com');
-  -- Необязательно: четвёртый тестовый пользователь — исполнитель «ЭлектроПро».
-  -- Если указать, он станет исполнителем «ЭлектроПро», и у подрядчика появится
-  -- визит с подменой GPS. Если оставить пустым — у «ЭлектроПро» визитов не будет.
+  -- Необязательно: четвёртый тестовый пользователь — исполнитель «ElectroPro».
+  -- Если указать, он станет исполнителем «ElectroPro», и у подрядчика появится
+  -- визит с подменой GPS. Если оставить пустым — у «ElectroPro» визитов не будет.
   v_elec_executor_email text := coalesce(nullif(current_setting('demo.elec_executor_email', true), ''),
                                          '');
   -- ▲▲▲ ДАЛЬШЕ НИЧЕГО МЕНЯТЬ НЕ НУЖНО ▲▲▲
@@ -226,15 +232,15 @@ begin
                   where p.id in (v_manager, v_executor, v_requester)
                     and p.company_id = c_company
                  having count(*) = 3) then
-    raise exception 'Пользователи не в компании «Демо БЦ». Сначала запустите supabase/seed/demo.sql';
+    raise exception 'Пользователи не в компании «Demo Properties». Сначала запустите supabase/seed/demo.sql';
   end if;
   if trim(v_elec_executor_email) <> '' then
     select id into v_elec_exec from auth.users where lower(email) = lower(trim(v_elec_executor_email));
     if v_elec_exec is null then
-      raise exception 'Не найден исполнитель «ЭлектроПро»: %. Создайте его в Authentication → Users или оставьте пустую строку', v_elec_executor_email;
+      raise exception 'Не найден исполнитель «ElectroPro»: %. Создайте его в Authentication → Users или оставьте пустую строку', v_elec_executor_email;
     end if;
     if v_elec_exec in (v_manager, v_executor, v_requester) then
-      raise exception 'Исполнитель «ЭлектроПро» должен быть четвёртым, отдельным пользователем';
+      raise exception 'Исполнитель «ElectroPro» должен быть четвёртым, отдельным пользователем';
     end if;
   end if;
 
@@ -242,18 +248,18 @@ begin
   select o.lat, o.lng, o.geofence_radius_m into v_obj
     from public.objects o where o.id = c_object and o.company_id = c_company;
   if not found then
-    raise exception 'Нет объекта «БЦ «Демо»». Сначала запустите supabase/seed/demo.sql';
+    raise exception 'Нет объекта «Demo Tower». Сначала запустите supabase/seed/demo.sql';
   end if;
   if v_obj.lat is null or v_obj.lng is null then
-    raise exception 'У объекта «БЦ «Демо»» нет координат. Укажите их в карточке объекта';
+    raise exception 'У объекта «Demo Tower» нет координат. Укажите их в карточке объекта';
   end if;
   if (select count(*) from public.locations
        where object_id = c_object and id in (c_loc_meet, c_loc_elec, c_loc_open, c_loc_hall)) <> 4 then
-    raise exception 'Нет помещений «БЦ «Демо»». Сначала запустите supabase/seed/demo.sql';
+    raise exception 'Нет помещений «Demo Tower». Сначала запустите supabase/seed/demo.sql';
   end if;
   if (select count(*) from public.contractors
        where company_id = c_company and id in (c_contr_hvac, c_contr_elec)) <> 2 then
-    raise exception 'Нет подрядчиков «КлиматСервис» и «ЭлектроПро». Сначала запустите supabase/seed/demo.sql';
+    raise exception 'Нет подрядчиков «ClimaService» и «ElectroPro». Сначала запустите supabase/seed/demo.sql';
   end if;
   select id, requires_photo into v_layer_hvac, v_photo_hvac
     from public.layers where company_id = c_company and name = 'Климат';
@@ -269,14 +275,14 @@ begin
   select id into v_layer_sec   from public.layers where company_id = c_company and name = 'Системы безопасности';
   if v_layer_plumb is null or v_layer_clean is null or v_layer_other is null
      or v_layer_sec is null then
-    raise exception 'Не найдены слои «Сантехника», «Клининг», «Другое» или «Системы безопасности» у компании «Демо БЦ»';
+    raise exception 'Не найдены слои «Сантехника», «Клининг», «Другое» или «Системы безопасности» у компании «Demo Properties»';
   end if;
 
-  -- 3. Нормы визитов по договору: «КлиматСервис» — 4 в месяц, «ЭлектроПро» — 2.
-  --    Шаг 13d: подрядчики работают по регионам. «ЭлектроПро» в demo.sql закреплён
+  -- 3. Нормы визитов по договору: «ClimaService» — 4 в месяц, «ElectroPro» — 2.
+  --    Шаг 13d: подрядчики работают по регионам. «ElectroPro» в demo.sql закреплён
   --    за «Электрикой» на ВСЕХ объектах (object_id = null) — тогда заявки по
   --    электрике в Москве или Дубае тоже уходили бы ему. Переводим его на
-  --    белградские объекты: здесь — «БЦ «Демо»» (с нормой 2), остальные — в 3c.
+  --    белградские объекты: здесь — «Demo Tower» (с нормой 2), остальные — в 3c.
   if not exists (select 1 from public.contractor_layers
                   where contractor_id = c_contr_elec and layer_id = v_layer_elec) then
     raise exception 'Нет закреплений подрядчиков за слоями. Сначала запустите supabase/seed/demo.sql';
@@ -298,18 +304,35 @@ begin
     raise exception 'Нет закреплений подрядчиков за слоями. Сначала запустите supabase/seed/demo.sql';
   end if;
 
-  -- 3b. Объекты на карте (шаг 13). «БЦ «Демо»» стоит в Белграде — адрес
+  -- 3a. Шаг 33: демо — на английском. То, что создаёт только demo.sql, —
+  --     переименовать по постоянным id (повторный запуск ничего не меняет).
+  update public.companies set name = 'Demo Properties' where id = c_company;
+  update public.objects set name = 'Demo Tower' where id = c_object;
+  update public.locations l set name = v.name
+    from (values (c_loc_meet, 'Meeting room, floor 3'), (c_loc_elec, 'Electrical room, floor 1'),
+                 (c_loc_open, 'Open space, floor 2'), (c_loc_hall, 'Hall, floor 1')) as v(id, name)
+   where l.id = v.id;
+  update public.contractors set org_name = 'ClimaService' where id = c_contr_hvac;
+  update public.contractors set org_name = 'ElectroPro' where id = c_contr_elec;
+  -- Имена демо-пользователей — только если остались прежними из demo.sql
+  -- (своё имя, заданное в настройках, не трогаем).
+  update public.profiles p set full_name = v.en
+    from (values ('Менеджер Демо', 'Demo Manager'), ('Исполнитель Демо', 'Demo Technician'),
+                 ('Заявитель Демо', 'Demo Requester'), ('Электрик Демо', 'Demo Electrician')) as v(ru, en)
+   where p.company_id = c_company and p.full_name = v.ru;
+
+  -- 3b. Объекты на карте (шаг 13). «Demo Tower» стоит в Белграде — адрес
   --     под его координаты. Ещё 4 объекта в разных районах Белграда
   --     (2–10 км друг от друга), по 2–3 помещения. Адреса — без реальных улиц.
-  update public.objects set address = 'Белград, Савски венац (демо)'
+  update public.objects set address = 'Belgrade, Savski Venac (demo)'
    where id = c_object;
 
   insert into public.objects (id, company_id, name, type, address, lat, lng, geofence_radius_m)
   values
-    (c_obj_plaza, c_company, 'ТЦ «Демо Плаза»',       'other',     'Белград, Нови Београд (демо)', 44.803000, 20.404000, 200),
-    (c_obj_log,   c_company, 'Склад «Демо Логистик»', 'warehouse', 'Белград, Земун (демо)',        44.859000, 20.380000, 300),
-    (c_obj_city,  c_company, 'Офис «Демо Сити»',      'office',    'Белград, Дорчол (демо)',       44.823500, 20.470000, 150),
-    (c_obj_park,  c_company, 'Отель «Демо Парк»',     'hotel',     'Белград, Вождовац (демо)',     44.770000, 20.480000, 250)
+    (c_obj_plaza, c_company, 'Demo Plaza Mall',       'other',     'Belgrade, New Belgrade (demo)', 44.803000, 20.404000, 200),
+    (c_obj_log,   c_company, 'Demo Logistics Warehouse', 'warehouse', 'Belgrade, Zemun (demo)',        44.859000, 20.380000, 300),
+    (c_obj_city,  c_company, 'Demo City Office',      'office',    'Belgrade, Dorćol (demo)',       44.823500, 20.470000, 150),
+    (c_obj_park,  c_company, 'Demo Park Hotel',     'hotel',     'Belgrade, Voždovac (demo)',     44.770000, 20.480000, 250)
   on conflict (id) do update set
     company_id = excluded.company_id, name = excluded.name, type = excluded.type,
     address = excluded.address, lat = excluded.lat, lng = excluded.lng,
@@ -319,22 +342,22 @@ begin
   select ('de300000-0000-4000-8000-' || lpad(p.n::text, 12, '0'))::uuid,
          ('de300000-0000-4000-8000-' || lpad(p.o::text, 12, '0'))::uuid, p.name
   from (values
-    (41, 11, 'Фуд-корт, 2 этаж'),
-    (42, 11, 'Торговая галерея, 1 этаж'),
-    (43, 11, 'Парковка, −1 этаж'),
-    (44, 12, 'Зона приёмки, ворота 3'),
-    (45, 12, 'Холодильная камера'),
-    (46, 12, 'Офис склада'),
-    (47, 13, 'Ресепшен, 1 этаж'),
-    (48, 13, 'Серверная, 4 этаж'),
-    (49, 14, 'Лобби'),
-    (50, 14, 'Номер 214'),
-    (51, 14, 'Ресторан')
+    (41, 11, 'Food court, floor 2'),
+    (42, 11, 'Shopping gallery, floor 1'),
+    (43, 11, 'Parking, level −1'),
+    (44, 12, 'Receiving area, gate 3'),
+    (45, 12, 'Cold room'),
+    (46, 12, 'Warehouse office'),
+    (47, 13, 'Reception, floor 1'),
+    (48, 13, 'Server room, floor 4'),
+    (49, 14, 'Lobby'),
+    (50, 14, 'Room 214'),
+    (51, 14, 'Restaurant')
   ) as p(n, o, name)
   on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
 
-  -- «КлиматСервис» — «Климат» и на новых объектах (как на «БЦ «Демо»»);
-  -- «ЭлектроПро» — за «Электрикой» на этих же 4 объектах (а на «БЦ «Демо»» — в шаге 3).
+  -- «ClimaService» — «Климат» и на новых объектах (как на «Demo Tower»);
+  -- «ElectroPro» — за «Электрикой» на этих же 4 объектах (а на «Demo Tower» — в шаге 3).
   -- У contractor_layers нет уникального ключа — поэтому «если ещё нет».
   insert into public.contractor_layers (contractor_id, layer_id, object_id)
   select c.id, c.layer, o.id
@@ -352,21 +375,21 @@ begin
   select ('de300000-0000-4000-8000-' || lpad(w.n::text, 12, '0'))::uuid, c_company,
          w.name, w.type, w.address, w.lat, w.lng, w.radius
   from (values
-    (401, 'Хаб 1',               'office', 'Белград, бул. Войводы Бойовича, 12 (демо)',             44.826200,  20.456600, 200),
-    (402, 'Skyline',             'office', 'Белград, Kneza Miloša 90a (демо)',                      44.799990,  20.452140, 150),
-    (403, 'Офис 1',              'office', 'Москва, Пресненская наб., Москва-Сити (демо)',          55.749000,  37.537000, 250),
-    (404, 'Офис 2',              'office', 'Москва, ул. Лесная (демо)',                             55.777000,  37.582000, 150),
-    (405, 'Офис 3',              'office', 'Москва, Павелецкая пл. (демо)',                         55.730000,  37.639000, 200),
-    (406, 'Офис 4',              'office', 'Москва, Земляной Вал (демо)',                           55.758000,  37.660000, 150),
-    (407, 'Офис 5',              'office', 'Москва, Сколково (демо)',                               55.697000,  37.359000, 300),
-    (408, 'Офис 1',              'office', 'Дубай, Business Bay (демо)',                            25.186000,  55.265000, 200),
-    (409, 'Офис 2',              'office', 'Дубай, Dubai Marina (демо)',                            25.080500,  55.140300, 200),
-    (410, 'Офис 1',              'office', 'Стамбул, Левент (демо)',                                41.082000,  29.011000, 200),
-    (411, 'Офис 2',              'office', 'Стамбул, Аташехир (демо)',                              40.992000,  29.124000, 200),
-    (412, 'Ivoire Trade Center', 'office', 'Абиджан, Кокоди, рядом с Sofitel Hôtel Ivoire (демо)',   5.325000,  -4.006000, 300),
-    (413, 'Офис 1',              'office', 'Шэньчжэнь, Футянь (демо)',                              22.540000, 114.055000, 200),
-    (414, 'Офис 2',              'office', 'Шэньчжэнь, Наньшань (демо)',                            22.533000, 113.944000, 200),
-    (415, 'Офис 1',              'office', 'Пекин, Гоумао (демо)',                                  39.908000, 116.460000, 250)
+    (401, 'Hub 1',               'office', 'Belgrade, Bulevar vojvode Bojovića 12 (demo)',             44.826200,  20.456600, 200),
+    (402, 'Skyline',             'office', 'Belgrade, Kneza Miloša 90a (demo)',                      44.799990,  20.452140, 150),
+    (403, 'Office 1',              'office', 'New York, Midtown Manhattan (demo)',          40.754900, -73.984000, 250),
+    (404, 'Office 2',              'office', 'New York, Financial District (demo)',                             40.707500, -74.011300, 150),
+    (405, 'Office 3',              'office', 'New York, Chelsea (demo)',                         40.746500, -74.001400, 200),
+    (406, 'Office 4',              'office', 'New York, Hudson Yards (demo)',                           40.753600, -74.002100, 150),
+    (407, 'Office 5',              'office', 'New York, Upper East Side (demo)',                               40.773600, -73.956600, 300),
+    (408, 'Office 1',              'office', 'Dubai, Business Bay (demo)',                            25.186000,  55.265000, 200),
+    (409, 'Office 2',              'office', 'Dubai, Dubai Marina (demo)',                            25.080500,  55.140300, 200),
+    (410, 'Office 1',              'office', 'Berlin, Mitte (demo)',                                52.520000, 13.405000, 200),
+    (411, 'Office 2',              'office', 'Berlin, Kreuzberg (demo)',                              52.498600, 13.403300, 200),
+    (412, 'Thames House', 'office', 'London, Southwark (demo)',   51.504500, -0.086500, 300),
+    (413, 'Office 1',              'office', 'Abu Dhabi, Al Maryah Island (demo)',                              24.501000, 54.389000, 200),
+    (414, 'Office 2',              'office', 'Abu Dhabi, Al Reem Island (demo)',                            24.496000, 54.404000, 200),
+    (415, 'Office 1',              'office', 'Riyadh, King Abdullah Financial District (demo)',                                  24.764000, 46.640000, 250)
   ) as w(n, name, type, address, lat, lng, radius)
   on conflict (id) do update set
     company_id = excluded.company_id, name = excluded.name, type = excluded.type,
@@ -378,51 +401,51 @@ begin
   select ('de300000-0000-4000-8000-' || lpad(p.n::text, 12, '0'))::uuid,
          ('de300000-0000-4000-8000-' || lpad(p.o::text, 12, '0'))::uuid, p.name
   from (values
-    (421, 401, 'Лобби'),
-    (422, 401, 'Переговорная «Сава»'),
-    (423, 401, 'Серверная'),
-    (424, 402, 'Open space, 15 этаж'),
-    (425, 402, 'Кухня, 15 этаж'),
-    (426, 402, 'Парковка, −2 этаж'),
-    (427, 403, 'Лобби, 1 этаж'),
-    (428, 403, 'Open space, 32 этаж'),
-    (429, 403, 'Серверная, 31 этаж'),
-    (430, 403, 'Переговорная «Неглинка»'),
-    (431, 404, 'Ресепшен'),
-    (432, 404, 'Кухня, 3 этаж'),
-    (433, 404, 'Санузлы, 2 этаж'),
-    (434, 405, 'Лобби'),
-    (435, 405, 'Open space, 5 этаж'),
-    (436, 405, 'Тепловой пункт, подвал'),
-    (437, 406, 'Переговорная «Яуза»'),
-    (438, 406, 'Кухня'),
-    (439, 406, 'Санузлы, 4 этаж'),
-    (440, 407, 'Атриум'),
-    (441, 407, 'Лаборатория'),
-    (442, 407, 'Парковка'),
-    (443, 408, 'Лобби'),
-    (444, 408, 'Open space, 21 этаж'),
-    (445, 408, 'Серверная'),
-    (446, 409, 'Ресепшен'),
-    (447, 409, 'Переговорная'),
-    (448, 409, 'Парковка'),
-    (449, 410, 'Лобби'),
-    (450, 410, 'Open space, 12 этаж'),
-    (451, 410, 'Кухня'),
-    (452, 411, 'Ресепшен'),
-    (453, 411, 'Санузлы, 3 этаж'),
-    (454, 412, 'Холл'),
-    (455, 412, 'Переговорная'),
-    (456, 412, 'Серверная'),
-    (457, 412, 'Генераторная'),
-    (458, 413, 'Лобби'),
-    (459, 413, 'Open space, 28 этаж'),
-    (460, 413, 'Кухня'),
-    (461, 414, 'Ресепшен'),
-    (462, 414, 'Серверная'),
-    (463, 415, 'Лобби'),
-    (464, 415, 'Переговорная'),
-    (465, 415, 'Open space, 18 этаж')
+    (421, 401, 'Lobby'),
+    (422, 401, 'Meeting room “Sava”'),
+    (423, 401, 'Server room'),
+    (424, 402, 'Open space, floor 15'),
+    (425, 402, 'Kitchen, floor 15'),
+    (426, 402, 'Parking, level −2'),
+    (427, 403, 'Lobby, floor 1'),
+    (428, 403, 'Open space, floor 32'),
+    (429, 403, 'Server room, floor 31'),
+    (430, 403, 'Meeting room “Hudson”'),
+    (431, 404, 'Reception'),
+    (432, 404, 'Kitchen, floor 3'),
+    (433, 404, 'Restrooms, floor 2'),
+    (434, 405, 'Lobby'),
+    (435, 405, 'Open space, floor 5'),
+    (436, 405, 'Heating substation, basement'),
+    (437, 406, 'Meeting room “East River”'),
+    (438, 406, 'Kitchen'),
+    (439, 406, 'Restrooms, floor 4'),
+    (440, 407, 'Atrium'),
+    (441, 407, 'Laboratory'),
+    (442, 407, 'Parking'),
+    (443, 408, 'Lobby'),
+    (444, 408, 'Open space, floor 21'),
+    (445, 408, 'Server room'),
+    (446, 409, 'Reception'),
+    (447, 409, 'Meeting room'),
+    (448, 409, 'Parking'),
+    (449, 410, 'Lobby'),
+    (450, 410, 'Open space, floor 12'),
+    (451, 410, 'Kitchen'),
+    (452, 411, 'Reception'),
+    (453, 411, 'Restrooms, floor 3'),
+    (454, 412, 'Hall'),
+    (455, 412, 'Meeting room'),
+    (456, 412, 'Server room'),
+    (457, 412, 'Generator room'),
+    (458, 413, 'Lobby'),
+    (459, 413, 'Open space, floor 28'),
+    (460, 413, 'Kitchen'),
+    (461, 414, 'Reception'),
+    (462, 414, 'Server room'),
+    (463, 415, 'Lobby'),
+    (464, 415, 'Meeting room'),
+    (465, 415, 'Open space, floor 18')
   ) as p(n, o, name)
   on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
 
@@ -430,22 +453,22 @@ begin
   insert into public.contractors (id, company_id, org_name)
   select ('de300000-0000-4000-8000-' || lpad(c.n::text, 12, '0'))::uuid, c_company, c.name
   from (values
-    (501, 'МосКлимат'),
-    (502, 'ЭлектроСити'),
-    (503, 'ЧистоГрад'),
-    (504, 'ЛифтСервис'),
+    (501, 'NYC Climate'),
+    (502, 'CityElectric'),
+    (503, 'CleanCity'),
+    (504, 'LiftService'),
     (505, 'Gulf FM Services'),
-    (506, 'Boğaziçi Teknik'),
-    (507, 'Temiz Hizmet'),
-    (508, 'Ivoire Maintenance'),
-    (509, 'Huaxin FM'),
-    (510, 'Shenzhen Clean')
+    (506, 'Berlin Technik'),
+    (507, 'Berlin Clean'),
+    (508, 'Thames Maintenance'),
+    (509, 'Riyadh FM'),
+    (510, 'Abu Dhabi Clean')
   ) as c(n, name)
   on conflict (id) do update set company_id = excluded.company_id, org_name = excluded.org_name;
 
   -- Закрепления: подрядчик (31, 32 — белградские из demo.sql, 501–510 — новые),
   -- вид работ, объект, норма визитов в месяц. По ним база сама назначает
-  -- подрядчика новой заявке (слой + объект). «ЛифтСервис» — слой «Другое»
+  -- подрядчика новой заявке (слой + объект). «LiftService» — слой «Другое»
   -- (слоя «Лифты» у компании нет).
   insert into public.contractor_layers (contractor_id, layer_id, object_id, visits_per_month)
   select ('de300000-0000-4000-8000-' || lpad(b.c::text, 12, '0'))::uuid,
@@ -454,7 +477,7 @@ begin
                       else v_layer_other end,
          ('de300000-0000-4000-8000-' || lpad(b.o::text, 12, '0'))::uuid, b.norm
   from (values
-    -- Белград: «КлиматСервис» и «ЭлектроПро» — ещё «Хаб 1» и «Skyline»
+    -- Белград: «ClimaService» и «ElectroPro» — ещё «Хаб 1» и «Skyline»
     (31, 'hvac', 401, null::int), (31, 'hvac', 402, null),
     (32, 'elec', 401, null), (32, 'elec', 402, null),
     -- Москва: частичное покрытие
@@ -470,7 +493,7 @@ begin
     (507, 'clean', 410, 8),
     -- Абиджан
     (508, 'hvac', 412, 2), (508, 'elec', 412, 2), (508, 'plumb', 412, 1),
-    -- Китай: «Huaxin FM» — весь Китай, «Shenzhen Clean» — только Шэньчжэнь
+    -- Китай: «Riyadh FM» — весь Китай, «Abu Dhabi Clean» — только Шэньчжэнь
     (509, 'hvac', 413, 2), (509, 'hvac', 414, 2), (509, 'hvac', 415, 2),
     (509, 'elec', 413, 1), (509, 'elec', 414, 1), (509, 'elec', 415, 1),
     (510, 'clean', 413, 8), (510, 'clean', 414, 8)
@@ -491,10 +514,10 @@ begin
   where cl.object_id is not null
   on conflict do nothing;
 
-  -- 4. Четвёртый пользователь (если указан) — исполнитель «ЭлектроПро»
+  -- 4. Четвёртый пользователь (если указан) — исполнитель «ElectroPro»
   if v_elec_exec is not null then
     insert into public.profiles (id, company_id, role, full_name)
-    values (v_elec_exec, c_company, 'executor', 'Электрик Демо')
+    values (v_elec_exec, c_company, 'executor', 'Demo Electrician')
     on conflict (id) do update
       set company_id = excluded.company_id,
           role       = excluded.role,
@@ -549,51 +572,51 @@ begin
       case when t.author = 'req' and t.n % 3 = 0 then v_requester else v_manager end end,
     t.reason, t.rc
   from (values
-    -- «КлиматСервис»: быстро, в срок, один возврат
-    (101,'hvac','meet','Не охлаждает кондиционер в переговорной','Кондиционер работает, но дует тёплым воздухом. В 11:00 встреча с клиентом.','normal','done','req','text',29,7,35,55,90,72,0,null::text,null::int),
-    (102,'hvac','open','Плановое ТО кондиционеров: чистка фильтров','Ежемесячное ТО внутренних блоков open space, 6 шт.','low','done','mgr','button',27,6,120,110,240,120,0,null,null),
-    (103,'hvac','open','Шумит внутренний блок у окна','Сильный гул и треск, мешает работать.','normal','done','req','voice',26,9,40,45,60,72,0,null,null),
-    (104,'hvac','hall','Течёт вода из кондиционера на ресепшене','Капает на стойку администратора, подставили ведро.','high','done','req','text',24,7,20,175,70,24,1,'После ремонта снова капает: дренаж прочищен не до конца.',null),
-    (105,'hvac','open','Не работает вентиляция в open space','Душно, приток не включается с утра.','high','done','req','voice',22,6,25,80,45,24,0,null,null),
-    (106,'hvac','meet','Жарко в переговорной: настроить кондиционер','На пульте 22°, в комнате 27°.','normal','done','req','text',20,11,45,30,120,72,0,null,null),
-    (107,'hvac','hall','Замена фильтров приточной установки','Плановая замена фильтров по графику ТО.','low','done','mgr','button',17,6,90,70,180,120,0,null,null),
-    (108,'hvac','meet','Неприятный запах из кондиционера','Нужна антибактериальная обработка внутреннего блока.','normal','done','req','text',15,8,50,65,100,72,0,null,null),
-    (109,'hvac','open','Сквозняк от диффузора над рабочими местами','Дует прямо на ряд у окна, сотрудники жалуются.','low','done','req','voice',13,10,60,40,150,120,0,null,null),
-    (110,'hvac','meet','Кондиционер не включается с пульта','Индикатор мигает, на пульт не реагирует.','high','done','req','text',10,7,15,35,60,24,0,null,null),
-    (111,'hvac','open','Плановое ТО: проверка давления хладагента','Проверка 6 блоков open space по графику ТО.','low','done','mgr','button',8,6,100,120,200,120,0,null,null),
-    (112,'hvac','hall','Не работает тепловая завеса у входа','Холодно у входной группы, завеса не включается.','high','done','req','voice',5,7,20,75,50,24,0,null,null),
-    (113,'hvac','open','Капает конденсат над рабочим местом','На потолке мокрое пятно у колонны.','normal','done','req','text',3,9,30,50,80,72,0,null,null),
-    (114,'hvac','meet','Шумит вентилятор в переговорной','Вентилятор внутреннего блока стучит на высокой скорости.','normal','on_review','req','voice',1,8,40,60,null,72,0,null,null),
-    (115,'hvac','meet','Дубль: не охлаждает кондиционер в переговорной','Создана повторно по ошибке.','normal','cancelled','req','text',12,9,null,null,null,72,0,null,20),
-    -- «ЭлектроПро»: долго берёт в работу, возвраты, 2 просрочки
-    (201,'elec','hall','Мигает свет в холле','Два светильника у лифтов мигают с утра.','normal','done','req','text',28,8,300,70,240,72,0,null,null),
-    (202,'elec','open','Не работает розетка у рабочего места','Розетка у места 2-14 не даёт питания.','low','done','req','text',25,9,1560,1500,300,120,1,'Розетка снова не работает: причина не устранена.',null),
-    (203,'elec','elec','Выбивает автомат в электрощитовой','Автомат группы 3 этажа отключается 2–3 раза в день.','high','done','mgr','text',23,7,180,90,300,24,0,null,null),
-    (204,'elec','meet','Замена ламп в переговорной','Не горят 3 лампы из 8.','low','done','req','button',19,10,1500,45,600,120,0,null,null),
-    (205,'elec','hall','Не горит аварийное освещение на лестнице','Аварийные светильники между 1 и 2 этажом не горят.','normal','done','mgr','text',14,8,240,3000,240,120,2,'Аварийный светильник на 2 этаже по-прежнему не горит.',null),
-    (206,'elec','open','Искрит выключатель в open space','При включении света искрит и щёлкает выключатель у кухни.','critical','done','req','voice',9,7,120,50,60,8,0,null,null),
-    (207,'elec','elec','Не работает освещение в электрощитовой','В щитовой темно, работать со щитом невозможно.','normal','returned','mgr','text',6,8,1560,150,null,72,1,'Заменили не тот светильник: в щитовой по-прежнему темно.',2940),
-    (208,'elec','meet','Нет питания на розетках в переговорной','Не работают все розетки у стола, в 15:00 совещание.','high','assigned','req','voice',5,9,null,null,null,24,0,null,null),
-    (209,'elec','elec','Проверить щит после скачка напряжения','Ночью был скачок, часть линий отключилась.','normal','in_progress','mgr','text',2,9,1500,null,null,120,0,null,null),
-    (210,'elec','hall','Замена светильника в холле','Светильник над входом треснул, нужна замена.','low','on_review','req','text',4,10,1500,1500,null,120,0,null,null),
+    -- «ClimaService»: быстро, в срок, один возврат
+    (101,'hvac','meet','AC not cooling in the meeting room','The AC is on but blowing warm air. Client meeting at 11:00.','normal','done','req','text',29,7,35,55,90,72,0,null::text,null::int),
+    (102,'hvac','open','Scheduled AC maintenance: filter cleaning','Monthly maintenance of 6 open space indoor units.','low','done','mgr','button',27,6,120,110,240,120,0,null,null),
+    (103,'hvac','open','Noisy indoor unit by the window','Loud hum and crackle, hard to work.','normal','done','req','voice',26,9,40,45,60,72,0,null,null),
+    (104,'hvac','hall','Water leaking from the AC at reception','Dripping onto the front desk, a bucket has been placed.','high','done','req','text',24,7,20,175,70,24,1,'Dripping again after the repair: the drain was not fully cleared.',null),
+    (105,'hvac','open','Ventilation not working in the open space','Stuffy, the supply ventilation has been off since morning.','high','done','req','voice',22,6,25,80,45,24,0,null,null),
+    (106,'hvac','meet','Too hot in the meeting room: adjust the AC','The remote shows 22 °C, the room is 27 °C.','normal','done','req','text',20,11,45,30,120,72,0,null,null),
+    (107,'hvac','hall','Replace air handling unit filters','Scheduled filter replacement.','low','done','mgr','button',17,6,90,70,180,120,0,null,null),
+    (108,'hvac','meet','Unpleasant smell from the AC','The indoor unit needs antibacterial treatment.','normal','done','req','text',15,8,50,65,100,72,0,null,null),
+    (109,'hvac','open','Draft from a diffuser over workstations','It blows straight at the row by the window, staff complain.','low','done','req','voice',13,10,60,40,150,120,0,null,null),
+    (110,'hvac','meet','AC does not turn on from the remote','The indicator is blinking, no response to the remote.','high','done','req','text',10,7,15,35,60,24,0,null,null),
+    (111,'hvac','open','Scheduled maintenance: refrigerant pressure check','Scheduled check of 6 open space units.','low','done','mgr','button',8,6,100,120,200,120,0,null,null),
+    (112,'hvac','hall','Air curtain at the entrance not working','Cold at the entrance, the air curtain does not turn on.','high','done','req','voice',5,7,20,75,50,24,0,null,null),
+    (113,'hvac','open','Condensate dripping over a workstation','Wet spot on the ceiling by the column.','normal','done','req','text',3,9,30,50,80,72,0,null,null),
+    (114,'hvac','meet','Noisy fan in the meeting room','The indoor unit fan knocks at high speed.','normal','on_review','req','voice',1,8,40,60,null,72,0,null,null),
+    (115,'hvac','meet','Duplicate: AC not cooling in the meeting room','Created twice by mistake.','normal','cancelled','req','text',12,9,null,null,null,72,0,null,20),
+    -- «ElectroPro»: долго берёт в работу, возвраты, 2 просрочки
+    (201,'elec','hall','Lights flickering in the hall','Two lights by the lifts have been flickering since morning.','normal','done','req','text',28,8,300,70,240,72,0,null,null),
+    (202,'elec','open','Socket at a workstation not working','The socket at desk 2-14 has no power.','low','done','req','text',25,9,1560,1500,300,120,1,'The socket is dead again: the cause was not fixed.',null),
+    (203,'elec','elec','Breaker keeps tripping in the electrical room','The floor 3 breaker trips 2–3 times a day.','high','done','mgr','text',23,7,180,90,300,24,0,null,null),
+    (204,'elec','meet','Replace lamps in the meeting room','3 of 8 lamps are out.','low','done','req','button',19,10,1500,45,600,120,0,null,null),
+    (205,'elec','hall','Emergency lighting out on the stairs','Emergency lights between floors 1 and 2 are out.','normal','done','mgr','text',14,8,240,3000,240,120,2,'The emergency light on floor 2 is still out.',null),
+    (206,'elec','open','Switch sparking in the open space','The switch by the kitchen sparks and clicks when turning on the lights.','critical','done','req','voice',9,7,120,50,60,8,0,null,null),
+    (207,'elec','elec','Lighting out in the electrical room','The electrical room is dark, impossible to work on the panel.','normal','returned','mgr','text',6,8,1560,150,null,72,1,'The wrong light was replaced: the electrical room is still dark.',2940),
+    (208,'elec','meet','No power at the meeting room sockets','All sockets at the table are dead, meeting at 15:00.','high','assigned','req','voice',5,9,null,null,null,24,0,null,null),
+    (209,'elec','elec','Check the panel after a power surge','There was a surge overnight, some circuits went off.','normal','in_progress','mgr','text',2,9,1500,null,null,120,0,null,null),
+    (210,'elec','hall','Replace a light in the hall','The light above the entrance is cracked, needs replacement.','low','on_review','req','text',4,10,1500,1500,null,120,0,null,null),
     -- Объекты на карте (шаг 13); loc — номер помещения (041–051), объект — по помещению.
-    -- «ТЦ «Демо Плаза»»: просроченная critical — красный маркер
-    (211,'elec','41','Нет света в фуд-корте','Обесточена половина фуд-корта, арендаторы не могут работать.','critical','assigned','mgr','text',1,7,null,null,null,4,0,null,null),
-    (212,'hvac','42','Душно в торговой галерее','Не работает приточная вентиляция у эскалатора.','normal','new','req','voice',1,10,null,null,null,72,0,null,null),
-    (213,'elec','43','Заменить лампы на парковке','Не горят 5 светильников у въезда.','low','done','req','text',6,9,300,60,120,120,0,null,null),
-    -- «Склад «Демо Логистик»»: открытых заявок нет — серо-зелёный маркер
-    (214,'hvac','45','ТО холодильной камеры','Плановая проверка компрессора и уплотнителей.','low','done','mgr','button',9,7,90,120,180,120,0,null,null),
-    (215,'elec','44','Дубль: свет у ворот 3','Создана повторно по ошибке.','low','cancelled','req','text',4,8,null,null,null,120,0,null,30),
-    -- «Офис «Демо Сити»»: срочная в работе — оранжевый маркер
-    (216,'hvac','48','Перегрев в серверной','В серверной 31°, кондиционер не справляется.','high','in_progress','mgr','text',1,8,40,null,null,72,0,null,null),
-    (217,'elec','47','Мигает подсветка ресепшена','Светодиодная лента над стойкой мигает.','normal','on_review','req','text',2,9,200,90,null,72,0,null,null),
-    -- «Отель «Демо Парк»»: обычные открытые — бирюзовый маркер
-    (218,'hvac','50','Не работает кондиционер в номере 214','Гость жалуется: в номере жарко.','normal','new','req','voice',1,9,null,null,null,72,0,null,null),
-    (219,'elec','51','Не работает розетка у барной стойки','Не включается кофемашина, розетка без питания.','low','assigned','mgr','text',2,11,null,null,null,120,0,null,null),
-    (220,'hvac','49','Чистка фильтров в лобби','Плановое ТО кондиционеров лобби.','low','done','mgr','button',12,6,100,80,200,120,0,null,null),
+    -- «Demo Plaza Mall»: просроченная critical — красный маркер
+    (211,'elec','41','No lights in the food court','Half of the food court has no power, tenants cannot work.','critical','assigned','mgr','text',1,7,null,null,null,4,0,null,null),
+    (212,'hvac','42','Stuffy in the shopping gallery','Supply ventilation by the escalator is not working.','normal','new','req','voice',1,10,null,null,null,72,0,null,null),
+    (213,'elec','43','Replace lamps in the parking','5 lights at the entrance are out.','low','done','req','text',6,9,300,60,120,120,0,null,null),
+    -- «Demo Logistics Warehouse»: открытых заявок нет — серо-зелёный маркер
+    (214,'hvac','45','Cold room maintenance','Scheduled compressor and seal check.','low','done','mgr','button',9,7,90,120,180,120,0,null,null),
+    (215,'elec','44','Duplicate: light at gate 3','Created twice by mistake.','low','cancelled','req','text',4,8,null,null,null,120,0,null,30),
+    -- «Demo City Office»: срочная в работе — оранжевый маркер
+    (216,'hvac','48','Server room overheating','31 °C in the server room, the AC cannot keep up.','high','in_progress','mgr','text',1,8,40,null,null,72,0,null,null),
+    (217,'elec','47','Reception backlight flickering','The LED strip above the counter is flickering.','normal','on_review','req','text',2,9,200,90,null,72,0,null,null),
+    -- «Demo Park Hotel»: обычные открытые — бирюзовый маркер
+    (218,'hvac','50','AC not working in room 214','Guest complains the room is too hot.','normal','new','req','voice',1,9,null,null,null,72,0,null,null),
+    (219,'elec','51','Socket at the bar not working','The coffee machine does not turn on, the socket has no power.','low','assigned','mgr','text',2,11,null,null,null,120,0,null,null),
+    (220,'hvac','49','Filter cleaning in the lobby','Scheduled maintenance of the lobby air conditioners.','low','done','mgr','button',12,6,100,80,200,120,0,null,null),
     -- Повторяющиеся (регламентные) заявки (шаг 13c) — recurrence задаётся ниже, в 5b
-    (221,'hvac','open','Ежемесячный осмотр кондиционеров','Регламент: осмотр и чистка внутренних блоков open space раз в месяц.','normal','assigned','mgr','button',2,7,null,null,null,168,0,null,null),
-    (222,'elec','hall','Еженедельная проверка аварийного освещения','Регламент: проверка аварийных светильников на лестницах и в холле раз в неделю.','low','in_progress','mgr','button',1,8,120,null,null,48,0,null,null)
+    (221,'hvac','open','Monthly AC inspection','Schedule: inspect and clean the open space indoor units monthly.','normal','assigned','mgr','button',2,7,null,null,null,168,0,null,null),
+    (222,'elec','hall','Weekly emergency lighting check','Schedule: check emergency lights on stairs and in the hall weekly.','low','in_progress','mgr','button',1,8,120,null,null,48,0,null,null)
   ) as t(n, layer, loc, title, descr, priority, status, author, channel,
          d, h, r, sub, acc, due_h, rc, reason, upd)
   cross join lateral (
@@ -669,43 +692,43 @@ begin
       jsonb_build_object('kind', 'regular', 'freq', t.rec, 'interval', 1) end
   from (values
     -- Белград: «Хаб 1», «Skyline»
-    (223,'hvac',421,31,'Шумит кондиционер в лобби','Внутренний блок над входом гудит и потрескивает.','normal','assigned','req','voice',1,9,null::int,null::int,null::int,72,0,null::text,null::int,null::text),
-    (224,'elec',424,32,'Мигает свет в open space','Три светильника у окон мигают с утра.','normal','in_progress','mgr','text',2,8,90,null,null,72,0,null,null,null),
-    (225,'hvac',422,31,'Жарко в переговорной «Сава»','Кондиционер не держит 22°, к обеду 27°.','low','done','req','text',6,10,30,60,90,120,0,null,null,null),
-    (226,'elec',426,32,'Не горят светильники на парковке','Темно у выезда, 4 светильника не горят.','normal','on_review','req','button',3,9,200,120,null,120,0,null,null,null),
+    (223,'hvac',421,31,'Noisy AC in the lobby','The indoor unit above the entrance hums and crackles.','normal','assigned','req','voice',1,9,null::int,null::int,null::int,72,0,null::text,null::int,null::text),
+    (224,'elec',424,32,'Lights flickering in the open space','Three lights by the windows have been flickering since morning.','normal','in_progress','mgr','text',2,8,90,null,null,72,0,null,null,null),
+    (225,'hvac',422,31,'Too hot in meeting room “Sava”','The AC cannot hold 22 °C, by lunch it is 27 °C.','low','done','req','text',6,10,30,60,90,120,0,null,null,null),
+    (226,'elec',426,32,'Parking lights out','Dark at the exit, 4 lights are out.','normal','on_review','req','button',3,9,200,120,null,120,0,null,null,null),
     -- Москва
-    (227,'hvac',435,501,'Холодно в open space: не греют батареи','Батареи у окон холодные, в офисе +17.','critical','in_progress','req','voice',1,8,30,null,null,6,0,null,null,null),
-    (228,'other',427,504,'Застрял лифт в лобби','Лифт №2 остановился между 1 и 2 этажом, людей вывели.','critical','done','mgr','voice',4,9,15,60,30,4,0,null,null,null),
-    (229,'elec',429,502,'Скачки напряжения в серверной','ИБП дважды переходил на батареи за ночь.','high','assigned','mgr','text',1,11,null,null,null,48,0,null,null,null),
-    (230,'clean',432,503,'Генеральная уборка кухни','После корпоратива нужна генеральная уборка.','low','assigned','mgr','button',2,7,null,null,null,96,0,null,null,null),
-    (231,'hvac',438,501,'Не работает вентиляция на кухне','Вытяжка не тянет, запах по всему этажу.','normal','returned','req','text',5,9,60,240,null,168,1,'После ремонта вытяжка снова не тянет.',3000,null),
-    (232,'elec',431,null,'Не работает розетка на ресепшене','Не включается кофемашина у стойки.','normal','new','req','voice',1,10,null,null,null,72,0,null,null,null),
-    (233,'plumb',433,null,'Протекает кран в санузле','Кран у раковины не закрывается до конца.','high','new','req','text',1,14,null,null,null,48,0,null,null,null),
-    (234,'other',440,504,'Ежемесячное ТО лифтов','Регламент: осмотр лифтов атриума раз в месяц.','low','assigned','mgr','button',3,7,null,null,null,240,0,null,null,'monthly'),
-    (235,'hvac',437,501,'Душно в переговорной «Яуза»','Приток не включается, после встречи нечем дышать.','normal','done','req','voice',8,10,40,50,120,72,0,null,null,null),
-    (236,'clean',439,503,'Нет мыла и бумаги в санузлах','Закончились расходники на 4 этаже.','low','done','req','button',2,9,60,30,60,24,0,null,null,null),
-    (237,'hvac',442,501,'Не греет тепловая завеса на въезде','На въезде на парковку сквозняк, завеса не включается.','high','on_review','mgr','text',2,8,100,120,null,72,0,null,null,null),
+    (227,'hvac',435,501,'Cold in the open space: radiators not heating','Radiators by the windows are cold, 17 °C in the office.','critical','in_progress','req','voice',1,8,30,null,null,6,0,null,null,null),
+    (228,'other',427,504,'Lift stuck in the lobby','Lift #2 stopped between floors 1 and 2, people were evacuated.','critical','done','mgr','voice',4,9,15,60,30,4,0,null,null,null),
+    (229,'elec',429,502,'Voltage spikes in the server room','The UPS switched to battery twice overnight.','high','assigned','mgr','text',1,11,null,null,null,48,0,null,null,null),
+    (230,'clean',432,503,'Kitchen deep cleaning','Deep cleaning needed after a corporate event.','low','assigned','mgr','button',2,7,null,null,null,96,0,null,null,null),
+    (231,'hvac',438,501,'Kitchen ventilation not working','The extractor does not draw, the smell is all over the floor.','normal','returned','req','text',5,9,60,240,null,168,1,'After the repair the extractor does not draw again.',3000,null),
+    (232,'elec',431,null,'Socket at reception not working','The coffee machine at the counter does not turn on.','normal','new','req','voice',1,10,null,null,null,72,0,null,null,null),
+    (233,'plumb',433,null,'Leaking faucet in the restroom','The sink faucet does not close fully.','high','new','req','text',1,14,null,null,null,48,0,null,null,null),
+    (234,'other',440,504,'Monthly lift maintenance','Schedule: inspect the atrium lifts monthly.','low','assigned','mgr','button',3,7,null,null,null,240,0,null,null,'monthly'),
+    (235,'hvac',437,501,'Stuffy in meeting room “East River”','The supply ventilation does not turn on, stuffy after meetings.','normal','done','req','voice',8,10,40,50,120,72,0,null,null,null),
+    (236,'clean',439,503,'No soap or paper in the restrooms','Supplies ran out on floor 4.','low','done','req','button',2,9,60,30,60,24,0,null,null,null),
+    (237,'hvac',442,501,'Air curtain at the entrance not heating','Draft at the parking entrance, the air curtain does not turn on.','high','on_review','mgr','text',2,8,100,120,null,72,0,null,null,null),
     -- Дубай
-    (238,'hvac',444,505,'Кондиционер не охлаждает: +29 в open space','Сотрудники уходят работать в переговорные.','critical','assigned','req','voice',1,7,null,null,null,4,0,null,null,null),
-    (239,'hvac',443,505,'Капает конденсат в лобби','Лужа у стойки ресепшена, поставили знак.','normal','in_progress','req','text',1,12,60,null,null,72,0,null,null,null),
-    (240,'elec',448,505,'Не работает зарядка электромобилей','Станция на парковке не включается.','low','assigned','req','button',3,9,null,null,null,120,0,null,null,null),
-    (241,'hvac',446,505,'Ежемесячная чистка фильтров кондиционеров','Регламент: чистка фильтров всех блоков раз в месяц.','low','assigned','mgr','button',2,6,null,null,null,240,0,null,null,'monthly'),
+    (238,'hvac',444,505,'AC not cooling: 29 °C in the open space','Staff move to meeting rooms to work.','critical','assigned','req','voice',1,7,null,null,null,4,0,null,null,null),
+    (239,'hvac',443,505,'Condensate dripping in the lobby','Puddle at the reception desk, a sign has been placed.','normal','in_progress','req','text',1,12,60,null,null,72,0,null,null,null),
+    (240,'elec',448,505,'EV charger not working','The charging station in the parking does not turn on.','low','assigned','req','button',3,9,null,null,null,120,0,null,null,null),
+    (241,'hvac',446,505,'Monthly AC filter cleaning','Schedule: clean the filters of all units monthly.','low','assigned','mgr','button',2,6,null,null,null,240,0,null,null,'monthly'),
     -- Стамбул
-    (242,'plumb',451,506,'Засор в раковине на кухне','Вода не уходит, раковина полная.','normal','in_progress','req','voice',1,10,45,null,null,48,0,null,null,null),
-    (243,'clean',450,507,'Уборка после мероприятия','Вечером было мероприятие на 80 человек.','low','done','mgr','button',4,18,60,180,60,24,0,null,null,null),
-    (244,'elec',452,506,'Не работает свет на ресепшене','Половина светильников над стойкой не горит.','high','assigned','req','text',2,8,null,null,null,12,0,null,null,null),
-    (245,'clean',453,null,'Уборка санузлов после ремонта','После замены плитки остались строительная пыль и мусор.','normal','new','req','voice',1,15,null,null,null,48,0,null,null,null),
+    (242,'plumb',451,506,'Kitchen sink clogged','Water does not drain, the sink is full.','normal','in_progress','req','voice',1,10,45,null,null,48,0,null,null,null),
+    (243,'clean',450,507,'Cleaning after an event','There was an event for 80 people in the evening.','low','done','mgr','button',4,18,60,180,60,24,0,null,null,null),
+    (244,'elec',452,506,'Reception lights not working','Half of the lights above the counter are out.','high','assigned','req','text',2,8,null,null,null,12,0,null,null,null),
+    (245,'clean',453,null,'Restroom cleaning after repairs','Construction dust and debris left after tile replacement.','normal','new','req','voice',1,15,null,null,null,48,0,null,null,null),
     -- Абиджан
-    (246,'elec',457,508,'Генератор не запускается при отключении света','Утром отключали сеть — генератор не стартовал.','critical','in_progress','mgr','voice',2,9,60,null,null,6,0,null,null,null),
-    (247,'hvac',455,508,'Шумит кондиционер в переговорной','Сильный гул, мешает звонкам.','normal','assigned','req','text',1,10,null,null,null,72,0,null,null,null),
-    (248,'plumb',454,508,'Протечка в холле после дождя','С потолка капает у входа.','high','done','req','voice',6,8,90,120,60,24,0,null,null,null),
+    (246,'elec',457,508,'Generator does not start during a power cut','The grid was off this morning and the generator did not start.','critical','in_progress','mgr','voice',2,9,60,null,null,6,0,null,null,null),
+    (247,'hvac',455,508,'Noisy AC in the meeting room','Loud hum, disturbs calls.','normal','assigned','req','text',1,10,null,null,null,72,0,null,null,null),
+    (248,'plumb',454,508,'Leak in the hall after rain','Dripping from the ceiling at the entrance.','high','done','req','voice',6,8,90,120,60,24,0,null,null,null),
     -- Шэньчжэнь
-    (249,'hvac',459,509,'Не работает кондиционер в open space','Блоки у окон не включаются с пульта.','high','in_progress','req','voice',1,9,30,null,null,48,0,null,null,null),
-    (250,'clean',460,510,'Уборка кухни: жалоба на запах','Сотрудники жалуются на запах из мусорных баков.','normal','done','req','text',3,11,60,60,120,24,0,null,null,null),
-    (251,'elec',462,509,'Перегрев ИБП в серверной','ИБП сигналит о высокой температуре.','high','on_review','mgr','text',2,8,60,90,null,72,0,null,null,null),
+    (249,'hvac',459,509,'AC not working in the open space','The units by the windows do not turn on from the remote.','high','in_progress','req','voice',1,9,30,null,null,48,0,null,null,null),
+    (250,'clean',460,510,'Kitchen cleaning: smell complaint','Staff complain about the smell from the bins.','normal','done','req','text',3,11,60,60,120,24,0,null,null,null),
+    (251,'elec',462,509,'UPS overheating in the server room','The UPS is alarming about high temperature.','high','on_review','mgr','text',2,8,60,90,null,72,0,null,null,null),
     -- Пекин
-    (252,'hvac',465,509,'Сухой воздух в open space','Проверить увлажнители приточной установки.','low','assigned','req','text',2,10,null,null,null,120,0,null,null,null),
-    (253,'elec',464,509,'Не работает проектор в переговорной','Нет питания на розетке под потолком.','normal','assigned','req','text',1,9,null,null,null,72,0,null,null,null)
+    (252,'hvac',465,509,'Dry air in the open space','Check the air handling unit humidifiers.','low','assigned','req','text',2,10,null,null,null,120,0,null,null,null),
+    (253,'elec',464,509,'Projector not working in the meeting room','No power at the ceiling socket.','normal','assigned','req','text',1,9,null,null,null,72,0,null,null,null)
   ) as t(n, layer, loc, c, title, descr, priority, status, author, channel,
          d, h, r, sub, acc, due_h, rc, reason, upd, rec)
   cross join lateral (
@@ -744,25 +767,25 @@ begin
    where f.company_id = c_company
      and f.id not in ('de300000-0000-4000-8000-000000000601'::uuid, 'de300000-0000-4000-8000-000000000602'::uuid, 'de300000-0000-4000-8000-000000000603'::uuid)
      and exists (select 1 from (values
-       ('de300000-0000-4000-8000-000000000010'::uuid, '1 этаж'),
-       ('de300000-0000-4000-8000-000000000010'::uuid, '3 этаж'),
-       ('de300000-0000-4000-8000-000000000402'::uuid, '15 этаж')
+       ('de300000-0000-4000-8000-000000000010'::uuid, 'Floor 1'),
+       ('de300000-0000-4000-8000-000000000010'::uuid, 'Floor 3'),
+       ('de300000-0000-4000-8000-000000000402'::uuid, 'Floor 15')
      ) as d(o, n) where d.o = f.object_id and d.n = f.name);
   insert into public.floors (id, company_id, object_id, name, level, sort) values
-    ('de300000-0000-4000-8000-000000000601'::uuid, c_company, 'de300000-0000-4000-8000-000000000010'::uuid, '1 этаж', 1, 0),
-    ('de300000-0000-4000-8000-000000000602'::uuid, c_company, 'de300000-0000-4000-8000-000000000010'::uuid, '3 этаж', 3, 1),
-    ('de300000-0000-4000-8000-000000000603'::uuid, c_company, 'de300000-0000-4000-8000-000000000402'::uuid, '15 этаж', 15, 0)
+    ('de300000-0000-4000-8000-000000000601'::uuid, c_company, 'de300000-0000-4000-8000-000000000010'::uuid, 'Floor 1', 1, 0),
+    ('de300000-0000-4000-8000-000000000602'::uuid, c_company, 'de300000-0000-4000-8000-000000000010'::uuid, 'Floor 3', 3, 1),
+    ('de300000-0000-4000-8000-000000000603'::uuid, c_company, 'de300000-0000-4000-8000-000000000402'::uuid, 'Floor 15', 15, 0)
   on conflict (id) do update set name = excluded.name, level = excluded.level, sort = excluded.sort;
 
   -- Новые помещения на схемах.
   insert into public.locations (id, object_id, name) values
-    ('de300000-0000-4000-8000-000000000053'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Кафе, 1 этаж'),
-    ('de300000-0000-4000-8000-000000000052'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Ресепшен, 1 этаж'),
-    ('de300000-0000-4000-8000-000000000054'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Кабинет директора, 3 этаж'),
-    ('de300000-0000-4000-8000-000000000055'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Серверная, 3 этаж'),
-    ('de300000-0000-4000-8000-000000000056'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Кухня, 3 этаж'),
-    ('de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, 'Переговорная «Дунав», 15 этаж'),
-    ('de300000-0000-4000-8000-000000000467'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, 'Санузлы, 15 этаж')
+    ('de300000-0000-4000-8000-000000000053'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Café, floor 1'),
+    ('de300000-0000-4000-8000-000000000052'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Reception, floor 1'),
+    ('de300000-0000-4000-8000-000000000054'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Director''s office, floor 3'),
+    ('de300000-0000-4000-8000-000000000055'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Server room, floor 3'),
+    ('de300000-0000-4000-8000-000000000056'::uuid, 'de300000-0000-4000-8000-000000000010'::uuid, 'Kitchen, floor 3'),
+    ('de300000-0000-4000-8000-000000000466'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, 'Meeting room “Danube”, floor 15'),
+    ('de300000-0000-4000-8000-000000000467'::uuid, 'de300000-0000-4000-8000-000000000402'::uuid, 'Restrooms, floor 15')
   on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
   -- Номера помещений (шаг 16): тот же номер у помещения, созданного руками, снимается.
   update public.locations l set code = null
@@ -803,28 +826,28 @@ begin
 
   -- Оборудование: вид (meta.kind) — для значка на плане.
   insert into public.assets (id, location_id, name, category, inventory_no, meta, floor_id, plan_x, plan_y) values
-    ('de300000-0000-4000-8000-000000000701'::uuid, 'de300000-0000-4000-8000-000000000022'::uuid, 'Электрощит ЩР-1', 'equipment', 'ЭЛ-1-001', '{"kind":"panel","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1083, 0.1625),
-    ('de300000-0000-4000-8000-000000000702'::uuid, 'de300000-0000-4000-8000-000000000022'::uuid, 'ИБП щитовой 3 кВА', 'equipment', 'ЭЛ-1-002', '{"kind":"ups","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1917, 0.25),
-    ('de300000-0000-4000-8000-000000000703'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Кондиционер холла', 'equipment', 'КЛ-1-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.3167, 0.4),
-    ('de300000-0000-4000-8000-000000000704'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Светильник холла у лифтов', 'equipment', 'ЭЛ-1-010', '{"kind":"light","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.5833, 0.4),
-    ('de300000-0000-4000-8000-000000000705'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Датчик дыма холла', 'infra', 'ПБ-1-001', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.45, 0.625),
-    ('de300000-0000-4000-8000-000000000706'::uuid, 'de300000-0000-4000-8000-000000000052'::uuid, 'Фанкойл ресепшена', 'equipment', 'КЛ-1-002', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1, 0.425),
-    ('de300000-0000-4000-8000-000000000707'::uuid, 'de300000-0000-4000-8000-000000000053'::uuid, 'Кондиционер кафе', 'equipment', 'КЛ-1-003', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.8917, 0.15),
-    ('de300000-0000-4000-8000-000000000708'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'Кондиционер КД-301', 'equipment', 'КЛ-3-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.1438),
-    ('de300000-0000-4000-8000-000000000709'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'Датчик дыма переговорной', 'infra', 'ПБ-3-001', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.2667, 0.35),
-    ('de300000-0000-4000-8000-000000000710'::uuid, 'de300000-0000-4000-8000-000000000054'::uuid, 'Фанкойл кабинета директора', 'equipment', 'КЛ-3-002', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8917, 0.15),
-    ('de300000-0000-4000-8000-000000000711'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'Серверная стойка R1', 'equipment', 'ИТ-3-001', '{"kind":"server","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.8125),
-    ('de300000-0000-4000-8000-000000000712'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'ИБП серверной 10 кВА', 'equipment', 'ЭЛ-3-001', '{"kind":"ups","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.2083, 0.8625),
-    ('de300000-0000-4000-8000-000000000713'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'Кондиционер серверной', 'equipment', 'КЛ-3-003', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.65),
-    ('de300000-0000-4000-8000-000000000714'::uuid, 'de300000-0000-4000-8000-000000000056'::uuid, 'Светильник кухни', 'equipment', 'ЭЛ-3-010', '{"kind":"light","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8417, 0.8125),
-    ('de300000-0000-4000-8000-000000000736'::uuid, 'de300000-0000-4000-8000-000000000054'::uuid, 'Кондиционер КД-302', 'equipment', 'КЛ-3-004', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.7917, 0.15),
-    ('de300000-0000-4000-8000-000000000737'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'Огнетушитель переговорной', 'infra', 'ПБ-3-002', '{"kind":"extinguisher","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.075, 0.375),
-    ('de300000-0000-4000-8000-000000000715'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Кондиционер open space №1', 'equipment', 'SK-15-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.15, 0.15),
-    ('de300000-0000-4000-8000-000000000716'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Кондиционер open space №2', 'equipment', 'SK-15-002', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.5333, 0.15),
-    ('de300000-0000-4000-8000-000000000717'::uuid, 'de300000-0000-4000-8000-000000000466'::uuid, 'Фанкойл переговорной «Дунав»', 'equipment', 'SK-15-003', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.8917, 0.15),
-    ('de300000-0000-4000-8000-000000000718'::uuid, 'de300000-0000-4000-8000-000000000425'::uuid, 'Электрощит ЩР-15', 'equipment', 'SK-15-010', '{"kind":"panel","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.9, 0.575),
-    ('de300000-0000-4000-8000-000000000719'::uuid, 'de300000-0000-4000-8000-000000000467'::uuid, 'Датчик протечки санузла', 'infra', 'SK-15-020', '{"kind":"water","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.1, 0.8625),
-    ('de300000-0000-4000-8000-000000000720'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Датчик дыма open space', 'infra', 'SK-15-021', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.3417, 0.55)
+    ('de300000-0000-4000-8000-000000000701'::uuid, 'de300000-0000-4000-8000-000000000022'::uuid, 'Electrical panel DB-1', 'equipment', 'EL-1-001', '{"kind":"panel","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1083, 0.1625),
+    ('de300000-0000-4000-8000-000000000702'::uuid, 'de300000-0000-4000-8000-000000000022'::uuid, 'Electrical room UPS 3 kVA', 'equipment', 'EL-1-002', '{"kind":"ups","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1917, 0.25),
+    ('de300000-0000-4000-8000-000000000703'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Air conditioner, hall', 'equipment', 'HV-1-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.3167, 0.4),
+    ('de300000-0000-4000-8000-000000000704'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Hall light by the lifts', 'equipment', 'EL-1-010', '{"kind":"light","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.5833, 0.4),
+    ('de300000-0000-4000-8000-000000000705'::uuid, 'de300000-0000-4000-8000-000000000024'::uuid, 'Smoke detector, hall', 'infra', 'FS-1-001', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.45, 0.625),
+    ('de300000-0000-4000-8000-000000000706'::uuid, 'de300000-0000-4000-8000-000000000052'::uuid, 'Fan coil, reception', 'equipment', 'HV-1-002', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.1, 0.425),
+    ('de300000-0000-4000-8000-000000000707'::uuid, 'de300000-0000-4000-8000-000000000053'::uuid, 'Air conditioner, café', 'equipment', 'HV-1-003', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000601'::uuid, 0.8917, 0.15),
+    ('de300000-0000-4000-8000-000000000708'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'Air conditioner AC-301', 'equipment', 'HV-3-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.1438),
+    ('de300000-0000-4000-8000-000000000709'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'Smoke detector, meeting room', 'infra', 'FS-3-001', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.2667, 0.35),
+    ('de300000-0000-4000-8000-000000000710'::uuid, 'de300000-0000-4000-8000-000000000054'::uuid, 'Fan coil, director''s office', 'equipment', 'HV-3-002', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8917, 0.15),
+    ('de300000-0000-4000-8000-000000000711'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'Server rack R1', 'equipment', 'IT-3-001', '{"kind":"server","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.8125),
+    ('de300000-0000-4000-8000-000000000712'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'Server room UPS 10 kVA', 'equipment', 'EL-3-001', '{"kind":"ups","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.2083, 0.8625),
+    ('de300000-0000-4000-8000-000000000713'::uuid, 'de300000-0000-4000-8000-000000000055'::uuid, 'Air conditioner, server room', 'equipment', 'HV-3-003', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.1083, 0.65),
+    ('de300000-0000-4000-8000-000000000714'::uuid, 'de300000-0000-4000-8000-000000000056'::uuid, 'Kitchen light', 'equipment', 'EL-3-010', '{"kind":"light","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.8417, 0.8125),
+    ('de300000-0000-4000-8000-000000000736'::uuid, 'de300000-0000-4000-8000-000000000054'::uuid, 'Air conditioner AC-302', 'equipment', 'HV-3-004', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.7917, 0.15),
+    ('de300000-0000-4000-8000-000000000737'::uuid, 'de300000-0000-4000-8000-000000000021'::uuid, 'Fire extinguisher, meeting room', 'infra', 'FS-3-002', '{"kind":"extinguisher","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000602'::uuid, 0.075, 0.375),
+    ('de300000-0000-4000-8000-000000000715'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Air conditioner, open space #1', 'equipment', 'SK-15-001', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.15, 0.15),
+    ('de300000-0000-4000-8000-000000000716'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Air conditioner, open space #2', 'equipment', 'SK-15-002', '{"kind":"ac","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.5333, 0.15),
+    ('de300000-0000-4000-8000-000000000717'::uuid, 'de300000-0000-4000-8000-000000000466'::uuid, 'Fan coil, meeting room “Danube”', 'equipment', 'SK-15-003', '{"kind":"fancoil","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.8917, 0.15),
+    ('de300000-0000-4000-8000-000000000718'::uuid, 'de300000-0000-4000-8000-000000000425'::uuid, 'Electrical panel DB-15', 'equipment', 'SK-15-010', '{"kind":"panel","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.9, 0.575),
+    ('de300000-0000-4000-8000-000000000719'::uuid, 'de300000-0000-4000-8000-000000000467'::uuid, 'Leak sensor, restroom', 'infra', 'SK-15-020', '{"kind":"water","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.1, 0.8625),
+    ('de300000-0000-4000-8000-000000000720'::uuid, 'de300000-0000-4000-8000-000000000424'::uuid, 'Smoke detector, open space', 'infra', 'SK-15-021', '{"kind":"smoke","demo":true}'::jsonb, 'de300000-0000-4000-8000-000000000603'::uuid, 0.3417, 0.55)
   on conflict (id) do update set
     location_id = excluded.location_id, name = excluded.name, category = excluded.category,
     inventory_no = excluded.inventory_no, meta = excluded.meta, floor_id = excluded.floor_id,
@@ -850,10 +873,10 @@ begin
     case when t.r is not null then x.created + make_interval(mins => t.r) end,
     0, null
   from (values
-    (254,'hvac',55,713,31::int,'Течёт конденсат из кондиционера серверной','Под внутренним блоком лужа, капает рядом со стойкой.','high','assigned','req','voice',1,8,null::int,6),
-    (255,'hvac',54,710,31,'Не греет фанкойл в кабинете директора','Фанкойл гудит, но воздух холодный.','normal','assigned','req','text',1,9,null,72),
-    (256,'elec',24,704,32,'Мигает светильник в холле у лифтов','Светильник над лифтами мигает с утра.','normal','in_progress','req','text',1,10,60,48),
-    (257,'plumb',467,719,null,'Сработал датчик протечки в санузле','Датчик под раковиной пищит, на полу вода.','high','new','mgr','button',1,7,null,24)
+    (254,'hvac',55,713,31::int,'Condensate leaking from the server room AC','Puddle under the indoor unit, dripping next to the counter.','high','assigned','req','voice',1,8,null::int,6),
+    (255,'hvac',54,710,31,'Fan coil in the director''s office not heating','The fan coil hums but the air is cold.','normal','assigned','req','text',1,9,null,72),
+    (256,'elec',24,704,32,'Light flickering in the hall by the lifts','The light above the lifts has been flickering since morning.','normal','in_progress','req','text',1,10,60,48),
+    (257,'plumb',467,719,null,'Leak sensor triggered in the restroom','The sensor under the sink is beeping, water on the floor.','high','new','mgr','button',1,7,null,24)
   ) as t(n, layer, loc, a, c, title, descr, priority, status, author, channel, d, h, r, due_h)
   cross join lateral (
     select v_today - make_interval(days => t.d) + make_interval(hours => t.h) as created
@@ -889,17 +912,17 @@ begin
   --     дата ввода; ещё 15 единиц 721–735 (Москва · Офис 1, Дубай · Офис 1,
   --     Абиджан) без точек на плане — для реестра. Планы ППР 801–808, задачи
   --     периодов 258–276; заявки 234 и 241 — задачи текущего периода планов
-  --     803 и 802. Номер «305» — у «Open space» БЦ «Демо» (для «в 305-й»).
+  --     803 и 802. Номер «305» — у «Open space» Demo Tower (для «в 305-й»).
   -- Регион с тем же названием, созданный руками, мешал бы (название уникально
   -- в компании без учёта регистра) — переименовываем его.
   update public.regions r set name = left(r.name, 50) || ' (старый)'
    where r.company_id = c_company
      and r.id::text !~ '^de300000-0000-4000-8000-00000000090[1-9]$'
-     and public.norm_name(r.name) in ('европа', 'снг', 'ближний восток', 'африка', 'азия');
+     and public.norm_name(r.name) in ('europe', 'north america', 'middle east', 'africa', 'asia');
   insert into public.regions (id, company_id, name, sort)
   select ('de300000-0000-4000-8000-' || lpad(g.n::text, 12, '0'))::uuid, c_company, g.name, g.sort
-  from (values (901, 'Европа', 1), (902, 'СНГ', 2), (903, 'Ближний Восток', 3),
-               (904, 'Африка', 4), (905, 'Азия', 5)) as g(n, name, sort)
+  -- Шаг 33: рынки — Европа, Северная Америка, Ближний Восток (3 региона).
+  from (values (901, 'Europe', 1), (902, 'North America', 2), (903, 'Middle East', 3)) as g(n, name, sort)
   on conflict (id) do update set company_id = excluded.company_id, name = excluded.name, sort = excluded.sort;
 
   update public.objects o
@@ -909,15 +932,20 @@ begin
     from (values
       (10, 'RS', 901), (11, 'RS', 901), (12, 'RS', 901), (13, 'RS', 901), (14, 'RS', 901),
       (401, 'RS', 901), (402, 'RS', 901),
-      (403, 'RU', 902), (404, 'RU', 902), (405, 'RU', 902), (406, 'RU', 902), (407, 'RU', 902),
-      (408, 'AE', 903), (409, 'AE', 903), (410, 'TR', 903), (411, 'TR', 903),
-      (412, 'CI', 904),
-      (413, 'CN', 905), (414, 'CN', 905), (415, 'CN', 905)
+      (403, 'US', 902), (404, 'US', 902), (405, 'US', 902), (406, 'US', 902), (407, 'US', 902),
+      (408, 'AE', 903), (409, 'AE', 903), (410, 'DE', 901), (411, 'DE', 901),
+      (412, 'GB', 901),
+      (413, 'AE', 903), (414, 'AE', 903), (415, 'SA', 903)
     ) as v(n, cc, rg)
    where o.id = ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid
      and o.company_id = c_company;
+  -- Шаг 33: регионов стало 3 — прежние «Африка» (904) и «Азия» (905) удаляются
+  -- (их объекты выше перенесены в Europe и Middle East).
+  delete from public.regions
+   where company_id = c_company
+     and id in ('de300000-0000-4000-8000-000000000904', 'de300000-0000-4000-8000-000000000905');
 
-  -- Номер «305» — Open space БЦ «Демо» (номера помещений на схемах — в 5d).
+  -- Номер «305» — Open space Demo Tower (номера помещений на схемах — в 5d).
   update public.locations set code = null
    where object_id = c_object and lower(btrim(code)) = '305' and id <> c_loc_open;
   update public.locations set code = '305' where id = c_loc_open;
@@ -969,23 +997,23 @@ begin
          v.mf, v.model, v.sn, v_today::date - v.age_days
   from (values
     -- Москва · Офис 1 (403): лобби 427, open space 428, серверная 429, переговорная 430
-    (721, 427, 'Лифт №1',                         'other', 'lift_panel', 'MSK1-LF-01', 'Otis',        'Gen2 Life',          'OT-RU-55012',  2100),
-    (722, 427, 'Лифт №2',                         'other', 'lift_panel', 'MSK1-LF-02', 'Otis',        'Gen2 Life',          'OT-RU-55013',  2100),
-    (723, 428, 'Кондиционер open space №1',       'hvac',  'ac',        'MSK1-KL-01', 'Daikin',      'FXZQ50A',            'DK-V2108811',  1200),
-    (724, 428, 'Кондиционер open space №2',       'hvac',  'ac',        'MSK1-KL-02', 'Daikin',      'FXZQ50A',            'DK-V2108812',  1200),
-    (725, 429, 'Прецизионный кондиционер',        'hvac',  'ac',        'MSK1-KL-03', 'Stulz',       'CyberAir 3PRO',      'ST-3P-20211',  950),
-    (726, 429, 'ИБП серверной 20 кВА',            'elec',  'ups',       'MSK1-EL-01', 'APC',         'Symmetra PX 20',     'AS1912000877', 1500),
-    (727, 428, 'Электрощит ЩР-32',                'elec',  'panel',     'MSK1-EL-02', 'ABB',         'MNS iS',             'ABB-19-554120', 2100),
-    (728, 430, 'Датчик дыма переговорной',        'sec',   'smoke',     'MSK1-PB-01', 'Bosch',       'FAP-425-O',          'BS-1170221',   1400),
+    (721, 427, 'Lift #1',                         'other', 'lift_panel', 'MSK1-LF-01', 'Otis',        'Gen2 Life',          'OT-RU-55012',  2100),
+    (722, 427, 'Lift #2',                         'other', 'lift_panel', 'MSK1-LF-02', 'Otis',        'Gen2 Life',          'OT-RU-55013',  2100),
+    (723, 428, 'Air conditioner, open space #1',       'hvac',  'ac',        'MSK1-KL-01', 'Daikin',      'FXZQ50A',            'DK-V2108811',  1200),
+    (724, 428, 'Air conditioner, open space #2',       'hvac',  'ac',        'MSK1-KL-02', 'Daikin',      'FXZQ50A',            'DK-V2108812',  1200),
+    (725, 429, 'Precision air conditioner',        'hvac',  'ac',        'MSK1-KL-03', 'Stulz',       'CyberAir 3PRO',      'ST-3P-20211',  950),
+    (726, 429, 'Server room UPS 20 kVA',            'elec',  'ups',       'MSK1-EL-01', 'APC',         'Symmetra PX 20',     'AS1912000877', 1500),
+    (727, 428, 'Electrical panel DB-32',                'elec',  'panel',     'MSK1-EL-02', 'ABB',         'MNS iS',             'ABB-19-554120', 2100),
+    (728, 430, 'Smoke detector, meeting room',        'sec',   'smoke',     'MSK1-PB-01', 'Bosch',       'FAP-425-O',          'BS-1170221',   1400),
     -- Дубай · Офис 1 (408): лобби 443, open space 444, серверная 445
-    (729, 443, 'Кондиционер лобби',               'hvac',  'ac',        'DXB1-KL-01', 'Daikin',      'FXFQ100A',           'DK-AE-771203', 800),
-    (730, 444, 'VRF наружный блок',               'hvac',  'ac_outdoor', 'DXB1-KL-02', 'Daikin',      'VRV 5 RXYSA',        'DK-AE-771500', 800),
-    (731, 444, 'Кондиционер open space',          'hvac',  'ac',        'DXB1-KL-03', 'Gree',        'GMV6',               'GR-6611823',   600),
-    (732, 445, 'ИБП серверной',                   'elec',  'ups',       'DXB1-EL-01', 'APC',         'Smart-UPS SRT 6000', 'AS2105112240', 700),
-    (733, 445, 'Прецизионный кондиционер серверной', 'hvac', 'ac',      'DXB1-KL-04', 'Stulz',       'CyberRow',           'ST-CR-30992',  700),
-    (734, 444, 'Датчик дыма open space',          'sec',   'smoke',     'DXB1-PB-01', 'Bosch',       'FAP-425-O',          'BS-1201882',   800),
+    (729, 443, 'Air conditioner, lobby',               'hvac',  'ac',        'DXB1-KL-01', 'Daikin',      'FXFQ100A',           'DK-AE-771203', 800),
+    (730, 444, 'VRF outdoor unit',               'hvac',  'ac_outdoor', 'DXB1-KL-02', 'Daikin',      'VRV 5 RXYSA',        'DK-AE-771500', 800),
+    (731, 444, 'Air conditioner, open space',          'hvac',  'ac',        'DXB1-KL-03', 'Gree',        'GMV6',               'GR-6611823',   600),
+    (732, 445, 'Server room UPS',                   'elec',  'ups',       'DXB1-EL-01', 'APC',         'Smart-UPS SRT 6000', 'AS2105112240', 700),
+    (733, 445, 'Precision air conditioner, server room', 'hvac', 'ac',      'DXB1-KL-04', 'Stulz',       'CyberRow',           'ST-CR-30992',  700),
+    (734, 444, 'Smoke detector, open space',          'sec',   'smoke',     'DXB1-PB-01', 'Bosch',       'FAP-425-O',          'BS-1201882',   800),
     -- Абиджан (412): генераторная 457
-    (735, 457, 'Дизель-генератор 250 кВА',        'elec',  'other',     'ABJ-EL-01',  'Caterpillar', 'C9 250 kVA',         'CAT-C9-66120', 1800)
+    (735, 457, 'Diesel generator 250 kVA',        'elec',  'other',     'ABJ-EL-01',  'Caterpillar', 'C9 250 kVA',         'CAT-C9-66120', 1800)
   ) as v(n, loc, name, layer, kind, inv, mf, model, sn, age_days)
   on conflict (id) do update set
     location_id = excluded.location_id, name = excluded.name, category = excluded.category,
@@ -1001,9 +1029,9 @@ begin
    where p.company_id = c_company
      and p.id::text !~ '^de300000-0000-4000-8000-0000000008[0-4][0-9]$'
      and exists (select 1 from (values
-       (403, 'ТО кондиционеров'), (409, 'Чистка фильтров кондиционеров'), (407, 'ТО лифтов'),
-       (10, 'Осмотр электрощитов'), (410, 'Генеральная уборка'), (412, 'Проверка генератора'),
-       (10, 'Проверка ИБП серверной'), (10, 'Поверка датчиков дыма')) as d(o, t)
+       (403, 'AC maintenance'), (409, 'AC filter cleaning'), (407, 'Lift maintenance'),
+       (10, 'Electrical panel inspection'), (410, 'Deep cleaning'), (412, 'Generator check'),
+       (10, 'Server room UPS check'), (10, 'Smoke detector testing')) as d(o, t)
        where p.object_id = ('de300000-0000-4000-8000-' || lpad(d.o::text, 12, '0'))::uuid
          and public.norm_name(p.title) = public.norm_name(d.t));
   insert into public.maintenance_plans (id, company_id, object_id, location_id, asset_id, layer_id,
@@ -1019,22 +1047,22 @@ begin
          v.title, v.descr, v.kind, v_plan_start, v.checklist::jsonb, true, v.priority, true, v_manager,
          v_plan_start, v_plan_start
   from (values
-    (801, 403, null::int, null::int, 'hvac',  'ТО кондиционеров', 'Ежемесячное ТО внутренних блоков и прецизионных кондиционеров офиса.', 'month', 'normal',
-     '["Очистить фильтры внутренних блоков", "Проверить дренаж и поддоны", "Проверить давление хладагента", "Замерить температуру на выходе", "Записать показания в журнал"]'),
-    (802, 409, null, null, 'hvac',  'Чистка фильтров кондиционеров', 'Чистка фильтров всех внутренних блоков раз в месяц.', 'month', 'low',
-     '["Снять и промыть фильтры", "Продезинфицировать теплообменник", "Проверить работу в режиме охлаждения"]'),
-    (803, 407, 440, null, 'other', 'ТО лифтов', 'Ежемесячный осмотр лифтов атриума по договору.', 'month', 'normal',
-     '["Проверить остановку на этажах", "Проверить двери и датчики", "Проверить связь с диспетчером", "Сделать запись в журнале лифта"]'),
-    (804, 10,  22,  null, 'elec',  'Осмотр электрощитов', 'Квартальный осмотр щитов: затяжка контактов, тепловизор.', 'quarter', 'normal',
-     '["Протянуть контактные соединения", "Снять термограмму щита", "Проверить автоматы и УЗО", "Убрать пыль внутри щита"]'),
-    (805, 410, null, null, 'clean', 'Генеральная уборка', 'Генеральная уборка офиса раз в месяц.', 'month', 'low',
-     '["Мытьё окон изнутри", "Чистка ковровых покрытий", "Уборка кухни и холодильников", "Дезинфекция санузлов"]'),
-    (806, 412, 457, 735,  'elec',  'Проверка генератора', 'Ежемесячная проверка дизель-генератора: пуск под нагрузкой 30 минут.', 'month', 'high',
-     '["Проверить уровень топлива и масла", "Проверить аккумулятор", "Пуск под нагрузкой 30 минут", "Записать моточасы"]'),
-    (807, 10,  55,  712,  'elec',  'Проверка ИБП серверной', 'Квартальная проверка ИБП серверной: батареи, тест переключения.', 'quarter', 'normal',
-     '["Проверить состояние батарей", "Тест перехода на батареи", "Проверить журнал событий ИБП"]'),
-    (808, 10,  null, null, 'sec',  'Поверка датчиков дыма', 'Проверка датчиков дыма тестовым аэрозолем раз в полгода.', 'half_year', 'normal',
-     '["Проверить каждый датчик тестовым аэрозолем", "Проверить сигнал на пульте охраны", "Заменить неисправные датчики", "Оформить акт проверки"]')
+    (801, 403, null::int, null::int, 'hvac',  'AC maintenance', 'Monthly maintenance of the office indoor units and precision air conditioners.', 'month', 'normal',
+     '["Clean indoor unit filters", "Check drainage and drip trays", "Check refrigerant pressure", "Measure outlet temperature", "Record readings in the log"]'),
+    (802, 409, null, null, 'hvac',  'AC filter cleaning', 'Clean the filters of all indoor units monthly.', 'month', 'low',
+     '["Remove and wash filters", "Disinfect the heat exchanger", "Check cooling mode"]'),
+    (803, 407, 440, null, 'other', 'Lift maintenance', 'Monthly inspection of the atrium lifts under contract.', 'month', 'normal',
+     '["Check stops at each floor", "Check doors and sensors", "Check the intercom to dispatch", "Record in the lift log"]'),
+    (804, 10,  22,  null, 'elec',  'Electrical panel inspection', 'Quarterly panel inspection: tighten contacts, thermal camera.', 'quarter', 'normal',
+     '["Tighten terminal connections", "Take a thermal image of the panel", "Check breakers and RCDs", "Remove dust inside the panel"]'),
+    (805, 410, null, null, 'clean', 'Deep cleaning', 'Monthly deep cleaning of the office.', 'month', 'low',
+     '["Clean windows from inside", "Clean carpets", "Clean kitchen and fridges", "Disinfect restrooms"]'),
+    (806, 412, 457, 735,  'elec',  'Generator check', 'Monthly diesel generator check: 30-minute run under load.', 'month', 'high',
+     '["Check fuel and oil levels", "Check the battery", "Run under load for 30 minutes", "Record engine hours"]'),
+    (807, 10,  55,  712,  'elec',  'Server room UPS check', 'Quarterly server room UPS check: batteries, switchover test.', 'quarter', 'normal',
+     '["Check battery condition", "Test switchover to battery", "Check the UPS event log"]'),
+    (808, 10,  null, null, 'sec',  'Smoke detector testing', 'Smoke detector testing with test aerosol every six months.', 'half_year', 'normal',
+     '["Test each detector with test aerosol", "Check the signal at the security desk", "Replace faulty detectors", "Fill in the inspection report"]')
   ) as v(n, o, loc, a, layer, title, descr, kind, priority, checklist)
   on conflict (id) do update set
     company_id = excluded.company_id, object_id = excluded.object_id, location_id = excluded.location_id,
@@ -1058,7 +1086,7 @@ begin
   select
     ('de300000-0000-4000-8000-' || lpad(t.n::text, 12, '0'))::uuid,
     c_company, p.object_id, coalesce(p.location_id, a.location_id), p.asset_id,
-    p.title || ' — ' || public.period_label(p.period_kind, b.period_start, b.period_end, 'ru'),
+    p.title || ' — ' || public.period_label(p.period_kind, b.period_start, b.period_end, 'en'),
     p.description, ly.name, ly.id, p.priority, t.status, true, 'ppr', v_manager,
     case when t.c is not null then ('de300000-0000-4000-8000-' || lpad(t.c::text, 12, '0'))::uuid end,
     case when t.c is not null then 'rule' end,
@@ -1158,7 +1186,7 @@ begin
      and w.id::text ~ '^de300000-0000-4000-8000-000000000[12][0-9]{2}$';
 
   -- 5f. Шаг 17 (миграция 0016, если применена): бригады подрядчика
-  --     «Huaxin FM» (509) — «Пекин» (950) и «Шэньчжэнь» (951) с зонами
+  --     «Riyadh FM» (509) — «Пекин» (950) и «Шэньчжэнь» (951) с зонами
   --     «город Пекин» (970) и «город Шэньчжэнь» (971). Исполнителей у
   --     региональных подрядчиков в демо нет — состав бригад пустой (его
   --     можно задать в карточке подрядчика). Зоны менеджеров демо НЕ задаются:
@@ -1167,15 +1195,15 @@ begin
     delete from public.crews
      where contractor_id = 'de300000-0000-4000-8000-000000000509'
        and id not in ('de300000-0000-4000-8000-000000000950', 'de300000-0000-4000-8000-000000000951')
-       and public.norm_name(name) in ('пекин', 'шэньчжэнь');
+       and public.norm_name(name) in ('riyadh', 'abu dhabi');
     insert into public.crews (id, company_id, contractor_id, name) values
-      ('de300000-0000-4000-8000-000000000950', c_company, 'de300000-0000-4000-8000-000000000509', 'Пекин'),
-      ('de300000-0000-4000-8000-000000000951', c_company, 'de300000-0000-4000-8000-000000000509', 'Шэньчжэнь')
+      ('de300000-0000-4000-8000-000000000950', c_company, 'de300000-0000-4000-8000-000000000509', 'Riyadh'),
+      ('de300000-0000-4000-8000-000000000951', c_company, 'de300000-0000-4000-8000-000000000509', 'Abu Dhabi')
     on conflict (id) do update set company_id = excluded.company_id,
       contractor_id = excluded.contractor_id, name = excluded.name;
     insert into public.crew_zones (id, company_id, crew_id, layer_ids, scope_kind, scope_ref) values
-      ('de300000-0000-4000-8000-000000000970', c_company, 'de300000-0000-4000-8000-000000000950', '{}', 'city', 'Пекин'),
-      ('de300000-0000-4000-8000-000000000971', c_company, 'de300000-0000-4000-8000-000000000951', '{}', 'city', 'Шэньчжэнь')
+      ('de300000-0000-4000-8000-000000000970', c_company, 'de300000-0000-4000-8000-000000000950', '{}', 'city', 'Riyadh'),
+      ('de300000-0000-4000-8000-000000000971', c_company, 'de300000-0000-4000-8000-000000000951', '{}', 'city', 'Abu Dhabi')
     on conflict (id) do update set company_id = excluded.company_id, crew_id = excluded.crew_id,
       layer_ids = excluded.layer_ids, scope_kind = excluded.scope_kind, scope_ref = excluded.scope_ref;
   else
@@ -1183,7 +1211,7 @@ begin
   end if;
 
   -- 5g. Шаг 23 (миграция 0018, если применена): две заявки из Telegram-бота
-  --     на «БЦ «Демо»» — 277 от гостя по QR-коду объекта (уборщица, без
+  --     на «Demo Tower» — 277 от гостя по QR-коду объекта (уборщица, без
   --     аккаунта; автор — демо-заявитель, как у бота: created_by = автор
   --     ссылки) и 278 от сотрудника с привязанным аккаунтом. В reporter —
   --     только имя (без телефона и chat_id), как пишет бот.
@@ -1203,12 +1231,12 @@ begin
       v_today + make_interval(hours => t.h, mins => coalesce(t.r, 0)),
       case when t.r is not null then v_today + make_interval(hours => t.h, mins => t.r) end
     from (values
-      (277, 'hvac', 21, 31, 'Капает вода с кондиционера',
-       'В переговорной 301 с кондиционера капает вода на ковёр. На фото: кондиционер, видно подтёк под блоком.',
-       'high', 'assigned', '{"name":"Ольга С.","guest":true}'::jsonb, 9, null::int),
-      (278, 'elec', 24, 32, 'Не работает розетка у стойки ресепшена',
-       'Холл: розетка слева от стойки ресепшена не даёт питания, зарядка не работает.',
-       'normal', 'in_progress', '{"name":"Анна Д.","username":"anna_demo","guest":false}'::jsonb, 8, 40)
+      (277, 'hvac', 21, 31, 'Water dripping from the AC',
+       'In meeting room 301 water is dripping from the AC onto the carpet. Photo: the AC with a leak under the unit.',
+       'high', 'assigned', '{"name":"Emma W.","guest":true}'::jsonb, 9, null::int),
+      (278, 'elec', 24, 32, 'Socket at the reception desk not working',
+       'Hall: the socket left of the reception desk has no power, charging does not work.',
+       'normal', 'in_progress', '{"name":"Anna D.","username":"anna_demo","guest":false}'::jsonb, 8, 40)
     ) as t(n, layer, loc, c, title, descr, priority, status, reporter, h, r)
     join public.layers ly on ly.id = case t.layer when 'hvac' then v_layer_hvac else v_layer_elec end
     on conflict (id) do update set
@@ -1232,7 +1260,7 @@ begin
   end if;
 
   -- 5h. Шаг 24 (миграция 0020, если применена): значки и цвета систем
-  --     «Демо БЦ» для раздела «Моя компания → Системы». Порядок — как в 0004.
+  --     «Demo Properties» для раздела «Моя компания → Системы». Порядок — как в 0004.
   if exists (select 1 from information_schema.columns
               where table_schema = 'public' and table_name = 'layers' and column_name = 'icon') then
     update public.layers ly set icon = v.icon, color = v.color, archived_at = null
@@ -1250,12 +1278,12 @@ begin
     raise notice 'Миграция 0020 не применена — значки систем (шаг 24) пропущены.';
   end if;
 
-  -- 5i. Шаг 25 — «Камера-помощник»: у «Кондиционера КД-301» (708, переговорная
+  -- 5i. Шаг 25 — «Камера-помощник»: у «Кондиционера AC-301» (708, переговорная
   --     301) одна открытая заявка (277 из Telegram, если применена 0018),
-  --     история принятых (101, 106, 108, 110 — последняя 110, «КлиматСервис»)
+  --     история принятых (101, 106, 108, 110 — последняя 110, «ClimaService»)
   --     и плановое ТО в этом месяце: план 809, задача 279 текущего периода
   --     (назначена, срок — конец месяца). 114 (на проверке) к единице не
-  --     привязана — иначе открытых было бы две. У «КД-302» (736) заявок нет.
+  --     привязана — иначе открытых было бы две. У «AC-302» (736) заявок нет.
   --     Задача 279 не «принята» и не «на проверке» — в акт не попадает.
   update public.work_orders set asset_id = 'de300000-0000-4000-8000-000000000708'
    where id in ('de300000-0000-4000-8000-000000000101', 'de300000-0000-4000-8000-000000000106',
@@ -1270,8 +1298,8 @@ begin
     created_at, updated_at)
   values ('de300000-0000-4000-8000-000000000809', c_company, c_object, c_loc_meet,
     'de300000-0000-4000-8000-000000000708', v_layer_hvac,
-    'ТО кондиционера КД-301', 'Ежемесячное ТО кондиционера переговорной 301.', 'month', v_plan_start,
-    '["Очистить фильтры", "Проверить дренаж и поддон", "Замерить температуру на выходе"]'::jsonb,
+    'AC-301 maintenance', 'Monthly maintenance of the meeting room 301 air conditioner.', 'month', v_plan_start,
+    '["Clean filters", "Check drainage and drip tray", "Measure outlet temperature"]'::jsonb,
     true, 'normal', true, v_manager, v_plan_start, v_plan_start)
   on conflict (id) do update set
     company_id = excluded.company_id, object_id = excluded.object_id, location_id = excluded.location_id,
@@ -1292,7 +1320,7 @@ begin
     assigned_contractor_id, assigned_by, due_at, created_at, updated_at,
     return_count, recurrence, plan_id, period_start, period_end)
   select 'de300000-0000-4000-8000-000000000279', c_company, p.object_id, p.location_id, p.asset_id,
-    p.title || ' — ' || public.period_label(p.period_kind, b.period_start, b.period_end, 'ru'),
+    p.title || ' — ' || public.period_label(p.period_kind, b.period_start, b.period_end, 'en'),
     p.description, ly.name, ly.id, p.priority, 'assigned', true, 'ppr', v_manager,
     'de300000-0000-4000-8000-000000000031', 'rule',
     (b.period_end::timestamp + interval '23 hours 59 minutes') at time zone 'utc',
@@ -1321,12 +1349,20 @@ begin
     period_start = excluded.period_start, period_end = excluded.period_end;
   get diagnostics v_world_orders = row_count;
   v_orders := v_orders + v_world_orders;
+  -- Чек-лист задачи 279 — из плана 809, уже обновлённого выше (общий блок
+  -- чек-листов ППР стоит раньше и при первом запуске видел прежний план).
+  delete from public.checklist_items where work_order_id = 'de300000-0000-4000-8000-000000000279';
+  insert into public.checklist_items (work_order_id, text, is_done, created_at)
+  select 'de300000-0000-4000-8000-000000000279', e.item #>> '{}', false, now() + make_interval(secs => e.ord)
+    from public.maintenance_plans p
+    cross join lateral jsonb_array_elements(p.checklist) with ordinality as e(item, ord)
+   where p.id = 'de300000-0000-4000-8000-000000000809';
 
   -- 5j. Шаг 25 (миграция 0018, если применена): включённые ссылки Telegram —
-  --     QR объекта «БЦ «Демо»» и ссылка компании «Демо БЦ», с постоянными
+  --     QR объекта «Demo Tower» и ссылка компании «Demo Properties», с постоянными
   --     ДЕМО-токенами (плакат и QR готовы к показу без ручных действий).
   --     Токены открыты в репозитории: по ним гость может писать заявки только
-  --     в «Демо БЦ», с лимитами бота (5 в час с чата, 30 в сутки на ссылку).
+  --     в «Demo Properties», с лимитами бота (5 в час с чата, 30 в сутки на ссылку).
   --     Другие включённые ссылки этого объекта и компании выключаются (одна
   --     включённая на объект / компанию). Отключить — в приложении («Отключить»).
   if to_regclass('public.report_links') is not null then
@@ -1349,7 +1385,7 @@ begin
   -- Колонки: vn — номер (часть id); n — заявка; off — минут от начала работы
   -- до прихода; dur — минут на объекте; dist — метров до объекта
   -- (null = обычный визит, точка в 8–97 м от центра); mock — подмена GPS.
-  -- Визит «ЭлектроПро» (316) — только если указан четвёртый пользователь.
+  -- Визит «ElectroPro» (316) — только если указан четвёртый пользователь.
   if v_elec_exec is null then
     delete from public.visits where id = c_mock_visit;
   end if;
@@ -1386,7 +1422,7 @@ begin
     (312,112,0,75,null,false),
     (313,113,0,50,null,false),
     (314,114,0,60,null,false),
-    (316,206,0,50,3,true)          -- «ЭлектроПро»: подмена GPS
+    (316,206,0,50,3,true)          -- «ElectroPro»: подмена GPS
   ) as v(vn, n, off, dur, dist, mock)
   join public.work_orders w
     on w.id = ('de300000-0000-4000-8000-' || lpad(v.n::text, 12, '0'))::uuid
@@ -1406,7 +1442,7 @@ begin
   get diagnostics v_visits = row_count;
 
   -- 6b. Шаг 24 — «Оплата по доказательству»: доказательства в истории
-  --     «КлиматСервис», чтобы в акте за текущий месяц были и доказанные
+  --     «ClimaService», чтобы в акте за текущий месяц были и доказанные
   --     заявки, и «без доказательства» с разными причинами:
   --       111, 112, 113, 214, 220 — фото «после» + визит в геозоне
   --         (111 ещё и выполненный чек-лист; 113 сдана позже срока);
@@ -1458,7 +1494,7 @@ begin
                 where storage_path like 'demo/%' and source <> 'demo'$q$;
   end if;
 
-  -- 6c. Шаг 27 (0024): «Требует решения менеджера» в акте «КлиматСервис»:
+  -- 6c. Шаг 27 (0024): «Требует решения менеджера» в акте «ClimaService»:
   --       112 — фото «после» снято без сети, часы телефона расходились
   --             с доверенным временем на 2 ч (time_trust = unverified);
   --       109 — фото «после» «из файла» (вложение …a109).
@@ -1497,8 +1533,8 @@ begin
   insert into public.checklist_items (id, work_order_id, text, is_done, done_at, done_by, created_at)
   select ('de300000-0000-4000-8000-00000000b' || lpad(v.k::text, 3, '0'))::uuid, w.id, v.txt, true,
          coalesce(w.submitted_at, w.updated_at) - interval '20 minutes', v_executor, w.created_at
-    from (values (101, 'Давление хладагента в норме'), (102, 'Фильтры очищены'),
-                 (103, 'Дренаж проверен')) as v(k, txt)
+    from (values (101, 'Refrigerant pressure OK'), (102, 'Filters cleaned'),
+                 (103, 'Drainage checked')) as v(k, txt)
     join public.work_orders w on w.id = 'de300000-0000-4000-8000-000000000111'::uuid
    where v_executor is not null
   on conflict (id) do update set work_order_id = excluded.work_order_id, text = excluded.text,
@@ -1531,9 +1567,10 @@ begin
   -- Ставки (миграция 0021, если применена): за заявку и за визит ТО.
   if to_regclass('public.contractor_rates') is not null then
     insert into public.contractor_rates (contractor_id, company_id, rate_order, rate_visit, currency)
-    values (c_contr_hvac, c_company, 4500, 2500, 'RUB'),
-           (c_contr_elec, c_company, 3800, 2000, 'RUB'),
-           ('de300000-0000-4000-8000-000000000501', c_company, 5200, 3000, 'RUB')
+    -- Шаг 33: ставки в USD (за заявку / за визит планового ТО).
+    values (c_contr_hvac, c_company, 60, 35, 'USD'),
+           (c_contr_elec, c_company, 50, 30, 'USD'),
+           ('de300000-0000-4000-8000-000000000501', c_company, 70, 40, 'USD')
     on conflict (contractor_id) do update set
       rate_order = excluded.rate_order, rate_visit = excluded.rate_visit, currency = excluded.currency;
   else
@@ -1542,7 +1579,7 @@ begin
 
   raise notice 'Готово: демо-история — заявок %, визитов %.%', v_orders, v_visits,
     case when v_elec_exec is null
-         then ' Исполнитель «ЭлектроПро» не указан — визита с подменой GPS нет.' else '' end;
+         then ' Исполнитель «ElectroPro» не указан — визита с подменой GPS нет.' else '' end;
 end $$;
 
 set local session_replication_role = origin;

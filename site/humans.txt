@@ -1,5 +1,5 @@
 /* TEAM */
-Product: Эй, Helpy / Hey Helpy
+Product: Hey Helpy / Hey Helpy
 Built with: Claude Code
 
 /* SITE */

@@ -17,11 +17,11 @@ export const ui = {
   videoNote: 'The video is in Russian with on-screen captions, 2 min 9 s, no sound.',
 };
 
-export const llmsIntro = 'Hey Helpy (Russian: «Эй, Helpy») is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.';
+export const llmsIntro = 'Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.';
 
 export const pages = {
   home: {
-    slug: 'en/',
+    slug: '',
     nav: 'Home',
     title: 'Hey Helpy — AI service for property maintenance and contractor control',
     description: 'For business and shopping centres, chains and retail, property management and FM companies, public sector: work orders by text, camera or voice; only proven work gets paid.',
@@ -87,7 +87,7 @@ ${h.ctaBlock()}
   },
 
   features: {
-    slug: 'en/features/',
+    slug: 'features/',
     nav: 'Features',
     title: 'Features — Hey Helpy',
     description: 'Work orders by text, camera or voice and from Telegram, AR labels, proof-based contractor payment, roles, offline work, preventive maintenance, floor plans, reports.',
@@ -271,7 +271,7 @@ ${h.ctaBlock()}
   },
 
   industries: {
-    slug: 'en/industries/',
+    slug: 'industries/',
     nav: 'Who it’s for',
     title: 'Who it’s for — Hey Helpy',
     description: 'Hey Helpy for business and shopping centres, chains and retail, property management and FM companies, public-sector and restricted-access sites.',
@@ -325,7 +325,7 @@ ${h.ctaBlock()}
   },
 
   security: {
-    slug: 'en/security/',
+    slug: 'security/',
     nav: 'Security',
     title: 'Security and deployment — Hey Helpy',
     description: 'Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.',
@@ -383,7 +383,7 @@ ${h.ctaBlock()}
   },
 
   faq: {
-    slug: 'en/faq/',
+    slug: 'faq/',
     nav: 'FAQ',
     title: 'FAQ — Hey Helpy',
     description: 'What happens with no signal in the basement, how Hey Helpy differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.',
@@ -411,7 +411,7 @@ ${h.ctaBlock()}
   },
 
   contact: {
-    slug: 'en/contact/',
+    slug: 'contact/',
     nav: 'Contact',
     title: 'Request a demo or pilot — Hey Helpy',
     description: 'Request a Hey Helpy demo or a pilot at your sites: voice and photo work orders, contractor control and proof-based payment.',
@@ -433,7 +433,7 @@ ${h.contact()}
   },
 
   privacy: {
-    slug: 'en/privacy/',
+    slug: 'privacy/',
     nav: 'Privacy',
     title: 'Website privacy policy — Hey Helpy',
     description: 'The Hey Helpy website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.',

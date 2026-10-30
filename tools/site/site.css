@@ -1,4 +1,4 @@
-/* Сайт «Эй, Helpy» — стиль продукта (вариант A, docs/design/DESIGN.md): Onest, акцент #2DB89A.
+/* Сайт «Hey Helpy» — стиль продукта (вариант A, docs/design/DESIGN.md): Onest, акцент #2DB89A.
    Встраивается в каждую страницу (<style>) — без отдельного запроса, быстрее первая отрисовка. */
 @font-face{font-family:Onest;font-weight:400;font-style:normal;font-display:swap;src:url(FONT400) format("woff2")}
 @font-face{font-family:Onest;font-weight:600;font-style:normal;font-display:swap;src:url(FONT600) format("woff2")}

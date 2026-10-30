@@ -44,7 +44,7 @@ body{width:412px;height:915px;font-family:Onest,sans-serif;background:#d9e4dc;co
 b{font-weight:600}
 </style></head><body>
 <div class="top"><div class="back">‹</div><div class="ava">EH</div>
-  <div><div class="name">Эй, Helpy</div><div class="sub">бот · @HeyHelpy_bot</div></div></div>
+  <div><div class="name">Hey Helpy</div><div class="sub">бот · @HeyHelpy_bot</div></div></div>
 <div class="chat">
   <div class="day">Сегодня</div>
   <div class="msg in">🔧 Заявка № 5C81E0 «Шумит вентилятор фанкойла» — вы взяли её в работу. Фото «после» и сдача — в приложении.<div class="t">08:47</div></div>

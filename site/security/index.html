@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Безопасность и развёртывание — Эй, Helpy</title>
-<meta name="description" content="Изоляция компаний на уровне базы данных (RLS), роли и разделение обязанностей, закрытые хранилища файлов, журнал изменений доступа, варианты размещения.">
+<title>Security and deployment — Hey Helpy</title>
+<meta name="description" content="Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://anton-key.github.io/hey-helpy/site/security/">
-<link rel="alternate" hreflang="ru" href="https://anton-key.github.io/hey-helpy/site/security/">
-<link rel="alternate" hreflang="en" href="https://anton-key.github.io/hey-helpy/site/en/security/">
+<link rel="alternate" hreflang="en" href="https://anton-key.github.io/hey-helpy/site/security/">
+<link rel="alternate" hreflang="ru" href="https://anton-key.github.io/hey-helpy/site/ru/security/">
 <link rel="alternate" hreflang="x-default" href="https://anton-key.github.io/hey-helpy/site/security/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Эй, Helpy">
-<meta property="og:title" content="Безопасность и развёртывание — Эй, Helpy">
-<meta property="og:description" content="Изоляция компаний на уровне базы данных (RLS), роли и разделение обязанностей, закрытые хранилища файлов, журнал изменений доступа, варианты размещения.">
+<meta property="og:site_name" content="Hey Helpy">
+<meta property="og:title" content="Security and deployment — Hey Helpy">
+<meta property="og:description" content="Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.">
 <meta property="og:url" content="https://anton-key.github.io/hey-helpy/site/security/">
-<meta property="og:image" content="https://anton-key.github.io/hey-helpy/site/img/og-ru.png">
+<meta property="og:image" content="https://anton-key.github.io/hey-helpy/site/img/og-en.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Эй, Helpy">
-<meta property="og:locale" content="ru_RU">
+<meta property="og:image:alt" content="Hey Helpy">
+<meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Безопасность и развёртывание — Эй, Helpy">
-<meta name="twitter:description" content="Изоляция компаний на уровне базы данных (RLS), роли и разделение обязанностей, закрытые хранилища файлов, журнал изменений доступа, варианты размещения.">
-<meta name="twitter:image" content="https://anton-key.github.io/hey-helpy/site/img/og-ru.png">
+<meta name="twitter:title" content="Security and deployment — Hey Helpy">
+<meta name="twitter:description" content="Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.">
+<meta name="twitter:image" content="https://anton-key.github.io/hey-helpy/site/img/og-en.png">
 <meta name="theme-color" content="#2DB89A">
 <link rel="icon" href="../favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="../img/icon-192.png">
@@ -38,8 +38,7 @@
   {
    "@type": "Organization",
    "@id": "https://anton-key.github.io/hey-helpy/site/#organization",
-   "name": "Эй, Helpy",
-   "alternateName": "Hey Helpy",
+   "name": "Hey Helpy",
    "url": "https://anton-key.github.io/hey-helpy/site/",
    "logo": {
     "@type": "ImageObject",
@@ -64,9 +63,9 @@
    "@type": "WebPage",
    "@id": "https://anton-key.github.io/hey-helpy/site/security/",
    "url": "https://anton-key.github.io/hey-helpy/site/security/",
-   "name": "Безопасность и развёртывание — Эй, Helpy",
-   "description": "Изоляция компаний на уровне базы данных (RLS), роли и разделение обязанностей, закрытые хранилища файлов, журнал изменений доступа, варианты размещения.",
-   "inLanguage": "ru",
+   "name": "Security and deployment — Hey Helpy",
+   "description": "Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.",
+   "inLanguage": "en",
    "dateModified": "2026-10-23",
    "isPartOf": {
     "@id": "https://anton-key.github.io/hey-helpy/site/#website"
@@ -78,13 +77,13 @@
     {
      "@type": "ListItem",
      "position": 1,
-     "name": "Главная",
+     "name": "Home",
      "item": "https://anton-key.github.io/hey-helpy/site/"
     },
     {
      "@type": "ListItem",
      "position": 2,
-     "name": "Безопасность и развёртывание",
+     "name": "Security and deployment",
      "item": "https://anton-key.github.io/hey-helpy/site/security/"
     }
    ]
@@ -94,69 +93,69 @@
 </script>
 </head>
 <body>
-<a class="skip" href="#main">Перейти к содержанию</a>
+<a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="wrap">
-<a class="logo" href="../"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#2DB89A"/><path d="M9 9v14M23 9v14M9 16h14" stroke="#062B23" stroke-width="3" stroke-linecap="round"/></svg><span>Эй, Helpy</span></a>
-<nav aria-label="Основное меню"><ul class="nav-d"><li><a href="../features/">Возможности</a></li><li><a href="../industries/">Для кого</a></li><li><a href="../security/" aria-current="page">Безопасность</a></li><li><a href="../faq/">Вопросы</a></li><li><a href="../contact/">Контакты</a></li></ul></nav>
-<a class="lang" href="../en/security/" hreflang="en" lang="en" title="English">EN</a>
-<a class="btn ghost small" href="https://anton-key.github.io/hey-helpy/">Войти</a>
-<details class="menu"><summary>Меню</summary><ul><li><a href="../features/">Возможности</a></li><li><a href="../industries/">Для кого</a></li><li><a href="../security/" aria-current="page">Безопасность</a></li><li><a href="../faq/">Вопросы</a></li><li><a href="../contact/">Контакты</a></li><li><a href="https://anton-key.github.io/hey-helpy/">Войти</a></li></ul></details>
+<a class="logo" href="../"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#2DB89A"/><path d="M9 9v14M23 9v14M9 16h14" stroke="#062B23" stroke-width="3" stroke-linecap="round"/></svg><span>Hey Helpy</span></a>
+<nav aria-label="Main menu"><ul class="nav-d"><li><a href="../features/">Features</a></li><li><a href="../industries/">Who it’s for</a></li><li><a href="../security/" aria-current="page">Security</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../contact/">Contact</a></li></ul></nav>
+<a class="lang" href="../ru/security/" hreflang="ru" lang="ru" title="Русский">RU</a>
+<a class="btn ghost small" href="https://anton-key.github.io/hey-helpy/">Sign in</a>
+<details class="menu"><summary>Menu</summary><ul><li><a href="../features/">Features</a></li><li><a href="../industries/">Who it’s for</a></li><li><a href="../security/" aria-current="page">Security</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../contact/">Contact</a></li><li><a href="https://anton-key.github.io/hey-helpy/">Sign in</a></li></ul></details>
 </div></header>
 <main id="main"><div class="wrap">
-<nav class="crumbs" aria-label="Навигационная цепочка"><ol><li><a href="../">Главная</a></li><li aria-current="page">Безопасность и развёртывание</li></ol></nav>
-<h1>Безопасность и развёртывание</h1>
-<p class="lead">Права в Эй, Helpy проверяет база данных. Интерфейс только показывает то, что разрешено.</p>
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../">Home</a></li><li aria-current="page">Security and deployment</li></ol></nav>
+<h1>Security and deployment</h1>
+<p class="lead">In Hey Helpy permissions are enforced by the database. The interface only shows what is allowed.</p>
 
 <section aria-labelledby="isolation">
-  <h2 id="isolation">Изоляция компаний</h2>
+  <h2 id="isolation">Company isolation</h2>
   <ul>
-    <li>Данные компаний разделены правилами доступа на уровне строк базы данных PostgreSQL (Row Level Security) — на каждой таблице.</li>
-    <li>Компании и менеджеры разных объектов изолированы — каждый видит только свою информацию.</li>
-    <li>Новый пользователь без приглашения не видит ничего: в компанию вступают по коду приглашения (срок — 7 дней).</li>
+    <li>Company data is separated by PostgreSQL row-level security policies — on every table.</li>
+    <li>Companies and managers of different sites are isolated — everyone sees only their own information.</li>
+    <li>A new user without an invitation sees nothing: people join a company with an invitation code (valid for 7 days).</li>
   </ul>
 </section>
 
 <section aria-labelledby="roles">
-  <h2 id="roles">Роли и разделение обязанностей</h2>
+  <h2 id="roles">Roles and segregation of duties</h2>
   <ul>
-    <li>Роли: администратор, менеджер (вся компания или своя зона доступа), исполнитель подрядчика, заявитель.</li>
-    <li>Сменить роль или компанию можно только через проверяемые функции базы, не правкой профиля.</li>
-    <li>Работу начинает и сдаёт только исполнитель назначенного подрядчика; принимает другой человек. <a href="../features/#roles">Таблица ролей</a>.</li>
-    <li>Внутренний аудит прав (октябрь 2026) нашёл несколько проблем внутри компании; исправления выпущены и применены.</li>
+    <li>Roles: administrator, manager (whole company or an access zone), contractor technician, requester.</li>
+    <li>A role or company can only be changed through checked database functions, not by editing a profile.</li>
+    <li>Only a technician of the assigned contractor starts and submits work; someone else accepts it. <a href="../features/#roles">Roles table</a>.</li>
+    <li>An internal permissions review (October 2026) found several issues within a company; fixes have been released and applied.</li>
   </ul>
 </section>
 
 <section aria-labelledby="files">
-  <h2 id="files">Файлы, журнал, ИИ</h2>
+  <h2 id="files">Files, log, AI</h2>
   <ul>
-    <li>Фото, документы, планы этажей и акты — в закрытых хранилищах; публичных ссылок нет, только временные ссылки для тех, кто имеет доступ.</li>
-    <li>История заявки и время действий пишет база. Журнал изменений ролей, зон и бригад видит администратор, изменить его нельзя.</li>
-    <li>Ключи ИИ — только на сервере. Модели вызываются с правами пользователя; ответ модели сверяется со справочниками компании.</li>
-    <li>В журналы сервера не пишутся тексты заявок, ответы модели и снимки для распознавания — только служебные данные (время, размер, код ошибки).</li>
-    <li>Telegram-бот не показывает приложению номера чатов; телефоны сотрудников видят только сам человек и менеджеры.</li>
+    <li>Photos, documents, floor plans and acts are kept in private storage; no public links, only temporary links for those with access.</li>
+    <li>Work order history and action times are written by the database. The log of role, zone and crew changes is visible to the administrator and cannot be edited.</li>
+    <li>AI keys live only on the server. Models are called with the user’s permissions; model output is checked against the company’s reference data.</li>
+    <li>Server logs never contain work order texts, model answers or recognition shots — only technical data (time, size, error code).</li>
+    <li>The Telegram bot does not expose chat IDs to the app; employees’ phone numbers are visible only to the person and managers.</li>
   </ul>
 </section>
 
 <section aria-labelledby="deploy">
-  <h2 id="deploy">Где работает и варианты развёртывания</h2>
+  <h2 id="deploy">Where it runs and deployment options</h2>
   <div class="table-wrap"><table>
-    <caption>Варианты размещения</caption>
-    <thead><tr><th scope="col">Вариант</th><th scope="col">Состояние</th></tr></thead>
+    <caption>Hosting options</caption>
+    <thead><tr><th scope="col">Option</th><th scope="col">Status</th></tr></thead>
     <tbody>
-      <tr><td>Облачный сервис (SaaS): база PostgreSQL на Supabase, серверы в ЕС; ИИ — YandexGPT (Yandex Cloud)</td><td>Работает сейчас</td></tr>
-      <tr><td>Размещение в России: Supabase на своих серверах в Yandex Cloud, распознавание речи Yandex SpeechKit</td><td>В планах</td></tr>
-      <tr><td>Выделенное облако заказчика, on-premise, изолированный контур</td><td>Обсуждается в пилоте: стек открытый (PostgreSQL, Supabase), готовой поставки пока нет</td></tr>
+      <tr><td>Cloud service (SaaS): PostgreSQL on Supabase, servers in the EU; AI — YandexGPT (Yandex Cloud)</td><td>Available now</td></tr>
+      <tr><td>Hosting in Russia: self-hosted Supabase in Yandex Cloud, Yandex SpeechKit speech recognition</td><td>Planned</td></tr>
+      <tr><td>Customer’s dedicated cloud, on-premise, isolated network</td><td>Discussed during a pilot: the stack is open (PostgreSQL, Supabase), no packaged delivery yet</td></tr>
     </tbody>
   </table></div>
-  <p>Клиенты: веб-версия в браузере и Android-приложение.</p>
+  <p>Clients: web version in the browser and the Android app.</p>
 </section>
 
-<section class="cta" aria-labelledby="cta"><h2 id="cta">Попробуйте на своих объектах</h2><p>Покажем Эй, Helpy на демо-данных и обсудим пилот: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p><p class="actions"><a class="btn" href="https://t.me/HeyHelpy_bot?start=demo">Запросить демо</a> <a class="btn ghost" href="https://anton-key.github.io/hey-helpy/">Войти</a></p></section>
+<section class="cta" aria-labelledby="cta"><h2 id="cta">Try it at your sites</h2><p>We will show Hey Helpy on demo data and discuss a pilot: your sites, your contractors, payment only for proven work.</p><p class="actions"><a class="btn" href="https://t.me/HeyHelpy_bot?start=demo">Request a demo</a> <a class="btn ghost" href="https://anton-key.github.io/hey-helpy/">Sign in</a></p></section>
 </div></main>
 <footer class="foot"><div class="wrap">
-<ul><li><a href="../features/">Возможности</a></li><li><a href="../industries/">Для кого</a></li><li><a href="../security/">Безопасность</a></li><li><a href="../faq/">Вопросы</a></li><li><a href="../contact/">Контакты</a></li><li><a href="../privacy/">Конфиденциальность</a></li><li><a href="https://anton-key.github.io/hey-helpy/">Войти</a></li><li><a href="../llms.txt">Для ИИ-ассистентов: llms.txt</a></li></ul>
-<p>ИИ-сервис эксплуатации недвижимости и контроля подрядчиков. Продукт в стадии MVP.</p>
-<p>© 2026 Эй, Helpy</p>
+<ul><li><a href="../features/">Features</a></li><li><a href="../industries/">Who it’s for</a></li><li><a href="../security/">Security</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../contact/">Contact</a></li><li><a href="../privacy/">Privacy</a></li><li><a href="https://anton-key.github.io/hey-helpy/">Sign in</a></li><li><a href="../llms.txt">For AI assistants: llms.txt</a></li></ul>
+<p>AI service for property maintenance and contractor control. The product is at the MVP stage.</p>
+<p>© 2026 Hey Helpy</p>
 </div></footer>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// Настройки сайта «Эй, Helpy» — одно место.
+// Настройки сайта «Hey Helpy» — одно место.
 // После покупки своего домена: поменять SITE_URL (с «/» в конце) и пересобрать:
 //   node tools/site/build.mjs
 // (подробно — docs/site/README.md, «Свой домен»).
@@ -33,4 +33,5 @@ export const VIDEO = {
   height: 1080,
 };
 
-export const BRAND = { ru: 'Эй, Helpy', en: 'Hey Helpy' };
+/** Название — одно на всех языках (шаг 33). */
+export const BRAND = { ru: 'Hey Helpy', en: 'Hey Helpy' };

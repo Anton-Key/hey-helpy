@@ -1,4 +1,4 @@
-# Дизайн-система «Эй, Helpy» — вариант A «Чистый iOS»
+# Дизайн-система «Hey Helpy» — вариант A «Чистый iOS»
 
 Код — `lib/core/design/` (один импорт: `import '.../core/design/design.dart';`).
 Тесты компонентов — `test/design_test.dart`.
@@ -126,7 +126,7 @@ Onest (SIL OFL 1.1), файлы `assets/fonts/Onest-{Regular,Medium,SemiBold,Bol
 | `AppSliverBar` | nav_bar.dart | полоса под шапкой: закреплённая (поиск и фильтры остаются сверху при прокрутке) или `floating` (сегменты прячутся при прокрутке вниз и возвращаются вверх) |
 | `AppScaffold`, `SliverContent`, `ContentWidth`, `SliverBottomInset`, `appRoute` | nav_bar.dart | каркас экрана, колонка до 720, отступ под меню, маршрут iOS с подписью «назад» |
 | `AppTabBar` | surfaces.dart | нижнее меню: полупрозрачное с размытием |
-| `VoiceButton` | surfaces.dart | капсула «Эй, Helpy» с микрофоном + белая круглая «+» |
+| `VoiceButton` | surfaces.dart | капсула «Hey Helpy» с микрофоном + белая круглая «+» |
 | `BottomActionBar` | surfaces.dart | панель главной кнопки внизу экрана (размытие, линия) |
 | `showAppSheet`, `SheetHeader`, `SheetGrabber` | surfaces.dart | нижняя шторка: углы 14, язычок 36×5, «Отмена · Заголовок · Готово» |
 | `showAppDialog` | surfaces.dart | диалог подтверждения: белая карточка r16, кнопки-капсулы |

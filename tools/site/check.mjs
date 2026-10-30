@@ -76,7 +76,7 @@ for (const f of html) {
   }
   if (!is404) {
     for (const t of ['Organization', 'WebPage']) if (!types.has(t)) err(name, `JSON-LD без ${t}`);
-    const home = name === 'index.html' || name === 'en/index.html';
+    const home = name === 'index.html' || name === 'ru/index.html';
     if (home) for (const t of ['SoftwareApplication', 'VideoObject', 'WebSite']) if (!types.has(t)) err(name, `JSON-LD без ${t}`);
     if (!home && !types.has('BreadcrumbList')) err(name, 'JSON-LD без BreadcrumbList');
     if (/\/faq\//.test(name) && !types.has('FAQPage')) err(name, 'JSON-LD без FAQPage');
@@ -100,6 +100,8 @@ for (const f of html) {
   if (/eyJ[A-Za-z0-9_-]{10,}\.|sbp_[A-Za-z0-9]{20,}|service_role/.test(s)) err(name, 'похоже на ключ');
   if (/[A-Za-z0-9._%+-]+@(?!media\b|font-face\b|HeyHelpy_bot)[A-Za-z0-9-]+\.[A-Za-z]{2,}/.test(s.replace(/<style>[\s\S]*?<\/style>/, ''))) warns.push(`${name}: есть e-mail — проверьте, что это рабочий адрес владельца`);
   if (/Сербская Роза|Serbian Rose/i.test(s)) err(name, 'кодовое название продукта');
+  // Строка собрана из частей, чтобы сторож test/terminology_test.dart не находил её в этом файле.
+  if (s.includes('Эй' + ', Helpy')) err(name, 'старое название продукта — на всех языках «Hey Helpy» (шаг 33)');
   if (/TODO/.test(s)) warns.push(`${name}: TODO на странице`);
 }
 

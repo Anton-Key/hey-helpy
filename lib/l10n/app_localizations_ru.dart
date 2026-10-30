@@ -9,7 +9,7 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appName => 'Эй, Helpy';
+  String get appName => 'Hey Helpy';
 
   @override
   String get wakePhrase => 'Эй, Хелпи';
@@ -2442,7 +2442,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get helpTip1 =>
-      '«Эй, Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.';
+      '«Hey Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.';
 
   @override
   String get helpTip2 =>

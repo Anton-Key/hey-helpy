@@ -1,4 +1,4 @@
-/// Дизайн-система «Эй, Helpy» — одним импортом:
+/// Дизайн-система «Hey Helpy» — одним импортом:
 /// `import '../../core/design/design.dart';`.
 /// Описание и правила — `docs/design/DESIGN.md`.
 library;

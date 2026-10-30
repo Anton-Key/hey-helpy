@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// Название продукта в интерфейсе. Единственное место, где оно задано (кроме подписи под иконкой: android/app/src/main/res/values*/strings.xml). Шапка выделяет часть после первого пробела.
   ///
   /// In ru, this message translates to:
-  /// **'Эй, Helpy'**
+  /// **'Hey Helpy'**
   String get appName;
 
   /// Фраза голосовой активации, как её произносит пользователь
@@ -4134,7 +4134,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTip1.
   ///
   /// In ru, this message translates to:
-  /// **'«Эй, Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.'**
+  /// **'«Hey Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.'**
   String get helpTip1;
 
   /// No description provided for @helpTip2.

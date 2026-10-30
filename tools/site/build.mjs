@@ -1,4 +1,4 @@
-// Генератор сайта «Эй, Helpy» — без зависимостей, только Node ≥ 18.
+// Генератор сайта «Hey Helpy» — без зависимостей, только Node ≥ 18.
 //
 //   node tools/site/build.mjs              → перезаписывает HTML и служебные файлы в site/
 //   node tools/site/build.mjs --out DIR    → ещё и собирает готовый к публикации сайт в DIR
@@ -64,7 +64,7 @@ function helpers(lang, slug) {
     cta: (kind) => `<a class="btn${kind === 'primary' ? '' : ' ghost'}" href="${CONTACT.demoUrl}">${ui.demo}</a>`,
     video: (label) => `<figure class="video"><video controls preload="none" playsinline width="${VIDEO.width}" height="${VIDEO.height}" poster="${rel}${VIDEO.poster}" aria-label="${esc(label)}"><source src="${rel}${VIDEO.file}" type="video/mp4"><a href="${rel}${VIDEO.file}">${esc(label)}</a></video><figcaption>${ui.videoNote}</figcaption></figure>`,
     ctaBlock: () => lang === 'ru'
-      ? `<section class="cta" aria-labelledby="cta"><h2 id="cta">Попробуйте на своих объектах</h2><p>Покажем Эй, Helpy на демо-данных и обсудим пилот: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`
+      ? `<section class="cta" aria-labelledby="cta"><h2 id="cta">Попробуйте на своих объектах</h2><p>Покажем Hey Helpy на демо-данных и обсудим пилот: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`
       : `<section class="cta" aria-labelledby="cta"><h2 id="cta">Try it at your sites</h2><p>We will show Hey Helpy on demo data and discuss a pilot: your sites, your contractors, payment only for proven work.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`,
     contact: () => contactBlock(lang),
   };
@@ -85,7 +85,6 @@ function org(lang) {
     '@type': 'Organization',
     '@id': abs('#organization'),
     name: BRAND[lang],
-    alternateName: BRAND[lang === 'ru' ? 'en' : 'ru'],
     url: SITE_URL,
     logo: { '@type': 'ImageObject', url: abs('img/icon-512.png'), width: 512, height: 512 },
   };
@@ -100,7 +99,6 @@ function softwareApp(lang) {
     '@type': 'SoftwareApplication',
     '@id': abs('#software'),
     name: BRAND[lang],
-    alternateName: BRAND[isRu ? 'en' : 'ru'],
     url: abs(LANGS[lang].pages.home.slug),
     description: LANGS[lang].llmsIntro,
     applicationCategory: 'BusinessApplication',
@@ -125,7 +123,7 @@ function softwareApp(lang) {
 function videoObject(lang) {
   return {
     '@type': 'VideoObject',
-    name: lang === 'ru' ? 'Демо «Эй, Helpy» за две минуты' : 'Hey Helpy two-minute demo',
+    name: lang === 'ru' ? 'Демо «Hey Helpy» за две минуты' : 'Hey Helpy two-minute demo',
     description: lang === 'ru'
       ? 'Сквозная история одной поломки: голосовая заявка, ИИ разбирает её, камера-помощник узнаёт оборудование, фото «после» и акт подрядчику, в котором к оплате только доказанная работа.'
       : 'The full story of one fault: a voice work order parsed by AI, the camera assistant recognising the equipment, the “after” photo and a contractor act where only proven work is payable. Video in Russian.',
@@ -236,7 +234,8 @@ function renderPage(lang, key) {
   const { pages, ui } = LANGS[lang];
   const page = pages[key];
   const h = helpers(lang, page.slug);
-  const alternates = { ru: abs(ru.pages[key].slug), en: abs(en.pages[key].slug), 'x-default': abs(ru.pages[key].slug) };
+  // Английский — основной язык (шаг 33): x-default ведёт на английскую версию.
+  const alternates = { en: abs(en.pages[key].slug), ru: abs(ru.pages[key].slug), 'x-default': abs(en.pages[key].slug) };
   const crumbs = key === 'home' ? '' : `<nav class="crumbs" aria-label="${lang === 'ru' ? 'Навигационная цепочка' : 'Breadcrumb'}"><ol><li><a href="${h.rel + pages.home.slug || './'}">${ui.home}</a></li><li aria-current="page">${page.h1}</li></ol></nav>\n`;
   return `${head({
     lang, title: page.title, description: page.description, canonical: abs(page.slug), alternates,
@@ -257,17 +256,17 @@ ${footer(lang, h)}
 function render404() {
   const h = { rel: SITE_URL };
   return `${head({
-    lang: 'ru', title: `${ru.notFound.title}`, description: `${ru.notFound.text} ${en.notFound.text}`, rel: SITE_URL,
-    noindex: true, ogImage: abs('img/og-ru.png'),
+    lang: 'en', title: `${en.notFound.title}`, description: `${en.notFound.text} ${ru.notFound.text}`, rel: SITE_URL,
+    noindex: true, ogImage: abs('img/og-en.png'),
   })}
 <body>
-${header('ru', 'home', h).replace(' aria-current="page"', '')}
+${header('en', 'home', h).replace(' aria-current="page"', '')}
 <main id="main"><div class="wrap err">
-<h1>${ru.notFound.h1} · <span lang="en">${en.notFound.h1}</span></h1>
-<p>${ru.notFound.text} <span lang="en">${en.notFound.text}</span></p>
-<p class="actions center"><a class="btn" href="${SITE_URL}">Главная</a> <a class="btn ghost" href="${abs('en/')}" lang="en">Home (English)</a></p>
+<h1>${en.notFound.h1} · <span lang="ru">${ru.notFound.h1}</span></h1>
+<p>${en.notFound.text} <span lang="ru">${ru.notFound.text}</span></p>
+<p class="actions center"><a class="btn" href="${SITE_URL}">Home</a> <a class="btn ghost" href="${abs('ru/')}" lang="ru">Главная (русский)</a></p>
 </div></main>
-${footer('ru', h)}
+${footer('en', h)}
 </body>
 </html>
 `;
@@ -299,41 +298,41 @@ let lang_img = 'Кадр';
 
 function llmsTxt() {
   const L = (lang, key) => `- [${LANGS[lang].pages[key].h1}](${abs(LANGS[lang].pages[key].slug)}): ${LANGS[lang].pages[key].description}`;
-  return `# Эй, Helpy (Hey Helpy)
+  return `# Hey Helpy
 
-> ${ru.llmsIntro}
->
 > ${en.llmsIntro}
+>
+> ${ru.llmsIntro}
 
-Полное описание продукта одним файлом (RU и EN): ${abs('llms-full.txt')}
-Full product description in one file (RU and EN): ${abs('llms-full.txt')}
-Вход в приложение / App sign-in: ${APP_URL}
-Запросить демо или пилот / Request a demo or pilot: ${CONTACT.demoUrl} (Telegram)
-
-## Страницы (русский)
-
-${KEYS.map((k) => L('ru', k)).join('\n')}
+Full product description in one file (EN and RU): ${abs('llms-full.txt')}
+App sign-in: ${APP_URL}
+Request a demo or pilot: ${CONTACT.demoUrl} (Telegram)
 
 ## Pages (English)
 
 ${KEYS.map((k) => L('en', k)).join('\n')}
 
-## Факты / Facts
+## Страницы (русский)
 
-- Категория / Category: CMMS, facility management, контроль подрядчиков / contractor control (SaaS)
-- Платформы / Platforms: веб (браузер) и Android / web (browser) and Android; iPhone app — нет / not available
-- Языки интерфейса / UI languages: русский, English
-- ИИ / AI: YandexGPT (разбор заявки / work order parsing), мультимодальная модель Yandex AI Studio (распознавание оборудования по фото / equipment recognition)
-- Данные / Data: PostgreSQL (Supabase), ЕС / EU; размещение в РФ (Yandex Cloud) — в планах / hosting in Russia planned
-- Цена / Pricing: по запросу, пилот / on request, pilot
-- Контакт / Contact: Telegram ${CONTACT.demoUrl}; e-mail и телефон не публикуются / no e-mail or phone published
-- Стадия / Stage: MVP (октябрь 2026 / October 2026)
-- Отзывов, рейтингов и публичных клиентов на сайте нет / No reviews, ratings or public customer references are published
+${KEYS.map((k) => L('ru', k)).join('\n')}
+
+## Facts
+
+- Category: CMMS, facility management, contractor control (SaaS)
+- Markets: United States, Europe, Middle East
+- Platforms: web (browser) and Android; no iPhone app yet
+- UI languages: English (default), Russian
+- AI: language and multimodal AI models via an OpenAI-compatible API; the provider is configurable per deployment
+- Data: cloud PostgreSQL (Supabase), EU region today; US and UAE regions, a dedicated cloud or the customer's own servers are discussed for a pilot
+- Pricing: on request; pilot available
+- Contact: Telegram ${CONTACT.demoUrl}; no e-mail or phone published
+- Stage: MVP (October 2026)
+- No reviews, ratings or public customer references are published
 
 ## Optional
 
-- [Политика конфиденциальности сайта](${abs(ru.pages.privacy.slug)})
 - [Website privacy policy](${abs(en.pages.privacy.slug)})
+- [Политика конфиденциальности сайта](${abs(ru.pages.privacy.slug)})
 `;
 }
 
@@ -346,23 +345,23 @@ function llmsFullTxt() {
       return `URL: ${abs(p.slug)}\n${htmlToText(p.body(h, p).replace(/<section class="cta"[\s\S]*?<\/section>/g, ''))}`;
     }).join('\n\n---\n\n');
   };
-  return `# Эй, Helpy (Hey Helpy) — полное описание / full description
+  return `# Hey Helpy — full description / полное описание
 
-Обновлено / Updated: ${UPDATED}. Источник / Source: ${SITE_URL}
-Вход в приложение / App: ${APP_URL}
-Запросить демо / Request a demo: ${CONTACT.demoUrl}
-
-# Русский
-
-${ru.llmsIntro}
-
-${part('ru')}
+Updated: ${UPDATED}. Source: ${SITE_URL}
+App: ${APP_URL}
+Request a demo: ${CONTACT.demoUrl}
 
 # English
 
 ${en.llmsIntro}
 
 ${part('en')}
+
+# Русский
+
+${ru.llmsIntro}
+
+${part('ru')}
 `;
 }
 
@@ -379,13 +378,13 @@ Sitemap: ${abs('sitemap.xml')}
 }
 
 function sitemapXml() {
-  const urls = KEYS.flatMap((k) => ['ru', 'en'].map((lang) => {
-    const alt = ['ru', 'en'].map((l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${abs(LANGS[l].pages[k].slug)}"/>`).join('\n');
+  const urls = KEYS.flatMap((k) => ['en', 'ru'].map((lang) => {
+    const alt = ['en', 'ru'].map((l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${abs(LANGS[l].pages[k].slug)}"/>`).join('\n');
     return `  <url>
     <loc>${abs(LANGS[lang].pages[k].slug)}</loc>
     <lastmod>${UPDATED}</lastmod>
 ${alt}
-    <xhtml:link rel="alternate" hreflang="x-default" href="${abs(ru.pages[k].slug)}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${abs(en.pages[k].slug)}"/>
   </url>`;
   }));
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -396,7 +395,7 @@ ${urls.join('\n')}
 }
 
 const manifest = () => json({
-  name: BRAND.ru, short_name: BRAND.ru, lang: 'ru', start_url: './', display: 'browser',
+  name: BRAND.en, short_name: BRAND.en, lang: 'en', start_url: './', display: 'browser',
   background_color: '#F2F4F3', theme_color: '#2DB89A',
   icons: [
     { src: 'img/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -424,7 +423,7 @@ function write(rel, text) {
 }
 
 export function build() {
-  for (const lang of ['ru', 'en']) for (const k of KEYS) write(`${LANGS[lang].pages[k].slug}index.html`, renderPage(lang, k));
+  for (const lang of ['en', 'ru']) for (const k of KEYS) write(`${LANGS[lang].pages[k].slug}index.html`, renderPage(lang, k));
   write('404.html', render404());
   write('robots.txt', robotsTxt());
   write('sitemap.xml', sitemapXml());

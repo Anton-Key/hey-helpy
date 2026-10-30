@@ -6078,7 +6078,7 @@ abstract class AppLocalizations {
   /// No description provided for @zoneInfo2.
   ///
   /// In ru, this message translates to:
-  /// **'Правило — системы × места: например, «Климат, Сантехника · Москва». Правила складываются.'**
+  /// **'Правило — системы × места: например, «Климат, Сантехника · Дубай». Правила складываются.'**
   String get zoneInfo2;
 
   /// No description provided for @zoneInfo3.

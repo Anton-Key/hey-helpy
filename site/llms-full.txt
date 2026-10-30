@@ -33,7 +33,7 @@ Say it: “Hey, Helpy, water is dripping from the air conditioner in the third-f
 
 -
 #### AI parses it
-YandexGPT works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.
+An AI model works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.
 
 -
 #### Contractor
@@ -64,7 +64,7 @@ The work order holds all the proof: photos before and after, time, place, docume
 
 [Screenshot: Work order card: “before” and “after” photos and a maintenance document (app in Russian)]
 
-[Screenshot: Contractor acts: 5 work orders payable (22,500 ₽), 4 without proof, 56 % of work proven (app in Russian)]
+[Screenshot: Contractor acts: 5 work orders payable, 4 without proof, 56 % of work proven]
 
 _Contractor act: only proven work is payable. App screen, demo data._
 
@@ -97,7 +97,7 @@ The four stages of maintenance — intake, dispatch, execution, control — in o
 
 Tap “Hey Helpy” and speak. The text appears as you talk; speech recognition is done by the browser (Chrome, Edge) or by Android.
 
-- AI (YandexGPT) turns the phrase into work order fields: title, description, system (HVAC, electrical, plumbing…), room and priority.
+- An AI model turns the phrase into work order fields: title, description, system (HVAC, electrical, plumbing…), room and priority.
 
 - If the AI does not answer in time, a built-in dictionary parses the request; the screen shows which one did: “Parsed by AI” or “Parsed by dictionary”.
 
@@ -263,20 +263,20 @@ _Contractor control in numbers (demo data). App screen, demo data._
 
 - A portfolio of sites across cities and countries: regions, countries, cities.
 
-- A manager’s access zone is “systems × places”, e.g. “HVAC · Moscow”: the manager sees and changes only their part.
+- A manager’s access zone is “systems × places”, e.g. “HVAC · Dubai”: the manager sees and changes only their part.
 
 - Contractor crews: a technician sees only the work orders in their crew’s zone.
 
 - Access change log (roles, zones, crews) — administrator only, read-only.
 
-- Interface in Russian and English.
+- Interface in English and Russian.
 
 ---
 
 URL: https://anton-key.github.io/hey-helpy/site/industries/
 ## Who it’s for
 
-Hey Helpy fits wherever buildings are serviced by contractors and you want to pay only for work actually done.
+Hey Helpy fits wherever buildings are serviced by contractors and you want to pay only for work actually done — in the United States, Europe and the Middle East.
 
 ### Business centres and shopping centres
 
@@ -314,9 +314,9 @@ Hey Helpy fits wherever buildings are serviced by contractors and you want to pa
 
 - Proof of completion — time, place and photo that are hard to fake, even with no signal on site.
 
-- Hosting data in Russia (Yandex Cloud) and dedicated deployment options are planned; terms are discussed during a pilot. More on security and deployment.
+- Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud or installation on the customer’s own servers — terms are discussed during a pilot. More on security and deployment.
 
-The product currently has no certification for government information systems.
+The product has no public-sector certifications yet.
 
 ---
 
@@ -361,11 +361,11 @@ Hosting options
 
 | Option | Status |
 
-| Cloud service (SaaS): PostgreSQL on Supabase, servers in the EU; AI — YandexGPT (Yandex Cloud) | Available now |
+| Cloud (SaaS): PostgreSQL on Supabase, EU region; AI models via a standard API, provider configurable | Available now |
 
-| Hosting in Russia: self-hosted Supabase in Yandex Cloud, Yandex SpeechKit speech recognition | Planned |
+| Cloud in the region of the customer’s choice: US, EU, UAE | For a pilot: the same stack in the required region |
 
-| Customer’s dedicated cloud, on-premise, isolated network | Discussed during a pilot: the stack is open (PostgreSQL, Supabase), no packaged delivery yet |
+| Customer’s dedicated cloud, installation on the customer’s own servers, isolated network | Discussed during a pilot: the stack is open (PostgreSQL, Supabase), no packaged delivery yet |
 
 Clients: web version in the browser and the Android app.
 
@@ -393,16 +393,16 @@ Yes, the contractor’s technician receives and handles work orders in the app �
 No. Only a technician of the assigned contractor can start the work, take the “after” photo and submit it, and only a manager who did not submit it can accept it. This is enforced by the database, not just the interface.
 
 ### How does the AI know what broke and where?
-YandexGPT parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.
+An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.
 
 ### Where is the data stored?
-Currently in a cloud PostgreSQL database (Supabase) on servers in the EU; company data is isolated by database access policies. Hosting in Russia on Yandex Cloud is planned. Dedicated cloud and on-premise options are discussed during a pilot.
+Currently in a cloud PostgreSQL database (Supabase) in the EU region; company data is isolated by database access policies. Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud and installation on the customer’s own servers are discussed during a pilot.
 
 ### Which devices does it run on?
 In a browser on desktop and mobile (voice input in Chrome and Edge) and in the Android app. There is no iPhone app yet.
 
 ### Which languages does the interface support?
-Russian and English; the language is switched in settings.
+English (default) and Russian; the language is switched in settings.
 
 ### How much does it cost?
 Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.
@@ -459,7 +459,7 @@ Hey Helpy — для бизнес-центров и ТЦ, сетей и рите
 
 -
 #### ИИ разбирает
-Модель YandexGPT определяет, что случилось, в каком помещении, какая это система и насколько срочно. По фото сервис находит конкретную единицу оборудования в реестре. Человек только подтверждает.
+ИИ-модель определяет, что случилось, в каком помещении, какая это система и насколько срочно. По фото сервис находит конкретную единицу оборудования в реестре. Человек только подтверждает.
 
 -
 #### Подрядчик
@@ -490,7 +490,7 @@ Hey Helpy — для бизнес-центров и ТЦ, сетей и рите
 
 [Кадр: Карточка заявки: фото «до» и «после», документ акта ТО]
 
-[Кадр: Акты подрядчикам: 5 заявок к оплате на 22 500 ₽, 4 без доказательства, 56 % работ доказано]
+[Кадр: Акты подрядчикам: 5 заявок к оплате, 4 без доказательства, 56 % работ доказано]
 
 _Акт подрядчику: к оплате — только доказанная работа. Экран приложения, демо-данные._
 
@@ -523,7 +523,7 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/features/
 
 Кнопка «Hey Helpy» — и можно говорить. Текст виден по ходу речи; распознавание — средствами браузера (Chrome, Edge) или системы Android.
 
-- ИИ (YandexGPT) раскладывает фразу на поля заявки: заголовок, описание, систему (климат, электрика, сантехника…), помещение и срочность.
+- ИИ-модель раскладывает фразу на поля заявки: заголовок, описание, систему (климат, электрика, сантехника…), помещение и срочность.
 
 - Если ИИ не ответил за отведённое время — заявку разберёт встроенный словарь; на экране видно, кто разобрал: «Разобрано ИИ» или «Разобрано по словарю».
 
@@ -689,20 +689,20 @@ _Контроль подрядчиков цифрами (демо-данные).
 
 - Портфель объектов в нескольких городах и странах: регионы, страны, города.
 
-- Зона доступа менеджера — «системы × места», например «Климат · Москва»: менеджер видит и меняет только своё.
+- Зона доступа менеджера — «системы × места», например «Климат · Дубай»: менеджер видит и меняет только своё.
 
 - Бригады подрядчика: исполнитель видит только заявки зоны своей бригады.
 
 - Журнал изменений доступа (роли, зоны, бригады) — только для администратора, только чтение.
 
-- Интерфейс на русском и английском.
+- Интерфейс на английском и русском.
 
 ---
 
 URL: https://anton-key.github.io/hey-helpy/site/ru/industries/
 ## Для кого
 
-Hey Helpy нужен там, где здание обслуживают подрядчики, а платить хочется только за сделанную работу.
+Hey Helpy нужен там, где здание обслуживают подрядчики, а платить хочется только за сделанную работу, — в США, Европе и на Ближнем Востоке.
 
 ### Бизнес-центры и торговые центры
 
@@ -740,9 +740,9 @@ Hey Helpy нужен там, где здание обслуживают подр
 
 - Подтверждение выполнения — время, место и фото, которые сложно подделать, в том числе без связи на объекте.
 
-- Размещение данных в России (Yandex Cloud) и выделенные варианты развёртывания — в планах; условия обсуждаются в пилоте. Подробнее о безопасности и развёртывании.
+- Облако в регионе по выбору заказчика (США, ЕС, ОАЭ), выделенное облако или установка на серверах заказчика — условия обсуждаются в пилоте. Подробнее о безопасности и развёртывании.
 
-Сертификации для работы с государственными информационными системами у продукта сейчас нет.
+Отраслевых сертификаций для госсектора у продукта пока нет.
 
 ---
 
@@ -787,11 +787,11 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/security/
 
 | Вариант | Состояние |
 
-| Облачный сервис (SaaS): база PostgreSQL на Supabase, серверы в ЕС; ИИ — YandexGPT (Yandex Cloud) | Работает сейчас |
+| Облако (SaaS): база PostgreSQL на Supabase, регион ЕС; ИИ-модели через стандартный API, поставщик настраивается | Работает сейчас |
 
-| Размещение в России: Supabase на своих серверах в Yandex Cloud, распознавание речи Yandex SpeechKit | В планах |
+| Облако в регионе по выбору заказчика: США, ЕС, ОАЭ | Под пилот: тот же стек в нужном регионе |
 
-| Выделенное облако заказчика, on-premise, изолированный контур | Обсуждается в пилоте: стек открытый (PostgreSQL, Supabase), готовой поставки пока нет |
+| Выделенное облако заказчика, установка на серверах заказчика, изолированный контур | Обсуждается в пилоте: стек открытый (PostgreSQL, Supabase), готовой поставки пока нет |
 
 Клиенты: веб-версия в браузере и Android-приложение.
 
@@ -819,16 +819,16 @@ Android-приложение работает без интернета: нов�
 Нет. Начать работу, снять фото «после» и сдать её может только исполнитель назначенного подрядчика, а принять — менеджер, который её не сдавал. Это проверяет база данных, а не только интерфейс.
 
 ### Как ИИ понимает, что и где сломалось?
-Модель YandexGPT разбирает фразу в заявку: систему, помещение и срочность — только из справочников вашей компании. По фото модель описывает оборудование, а сервис находит конкретную единицу в реестре по серийному номеру, модели, виду и помещению. Если ИИ недоступен, работает разбор по словарю или выбор вручную.
+ИИ-модель разбирает фразу в заявку: систему, помещение и срочность — только из справочников вашей компании. По фото модель описывает оборудование, а сервис находит конкретную единицу в реестре по серийному номеру, модели, виду и помещению. Если ИИ недоступен, работает разбор по словарю или выбор вручную.
 
 ### Где хранятся данные?
-Сейчас — в облачной базе PostgreSQL (Supabase) на серверах в ЕС, данные компаний изолированы правилами доступа базы. Размещение в России на Yandex Cloud — в планах. Варианты выделенного облака и собственных серверов обсуждаются в пилоте.
+Сейчас — в облачной базе PostgreSQL (Supabase) в регионе ЕС, данные компаний изолированы правилами доступа базы. Облако в регионе по выбору заказчика (США, ЕС, ОАЭ), выделенное облако и установка на собственных серверах обсуждаются в пилоте.
 
 ### На каких устройствах работает?
 В браузере на компьютере и телефоне (голосовой ввод — в Chrome и Edge) и в приложении для Android. Приложения для iPhone пока нет.
 
 ### На каких языках интерфейс?
-На русском и английском; язык переключается в настройках.
+На английском (по умолчанию) и русском; язык переключается в настройках.
 
 ### Сколько стоит?
 Цена — по запросу и зависит от количества объектов. Сейчас продукт в стадии MVP, и мы предлагаем пилот на ваших объектах. Запросить демо или пилот — кнопкой «Запросить демо»: откроется наш бот в Telegram.

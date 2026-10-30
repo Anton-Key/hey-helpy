@@ -3578,7 +3578,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get zoneInfo2 =>
-      'Правило — системы × места: например, «Климат, Сантехника · Москва». Правила складываются.';
+      'Правило — системы × места: например, «Климат, Сантехника · Дубай». Правила складываются.';
 
   @override
   String get zoneInfo3 =>

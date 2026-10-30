@@ -147,7 +147,7 @@ void main() {
 
     test('снимок для базы и имя файла', () {
       final r = buildAct([o('a'), o('c', photo: false)],
-          const ActRates(perOrder: 10, currency: 'RUB'));
+          const ActRates(perOrder: 10, currency: 'USD'));
       final items = actItemsJson(r);
       expect(items.first['paid'], isTrue);
       expect(items.last['reasons'], ['noPhoto']);

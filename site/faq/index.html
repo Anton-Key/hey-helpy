@@ -144,7 +144,7 @@
      "name": "How does the AI know what broke and where?",
      "acceptedAnswer": {
       "@type": "Answer",
-      "text": "YandexGPT parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over."
+      "text": "An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over."
      }
     },
     {
@@ -152,7 +152,7 @@
      "name": "Where is the data stored?",
      "acceptedAnswer": {
       "@type": "Answer",
-      "text": "Currently in a cloud PostgreSQL database (Supabase) on servers in the EU; company data is isolated by database access policies. Hosting in Russia on Yandex Cloud is planned. Dedicated cloud and on-premise options are discussed during a pilot."
+      "text": "Currently in a cloud PostgreSQL database (Supabase) in the EU region; company data is isolated by database access policies. Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud and installation on the customer’s own servers are discussed during a pilot."
      }
     },
     {
@@ -168,7 +168,7 @@
      "name": "Which languages does the interface support?",
      "acceptedAnswer": {
       "@type": "Answer",
-      "text": "Russian and English; the language is switched in settings."
+      "text": "English (default) and Russian; the language is switched in settings."
      }
     },
     {
@@ -204,10 +204,10 @@
   <section aria-labelledby="q4"><h2 id="q4">Can someone report a fault without the app?</h2><p>Yes. A QR code at the site lets anyone message the Telegram bot with text, a voice note or a photo — no sign-up. A team Telegram group can also be linked to a site. The author gets “in progress” and “done” notifications with a photo.</p></section>
   <section aria-labelledby="q5"><h2 id="q5">Does the contractor need to install anything?</h2><p>Yes, the contractor’s technician receives and handles work orders in the app — on Android or in a browser: starts work, checks in, ticks the checklist, takes the “after” photo. Telegram only sends them notifications about new work orders.</p></section>
   <section aria-labelledby="q6"><h2 id="q6">Can a manager close a work order on the contractor’s behalf?</h2><p>No. Only a technician of the assigned contractor can start the work, take the “after” photo and submit it, and only a manager who did not submit it can accept it. This is enforced by the database, not just the interface.</p></section>
-  <section aria-labelledby="q7"><h2 id="q7">How does the AI know what broke and where?</h2><p>YandexGPT parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.</p></section>
-  <section aria-labelledby="q8"><h2 id="q8">Where is the data stored?</h2><p>Currently in a cloud PostgreSQL database (Supabase) on servers in the EU; company data is isolated by database access policies. Hosting in Russia on Yandex Cloud is planned. Dedicated cloud and on-premise options are discussed during a pilot.</p></section>
+  <section aria-labelledby="q7"><h2 id="q7">How does the AI know what broke and where?</h2><p>An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.</p></section>
+  <section aria-labelledby="q8"><h2 id="q8">Where is the data stored?</h2><p>Currently in a cloud PostgreSQL database (Supabase) in the EU region; company data is isolated by database access policies. Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud and installation on the customer’s own servers are discussed during a pilot.</p></section>
   <section aria-labelledby="q9"><h2 id="q9">Which devices does it run on?</h2><p>In a browser on desktop and mobile (voice input in Chrome and Edge) and in the Android app. There is no iPhone app yet.</p></section>
-  <section aria-labelledby="q10"><h2 id="q10">Which languages does the interface support?</h2><p>Russian and English; the language is switched in settings.</p></section>
+  <section aria-labelledby="q10"><h2 id="q10">Which languages does the interface support?</h2><p>English (default) and Russian; the language is switched in settings.</p></section>
   <section aria-labelledby="q11"><h2 id="q11">How much does it cost?</h2><p>Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.</p></section>
 </div>
 <section class="cta" aria-labelledby="cta"><h2 id="cta">Try it at your sites</h2><p>We will show Hey Helpy on demo data and discuss a pilot: your sites, your contractors, payment only for proven work.</p><p class="actions"><a class="btn" href="https://t.me/HeyHelpy_bot?start=demo">Request a demo</a> <a class="btn ghost" href="https://anton-key.github.io/hey-helpy/">Sign in</a></p></section>

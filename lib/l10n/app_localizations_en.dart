@@ -3550,7 +3550,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoneInfo2 =>
-      'A rule is systems × places, e.g. “HVAC, Plumbing · Moscow”. Rules add up.';
+      'A rule is systems × places, e.g. “HVAC, Plumbing · Dubai”. Rules add up.';
 
   @override
   String get zoneInfo3 =>

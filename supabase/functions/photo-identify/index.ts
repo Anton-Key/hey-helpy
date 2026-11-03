@@ -25,24 +25,11 @@
 // — только размер, время, модель, токены, код ошибки, число кандидатов.
 
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
-import {
-  buildResult,
-  buildVisionMessages,
-  normalizeVision,
-  parseIdentifyInput,
-  stripThinking,
-} from "../_shared/identify.ts";
-import { parseModelJson } from "../_shared/intake.ts";
+import { parseIdentifyInput } from "../_shared/identify.ts";
+import { identifyPhoto } from "../_shared/identify_run.ts";
 import { corsHeaders, logFn } from "../_shared/http.ts";
-import { loadAssets, loadLayers, resolveHere } from "../_shared/registry.ts";
-import {
-  boxEnabled,
-  callVision,
-  VISION_FORMAT,
-  VISION_FORMAT_BOX,
-  visionModels,
-} from "../_shared/vision.ts";
-import { AiError, aiFromEnv } from "../_shared/ai.ts";
+import { boxEnabled, visionModels } from "../_shared/vision.ts";
+import { aiFromEnv } from "../_shared/ai.ts";
 
 const log = logFn("photo-identify");
 
@@ -106,72 +93,16 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Справочники читаем, пока модель смотрит на снимок.
-  const layers = await loadLayers(supabase, log);
-  const registry = (async () => {
-    const here = await resolveHere(supabase, input);
-    return { here, assets: await loadAssets(supabase, here, log) };
-  })().catch(() => {
-    log({ code: "registry_failed" });
-    return { here: {}, assets: [] };
+  const out = await identifyPhoto(supabase, aiCfg, input, {
+    box: wantBox,
+    log,
   });
-
-  try {
-    const aiStarted = Date.now();
-    const ai = await callVision(
-      aiCfg,
-      buildVisionMessages(input, layers, { box: wantBox }),
-      fetch,
-      wantBox ? VISION_FORMAT_BOX : VISION_FORMAT,
-    );
-    const aiMs = Date.now() - aiStarted;
-    const which = {
-      provider: aiCfg.provider,
-      model: ai.model === "pro" ? "main" : "lite",
-      first: ai.primaryError,
-      first_error: ai.primaryDetail,
-      format: ai.format,
-    };
-    const raw = parseModelJson(stripThinking(ai.content));
-    if (!raw) {
-      return reply(502, { error: "ai_unavailable" }, {
-        code: "invalid_json",
-        bytes: input.bytes,
-        tokens: ai.totalTokens,
-        ai_ms: aiMs,
-        ...which,
-      });
-    }
-    const { here, assets } = await registry;
-    const result = buildResult(
-      normalizeVision(raw, layers, { box: wantBox }),
-      assets,
-      here,
-      input.locale,
-    );
-    const ms = Date.now() - started;
-    return reply(200, { ...result, model: which.model, ms }, {
-      ...which,
-      bytes: input.bytes,
-      mime: input.mime,
-      tokens: ai.totalTokens,
-      ai_ms: aiMs,
-      assets: assets.length,
-      candidates: result.candidates.length,
-      kind: result.kind,
-      plate: result.nameplate !== null,
-      // Шаг 31: только есть ли рамка (без координат).
-      box: wantBox ? (result.box ? "yes" : "no") : undefined,
-    });
-  } catch (e) {
-    const code = e instanceof AiError ? e.code : "unexpected";
+  if (!out.ok) {
     return reply(502, { error: "ai_unavailable" }, {
-      code,
-      provider: aiCfg.provider,
-      bytes: input.bytes,
-      // Только error.code / error.message ответа API, без base64 (≤ 300).
-      ai_error: e instanceof AiError ? e.detail : undefined,
-      tried: e instanceof AiError ? e.tried : undefined,
+      code: out.code,
+      ...out.log,
     });
   }
+  const ms = Date.now() - started;
+  return reply(200, { ...out.result, model: out.model, ms }, out.log);
 });

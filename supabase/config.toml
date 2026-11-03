@@ -27,3 +27,8 @@ verify_jwt = true
 # со своим JWT; без токена — 401 шлюзом.
 [functions.offline-sync]
 verify_jwt = true
+
+# Тест точности распознавания (шаг 34): вызывает приложение администратора со
+# своим JWT; без токена — 401 шлюзом.
+[functions.recognition-eval]
+verify_jwt = true

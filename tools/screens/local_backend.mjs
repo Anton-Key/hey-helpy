@@ -174,7 +174,7 @@ async function storageRequest(req, url, path) {
   const uid = readJwt((req.headers.authorization ?? '').replace(/^Bearer /, ''))?.sub;
   const fail = (e) => ({ status: 400, body: { statusCode: '403', error: 'Unauthorized',
     message: /row-level security|violates/.test(String(e.stderr ?? e)) ? 'new row violates row-level security policy' : String(e.stderr ?? e).slice(0, 200) } });
-  let m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans|order-files|contractor-acts)\/(.+)$/);
+  let m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans|order-files|contractor-acts|eval-photos)\/(.+)$/);
   if (m && (req.method === 'POST' || req.method === 'PUT') && !m[2].startsWith('preview/')) {
     const body = await readBody(req);
     const name = decodeURIComponent(m[2]);
@@ -186,7 +186,7 @@ async function storageRequest(req, url, path) {
     if (process.env.HH_LOG_STORAGE) console.log('upload', req.headers['content-type'], body.length, body.subarray(0, 60).toString('latin1').replace(/[^ -~]/g, '.'), files.get(`${m[1]}/${name}`).type, files.get(`${m[1]}/${name}`).data.subarray(0, 4).toString('hex'));
     return { status: 200, body: { Key: `${m[1]}/${name}`, Id: name } };
   }
-  m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans|order-files|contractor-acts)$/);
+  m = path.match(/^\/storage\/v1\/object\/(work-photos|floor-plans|order-files|contractor-acts|eval-photos)$/);
   if (m && req.method === 'DELETE') {
     const b = JSON.parse((await readBody(req)).toString() || '{}');
     const out = [];
@@ -198,7 +198,7 @@ async function storageRequest(req, url, path) {
     }
     return { status: 200, body: out };
   }
-  m = path.match(/^\/storage\/v1\/object\/sign\/(work-photos|floor-plans|order-files|contractor-acts)(?:\/(.+))?$/);
+  m = path.match(/^\/storage\/v1\/object\/sign\/(work-photos|floor-plans|order-files|contractor-acts|eval-photos)(?:\/(.+))?$/);
   if (m && req.method === 'POST') {
     const b = JSON.parse((await readBody(req)).toString() || '{}');
     const sign = (p) => (files.has(`${m[1]}/${p}`) ? `/object/sign/${m[1]}/${p}?token=local` : null);
@@ -210,7 +210,7 @@ async function storageRequest(req, url, path) {
     }
     return { status: 200, body: (b.paths ?? []).map((p) => ({ path: p, signedURL: sign(p), error: sign(p) ? null : 'Either the object does not exist or you do not have access to it' })) };
   }
-  m = path.match(/^\/storage\/v1\/object\/(?:sign|authenticated|public)?\/?(work-photos|floor-plans|order-files|contractor-acts)\/(.+)$/);
+  m = path.match(/^\/storage\/v1\/object\/(?:sign|authenticated|public)?\/?(work-photos|floor-plans|order-files|contractor-acts|eval-photos)\/(.+)$/);
   if (m && (req.method === 'GET' || req.method === 'HEAD')) {
     const f = files.get(`${m[1]}/${decodeURIComponent(m[2])}`);
     if (f) return { status: 200, body: req.method === 'HEAD' ? null : f.data, headers: { 'content-type': f.type } };
@@ -338,6 +338,17 @@ export async function startLocalBackend({ port = 54321, postgrest = process.env.
           results.push({ path: ph.path, ok: hash === String(ph.sha256).toLowerCase() });
         }
         return send(res, 200, { results });
+      }
+      // Шаг 34: тест распознавания — настоящая функция recognition-eval,
+      // запущенная локально (tools/e2e/recognition_eval.mjs), если задан адрес.
+      if (process.env.HH_EVAL_FN_URL && path === '/functions/v1/recognition-eval') {
+        const body = await readBody(req);
+        const r = await fetch(process.env.HH_EVAL_FN_URL, {
+          method: req.method,
+          headers: { 'content-type': 'application/json', authorization: req.headers.authorization ?? '' },
+          body: req.method === 'POST' ? body : undefined,
+        });
+        return send(res, r.status, await r.json().catch(() => null));
       }
       return send(res, 503, { error: 'ai_unavailable' });
     }

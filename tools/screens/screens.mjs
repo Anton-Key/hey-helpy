@@ -322,9 +322,23 @@ async function openMap(page, preview) {
 
 const previewNote = (text) => text;
 
+// Объект в списке под картой. На телефоне список свёрнут и начинается с других
+// городов — тогда объект находим поиском над списком.
+async function clickMapObject(page, name) {
+  const item = page.getByRole('button', { name }).first();
+  if (!(await item.isVisible().catch(() => false))) {
+    await page.getByRole('textbox', { name: /Поиск по названию|Search by name/ }).first().click();
+    await settle(page, 400);
+    await page.keyboard.type(name, { delay: 30 });
+    await settle(page, 1500);
+  }
+  await item.click();
+}
+
 // Чип города над картой («Belgrade · 3» или «Belgrade») — приблизить к городу.
 // После 0015 над картой — чипы регионов, а не городов (если регионы заданы).
-// В демо в «North America» только New York, в «Европе» — только Belgrade.
+// В демо в «North America» только New York; в «Europe» — Belgrade, Berlin, London
+// (шаг 33): после чипа региона нажимаем кластер города, чтобы приблизить его.
 const REGION_OF_CITY = { 'New York': 'North America', 'Belgrade': 'Europe' };
 async function openCity(page, city) {
   const cityChip = page.getByRole('button', { name: new RegExp(`^${city}( · \\d+)?$`) }).first();
@@ -336,6 +350,14 @@ async function openCity(page, city) {
   else await cityChip.click();
   await settle(page, 1500);
   await waitTiles(page);
+  if (city === 'Belgrade' && page.viewportSize().width < 900) {
+    const cluster = page.getByRole('button', { name: new RegExp(`^(\\d+, )?${city}`) }).first();
+    if (await cluster.isVisible().catch(() => false)) {
+      await cluster.click().catch(() => {});
+      await settle(page, 1500);
+      await waitTiles(page);
+    }
+  }
 }
 const PREVIEW = process.argv.includes('--preview');
 const PREVIEW_TEXT = 'ПРЕДПРОСМОТР: объекты, подрядчики и заявки шага 13d подставлены в ответы сервера из demo_history.sql — в базе появятся после Refresh demo';
@@ -741,7 +763,7 @@ const SCREENS = [
   // Таблетка «New York (5)» и строки заявок «New York · Office 3 · …» — по ссылке.
   { key: 'filter-object-city', title: 'Заявки с фильтром «New York (5)», строки «New York · Office N»', managerOnly: true, run: async (p) => {
       await homeWith(p, `obj=${[403, 404, 405, 406, 407].map(uuid).join(',')}`);
-      await p.getByRole('button', { name: /^Объект: New York \(5\)/ }).first().waitFor({ timeout: 15000 });
+      await p.getByRole('button', { name: /^(Объект|Site|Location): New York \(5\)/ }).first().waitFor({ timeout: 15000 });
       await settle(p, 800);
       return 'ссылка #/?obj=<5 объектов New York>';
     }, after: async (p) => { await resetOrderFilter(p); } },
@@ -959,7 +981,7 @@ const SCREENS = [
   { key: 'map-selected', jpeg: true, title: 'Локации — карта, выбранный объект', managerOnly: true, run: async (p) => {
       await openMap(p, true);
       await openCity(p, 'Belgrade');
-      await p.getByRole('button', { name: 'Demo Tower' }).first().click();
+      await clickMapObject(p, 'Demo Tower');
       await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
       await settle(p, 1500);
       await waitTiles(p);
@@ -1015,7 +1037,7 @@ const SCREENS = [
   // «Отмена» — место НЕ сохраняется.
   { key: 'map-place', jpeg: true, title: 'Локации — карта, «Изменить место на карте»', managerOnly: true, run: async (p) => {
       await openMap(p, false);
-      await p.getByRole('button', { name: 'Demo Tower' }).first().click();
+      await clickMapObject(p, 'Demo Tower');
       await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
       await btn(p, 'Изменить место на карте').click();
       await btn(p, 'Сохранить здесь').waitFor({ timeout: 5000 });
@@ -1029,7 +1051,7 @@ const SCREENS = [
   // Карточка объекта → «Заявки»: вкладка «Заявки» с фильтром по объекту (крестик снимает).
   { key: 'map-orders', title: 'Карта → «Заявки» объекта (фильтр)', managerOnly: true, run: async (p) => {
       await openMap(p, false);
-      await p.getByRole('button', { name: 'Demo Tower' }).first().click();
+      await clickMapObject(p, 'Demo Tower');
       await see(p, 'Открыть объект').waitFor({ timeout: 10000 });
       await settle(p, 800);
       await p.getByRole('button', { name: 'Заявки', exact: true }).last().click();
@@ -1146,10 +1168,10 @@ const SCREENS = [
       const vp = p.viewportSize();
       if (vp.width < 900) {
         // Выдвижная панель: нажать на её заголовок — раскрывается.
-        await p.getByRole('button', { name: /^На плане · \d+, Не размещены/ }).first().click();
+        await p.getByRole('button', { name: /^(На плане|On plan) · \d+, (Не размещены|Not placed)/ }).first().click();
         await settle(p, 1200);
       }
-      await see(p, /Не размещены · \d/).waitFor({ timeout: 5000 });
+      await see(p, /(Не размещены|Not placed) · \d/).waitFor({ timeout: 5000 });
       return '«Open space, floor 2» — без этажа, в «Не размещены»';
     } },
   { key: 'plan-info', title: 'Подсказка ⓘ «Что значат маркеры»', managerOnly: true, run: async (p) => {
@@ -1232,6 +1254,8 @@ async function openPpr(page) {
 
 async function openPlanCard(page, title) {
   await openPpr(page);
+  // На телефоне строка плана может быть ниже экрана — сначала прокрутить к ней.
+  await scrollTo(page, new RegExp('^' + title));
   await btn(page, new RegExp('^' + title)).click();
   await see(page, /История периодов/).waitFor({ timeout: 20000 });
   await settle(page, 1500);
@@ -1277,7 +1301,7 @@ async function openAsset(page) {
   await openObjectCard(page);
   await scrollTo(page, new RegExp('^' + DEMO_ASSET));
   await page.getByRole('button', { name: new RegExp('^' + DEMO_ASSET) }).first().click();
-  await see(page, /Создать заявку/).waitFor({ timeout: 20000 });
+  await see(page, /Создать заявку|Create work order/).waitFor({ timeout: 20000 });
   await settle(page, 1500);
 }
 
@@ -1305,6 +1329,12 @@ async function openPhoto(page, { here = true } = {}) {
   await page.getByRole('button', { name: /^(Узнать оборудование по фото|По фото)$/ }).first().click();
   // Шаг 25: «По фото» открывает «Камеру»; прежний экран — «Выбрать фото».
   await see(page, /Сфотографировать|Что это\?/).first().waitFor({ timeout: 20000 });
+  // Шаг 33: при первом открытии камеры — шторка «How AR labels work» (появляется с задержкой).
+  const gotIt = see(page, /^(Понятно|Got it)$/);
+  if (await gotIt.waitFor({ timeout: 4000 }).then(() => true, () => false)) {
+    await gotIt.click();
+    await settle(page, 600);
+  }
   if (await btn(page, /^Что это\?/).isVisible().catch(() => false)) {
     await btn(page, /^Выбрать фото/).click();
   }
@@ -1492,10 +1522,12 @@ const EN_SCREENS = [
 async function routeEnglishProfile(page) {
   await page.route('**/rest/v1/profiles*', async (route) => {
     if (route.request().method() !== 'GET') return route.fallback();
-    const res = await route.fetch();
+    // Обрыв соединения с бэкендом не должен ронять весь прогон — пусть запрос идёт как обычно.
+    const res = await route.fetch().catch(() => null);
+    if (!res) return route.continue().catch(() => {});
     let body;
     try { body = JSON.parse(await res.text()); } catch { return route.fulfill({ response: res }); }
-    const en = (r) => (r && typeof r === 'object' && 'locale' in r ? { ...r, locale: 'en' } : r);
+    const en =(r) => (r && typeof r === 'object' && 'locale' in r ? { ...r, locale: 'en' } : r);
     body = Array.isArray(body) ? body.map(en) : en(body);
     return route.fulfill({ response: res, body: JSON.stringify(body) });
   });

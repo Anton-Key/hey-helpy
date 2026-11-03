@@ -60,7 +60,7 @@ class ActDoc {
   /// «К оплате: 5 · без доказательства: 4 · доказано 56 % · просрочено 1».
   final String totalLine;
 
-  /// «Итого к оплате: 22 500 ₽» или «без сумм».
+  /// «Итого к оплате: $22,500» или «без сумм».
   final String sumLine;
   final bool hasSums;
 }
@@ -109,7 +109,7 @@ String actProofText(AppLocalizations l, ActLine x) => [
       if (x.checklistProof) l.actProofChecklist,
     ].join(', ');
 
-/// «4 500 ₽», «4 500,50 ₽» — копейки только если они есть.
+/// «$4,500», «$4,500.50» — центы только если они есть (валюта по умолчанию — USD, шаг 33).
 String actMoney(String locale, double v, String currency) =>
     NumberFormat.simpleCurrency(
             locale: locale, name: currency, decimalDigits: v % 1 == 0 ? 0 : 2)

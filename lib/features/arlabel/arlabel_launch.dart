@@ -13,6 +13,7 @@ import '../photo_identify/identify_models.dart';
 import '../photos/photo_repository.dart';
 import '../requests/order_form_place.dart';
 import '../requests/requests.dart';
+import 'ar_intro.dart';
 import 'arlabel_channel.dart';
 import 'arlabel_file_stub.dart' if (dart.library.io) 'arlabel_file_io.dart';
 import 'arlabel_logic.dart';
@@ -26,6 +27,9 @@ Future<ArLabelResult?> openArLabels(BuildContext context,
     String? floorId,
     String? locationId,
     String? companyId}) async {
+  // Шаг 33: первый запуск — «Как работают AR-метки» (дальше — сразу экран).
+  await maybeShowArIntro(context);
+  if (!context.mounted) return null;
   final l = context.l10n;
   void fail(String text) =>
       showAppMessage(context, text, type: AppMessageType.error);

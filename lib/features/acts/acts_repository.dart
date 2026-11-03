@@ -79,7 +79,7 @@ class ActsRepository {
         return ActRates(
             perOrder: (r['rate_order'] as num?)?.toDouble(),
             perVisit: (r['rate_visit'] as num?)?.toDouble(),
-            currency: (r['currency'] ?? 'RUB') as String);
+            currency: (r['currency'] ?? 'USD') as String);
       }, legacy: () async => const ActRates());
 
   /// Ставки: администратор и менеджер без зон (база: contractor_rates_*).
@@ -88,7 +88,7 @@ class ActsRepository {
       required String contractorId,
       double? perOrder,
       double? perVisit,
-      String currency = 'RUB'}) async {
+      String currency = 'USD'}) async {
     await _c.from('contractor_rates').upsert({
       'contractor_id': contractorId,
       'company_id': companyId,

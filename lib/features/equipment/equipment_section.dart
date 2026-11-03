@@ -215,10 +215,23 @@ class _EquipmentSectionState extends State<EquipmentSection> {
                   chevron: false,
                   onTap: _load)
             else if (all.isEmpty)
-              AppRow(
-                  title: l.equipEmpty,
-                  titleStyle: AppText.callout,
-                  chevron: false),
+              Padding(
+                padding: const EdgeInsets.all(AppSpace.m),
+                child: Column(children: [
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 240),
+                    child: AppIllustration(AppIllustrationName.led,
+                        note: l.illustrationNote,
+                        semanticLabel: l.equipEmptyAlt,
+                        maxHeight: 120),
+                  ),
+                  const SizedBox(height: AppSpace.s),
+                  Text(l.equipEmpty,
+                      textAlign: TextAlign.center,
+                      style:
+                          AppText.callout.copyWith(color: AppColors.secondary)),
+                ]),
+              ),
             // Шаг 22: «Найти по фото» — всем, кто видит оборудование.
             if (all.isNotEmpty)
               AppRow(

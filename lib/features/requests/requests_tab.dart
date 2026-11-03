@@ -653,7 +653,12 @@ class _RequestsTabState extends State<RequestsTab> {
                   icon: AppIcons.search,
                   actionLabel: l.filterResetFilters,
                   onAction: _resetAll)
-              : AppEmptyState(text: l.requestsEmpty),
+              : AppEmptyState(
+                  text: l.requestsEmpty,
+                  image: AppIllustration(AppIllustrationName.faucet,
+                      note: l.illustrationNote,
+                      semanticLabel: l.requestsEmptyAlt,
+                      maxHeight: 160)),
         )
       ];
     }

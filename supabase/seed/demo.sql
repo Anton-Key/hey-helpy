@@ -55,7 +55,7 @@ begin
 
   -- 2. Компания. Слои по умолчанию добавляет триггер trg_company_default_layers;
   --    вызов seed_default_layers ниже — на случай, если компания уже была.
-  insert into public.companies (id, name) values (c_company, 'Демо БЦ')
+  insert into public.companies (id, name) values (c_company, 'Demo Properties')
   on conflict (id) do update set name = excluded.name;
   perform public.seed_default_layers(c_company);
 
@@ -89,28 +89,28 @@ begin
 
   -- 3. Объект с координатами (для отметки визита по геозоне)
   insert into public.objects (id, company_id, name, type, address, lat, lng)
-  values (c_object, c_company, 'БЦ «Демо»', 'office', 'Белград, Савски венац (демо)', 44.804710, 20.449415)
+  values (c_object, c_company, 'Demo Tower', 'office', 'Belgrade, Savski Venac (demo)', 44.804710, 20.449415)
   on conflict (id) do update
     set name = excluded.name, type = excluded.type, address = excluded.address,
         lat = excluded.lat, lng = excluded.lng;
 
   -- 4. Помещения
   insert into public.locations (id, object_id, name) values
-    (c_loc_meet, c_object, 'Переговорная, 3 этаж'),
-    (c_loc_elec, c_object, 'Электрощитовая, 1 этаж'),
-    (c_loc_open, c_object, 'Open space, 2 этаж'),
-    (c_loc_hall, c_object, 'Холл, 1 этаж')
+    (c_loc_meet, c_object, 'Meeting room, floor 3'),
+    (c_loc_elec, c_object, 'Electrical room, floor 1'),
+    (c_loc_open, c_object, 'Open space, floor 2'),
+    (c_loc_hall, c_object, 'Hall, floor 1')
   on conflict (id) do update set name = excluded.name, object_id = excluded.object_id;
 
   -- 5. Подрядчики
   insert into public.contractors (id, company_id, org_name) values
-    (c_contr_hvac, c_company, 'КлиматСервис'),
-    (c_contr_elec, c_company, 'ЭлектроПро')
+    (c_contr_hvac, c_company, 'ClimaService'),
+    (c_contr_elec, c_company, 'ElectroPro')
   on conflict (id) do update set org_name = excluded.org_name;
 
   -- 6. Закрепление за слоями:
-  --    «КлиматСервис» — «Климат» только на этом объекте,
-  --    «ЭлектроПро» — «Электрика» на всех объектах компании.
+  --    «ClimaService» — «Климат» только на этом объекте,
+  --    «ElectroPro» — «Электрика» на всех объектах компании.
   insert into public.contractor_layers (contractor_id, layer_id, object_id) values
     (c_contr_hvac, v_layer_hvac, c_object),
     (c_contr_elec, v_layer_elec, null)
@@ -118,19 +118,19 @@ begin
 
   -- 7. Пользователи: компания и роль
   insert into public.profiles (id, company_id, role, full_name) values
-    (v_manager,   c_company, 'manager',   'Менеджер Демо'),
-    (v_executor,  c_company, 'executor',  'Исполнитель Демо'),
-    (v_requester, c_company, 'requester', 'Заявитель Демо')
+    (v_manager,   c_company, 'manager',   'Demo Manager'),
+    (v_executor,  c_company, 'executor',  'Demo Technician'),
+    (v_requester, c_company, 'requester', 'Demo Requester')
   on conflict (id) do update
     set company_id = excluded.company_id,
         role       = excluded.role,
         full_name  = coalesce(public.profiles.full_name, excluded.full_name);
 
-  -- 8. Исполнитель работает в «КлиматСервисе»
+  -- 8. Исполнитель работает в «ClimaService»
   insert into public.executors (profile_id, contractor_id)
   select v_executor, c_contr_hvac
   where not exists (select 1 from public.executors
                     where profile_id = v_executor and contractor_id = c_contr_hvac);
 
-  raise notice 'Готово: компания «Демо БЦ», 4 помещения, 2 подрядчика, 3 пользователя.';
+  raise notice 'Готово: компания «Demo Properties», 4 помещения, 2 подрядчика, 3 пользователя.';
 end $$;

@@ -30,4 +30,25 @@ void main() {
         .where((e) => !allowed.contains(e.key) && forbidden.hasMatch(e.value));
     expect(bad.map((e) => '${e.key}: ${e.value}'), isEmpty);
   });
+
+  // Шаг 33: название на всех языках — «Hey Helpy». Голосовая фраза
+  // «Эй, Хелпи» (ключ wakePhrase) — другое написание и под правило не попадает.
+  test('нигде нет старого названия «Эй, Helpy»', () {
+    const roots = ['lib', 'tools/site', 'supabase/functions'];
+    final bad = <String>[];
+    for (final r in roots) {
+      for (final f in Directory(r).listSync(recursive: true)) {
+        if (f is! File || f.path.contains('node_modules')) continue;
+        if (!RegExp(r'\.(dart|arb|ts|mjs|css|json)$').hasMatch(f.path)) continue;
+        if (f.readAsStringSync().contains('Эй, Helpy')) bad.add(f.path);
+      }
+    }
+    for (final f in Directory('android/app/src/main/res')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('strings.xml'))) {
+      if (f.readAsStringSync().contains('Эй, Helpy')) bad.add(f.path);
+    }
+    expect(bad, isEmpty);
+  });
 }

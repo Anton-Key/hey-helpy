@@ -139,13 +139,11 @@ jobs:
           set -euo pipefail
           out=$(psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -At -F ' ' -c "
             select (select count(*) from public.work_orders w
-                      join public.companies c on c.id = w.company_id
-                     where c.name = 'Демо БЦ'),
+                     where w.company_id = 'de300000-0000-4000-8000-000000000001'),
                    (select count(*) from public.visits v
-                      join public.companies c on c.id = v.company_id
-                     where c.name = 'Демо БЦ');")
+                     where v.company_id = 'de300000-0000-4000-8000-000000000001');")
           read -r orders visits <<<"$out"
-          echo "Компания «Демо БЦ»: заявок $orders, визитов $visits."
+          echo "Компания «Demo Properties»: заявок $orders, визитов $visits."
           echo "orders=$orders" >> "$GITHUB_OUTPUT"
           echo "visits=$visits" >> "$GITHUB_OUTPUT"
 
@@ -161,7 +159,7 @@ jobs:
                 echo
                 echo "| Компания | Заявок | Визитов |"
                 echo "|---|---|---|"
-                echo "| Демо БЦ | ${{ steps.verify.outputs.orders }} | ${{ steps.verify.outputs.visits }} |" ;;
+                echo "| Demo Properties | ${{ steps.verify.outputs.orders }} | ${{ steps.verify.outputs.visits }} |" ;;
               failure)
                 echo "❌ Ошибка — база не изменилась (всё откатилось). Текст ошибки — в логе шага «Перезалить демо-историю»." ;;
               *)

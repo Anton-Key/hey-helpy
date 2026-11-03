@@ -132,7 +132,7 @@ function svgFor(floor) {
   }
   // Штамп.
   parts.push(`<rect x="${W - 860}" y="${H - 104}" width="740" height="64" rx="10" fill="#FFF4D6" stroke="#C8A44A" stroke-width="3"/>`);
-  parts.push(`<text x="${W - 490}" y="${H - 72}" text-anchor="middle" dominant-baseline="middle" font-family="Onest, Arial, sans-serif" font-size="30" font-weight="700" fill="#6B5414">ДЕМО-СХЕМА · не реальный план</text>`);
+  parts.push(`<text x="${W - 490}" y="${H - 72}" text-anchor="middle" dominant-baseline="middle" font-family="Onest, Arial, sans-serif" font-size="30" font-weight="700" fill="#6B5414">DEMO PLAN · not a real floor plan</text>`);
   parts.push(`<text x="120" y="${H - 72}" dominant-baseline="middle" font-family="Onest, Arial, sans-serif" font-size="30" font-weight="600" fill="${INK}">${esc(floor.objectName)} · ${esc(floor.name)}</text>`);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${parts.join('')}</svg>`;
 }

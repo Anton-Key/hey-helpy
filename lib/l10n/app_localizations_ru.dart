@@ -9,7 +9,7 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appName => 'Эй, Helpy';
+  String get appName => 'Hey Helpy';
 
   @override
   String get wakePhrase => 'Эй, Хелпи';
@@ -2442,7 +2442,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get helpTip1 =>
-      '«Эй, Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.';
+      '«Hey Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.';
 
   @override
   String get helpTip2 =>
@@ -3578,7 +3578,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get zoneInfo2 =>
-      'Правило — системы × места: например, «Климат, Сантехника · Москва». Правила складываются.';
+      'Правило — системы × места: например, «Климат, Сантехника · Дубай». Правила складываются.';
 
   @override
   String get zoneInfo3 =>
@@ -5853,4 +5853,69 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get arMaintenanceOverdue => 'ТО просрочено';
+
+  @override
+  String get illustrationNote => 'Иллюстрация';
+
+  @override
+  String get loginHeroCaption =>
+      'Платите подрядчикам только за доказанную работу';
+
+  @override
+  String get loginHeroAlt =>
+      'Гостиничный номер: над кондиционером — AR-метка с диагностикой и заявкой';
+
+  @override
+  String get onbSlide1 =>
+      'Навели камеру — видно заявки и плановое ТО оборудования';
+
+  @override
+  String get onbSlide1Alt =>
+      'Телефон наведён на кондиционер, над ним — табличка с заявками';
+
+  @override
+  String get onbSlide2 =>
+      'Любое оборудование — один сценарий: заявка и чек-лист у места';
+
+  @override
+  String get onbSlide2Alt =>
+      'Офисный холодильник с AR-карточкой и чек-листом ТО';
+
+  @override
+  String get onbSlide3 =>
+      'Всё здание на одном плане: каждая заявка привязана к месту';
+
+  @override
+  String get onbSlide3Alt => 'Изометрия офисного этажа с метками заявок';
+
+  @override
+  String onbSlidesLabel(String app) {
+    return 'Как работает $app';
+  }
+
+  @override
+  String get arIntroTitle => 'Как работают AR-метки';
+
+  @override
+  String get arIntroText =>
+      'Наведите камеру на оборудование и нажмите «Что это?» — над ним появится табличка с открытыми заявками и плановым ТО. Коснитесь таблички, чтобы открыть карточку оборудования или создать заявку.';
+
+  @override
+  String get arIntroAlt =>
+      'Телефон наведён на офисный кондиционер, над ним — табличка с заявками и ТО';
+
+  @override
+  String get arIntroOk => 'Понятно';
+
+  @override
+  String get requestsEmptyAlt => 'Протекающий кран с AR-меткой';
+
+  @override
+  String get equipEmptyAlt => 'Неисправная LED-панель с AR-меткой';
+
+  @override
+  String get onbSlidePrev => 'Предыдущий слайд';
+
+  @override
+  String get onbSlideNext => 'Следующий слайд';
 }

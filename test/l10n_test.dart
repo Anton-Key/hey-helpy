@@ -9,7 +9,7 @@ void main() {
   final en = lookupAppLocalizations(const Locale('en'));
 
   test('название продукта и фраза активации берутся из переводов', () {
-    expect(ru.appName, 'Эй, Helpy');
+    expect(ru.appName, 'Hey Helpy');
     expect(en.appName, 'Hey Helpy');
     expect(ru.wakePhrase, 'Эй, Хелпи');
     expect(en.wakePhrase, 'Hey, Helpy');

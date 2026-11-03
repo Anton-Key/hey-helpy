@@ -158,7 +158,7 @@ class AppSliverHeader extends StatelessWidget {
   final Widget? leading;
   final List<Widget> actions;
 
-  /// Маленькая акцентная подпись («Эй, Helpy»): в одной строке с [actions]
+  /// Маленькая акцентная подпись («Hey Helpy»): в одной строке с [actions]
   /// над крупным заголовком (без лишней строки сверху).
   final String? eyebrow;
   final Widget? bottom;

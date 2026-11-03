@@ -1,4 +1,4 @@
-# Эй, Helpy / Hey Helpy: сайт открыт для поисковиков и ИИ-ассистентов.
+# Hey Helpy / Hey Helpy: сайт открыт для поисковиков и ИИ-ассистентов.
 # The site is open to search engines and AI assistants.
 
 User-agent: GPTBot

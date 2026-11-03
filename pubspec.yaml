@@ -56,6 +56,9 @@ flutter:
     # Нарисованный «снимок» кондиционера для заглушки «Узнать по фото»
     # (VOICE_MOCK, /screens) — tools/demo_photos/generate.mjs. Не фото объекта.
     - assets/demo_photos/
+    # Иллюстрации-концепт (шаг 33): только WebP 1200 px; исходники PNG —
+    # assets/marketing/ (в сборку не идут).
+    - assets/illustrations/
   fonts:
     # Onest (SIL OFL 1.1, assets/fonts/OFL.txt) — локально, не из сети.
     - family: Onest

@@ -33,10 +33,10 @@ import {
 } from "../_shared/identify.ts";
 import { logFn } from "../_shared/http.ts";
 import { callVision, visionModels } from "../_shared/vision.ts";
-import { AiError, complete, DEFAULT_MODEL, LITE_MODEL } from "../_shared/yandex.ts";
+import { AiError, aiFromEnv, complete } from "../_shared/ai.ts";
 import { type Ai, type Ctx, type Db, type Deps, handleUpdate, leadsChatId, type Session, type Storage, type Who } from "./bot.ts";
 import type { AssignInfo } from "./assign.ts";
-import { recognize } from "./stt.ts";
+import { sttFromEnv } from "./stt.ts";
 import { parseUpdate, secretMatches, telegramApi } from "./telegram.ts";
 import { langOf, t } from "./texts.ts";
 
@@ -100,9 +100,9 @@ Deno.serve(async (req) => {
 });
 
 /** Ошибка ИИ — в лог код и `ai_error` (без base64 и текста запроса), дальше как раньше. */
-function logAiError(ai: "text" | "vision") {
+function logAiError(ai: "text" | "vision", provider?: string) {
   return (e: unknown): never => {
-    if (e instanceof AiError) log({ ai, code: e.code, ai_error: e.detail, tried: e.tried });
+    if (e instanceof AiError) log({ ai, provider, code: e.code, ai_error: e.detail, tried: e.tried });
     throw e;
   };
 }
@@ -116,8 +116,6 @@ function makeDeps(): Deps | null {
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN")?.trim();
   const url = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const apiKey = Deno.env.get("YANDEX_API_KEY")?.trim() ?? "";
-  const folderId = Deno.env.get("YANDEX_FOLDER_ID")?.trim() ?? "";
   if (!token || !url || !serviceKey) return null;
 
   const sb = createClient(url, serviceKey, {
@@ -189,32 +187,32 @@ function makeDeps(): Deps | null {
     },
   };
 
-  const model = Deno.env.get("YANDEX_MODEL")?.trim() || DEFAULT_MODEL;
-  const liteEnv = Deno.env.get("YANDEX_MODEL_LITE")?.trim();
-  const liteModel = liteEnv === "-" ? "" : (liteEnv || LITE_MODEL);
-  const vision = visionModels((k) => Deno.env.get(k));
-  const aiReady = !!apiKey && !!folderId;
+  // Поставщики ИИ и распознавания речи — по секретам (шаг 33): AI_* или YANDEX_*.
+  const env = (k: string) => Deno.env.get(k);
+  const textCfg = aiFromEnv(env, "text");
+  const visionCfg = aiFromEnv(env, "vision", visionModels(env));
+  const speech = sttFromEnv(env);
 
   const ai: Ai = {
     async text(text, lang, catalog) {
-      if (!aiReady) return null;
-      const r = await complete({ apiKey, folderId, model, liteModel }, buildMessages({ text, locale: lang }, catalog))
-        .catch(logAiError("text"));
+      if (!textCfg) return null;
+      const r = await complete(textCfg, buildMessages({ text, locale: lang }, catalog))
+        .catch(logAiError("text", textCfg.provider));
       const raw = parseModelJson(r.content);
       return raw ? { result: normalize(raw, catalog, text), model: r.model } : null;
     },
     async vision(image, lang, layers) {
-      if (!aiReady) return null;
+      if (!visionCfg) return null;
       const r = await callVision(
-        { apiKey, folderId, ...vision },
+        visionCfg,
         buildVisionMessages({ image, mime: "image/jpeg", locale: lang }, layers),
-      ).catch(logAiError("vision"));
+      ).catch(logAiError("vision", visionCfg.provider));
       const raw = parseModelJson(stripThinking(r.content));
       return raw ? { vision: normalizeVision(raw, layers), model: r.model === "pro" ? "main" : "lite" } : null;
     },
     stt(audio, lang) {
-      if (!apiKey) return Promise.reject(Object.assign(new Error("stt"), { code: "not_configured" }));
-      return recognize(audio, lang, apiKey);
+      if (!speech) return Promise.reject(Object.assign(new Error("stt"), { code: "not_configured" }));
+      return speech.recognize(audio, lang);
     },
   };
 

@@ -62,8 +62,9 @@ class _ContractorActsScreenState extends State<ContractorActsScreen> {
       ]);
       if (!mounted) return;
       final first = widget.initialContractorId ??
+          // Демо: сначала ClimaService (постоянный id), чтобы акт был не пустым.
           ctx.contractors
-              .where((c) => c.orgName == 'КлиматСервис')
+              .where((c) => c.id == kDemoClimaServiceId)
               .firstOrNull
               ?.id ??
           ctx.contractors.firstOrNull?.id;
@@ -739,3 +740,6 @@ class _Proof extends StatelessWidget {
         ),
       );
 }
+
+/// Подрядчик ClimaService демо-компании (supabase/seed/demo.sql, id 031).
+const kDemoClimaServiceId = 'de300000-0000-4000-8000-000000000031';

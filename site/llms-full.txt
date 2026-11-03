@@ -1,440 +1,14 @@
-# Эй, Helpy (Hey Helpy) — полное описание / full description
-
-Обновлено / Updated: 2026-10-23. Источник / Source: https://anton-key.github.io/hey-helpy/site/
-Вход в приложение / App: https://anton-key.github.io/hey-helpy/
-Запросить демо / Request a demo: https://t.me/HeyHelpy_bot?start=demo
-
-# Русский
-
-Эй, Helpy (англ. Hey Helpy) — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, цена — по запросу, доступен пилот.
-
-URL: https://anton-key.github.io/hey-helpy/site/
-Эй, Helpy — для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков
-
-## ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков
-
-**Платим подрядчику только за доказанную работу.** Заявку создают текстом, камерой или голосом — в приложении или в Telegram, без установки. Сервис сам понимает, что и где сломалось, отправляет нужному подрядчику и собирает доказательства выполнения.
-
-Запросить демо Смотреть видео
-
-[Кадр: Экран «Проверьте заявку»: фраза «в переговорной на третьем этаже не работает кондиционер» разобрана ИИ — вид работ «Климат», помещение 301, срочность «Высокий»]
-
-### Сколько нужно человек, чтобы повесить один замок?
-
-Сотрудник пишет в общий чат. Администратор звонит диспетчеру. Диспетчер ищет, какой подрядчик отвечает за двери на этом объекте. Менеджер напоминает. Подрядчик приезжает, когда сможет, и присылает акт. Бухгалтерия оплачивает — на слово.
-
-Каждый делает свою часть, но в конце никто не может показать, **что работа сделана, где, когда и кем**. Заявки теряются в переписке, просрочка видна только по жалобам, а платят за всё, что указано в акте.
-
-### Как это работает
-
--
-#### Приём
-Заявку говорят: «Эй, Хелпи, в переговорной на третьем этаже капает вода с кондиционера». Или наводят камеру на оборудование. Или пишут боту в Telegram — заявителю приложение не нужно, достаточно QR-кода на объекте.
-
--
-#### ИИ разбирает
-Модель YandexGPT определяет, что случилось, в каком помещении, какая это система и насколько срочно. По фото сервис находит конкретную единицу оборудования в реестре. Человек только подтверждает.
-
--
-#### Подрядчик
-Заявка сама уходит подрядчику, закреплённому за этой системой на этом объекте. Исполнитель подрядчика получает и ведёт её в приложении, а Telegram присылает ему уведомление.
-
--
-#### Доказательство
-Фото «после» — только живой камерой приложения, со штампом «дата · объект · помещение · в геозоне». Визит отмечается по геозоне объекта, чек-лист — по пунктам. Без фото «после» работу не сдать.
-
--
-#### Акт
-В конце месяца — акт подрядчику: «к оплате» только принятые работы с доказательствами, спорные — на решение менеджера, остальные — с причиной, почему не к оплате.
-
-### Главное
-
-#### Камера-помощник
-Навели камеру на кондиционер — сервис узнал, какое именно это оборудование из реестра, и показал его открытые заявки, плановое ТО и последнюю работу.
-
-[Кадр: Камера-помощник: кондиционер КД-301 узнан с уверенностью 91 %, карточка с открытой заявкой, плановым ТО и последней работой]
-
-#### Заявки из Telegram
-Заявитель сообщает о поломке в Telegram по QR-коду объекта — без приложения. Исполнителю подрядчика бот присылает уведомление, а работу он ведёт в приложении.
-
-[Кадр: Чат исполнителя с ботом: уведомление о новой заявке «Капает вода с кондиционера»]
-
-#### Фото «до» и «после»
-В заявке — всё доказательство: снимки до и после, время, место, документы.
-
-[Кадр: Карточка заявки: фото «до» и «после», документ акта ТО]
-
-[Кадр: Акты подрядчикам: 5 заявок к оплате на 22 500 ₽, 4 без доказательства, 56 % работ доказано]
-
-_Акт подрядчику: к оплате — только доказанная работа. Экран приложения, демо-данные._
-
-Все возможности →
-
-### Демо за две минуты
-
-Сквозная история одной поломки: сказали голосом → навели камеру → заявка с фото → доказательство → акт.
-
-### Для кого
-
-- Бизнес-центры и торговые центры
-
-- Сети и ритейл: много объектов в разных городах и странах
-
-- Управляющие и FM-компании, которые работают с подрядчиками
-
-- Госзаказчики и режимные объекты
-
-Подробнее о каждом сценарии →
-
----
-
-URL: https://anton-key.github.io/hey-helpy/site/features/
-## Возможности
-
-Четыре шага эксплуатации — приём, отправка, исполнение, контроль — в одном сервисе. Ниже — что уже работает в продукте.
-
-### Заявки голосом
-
-Кнопка «Эй, Helpy» — и можно говорить. Текст виден по ходу речи; распознавание — средствами браузера (Chrome, Edge) или системы Android.
-
-- ИИ (YandexGPT) раскладывает фразу на поля заявки: заголовок, описание, систему (климат, электрика, сантехника…), помещение и срочность.
-
-- Если ИИ не ответил за отведённое время — заявку разберёт встроенный словарь; на экране видно, кто разобрал: «Разобрано ИИ» или «Разобрано по словарю».
-
-- Перед отправкой человек проверяет и может поправить любое поле. Можно и просто ввести текстом.
-
-- Подрядчик назначается автоматически — по системе и объекту.
-
-[Кадр: Проверка голосовой заявки: «Разобрано ИИ», вид работ «Климат», помещение «301 · Переговорная», срочность «Высокий»]
-
-### По фото и «Камера-помощник»
-
-Исполнитель или сотрудник наводит камеру телефона на оборудование и нажимает «Что это?».
-
-- Мультимодальная модель описывает снимок: вид оборудования (из каталога из 22 видов), систему, читаемый шильдик, видимую неисправность.
-
-- Какая именно это единица из реестра, решает сам сервис: по серийному номеру, модели, виду, помещению и этажу. Предлагается до трёх вариантов с причинами.
-
-- Карточка оборудования: открытые заявки, ближайшее плановое ТО, последняя выполненная работа.
-
-- «Создать заявку» — объект, помещение, оборудование и система уже заполнены, снимок прикладывается как фото «до».
-
-- Если в кадре нет оборудования, сервис так и говорит. Снимок для распознавания не сохраняется и не пишется в журнал.
-
-[Кадр: Камера-помощник: стоп-кадр с рамкой «КД-301 · 91 %» и карточкой кондиционера]
-
-### AR-метки
-
-Навёл камеру — над оборудованием появляется табличка с открытыми заявками и плановым ТО, например «КД-301 · 1 открытая заявка · ТО до 31.10». Табличка остаётся на месте, пока вы ходите по помещению.
-
-- Касание таблички — карточка оборудования или новая заявка с уже заполненными объектом, помещением и оборудованием.
-
-- Оборудование узнаёт тот же сервис, что и «Камера-помощник»; снимок не сохраняется и не пишется в журнал.
-
-- Положение телефона в помещении считается на самом телефоне. Данные не уходят на сторонние AR-сервисы: облачные якоря и геопозиционирование Google выключены.
-
-- Работает в Android-приложении на телефонах с поддержкой ARCore. На других устройствах — обычная «Камера-помощник».
-
-- Метки пока не сохраняются между запусками: после закрытия экрана оборудование нужно узнать заново. Нужен интернет — распознаёт сервер.
-
-### Заявки и уведомления в Telegram
-
-- **Гости по QR-коду.** На объекте висит плакат A4 с QR-кодом. Любой человек без аккаунта пишет боту текстом, голосовым или фото — заявка создаётся на этот объект. Гость видит только объект своей ссылки; количество заявок ограничено.
-
-- **Рабочие группы.** Группу в Telegram подключают к объекту кодом из приложения; бот читает только обращённые к нему сообщения.
-
-- **Сотрудники** привязывают аккаунт кодом и создают заявки с теми же правами, что в приложении.
-
-- **Автору заявки** приходит: «взята в работу», «выполнена ✅» — с фото «после». От уведомлений можно отписаться.
-
-- **Исполнителю подрядчика** Telegram только присылает уведомление о новой заявке; получает и ведёт заявку он в приложении.
-
-[Кадр: Чат исполнителя с ботом: уведомление о новой заявке (макет с текстами бота)]
-
-### Оплата по доказательству
-
-Акт подрядчику за месяц собирается сам и делит заявки на три группы:
-
-- **К оплате** — заявка принята менеджером, есть фото «после» (если требуется), визит отмечен в геозоне объекта (если у объекта есть координаты), чек-лист выполнен целиком.
-
-- **Требует решения менеджера** — например, время снимка без сети не подтверждено, фото загружено из файла, а не снято камерой, или прислано после отмены заявки. Менеджер подтверждает к оплате (с обязательным комментарием) или не принимает — решение записывается.
-
-- **Без доказательства** — с причиной: нет фото «после», визит вне геозоны, нет визита, работа не принята.
-
-Суммы считаются по ставкам подрядчика «за заявку» и «за визит планового ТО». Акт получает номер вида АКТ-2026-001 и выгружается в PDF и Excel; переформированный акт получает новый номер, прежний помечается «заменён».
-
-[Кадр: Экран «Акты подрядчикам»: группы «К оплате» и «Без доказательства» с причинами]
-
-_Акт: что к оплате, а что — нет и почему. Экран приложения, демо-данные._
-
-#### Из чего складывается доказательство
-
-- **Фото «после»** — только живой камерой приложения, без галереи. В снимок вжигается штамп: дата и время, объект, помещение, «в геозоне». Фото из файла (возможно только в браузере без камеры) помечается и в акте доказательством не считается.
-
-- **Визит по геозоне** — время, расстояние до объекта и попадание в радиус (по умолчанию 150 м) считает база данных, а не телефон.
-
-- **Чек-лист** — кто и когда отметил пункт, записывает база.
-
-### Роли и разделение обязанностей
-
-Кто что может делать с заявкой, проверяет **база данных** (правила доступа и триггеры), а не только интерфейс. Даже обратившись к базе в обход приложения, правила не обойти.
-
-Кто что делает с заявкой
-
-| Действие | Кто |
-
-| Создать заявку | Сотрудник (заявитель), менеджер, гость Telegram по ссылке объекта |
-
-| Назначить подрядчика, срок, срочность | Менеджер с правом на объект и систему, администратор |
-
-| Начать работу, отметить визит и чек-лист, снять фото «после», сдать на проверку | Только исполнитель назначенного подрядчика |
-
-| Принять или вернуть работу | Менеджер или администратор — но не тот, кто сдал её на проверку |
-
-| Отменить | Менеджер; автор — пока работа не начата |
-
-**Менеджер не может закрыть работу за подрядчика.** Если у компании своя служба эксплуатации, её заводят подрядчиком, а работу принимает другой менеджер или администратор.
-
-### Работа без интернета
-
-В подвале, на крыше или в техническом этаже связи часто нет. В Android-приложении можно работать и без неё:
-
-- создать новую заявку — текстом, с фото «до» живой камерой; объект, помещение и вид работ выбираются из справочников, сохранённых на телефоне; заявка уйдёт сама, когда появится связь, и в карточке будет пометка «Создано без сети»;
-
-- свои заявки с чек-листами, помещениями, планами этажей и фото «до» заранее сохраняются на телефоне;
-
-- начать работу, отметить визит и чек-лист, снять фото «после», сдать — действия встают в очередь и отправляются сами, когда появится связь;
-
-- **доверенное время**: время действия считается от последней связи с сервером по часам, которые нельзя перевести, или по GPS; если часы телефона расходятся больше чем на 5 минут, время помечается «не подтверждено»;
-
-- **отпечаток фото** (SHA-256) снимается на телефоне и сверяется на сервере — подмену файла видно;
-
-- спорные случаи (время не подтверждено, заявку отменили, пока не было связи) попадают в акт в группу «Требует решения менеджера».
-
-Время создания заявки, как и время действий исполнителя, — доверенное. При выходе из аккаунта всё сохранённое удаляется с телефона. Веб-версия без интернета не работает.
-
-### Плановое ТО
-
-- План регламентных работ: система, объект или конкретное оборудование, периодичность — месяц, квартал, полугодие, год или каждые N дней, чек-лист.
-
-- Задачи каждого периода создаются сами, без дублей, и уходят закреплённому подрядчику.
-
-- Видно, сколько выполнено в этом месяце, что не начато и что просрочено; у плана — история за 12 периодов.
-
-- Визиты планового ТО оплачиваются по своей ставке в акте подрядчику.
-
-[Кадр: Раздел «Плановое ТО»: задачи месяца по группам «Не начато», «В работе», «Выполнено»]
-
-### Планы этажей и оборудование
-
-- Планы этажей загружаются картинкой (PNG, JPEG, WebP); помещения и оборудование ставятся точками на план.
-
-- Маркеры окрашены по самой тревожной заявке, у оборудования — количество открытых заявок; «Показать на плане» из карточки заявки.
-
-- Реестр оборудования: вид, система, производитель, модель, серийный номер, дата установки, история заявок и планы ТО. Импорт из Excel и CSV по шаблону.
-
-- Объекты на карте с кластерами по городам; группировка «регион → страна → город».
-
-[Кадр: План этажа на ПК: маркеры помещений и оборудования, кондиционер серверной с просроченной заявкой выделен красным]
-
-_План этажа: просроченное видно сразу (нарисованная демо-схема). Экран приложения, демо-данные._
-
-### Документы
-
-К заявке прикладываются документы: PDF, DOC(X), XLS(X), JPG, PNG, TXT — до 20 МБ. Файлы закрыты: открываются по временной ссылке только теми, кто видит заявку.
-
-[Кадр: Карточка заявки: фото «до» и «после», раздел «Документы»]
-
-### Отчёты
-
-- По подрядчикам за период: визиты в геозоне, время на объекте, доля работ в срок, приёмка с первого раза, возвраты.
-
-- Разрезы по регионам и типам заявок, статистика узнавания по фото.
-
-- Отчёт в PDF одним нажатием; акт подрядчику — PDF и Excel.
-
-- История принятых и отменённых заявок за период.
-
-[Кадр: Отчёт по подрядчикам за 30 дней: визиты, время, доля в срок, приёмка с первого раза]
-
-_Контроль подрядчиков цифрами (демо-данные). Экран приложения, демо-данные._
-
-### Регионы и зоны доступа
-
-- Портфель объектов в нескольких городах и странах: регионы, страны, города.
-
-- Зона доступа менеджера — «системы × места», например «Климат · Москва»: менеджер видит и меняет только своё.
-
-- Бригады подрядчика: исполнитель видит только заявки зоны своей бригады.
-
-- Журнал изменений доступа (роли, зоны, бригады) — только для администратора, только чтение.
-
-- Интерфейс на русском и английском.
-
----
-
-URL: https://anton-key.github.io/hey-helpy/site/industries/
-## Для кого
-
-Эй, Helpy нужен там, где здание обслуживают подрядчики, а платить хочется только за сделанную работу.
-
-### Бизнес-центры и торговые центры
-
-- Арендаторы и сотрудники сообщают о поломке голосом, фото или по QR-коду в Telegram — без звонков на ресепшен.
-
-- Заявка привязана к помещению и точке на плане этажа; просроченное видно сразу.
-
-- Каждая система (климат, электрика, сантехника, клининг, безопасность) — со своими подрядчиками и оборудованием.
-
-- Плановое ТО по графику без таблиц: задачи месяца создаются сами.
-
-### Сети и ритейл
-
-- Много объектов в разных городах и странах — на одной карте, по регионам.
-
-- Региональный менеджер видит только свою зону: свои города и системы.
-
-- Подрядчики закреплены за системами и объектами; заявка уходит нужному сама.
-
-- Отчёт по каждому подрядчику: визиты, время на объекте, работы в срок.
-
-### Управляющие и FM-компании
-
-- Акт подрядчику, в котором к оплате только доказанная работа — фото «после» со штампом, визит в геозоне, чек-лист.
-
-- Разделение обязанностей: исполнитель сдаёт, другой человек принимает.
-
-- Отчёт собственнику в PDF одним нажатием.
-
-- Исполнители подрядчика получают и ведут заявки в Android-приложении, в том числе без интернета; Telegram присылает им уведомления.
-
-### Госзаказчики и режимные объекты
-
-- Каждое действие с заявкой проверяет база данных, история и журнал изменений доступа сохраняются.
-
-- Подтверждение выполнения — время, место и фото, которые сложно подделать, в том числе без связи на объекте.
-
-- Размещение данных в России (Yandex Cloud) и выделенные варианты развёртывания — в планах; условия обсуждаются в пилоте. Подробнее о безопасности и развёртывании.
-
-Сертификации для работы с государственными информационными системами у продукта сейчас нет.
-
----
-
-URL: https://anton-key.github.io/hey-helpy/site/security/
-## Безопасность и развёртывание
-
-Права в Эй, Helpy проверяет база данных. Интерфейс только показывает то, что разрешено.
-
-### Изоляция компаний
-
-- Данные компаний разделены правилами доступа на уровне строк базы данных PostgreSQL (Row Level Security) — на каждой таблице.
-
-- Компании и менеджеры разных объектов изолированы — каждый видит только свою информацию.
-
-- Новый пользователь без приглашения не видит ничего: в компанию вступают по коду приглашения (срок — 7 дней).
-
-### Роли и разделение обязанностей
-
-- Роли: администратор, менеджер (вся компания или своя зона доступа), исполнитель подрядчика, заявитель.
-
-- Сменить роль или компанию можно только через проверяемые функции базы, не правкой профиля.
-
-- Работу начинает и сдаёт только исполнитель назначенного подрядчика; принимает другой человек. Таблица ролей.
-
-- Внутренний аудит прав (октябрь 2026) нашёл несколько проблем внутри компании; исправления выпущены и применены.
-
-### Файлы, журнал, ИИ
-
-- Фото, документы, планы этажей и акты — в закрытых хранилищах; публичных ссылок нет, только временные ссылки для тех, кто имеет доступ.
-
-- История заявки и время действий пишет база. Журнал изменений ролей, зон и бригад видит администратор, изменить его нельзя.
-
-- Ключи ИИ — только на сервере. Модели вызываются с правами пользователя; ответ модели сверяется со справочниками компании.
-
-- В журналы сервера не пишутся тексты заявок, ответы модели и снимки для распознавания — только служебные данные (время, размер, код ошибки).
-
-- Telegram-бот не показывает приложению номера чатов; телефоны сотрудников видят только сам человек и менеджеры.
-
-### Где работает и варианты развёртывания
-
-Варианты размещения
-
-| Вариант | Состояние |
-
-| Облачный сервис (SaaS): база PostgreSQL на Supabase, серверы в ЕС; ИИ — YandexGPT (Yandex Cloud) | Работает сейчас |
-
-| Размещение в России: Supabase на своих серверах в Yandex Cloud, распознавание речи Yandex SpeechKit | В планах |
-
-| Выделенное облако заказчика, on-premise, изолированный контур | Обсуждается в пилоте: стек открытый (PostgreSQL, Supabase), готовой поставки пока нет |
-
-Клиенты: веб-версия в браузере и Android-приложение.
-
----
-
-URL: https://anton-key.github.io/hey-helpy/site/faq/
-## Частые вопросы
-
-### Что такое Эй, Helpy?
-ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков. Заявки принимаются голосом, по фото и через Telegram, подрядчик назначается автоматически, а в акт к оплате попадает только работа с доказательствами: фото «после» со штампом, визит в геозоне объекта и выполненный чек-лист.
-
-### Чем это отличается от Excel или чата в мессенджере?
-В чате заявка теряется, а в таблице её надо заполнять руками. В Эй, Helpy заявку достаточно сказать или сфотографировать — ИИ сам заполнит место, систему и срочность, подрядчик назначится по закреплению, просрочка видна сразу. Главное отличие — доказательства: время, место и фото «после» фиксируются автоматически, и акт показывает, за что платить, а за что нет.
-
-### А если в подвале нет связи?
-Android-приложение работает без интернета: новую заявку можно создать и без связи, а заявки исполнителя заранее сохраняются на телефоне, действия и фото «после» встают в очередь и отправляются сами, когда появится связь. Время подтверждается по часам, которые нельзя перевести, или по GPS, а отпечаток фото сверяется на сервере. Если время подтвердить нельзя, заявка попадает в акт на решение менеджера.
-
-### Можно ли подать заявку без приложения?
-Да. На объекте вешается QR-код: любой человек пишет боту в Telegram текстом, голосовым или фото — без регистрации. Можно подключить к объекту рабочую группу в Telegram. Автор получает уведомления «взята в работу» и «выполнена» с фото.
-
-### Нужно ли подрядчику что-то устанавливать?
-Да, исполнитель подрядчика получает и ведёт заявку в приложении — на Android или в браузере: начинает работу, отмечает визит и чек-лист, снимает фото «после». Telegram ему только присылает уведомления о новых заявках.
-
-### Может ли менеджер закрыть заявку за подрядчика?
-Нет. Начать работу, снять фото «после» и сдать её может только исполнитель назначенного подрядчика, а принять — менеджер, который её не сдавал. Это проверяет база данных, а не только интерфейс.
-
-### Как ИИ понимает, что и где сломалось?
-Модель YandexGPT разбирает фразу в заявку: систему, помещение и срочность — только из справочников вашей компании. По фото модель описывает оборудование, а сервис находит конкретную единицу в реестре по серийному номеру, модели, виду и помещению. Если ИИ недоступен, работает разбор по словарю или выбор вручную.
-
-### Где хранятся данные?
-Сейчас — в облачной базе PostgreSQL (Supabase) на серверах в ЕС, данные компаний изолированы правилами доступа базы. Размещение в России на Yandex Cloud — в планах. Варианты выделенного облака и собственных серверов обсуждаются в пилоте.
-
-### На каких устройствах работает?
-В браузере на компьютере и телефоне (голосовой ввод — в Chrome и Edge) и в приложении для Android. Приложения для iPhone пока нет.
-
-### На каких языках интерфейс?
-На русском и английском; язык переключается в настройках.
-
-### Сколько стоит?
-Цена — по запросу и зависит от количества объектов. Сейчас продукт в стадии MVP, и мы предлагаем пилот на ваших объектах. Запросить демо или пилот — кнопкой «Запросить демо»: откроется наш бот в Telegram.
-
----
-
-URL: https://anton-key.github.io/hey-helpy/site/contact/
-## Запросить демо или пилот
-
-Покажем сервис на демо-данных и обсудим пилот на ваших объектах.
-
-Откроется чат с нашим ботом @HeyHelpy_bot. Он попросит одно сообщение: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы ответим там же, в Telegram.
-Написать в Telegram
-Нет Telegram? Ссылку можно открыть на компьютере в браузере — Telegram предложит веб-версию.
-QR: https://t.me/HeyHelpy_bot?start=demo
-_Наведите камеру телефона — откроется чат с ботом._
-
-### Что написать в сообщении
-
-- Тип и количество объектов (офисы, ТЦ, склады, отели…) и города.
-
-- Сколько подрядчиков и по каким системам.
-
-- Как сейчас принимаются заявки и как подтверждается выполнение.
-
-Уже есть доступ? Войти в приложение.
+# Hey Helpy — full description / полное описание
+
+Updated: 2026-10-23. Source: https://anton-key.github.io/hey-helpy/site/
+App: https://anton-key.github.io/hey-helpy/
+Request a demo: https://t.me/HeyHelpy_bot?start=demo
 
 # English
 
-Hey Helpy (Russian: «Эй, Helpy») is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.
+Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.
 
-URL: https://anton-key.github.io/hey-helpy/site/en/
+URL: https://anton-key.github.io/hey-helpy/site/
 Hey Helpy — for business and shopping centres, chains and retail, property management and FM companies, public-sector customers
 
 ## AI service for property maintenance and contractor control
@@ -443,7 +17,9 @@ Hey Helpy — for business and shopping centres, chains and retail, property man
 
 Request a demo Watch the video
 
-[Screenshot: The “Check the work order” screen: a spoken request about a broken air conditioner in a meeting room parsed by AI into system, room and priority (app in Russian)]
+[Screenshot: Hotel room: an AR label above the air conditioner with diagnostics and an open work order]
+
+_Illustration_
 
 ### How many people does it take to fix one lock?
 
@@ -459,7 +35,7 @@ Say it: “Hey, Helpy, water is dripping from the air conditioner in the third-f
 
 -
 #### AI parses it
-YandexGPT works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.
+An AI model works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.
 
 -
 #### Contractor
@@ -472,6 +48,42 @@ The “after” photo can only be taken with the app’s live camera and carries
 -
 #### Contractor act
 At month-end the contractor act is built automatically: only accepted work with proof is payable, disputed items go to a manager’s decision, the rest show why they are not payable.
+
+[Screenshot: A hand holds a phone pointed at an office air conditioner: a label above it shows work orders and maintenance]
+
+_Illustration_
+
+### Any unit, same flow
+
+A fridge, a faucet, a light or a lobby camera — the technician points the camera, the service recognises the equipment from the register and shows its work orders and preventive maintenance. A new work order takes one tap, with the place and equipment already filled in.
+
+[Screenshot: Office fridge with an AR card and a maintenance checklist]
+
+_Illustration_
+
+#### Office fridge
+The preventive maintenance checklist right at the unit.
+
+[Screenshot: Leaking faucet with a plumbing AR label]
+
+_Illustration_
+
+#### Leaking faucet
+A work order with a “before” photo goes to the contractor assigned to plumbing at the site.
+
+[Screenshot: Faulty LED ceiling panel with an AR label]
+
+_Illustration_
+
+#### Light fixture
+The fault is visible in the shot; due date and contractor are in the work order.
+
+[Screenshot: Lobby security camera with an AR card]
+
+_Illustration_
+
+#### Lobby camera
+Security systems have their own contractor, equipment and history.
 
 ### Highlights
 
@@ -490,11 +102,27 @@ The work order holds all the proof: photos before and after, time, place, docume
 
 [Screenshot: Work order card: “before” and “after” photos and a maintenance document (app in Russian)]
 
-[Screenshot: Contractor acts: 5 work orders payable (22,500 ₽), 4 without proof, 56 % of work proven (app in Russian)]
+[Screenshot: Contractor acts: 5 work orders payable, 4 without proof, 56 % of work proven]
 
 _Contractor act: only proven work is payable. App screen, demo data._
 
 All features →
+
+### Hey Helpy Spatial — work orders on the plan and in space
+
+Rooms and equipment are pinned on the floor plan, and anything overdue stands out. On ARCore phones, AR labels show work orders and maintenance right above the equipment. The illustration shows where we are taking this: the whole floor, with every work order tied to its place.
+
+[Screenshot: Isometric office floor: rooms, equipment and work order markers]
+
+_Illustration_
+
+### Proof of completion
+
+The “after” photo comes only from the app’s live camera, with a stamp: date, site, room, “inside geofence”. The visit is checked against the site’s geofence, the checklist item by item. Only proven work goes into the contractor act as payable.
+
+[Screenshot: Pipes in a plant room with an inspection AR label]
+
+_Illustration_
 
 ### Two-minute demo
 
@@ -514,7 +142,7 @@ More about each scenario →
 
 ---
 
-URL: https://anton-key.github.io/hey-helpy/site/en/features/
+URL: https://anton-key.github.io/hey-helpy/site/features/
 ## Features
 
 The four stages of maintenance — intake, dispatch, execution, control — in one service. Below is what already works in the product.
@@ -523,7 +151,7 @@ The four stages of maintenance — intake, dispatch, execution, control — in o
 
 Tap “Hey Helpy” and speak. The text appears as you talk; speech recognition is done by the browser (Chrome, Edge) or by Android.
 
-- AI (YandexGPT) turns the phrase into work order fields: title, description, system (HVAC, electrical, plumbing…), room and priority.
+- An AI model turns the phrase into work order fields: title, description, system (HVAC, electrical, plumbing…), room and priority.
 
 - If the AI does not answer in time, a built-in dictionary parses the request; the screen shows which one did: “Parsed by AI” or “Parsed by dictionary”.
 
@@ -689,20 +317,20 @@ _Contractor control in numbers (demo data). App screen, demo data._
 
 - A portfolio of sites across cities and countries: regions, countries, cities.
 
-- A manager’s access zone is “systems × places”, e.g. “HVAC · Moscow”: the manager sees and changes only their part.
+- A manager’s access zone is “systems × places”, e.g. “HVAC · Dubai”: the manager sees and changes only their part.
 
 - Contractor crews: a technician sees only the work orders in their crew’s zone.
 
 - Access change log (roles, zones, crews) — administrator only, read-only.
 
-- Interface in Russian and English.
+- Interface in English and Russian.
 
 ---
 
-URL: https://anton-key.github.io/hey-helpy/site/en/industries/
+URL: https://anton-key.github.io/hey-helpy/site/industries/
 ## Who it’s for
 
-Hey Helpy fits wherever buildings are serviced by contractors and you want to pay only for work actually done.
+Hey Helpy fits wherever buildings are serviced by contractors and you want to pay only for work actually done — in the United States, Europe and the Middle East.
 
 ### Business centres and shopping centres
 
@@ -740,13 +368,13 @@ Hey Helpy fits wherever buildings are serviced by contractors and you want to pa
 
 - Proof of completion — time, place and photo that are hard to fake, even with no signal on site.
 
-- Hosting data in Russia (Yandex Cloud) and dedicated deployment options are planned; terms are discussed during a pilot. More on security and deployment.
+- Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud or installation on the customer’s own servers — terms are discussed during a pilot. More on security and deployment.
 
-The product currently has no certification for government information systems.
+The product has no public-sector certifications yet.
 
 ---
 
-URL: https://anton-key.github.io/hey-helpy/site/en/security/
+URL: https://anton-key.github.io/hey-helpy/site/security/
 ## Security and deployment
 
 In Hey Helpy permissions are enforced by the database. The interface only shows what is allowed.
@@ -787,17 +415,17 @@ Hosting options
 
 | Option | Status |
 
-| Cloud service (SaaS): PostgreSQL on Supabase, servers in the EU; AI — YandexGPT (Yandex Cloud) | Available now |
+| Cloud (SaaS): PostgreSQL on Supabase, EU region; AI models via a standard API, provider configurable | Available now |
 
-| Hosting in Russia: self-hosted Supabase in Yandex Cloud, Yandex SpeechKit speech recognition | Planned |
+| Cloud in the region of the customer’s choice: US, EU, UAE | For a pilot: the same stack in the required region |
 
-| Customer’s dedicated cloud, on-premise, isolated network | Discussed during a pilot: the stack is open (PostgreSQL, Supabase), no packaged delivery yet |
+| Customer’s dedicated cloud, installation on the customer’s own servers, isolated network | Discussed during a pilot: the stack is open (PostgreSQL, Supabase), no packaged delivery yet |
 
 Clients: web version in the browser and the Android app.
 
 ---
 
-URL: https://anton-key.github.io/hey-helpy/site/en/faq/
+URL: https://anton-key.github.io/hey-helpy/site/faq/
 ## Frequently asked questions
 
 ### What is Hey Helpy?
@@ -819,23 +447,23 @@ Yes, the contractor’s technician receives and handles work orders in the app �
 No. Only a technician of the assigned contractor can start the work, take the “after” photo and submit it, and only a manager who did not submit it can accept it. This is enforced by the database, not just the interface.
 
 ### How does the AI know what broke and where?
-YandexGPT parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.
+An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.
 
 ### Where is the data stored?
-Currently in a cloud PostgreSQL database (Supabase) on servers in the EU; company data is isolated by database access policies. Hosting in Russia on Yandex Cloud is planned. Dedicated cloud and on-premise options are discussed during a pilot.
+Currently in a cloud PostgreSQL database (Supabase) in the EU region; company data is isolated by database access policies. Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud and installation on the customer’s own servers are discussed during a pilot.
 
 ### Which devices does it run on?
 In a browser on desktop and mobile (voice input in Chrome and Edge) and in the Android app. There is no iPhone app yet.
 
 ### Which languages does the interface support?
-Russian and English; the language is switched in settings.
+English (default) and Russian; the language is switched in settings.
 
 ### How much does it cost?
 Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.
 
 ---
 
-URL: https://anton-key.github.io/hey-helpy/site/en/contact/
+URL: https://anton-key.github.io/hey-helpy/site/contact/
 ## Request a demo or pilot
 
 We will show the service on demo data and discuss a pilot at your sites.
@@ -855,3 +483,483 @@ _Point your phone camera — the chat with the bot will open._
 - How work orders are received today and how completion is confirmed.
 
 Already have access? Sign in to the app.
+
+# Русский
+
+Hey Helpy — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, цена — по запросу, доступен пилот.
+
+URL: https://anton-key.github.io/hey-helpy/site/ru/
+Hey Helpy — для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков
+
+## ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков
+
+**Платим подрядчику только за доказанную работу.** Заявку создают текстом, камерой или голосом — в приложении или в Telegram, без установки. Сервис сам понимает, что и где сломалось, отправляет нужному подрядчику и собирает доказательства выполнения.
+
+Запросить демо Смотреть видео
+
+[Кадр: Гостиничный номер: над кондиционером — AR-метка с диагностикой и открытой заявкой]
+
+_Иллюстрация_
+
+### Сколько нужно человек, чтобы повесить один замок?
+
+Сотрудник пишет в общий чат. Администратор звонит диспетчеру. Диспетчер ищет, какой подрядчик отвечает за двери на этом объекте. Менеджер напоминает. Подрядчик приезжает, когда сможет, и присылает акт. Бухгалтерия оплачивает — на слово.
+
+Каждый делает свою часть, но в конце никто не может показать, **что работа сделана, где, когда и кем**. Заявки теряются в переписке, просрочка видна только по жалобам, а платят за всё, что указано в акте.
+
+### Как это работает
+
+-
+#### Приём
+Заявку говорят: «Эй, Хелпи, в переговорной на третьем этаже капает вода с кондиционера». Или наводят камеру на оборудование. Или пишут боту в Telegram — заявителю приложение не нужно, достаточно QR-кода на объекте.
+
+-
+#### ИИ разбирает
+ИИ-модель определяет, что случилось, в каком помещении, какая это система и насколько срочно. По фото сервис находит конкретную единицу оборудования в реестре. Человек только подтверждает.
+
+-
+#### Подрядчик
+Заявка сама уходит подрядчику, закреплённому за этой системой на этом объекте. Исполнитель подрядчика получает и ведёт её в приложении, а Telegram присылает ему уведомление.
+
+-
+#### Доказательство
+Фото «после» — только живой камерой приложения, со штампом «дата · объект · помещение · в геозоне». Визит отмечается по геозоне объекта, чек-лист — по пунктам. Без фото «после» работу не сдать.
+
+-
+#### Акт
+В конце месяца — акт подрядчику: «к оплате» только принятые работы с доказательствами, спорные — на решение менеджера, остальные — с причиной, почему не к оплате.
+
+[Кадр: Телефон в руке наведён на офисный кондиционер: над ним — табличка с заявками и плановым ТО]
+
+_Иллюстрация_
+
+### Любое оборудование — один сценарий
+
+Холодильник, кран, светильник или камера в лобби — исполнитель наводит камеру, сервис узнаёт оборудование из реестра и показывает его заявки и плановое ТО. Новая заявка — одним касанием, место и оборудование уже заполнены.
+
+[Кадр: Офисный холодильник с AR-карточкой и чек-листом ТО]
+
+_Иллюстрация_
+
+#### Холодильник в офисе
+Чек-лист планового ТО — прямо у оборудования.
+
+[Кадр: Протекающий кран с AR-меткой сантехники]
+
+_Иллюстрация_
+
+#### Протекающий кран
+Заявка с фото «до» уходит подрядчику, закреплённому за сантехникой на объекте.
+
+[Кадр: Неисправная LED-панель на потолке с AR-меткой]
+
+_Иллюстрация_
+
+#### Светильник
+Неисправность видна на снимке, срок и подрядчик — в заявке.
+
+[Кадр: Камера видеонаблюдения в лобби с AR-карточкой]
+
+_Иллюстрация_
+
+#### Камера в лобби
+Системы безопасности — со своим подрядчиком, оборудованием и историей.
+
+### Главное
+
+#### Камера-помощник
+Навели камеру на кондиционер — сервис узнал, какое именно это оборудование из реестра, и показал его открытые заявки, плановое ТО и последнюю работу.
+
+[Кадр: Камера-помощник: кондиционер КД-301 узнан с уверенностью 91 %, карточка с открытой заявкой, плановым ТО и последней работой]
+
+#### Заявки из Telegram
+Заявитель сообщает о поломке в Telegram по QR-коду объекта — без приложения. Исполнителю подрядчика бот присылает уведомление, а работу он ведёт в приложении.
+
+[Кадр: Чат исполнителя с ботом: уведомление о новой заявке «Капает вода с кондиционера»]
+
+#### Фото «до» и «после»
+В заявке — всё доказательство: снимки до и после, время, место, документы.
+
+[Кадр: Карточка заявки: фото «до» и «после», документ акта ТО]
+
+[Кадр: Акты подрядчикам: 5 заявок к оплате, 4 без доказательства, 56 % работ доказано]
+
+_Акт подрядчику: к оплате — только доказанная работа. Экран приложения, демо-данные._
+
+Все возможности →
+
+### Hey Helpy Spatial — заявки на плане и в пространстве
+
+Помещения и оборудование стоят точками на плане этажа, просроченное видно сразу. На телефонах с ARCore AR-метки показывают заявки и ТО прямо над оборудованием. Иллюстрация — куда мы развиваем это направление: весь этаж, где каждая заявка привязана к месту.
+
+[Кадр: Изометрия офисного этажа: помещения, оборудование и метки заявок]
+
+_Иллюстрация_
+
+### Доказательство выполнения
+
+Фото «после» — только живой камерой, со штампом: дата, объект, помещение, «в геозоне». Визит отмечается по геозоне объекта, чек-лист — по пунктам. В акт к оплате попадает только доказанная работа.
+
+[Кадр: Трубы в техническом помещении с AR-меткой проверки]
+
+_Иллюстрация_
+
+### Демо за две минуты
+
+Сквозная история одной поломки: сказали голосом → навели камеру → заявка с фото → доказательство → акт.
+
+### Для кого
+
+- Бизнес-центры и торговые центры
+
+- Сети и ритейл: много объектов в разных городах и странах
+
+- Управляющие и FM-компании, которые работают с подрядчиками
+
+- Госзаказчики и режимные объекты
+
+Подробнее о каждом сценарии →
+
+---
+
+URL: https://anton-key.github.io/hey-helpy/site/ru/features/
+## Возможности
+
+Четыре шага эксплуатации — приём, отправка, исполнение, контроль — в одном сервисе. Ниже — что уже работает в продукте.
+
+### Заявки голосом
+
+Кнопка «Hey Helpy» — и можно говорить. Текст виден по ходу речи; распознавание — средствами браузера (Chrome, Edge) или системы Android.
+
+- ИИ-модель раскладывает фразу на поля заявки: заголовок, описание, систему (климат, электрика, сантехника…), помещение и срочность.
+
+- Если ИИ не ответил за отведённое время — заявку разберёт встроенный словарь; на экране видно, кто разобрал: «Разобрано ИИ» или «Разобрано по словарю».
+
+- Перед отправкой человек проверяет и может поправить любое поле. Можно и просто ввести текстом.
+
+- Подрядчик назначается автоматически — по системе и объекту.
+
+[Кадр: Проверка голосовой заявки: «Разобрано ИИ», вид работ «Климат», помещение «301 · Переговорная», срочность «Высокий»]
+
+### По фото и «Камера-помощник»
+
+Исполнитель или сотрудник наводит камеру телефона на оборудование и нажимает «Что это?».
+
+- Мультимодальная модель описывает снимок: вид оборудования (из каталога из 22 видов), систему, читаемый шильдик, видимую неисправность.
+
+- Какая именно это единица из реестра, решает сам сервис: по серийному номеру, модели, виду, помещению и этажу. Предлагается до трёх вариантов с причинами.
+
+- Карточка оборудования: открытые заявки, ближайшее плановое ТО, последняя выполненная работа.
+
+- «Создать заявку» — объект, помещение, оборудование и система уже заполнены, снимок прикладывается как фото «до».
+
+- Если в кадре нет оборудования, сервис так и говорит. Снимок для распознавания не сохраняется и не пишется в журнал.
+
+[Кадр: Камера-помощник: стоп-кадр с рамкой «КД-301 · 91 %» и карточкой кондиционера]
+
+### AR-метки
+
+Навёл камеру — над оборудованием появляется табличка с открытыми заявками и плановым ТО, например «КД-301 · 1 открытая заявка · ТО до 31.10». Табличка остаётся на месте, пока вы ходите по помещению.
+
+- Касание таблички — карточка оборудования или новая заявка с уже заполненными объектом, помещением и оборудованием.
+
+- Оборудование узнаёт тот же сервис, что и «Камера-помощник»; снимок не сохраняется и не пишется в журнал.
+
+- Положение телефона в помещении считается на самом телефоне. Данные не уходят на сторонние AR-сервисы: облачные якоря и геопозиционирование Google выключены.
+
+- Работает в Android-приложении на телефонах с поддержкой ARCore. На других устройствах — обычная «Камера-помощник».
+
+- Метки пока не сохраняются между запусками: после закрытия экрана оборудование нужно узнать заново. Нужен интернет — распознаёт сервер.
+
+### Заявки и уведомления в Telegram
+
+- **Гости по QR-коду.** На объекте висит плакат A4 с QR-кодом. Любой человек без аккаунта пишет боту текстом, голосовым или фото — заявка создаётся на этот объект. Гость видит только объект своей ссылки; количество заявок ограничено.
+
+- **Рабочие группы.** Группу в Telegram подключают к объекту кодом из приложения; бот читает только обращённые к нему сообщения.
+
+- **Сотрудники** привязывают аккаунт кодом и создают заявки с теми же правами, что в приложении.
+
+- **Автору заявки** приходит: «взята в работу», «выполнена ✅» — с фото «после». От уведомлений можно отписаться.
+
+- **Исполнителю подрядчика** Telegram только присылает уведомление о новой заявке; получает и ведёт заявку он в приложении.
+
+[Кадр: Чат исполнителя с ботом: уведомление о новой заявке (макет с текстами бота)]
+
+### Оплата по доказательству
+
+Акт подрядчику за месяц собирается сам и делит заявки на три группы:
+
+- **К оплате** — заявка принята менеджером, есть фото «после» (если требуется), визит отмечен в геозоне объекта (если у объекта есть координаты), чек-лист выполнен целиком.
+
+- **Требует решения менеджера** — например, время снимка без сети не подтверждено, фото загружено из файла, а не снято камерой, или прислано после отмены заявки. Менеджер подтверждает к оплате (с обязательным комментарием) или не принимает — решение записывается.
+
+- **Без доказательства** — с причиной: нет фото «после», визит вне геозоны, нет визита, работа не принята.
+
+Суммы считаются по ставкам подрядчика «за заявку» и «за визит планового ТО». Акт получает номер вида АКТ-2026-001 и выгружается в PDF и Excel; переформированный акт получает новый номер, прежний помечается «заменён».
+
+[Кадр: Экран «Акты подрядчикам»: группы «К оплате» и «Без доказательства» с причинами]
+
+_Акт: что к оплате, а что — нет и почему. Экран приложения, демо-данные._
+
+#### Из чего складывается доказательство
+
+- **Фото «после»** — только живой камерой приложения, без галереи. В снимок вжигается штамп: дата и время, объект, помещение, «в геозоне». Фото из файла (возможно только в браузере без камеры) помечается и в акте доказательством не считается.
+
+- **Визит по геозоне** — время, расстояние до объекта и попадание в радиус (по умолчанию 150 м) считает база данных, а не телефон.
+
+- **Чек-лист** — кто и когда отметил пункт, записывает база.
+
+### Роли и разделение обязанностей
+
+Кто что может делать с заявкой, проверяет **база данных** (правила доступа и триггеры), а не только интерфейс. Даже обратившись к базе в обход приложения, правила не обойти.
+
+Кто что делает с заявкой
+
+| Действие | Кто |
+
+| Создать заявку | Сотрудник (заявитель), менеджер, гость Telegram по ссылке объекта |
+
+| Назначить подрядчика, срок, срочность | Менеджер с правом на объект и систему, администратор |
+
+| Начать работу, отметить визит и чек-лист, снять фото «после», сдать на проверку | Только исполнитель назначенного подрядчика |
+
+| Принять или вернуть работу | Менеджер или администратор — но не тот, кто сдал её на проверку |
+
+| Отменить | Менеджер; автор — пока работа не начата |
+
+**Менеджер не может закрыть работу за подрядчика.** Если у компании своя служба эксплуатации, её заводят подрядчиком, а работу принимает другой менеджер или администратор.
+
+### Работа без интернета
+
+В подвале, на крыше или в техническом этаже связи часто нет. В Android-приложении можно работать и без неё:
+
+- создать новую заявку — текстом, с фото «до» живой камерой; объект, помещение и вид работ выбираются из справочников, сохранённых на телефоне; заявка уйдёт сама, когда появится связь, и в карточке будет пометка «Создано без сети»;
+
+- свои заявки с чек-листами, помещениями, планами этажей и фото «до» заранее сохраняются на телефоне;
+
+- начать работу, отметить визит и чек-лист, снять фото «после», сдать — действия встают в очередь и отправляются сами, когда появится связь;
+
+- **доверенное время**: время действия считается от последней связи с сервером по часам, которые нельзя перевести, или по GPS; если часы телефона расходятся больше чем на 5 минут, время помечается «не подтверждено»;
+
+- **отпечаток фото** (SHA-256) снимается на телефоне и сверяется на сервере — подмену файла видно;
+
+- спорные случаи (время не подтверждено, заявку отменили, пока не было связи) попадают в акт в группу «Требует решения менеджера».
+
+Время создания заявки, как и время действий исполнителя, — доверенное. При выходе из аккаунта всё сохранённое удаляется с телефона. Веб-версия без интернета не работает.
+
+### Плановое ТО
+
+- План регламентных работ: система, объект или конкретное оборудование, периодичность — месяц, квартал, полугодие, год или каждые N дней, чек-лист.
+
+- Задачи каждого периода создаются сами, без дублей, и уходят закреплённому подрядчику.
+
+- Видно, сколько выполнено в этом месяце, что не начато и что просрочено; у плана — история за 12 периодов.
+
+- Визиты планового ТО оплачиваются по своей ставке в акте подрядчику.
+
+[Кадр: Раздел «Плановое ТО»: задачи месяца по группам «Не начато», «В работе», «Выполнено»]
+
+### Планы этажей и оборудование
+
+- Планы этажей загружаются картинкой (PNG, JPEG, WebP); помещения и оборудование ставятся точками на план.
+
+- Маркеры окрашены по самой тревожной заявке, у оборудования — количество открытых заявок; «Показать на плане» из карточки заявки.
+
+- Реестр оборудования: вид, система, производитель, модель, серийный номер, дата установки, история заявок и планы ТО. Импорт из Excel и CSV по шаблону.
+
+- Объекты на карте с кластерами по городам; группировка «регион → страна → город».
+
+[Кадр: План этажа на ПК: маркеры помещений и оборудования, кондиционер серверной с просроченной заявкой выделен красным]
+
+_План этажа: просроченное видно сразу (нарисованная демо-схема). Экран приложения, демо-данные._
+
+### Документы
+
+К заявке прикладываются документы: PDF, DOC(X), XLS(X), JPG, PNG, TXT — до 20 МБ. Файлы закрыты: открываются по временной ссылке только теми, кто видит заявку.
+
+[Кадр: Карточка заявки: фото «до» и «после», раздел «Документы»]
+
+### Отчёты
+
+- По подрядчикам за период: визиты в геозоне, время на объекте, доля работ в срок, приёмка с первого раза, возвраты.
+
+- Разрезы по регионам и типам заявок, статистика узнавания по фото.
+
+- Отчёт в PDF одним нажатием; акт подрядчику — PDF и Excel.
+
+- История принятых и отменённых заявок за период.
+
+[Кадр: Отчёт по подрядчикам за 30 дней: визиты, время, доля в срок, приёмка с первого раза]
+
+_Контроль подрядчиков цифрами (демо-данные). Экран приложения, демо-данные._
+
+### Регионы и зоны доступа
+
+- Портфель объектов в нескольких городах и странах: регионы, страны, города.
+
+- Зона доступа менеджера — «системы × места», например «Климат · Дубай»: менеджер видит и меняет только своё.
+
+- Бригады подрядчика: исполнитель видит только заявки зоны своей бригады.
+
+- Журнал изменений доступа (роли, зоны, бригады) — только для администратора, только чтение.
+
+- Интерфейс на английском и русском.
+
+---
+
+URL: https://anton-key.github.io/hey-helpy/site/ru/industries/
+## Для кого
+
+Hey Helpy нужен там, где здание обслуживают подрядчики, а платить хочется только за сделанную работу, — в США, Европе и на Ближнем Востоке.
+
+### Бизнес-центры и торговые центры
+
+- Арендаторы и сотрудники сообщают о поломке голосом, фото или по QR-коду в Telegram — без звонков на ресепшен.
+
+- Заявка привязана к помещению и точке на плане этажа; просроченное видно сразу.
+
+- Каждая система (климат, электрика, сантехника, клининг, безопасность) — со своими подрядчиками и оборудованием.
+
+- Плановое ТО по графику без таблиц: задачи месяца создаются сами.
+
+### Сети и ритейл
+
+- Много объектов в разных городах и странах — на одной карте, по регионам.
+
+- Региональный менеджер видит только свою зону: свои города и системы.
+
+- Подрядчики закреплены за системами и объектами; заявка уходит нужному сама.
+
+- Отчёт по каждому подрядчику: визиты, время на объекте, работы в срок.
+
+### Управляющие и FM-компании
+
+- Акт подрядчику, в котором к оплате только доказанная работа — фото «после» со штампом, визит в геозоне, чек-лист.
+
+- Разделение обязанностей: исполнитель сдаёт, другой человек принимает.
+
+- Отчёт собственнику в PDF одним нажатием.
+
+- Исполнители подрядчика получают и ведут заявки в Android-приложении, в том числе без интернета; Telegram присылает им уведомления.
+
+### Госзаказчики и режимные объекты
+
+- Каждое действие с заявкой проверяет база данных, история и журнал изменений доступа сохраняются.
+
+- Подтверждение выполнения — время, место и фото, которые сложно подделать, в том числе без связи на объекте.
+
+- Облако в регионе по выбору заказчика (США, ЕС, ОАЭ), выделенное облако или установка на серверах заказчика — условия обсуждаются в пилоте. Подробнее о безопасности и развёртывании.
+
+Отраслевых сертификаций для госсектора у продукта пока нет.
+
+---
+
+URL: https://anton-key.github.io/hey-helpy/site/ru/security/
+## Безопасность и развёртывание
+
+Права в Hey Helpy проверяет база данных. Интерфейс только показывает то, что разрешено.
+
+### Изоляция компаний
+
+- Данные компаний разделены правилами доступа на уровне строк базы данных PostgreSQL (Row Level Security) — на каждой таблице.
+
+- Компании и менеджеры разных объектов изолированы — каждый видит только свою информацию.
+
+- Новый пользователь без приглашения не видит ничего: в компанию вступают по коду приглашения (срок — 7 дней).
+
+### Роли и разделение обязанностей
+
+- Роли: администратор, менеджер (вся компания или своя зона доступа), исполнитель подрядчика, заявитель.
+
+- Сменить роль или компанию можно только через проверяемые функции базы, не правкой профиля.
+
+- Работу начинает и сдаёт только исполнитель назначенного подрядчика; принимает другой человек. Таблица ролей.
+
+- Внутренний аудит прав (октябрь 2026) нашёл несколько проблем внутри компании; исправления выпущены и применены.
+
+### Файлы, журнал, ИИ
+
+- Фото, документы, планы этажей и акты — в закрытых хранилищах; публичных ссылок нет, только временные ссылки для тех, кто имеет доступ.
+
+- История заявки и время действий пишет база. Журнал изменений ролей, зон и бригад видит администратор, изменить его нельзя.
+
+- Ключи ИИ — только на сервере. Модели вызываются с правами пользователя; ответ модели сверяется со справочниками компании.
+
+- В журналы сервера не пишутся тексты заявок, ответы модели и снимки для распознавания — только служебные данные (время, размер, код ошибки).
+
+- Telegram-бот не показывает приложению номера чатов; телефоны сотрудников видят только сам человек и менеджеры.
+
+### Где работает и варианты развёртывания
+
+Варианты размещения
+
+| Вариант | Состояние |
+
+| Облако (SaaS): база PostgreSQL на Supabase, регион ЕС; ИИ-модели через стандартный API, поставщик настраивается | Работает сейчас |
+
+| Облако в регионе по выбору заказчика: США, ЕС, ОАЭ | Под пилот: тот же стек в нужном регионе |
+
+| Выделенное облако заказчика, установка на серверах заказчика, изолированный контур | Обсуждается в пилоте: стек открытый (PostgreSQL, Supabase), готовой поставки пока нет |
+
+Клиенты: веб-версия в браузере и Android-приложение.
+
+---
+
+URL: https://anton-key.github.io/hey-helpy/site/ru/faq/
+## Частые вопросы
+
+### Что такое Hey Helpy?
+ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков. Заявки принимаются голосом, по фото и через Telegram, подрядчик назначается автоматически, а в акт к оплате попадает только работа с доказательствами: фото «после» со штампом, визит в геозоне объекта и выполненный чек-лист.
+
+### Чем это отличается от Excel или чата в мессенджере?
+В чате заявка теряется, а в таблице её надо заполнять руками. В Hey Helpy заявку достаточно сказать или сфотографировать — ИИ сам заполнит место, систему и срочность, подрядчик назначится по закреплению, просрочка видна сразу. Главное отличие — доказательства: время, место и фото «после» фиксируются автоматически, и акт показывает, за что платить, а за что нет.
+
+### А если в подвале нет связи?
+Android-приложение работает без интернета: новую заявку можно создать и без связи, а заявки исполнителя заранее сохраняются на телефоне, действия и фото «после» встают в очередь и отправляются сами, когда появится связь. Время подтверждается по часам, которые нельзя перевести, или по GPS, а отпечаток фото сверяется на сервере. Если время подтвердить нельзя, заявка попадает в акт на решение менеджера.
+
+### Можно ли подать заявку без приложения?
+Да. На объекте вешается QR-код: любой человек пишет боту в Telegram текстом, голосовым или фото — без регистрации. Можно подключить к объекту рабочую группу в Telegram. Автор получает уведомления «взята в работу» и «выполнена» с фото.
+
+### Нужно ли подрядчику что-то устанавливать?
+Да, исполнитель подрядчика получает и ведёт заявку в приложении — на Android или в браузере: начинает работу, отмечает визит и чек-лист, снимает фото «после». Telegram ему только присылает уведомления о новых заявках.
+
+### Может ли менеджер закрыть заявку за подрядчика?
+Нет. Начать работу, снять фото «после» и сдать её может только исполнитель назначенного подрядчика, а принять — менеджер, который её не сдавал. Это проверяет база данных, а не только интерфейс.
+
+### Как ИИ понимает, что и где сломалось?
+ИИ-модель разбирает фразу в заявку: систему, помещение и срочность — только из справочников вашей компании. По фото модель описывает оборудование, а сервис находит конкретную единицу в реестре по серийному номеру, модели, виду и помещению. Если ИИ недоступен, работает разбор по словарю или выбор вручную.
+
+### Где хранятся данные?
+Сейчас — в облачной базе PostgreSQL (Supabase) в регионе ЕС, данные компаний изолированы правилами доступа базы. Облако в регионе по выбору заказчика (США, ЕС, ОАЭ), выделенное облако и установка на собственных серверах обсуждаются в пилоте.
+
+### На каких устройствах работает?
+В браузере на компьютере и телефоне (голосовой ввод — в Chrome и Edge) и в приложении для Android. Приложения для iPhone пока нет.
+
+### На каких языках интерфейс?
+На английском (по умолчанию) и русском; язык переключается в настройках.
+
+### Сколько стоит?
+Цена — по запросу и зависит от количества объектов. Сейчас продукт в стадии MVP, и мы предлагаем пилот на ваших объектах. Запросить демо или пилот — кнопкой «Запросить демо»: откроется наш бот в Telegram.
+
+---
+
+URL: https://anton-key.github.io/hey-helpy/site/ru/contact/
+## Запросить демо или пилот
+
+Покажем сервис на демо-данных и обсудим пилот на ваших объектах.
+
+Откроется чат с нашим ботом @HeyHelpy_bot. Он попросит одно сообщение: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы ответим там же, в Telegram.
+Написать в Telegram
+Нет Telegram? Ссылку можно открыть на компьютере в браузере — Telegram предложит веб-версию.
+QR: https://t.me/HeyHelpy_bot?start=demo
+_Наведите камеру телефона — откроется чат с ботом._
+
+### Что написать в сообщении
+
+- Тип и количество объектов (офисы, ТЦ, склады, отели…) и города.
+
+- Сколько подрядчиков и по каким системам.
+
+- Как сейчас принимаются заявки и как подтверждается выполнение.
+
+Уже есть доступ? Войти в приложение.

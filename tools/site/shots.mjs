@@ -22,7 +22,7 @@ const browser = await chromium.launch();
 for (const width of [360, 412]) {
   // Плотность 1: снимок всей страницы выше ~16 000 px Chromium отдаёт с пустыми картинками.
   const page = await browser.newPage({ viewport: { width, height: 800 }, deviceScaleFactor: 1 });
-  for (const lang of ['', 'en/']) {
+  for (const lang of ['', 'ru/']) {
     for (const p of PAGES) {
       const url = base + lang + p;
       await page.goto(url);
@@ -43,13 +43,13 @@ for (const width of [360, 412]) {
       // «Меню» открывается и пункты видны.
       await page.click('.menu summary');
       if (!(await page.locator('.menu ul').isVisible())) errors.push(`${width} ${url}: «Меню» не открывается`);
-      if (width === 360 && p === '' ) await page.screenshot({ path: join(out, `menu-360-${lang ? 'en' : 'ru'}.png`) });
+      if (width === 360 && p === '' ) await page.screenshot({ path: join(out, `menu-360-${lang ? 'ru' : 'en'}.png`) });
       await page.click('.menu summary');
       if (width === 360 && (p === '' || p === 'contact/')) {
         // Картинки с loading="lazy" грузятся только у экрана — для снимка всей страницы загрузить сразу.
         await page.evaluate(() => document.querySelectorAll('img[loading="lazy"]').forEach((i) => { i.loading = 'eager'; }));
         await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 15000 });
-        await page.screenshot({ path: join(out, `${p ? 'contact' : 'home'}-360-${lang ? 'en' : 'ru'}.png`), fullPage: true });
+        await page.screenshot({ path: join(out, `${p ? 'contact' : 'home'}-360-${lang ? 'ru' : 'en'}.png`), fullPage: true });
       }
     }
   }

@@ -14,14 +14,15 @@ export const ui = {
   footerNote: 'AI service for property maintenance and contractor control. The product is at the MVP stage.',
   footerAi: 'For AI assistants',
   shotNote: 'App screen, demo data',
+  illNote: 'Illustration',
   videoNote: 'The video is in Russian with on-screen captions, 2 min 9 s, no sound.',
 };
 
-export const llmsIntro = 'Hey Helpy (Russian: «Эй, Helpy») is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.';
+export const llmsIntro = 'Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.';
 
 export const pages = {
   home: {
-    slug: 'en/',
+    slug: '',
     nav: 'Home',
     title: 'Hey Helpy — AI service for property maintenance and contractor control',
     description: 'For business and shopping centres, chains and retail, property management and FM companies, public sector: work orders by text, camera or voice; only proven work gets paid.',
@@ -34,7 +35,7 @@ export const pages = {
     <p class="lead"><strong>Pay contractors only for proven work.</strong> A work order is created by text, camera or voice — in the app or via Telegram, with nothing to install. The service figures out what broke and where, sends it to the right contractor and collects proof of completion.</p>
     <p class="actions">${h.cta('primary')} <a class="btn ghost" href="#video">Watch the video</a></p>
   </div>
-  ${h.img('voice', 'The “Check the work order” screen: a spoken request about a broken air conditioner in a meeting room parsed by AI into system, room and priority (app in Russian)', { eager: true, cls: 'phone' })}
+  ${h.ill('hotel_ac', 'Hotel room: an AR label above the air conditioner with diagnostics and an open work order', { eager: true })}
 </section>
 
 <section aria-labelledby="problem">
@@ -47,11 +48,23 @@ export const pages = {
   <h2 id="how">How it works</h2>
   <ol class="steps">
     <li><h3>Intake</h3><p>Say it: “Hey, Helpy, water is dripping from the air conditioner in the third-floor meeting room.” Or point the camera at the equipment. Or message the Telegram bot — requesters need no app, just the QR code at the site.</p></li>
-    <li><h3>AI parses it</h3><p>YandexGPT works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.</p></li>
+    <li><h3>AI parses it</h3><p>An AI model works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.</p></li>
     <li><h3>Contractor</h3><p>The work order goes straight to the contractor assigned to that system at that site. The technician gets a notification and takes it with one tap.</p></li>
     <li><h3>Proof</h3><p>The “after” photo can only be taken with the app’s live camera and carries a stamp: date · site · room · inside geofence. The visit is checked against the site’s geofence, the checklist item by item. No “after” photo — no hand-over.</p></li>
     <li><h3>Contractor act</h3><p>At month-end the contractor act is built automatically: only accepted work with proof is payable, disputed items go to a manager’s decision, the rest show why they are not payable.</p></li>
   </ol>
+  ${h.ill('phone', 'A hand holds a phone pointed at an office air conditioner: a label above it shows work orders and maintenance', { cls: 'tall' })}
+</section>
+
+<section aria-labelledby="any-unit">
+  <h2 id="any-unit">Any unit, same flow</h2>
+  <p>A fridge, a faucet, a light or a lobby camera — the technician points the camera, the service recognises the equipment from the register and shows its work orders and preventive maintenance. A new work order takes one tap, with the place and equipment already filled in.</p>
+  <div class="ills">
+    <div>${h.ill('fridge', 'Office fridge with an AR card and a maintenance checklist')}<h3>Office fridge</h3><p>The preventive maintenance checklist right at the unit.</p></div>
+    <div>${h.ill('faucet', 'Leaking faucet with a plumbing AR label')}<h3>Leaking faucet</h3><p>A work order with a “before” photo goes to the contractor assigned to plumbing at the site.</p></div>
+    <div>${h.ill('led', 'Faulty LED ceiling panel with an AR label')}<h3>Light fixture</h3><p>The fault is visible in the shot; due date and contractor are in the work order.</p></div>
+    <div>${h.ill('cctv', 'Lobby security camera with an AR card')}<h3>Lobby camera</h3><p>Security systems have their own contractor, equipment and history.</p></div>
+  </div>
 </section>
 
 <section aria-labelledby="features">
@@ -61,8 +74,20 @@ export const pages = {
     ${h.card('telegram', 'Work orders from Telegram', 'A requester reports a fault in Telegram via the site’s QR code — no app needed. The contractor’s technician gets a notification from the bot and handles the work order in the app.', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)')}
     ${h.card('photos', '“Before” and “after” photos', 'The work order holds all the proof: photos before and after, time, place, documents.', 'Work order card: “before” and “after” photos and a maintenance document (app in Russian)')}
   </div>
-  ${h.figure('act', 'Contractor acts: 5 work orders payable (22,500 ₽), 4 without proof, 56 % of work proven (app in Russian)', 'Contractor act: only proven work is payable')}
+  ${h.figure('act', 'Contractor acts: 5 work orders payable, 4 without proof, 56 % of work proven', 'Contractor act: only proven work is payable')}
   <p>${h.link('features', 'All features →')}</p>
+</section>
+
+<section aria-labelledby="spatial">
+  <h2 id="spatial">Hey Helpy Spatial — work orders on the plan and in space</h2>
+  <p>Rooms and equipment are pinned on the floor plan, and anything overdue stands out. On ARCore phones, AR labels show work orders and maintenance right above the equipment. The illustration shows where we are taking this: the whole floor, with every work order tied to its place.</p>
+  ${h.ill('iso', 'Isometric office floor: rooms, equipment and work order markers')}
+</section>
+
+<section aria-labelledby="proof-home">
+  <h2 id="proof-home">Proof of completion</h2>
+  <p>The “after” photo comes only from the app’s live camera, with a stamp: date, site, room, “inside geofence”. The visit is checked against the site’s geofence, the checklist item by item. Only proven work goes into the contractor act as payable.</p>
+  ${h.ill('pipe', 'Pipes in a plant room with an inspection AR label')}
 </section>
 
 <section aria-labelledby="video">
@@ -87,7 +112,7 @@ ${h.ctaBlock()}
   },
 
   features: {
-    slug: 'en/features/',
+    slug: 'features/',
     nav: 'Features',
     title: 'Features — Hey Helpy',
     description: 'Work orders by text, camera or voice and from Telegram, AR labels, proof-based contractor payment, roles, offline work, preventive maintenance, floor plans, reports.',
@@ -108,7 +133,7 @@ ${h.ctaBlock()}
     <div>
       <p>Tap “Hey Helpy” and speak. The text appears as you talk; speech recognition is done by the browser (Chrome, Edge) or by Android.</p>
       <ul>
-        <li>AI (YandexGPT) turns the phrase into work order fields: title, description, system (HVAC, electrical, plumbing…), room and priority.</li>
+        <li>An AI model turns the phrase into work order fields: title, description, system (HVAC, electrical, plumbing…), room and priority.</li>
         <li>If the AI does not answer in time, a built-in dictionary parses the request; the screen shows which one did: “Parsed by AI” or “Parsed by dictionary”.</li>
         <li>Before sending, a person checks and can edit any field. Typing is always an option.</li>
         <li>The contractor is assigned automatically by system and site.</li>
@@ -259,10 +284,10 @@ ${h.ctaBlock()}
   <h2 id="zones">Regions and access zones</h2>
   <ul>
     <li>A portfolio of sites across cities and countries: regions, countries, cities.</li>
-    <li>A manager’s access zone is “systems × places”, e.g. “HVAC · Moscow”: the manager sees and changes only their part.</li>
+    <li>A manager’s access zone is “systems × places”, e.g. “HVAC · Dubai”: the manager sees and changes only their part.</li>
     <li>Contractor crews: a technician sees only the work orders in their crew’s zone.</li>
     <li>Access change log (roles, zones, crews) — administrator only, read-only.</li>
-    <li>Interface in Russian and English.</li>
+    <li>Interface in English and Russian.</li>
   </ul>
 </section>
 
@@ -271,14 +296,14 @@ ${h.ctaBlock()}
   },
 
   industries: {
-    slug: 'en/industries/',
+    slug: 'industries/',
     nav: 'Who it’s for',
     title: 'Who it’s for — Hey Helpy',
     description: 'Hey Helpy for business and shopping centres, chains and retail, property management and FM companies, public-sector and restricted-access sites.',
     h1: 'Who it’s for',
     body: (h) => `
 <h1>Who it’s for</h1>
-<p class="lead">Hey Helpy fits wherever buildings are serviced by contractors and you want to pay only for work actually done.</p>
+<p class="lead">Hey Helpy fits wherever buildings are serviced by contractors and you want to pay only for work actually done — in the United States, Europe and the Middle East.</p>
 
 <section aria-labelledby="bc">
   <h2 id="bc">Business centres and shopping centres</h2>
@@ -315,9 +340,9 @@ ${h.ctaBlock()}
   <ul>
     <li>Every action on a work order is checked by the database; history and the access change log are kept.</li>
     <li>Proof of completion — time, place and photo that are hard to fake, even with no signal on site.</li>
-    <li>Hosting data in Russia (Yandex Cloud) and dedicated deployment options are planned; terms are discussed during a pilot. ${h.link('security', 'More on security and deployment')}.</li>
+    <li>Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud or installation on the customer’s own servers — terms are discussed during a pilot. ${h.link('security', 'More on security and deployment')}.</li>
   </ul>
-  <p class="note">The product currently has no certification for government information systems.</p>
+  <p class="note">The product has no public-sector certifications yet.</p>
 </section>
 
 ${h.ctaBlock()}
@@ -325,7 +350,7 @@ ${h.ctaBlock()}
   },
 
   security: {
-    slug: 'en/security/',
+    slug: 'security/',
     nav: 'Security',
     title: 'Security and deployment — Hey Helpy',
     description: 'Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.',
@@ -370,9 +395,9 @@ ${h.ctaBlock()}
     <caption>Hosting options</caption>
     <thead><tr><th scope="col">Option</th><th scope="col">Status</th></tr></thead>
     <tbody>
-      <tr><td>Cloud service (SaaS): PostgreSQL on Supabase, servers in the EU; AI — YandexGPT (Yandex Cloud)</td><td>Available now</td></tr>
-      <tr><td>Hosting in Russia: self-hosted Supabase in Yandex Cloud, Yandex SpeechKit speech recognition</td><td>Planned</td></tr>
-      <tr><td>Customer’s dedicated cloud, on-premise, isolated network</td><td>Discussed during a pilot: the stack is open (PostgreSQL, Supabase), no packaged delivery yet</td></tr>
+      <tr><td>Cloud (SaaS): PostgreSQL on Supabase, EU region; AI models via a standard API, provider configurable</td><td>Available now</td></tr>
+      <tr><td>Cloud in the region of the customer’s choice: US, EU, UAE</td><td>For a pilot: the same stack in the required region</td></tr>
+      <tr><td>Customer’s dedicated cloud, installation on the customer’s own servers, isolated network</td><td>Discussed during a pilot: the stack is open (PostgreSQL, Supabase), no packaged delivery yet</td></tr>
     </tbody>
   </table></div>
   <p>Clients: web version in the browser and the Android app.</p>
@@ -383,7 +408,7 @@ ${h.ctaBlock()}
   },
 
   faq: {
-    slug: 'en/faq/',
+    slug: 'faq/',
     nav: 'FAQ',
     title: 'FAQ — Hey Helpy',
     description: 'What happens with no signal in the basement, how Hey Helpy differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.',
@@ -395,10 +420,10 @@ ${h.ctaBlock()}
       ['Can someone report a fault without the app?', 'Yes. A QR code at the site lets anyone message the Telegram bot with text, a voice note or a photo — no sign-up. A team Telegram group can also be linked to a site. The author gets “in progress” and “done” notifications with a photo.'],
       ['Does the contractor need to install anything?', 'Yes, the contractor’s technician receives and handles work orders in the app — on Android or in a browser: starts work, checks in, ticks the checklist, takes the “after” photo. Telegram only sends them notifications about new work orders.'],
       ['Can a manager close a work order on the contractor’s behalf?', 'No. Only a technician of the assigned contractor can start the work, take the “after” photo and submit it, and only a manager who did not submit it can accept it. This is enforced by the database, not just the interface.'],
-      ['How does the AI know what broke and where?', 'YandexGPT parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.'],
-      ['Where is the data stored?', 'Currently in a cloud PostgreSQL database (Supabase) on servers in the EU; company data is isolated by database access policies. Hosting in Russia on Yandex Cloud is planned. Dedicated cloud and on-premise options are discussed during a pilot.'],
+      ['How does the AI know what broke and where?', 'An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.'],
+      ['Where is the data stored?', 'Currently in a cloud PostgreSQL database (Supabase) in the EU region; company data is isolated by database access policies. Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud and installation on the customer’s own servers are discussed during a pilot.'],
       ['Which devices does it run on?', 'In a browser on desktop and mobile (voice input in Chrome and Edge) and in the Android app. There is no iPhone app yet.'],
-      ['Which languages does the interface support?', 'Russian and English; the language is switched in settings.'],
+      ['Which languages does the interface support?', 'English (default) and Russian; the language is switched in settings.'],
       ['How much does it cost?', 'Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.'],
     ],
     body: (h, page) => `
@@ -411,7 +436,7 @@ ${h.ctaBlock()}
   },
 
   contact: {
-    slug: 'en/contact/',
+    slug: 'contact/',
     nav: 'Contact',
     title: 'Request a demo or pilot — Hey Helpy',
     description: 'Request a Hey Helpy demo or a pilot at your sites: voice and photo work orders, contractor control and proof-based payment.',
@@ -433,7 +458,7 @@ ${h.contact()}
   },
 
   privacy: {
-    slug: 'en/privacy/',
+    slug: 'privacy/',
     nav: 'Privacy',
     title: 'Website privacy policy — Hey Helpy',
     description: 'The Hey Helpy website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.',
@@ -455,7 +480,7 @@ ${h.contact()}
   <p>If you message our bot @HeyHelpy_bot via the “Request a demo” link, we store your message text, your Telegram name and username, language and chat ID — only to reply and discuss a demo or pilot. Only the Hey Helpy team can see this data, and we do not share it with third parties. To have it deleted, send a request the same way — via the “Request a demo” link.</p>
 </section>
 <section aria-labelledby="app"><h2 id="app">The app</h2>
-  <p>Data processing in the ${h.appLink('Hey Helpy')} app (work orders, photos, location when checking in) is governed by the contract with the customer company. How data access works is described on the ${h.link('security', 'Security')} page.</p>
+  <p>Data processing in the ${h.appLink('Hey Helpy')} app (work orders, photos, location when checking in) is governed by the contract with the customer company. App data is stored in the cloud; the storage region (US, EU or UAE) is chosen in the contract with the customer, currently the EU. How data access works is described on the ${h.link('security', 'Security')} page.</p>
   <p>The “AR labels” feature in the Android app uses “Google Play Services for AR” (ARCore) — a Google app on the phone, governed by the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. ARCore calculates the phone’s position on the phone itself; our code does not call Google services, and Google’s cloud anchors and geospatial positioning are switched off. The shot used to recognise equipment goes to our server and is not stored.</p>
 </section>
 `,

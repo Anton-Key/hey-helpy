@@ -91,93 +91,119 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final form = _form(context);
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpace.xl),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(l.appName,
-                        textAlign: TextAlign.center, style: AppText.largeTitle),
-                    const SizedBox(height: AppSpace.s),
-                    Text(l.appTagline,
-                        textAlign: TextAlign.center,
-                        style: AppText.callout
-                            .copyWith(color: AppColors.secondary)),
-                    const SizedBox(height: AppSpace.xxl),
-                    AppGroup(children: [
-                      if (_isSignUp)
-                        TextFormField(
-                          controller: _fullName,
-                          decoration: InputDecoration(
-                            labelText: l.loginName,
-                            // Шаг 22: в группе подпись не всплывает над
-                            // полем — иначе её обрезает край карточки.
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                            prefixIcon: const Icon(AppIcons.user,
-                                size: AppSizes.icon,
-                                color: AppColors.secondary),
-                          ),
+        // ПК (≥ 900 px, шаг 33): справа — иллюстрация с главной мыслью продукта.
+        child: LayoutBuilder(
+          builder: (context, c) => c.maxWidth < 900
+              ? form
+              : Row(children: [
+                  Expanded(child: form),
+                  Expanded(
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(AppSpace.xxl),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 640),
+                          child: AppIllustration(AppIllustrationName.hotelAc,
+                              key: const ValueKey('login-hero'),
+                              note: l.illustrationNote,
+                              semanticLabel: l.loginHeroAlt,
+                              caption: l.loginHeroCaption),
                         ),
-                      TextFormField(
-                        controller: _email,
-                        keyboardType: TextInputType.emailAddress,
-                        autofillHints: const [AutofillHints.email],
-                        decoration: InputDecoration(
-                          labelText: l.loginEmail,
-                          // Шаг 22: в группе подпись не всплывает над
-                          // полем — иначе её обрезает край карточки.
-                          floatingLabelBehavior: FloatingLabelBehavior.never,
-                          prefixIcon: const Icon(AppIcons.mail,
-                              size: AppSizes.icon, color: AppColors.secondary),
-                        ),
-                        validator: (v) => (v == null || !v.contains('@'))
-                            ? l.loginEmailInvalid
-                            : null,
-                      ),
-                      TextFormField(
-                        controller: _password,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: l.loginPassword,
-                          // Шаг 22: в группе подпись не всплывает над
-                          // полем — иначе её обрезает край карточки.
-                          floatingLabelBehavior: FloatingLabelBehavior.never,
-                          prefixIcon: const Icon(AppIcons.lock,
-                              size: AppSizes.icon, color: AppColors.secondary),
-                        ),
-                        validator: (v) => (v == null || v.length < 6)
-                            ? l.loginPasswordTooShort
-                            : null,
-                      ),
-                    ]),
-                    const SizedBox(height: AppSpace.m),
-                    AppButton.primary(
-                      label: _isSignUp ? l.loginSignUp : l.loginSignIn,
-                      loading: _loading,
-                      onPressed: _submit,
-                    ),
-                    const SizedBox(height: AppSpace.s),
-                    Center(
-                      child: AppButton.plain(
-                        label:
-                            _isSignUp ? l.loginHaveAccount : l.loginNoAccount,
-                        onPressed: _loading
-                            ? null
-                            : () => setState(() => _isSignUp = !_isSignUp),
                       ),
                     ),
-                  ],
+                  ),
+                ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _form(BuildContext context) {
+    final l = context.l10n;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpace.xl),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(l.appName,
+                    textAlign: TextAlign.center, style: AppText.largeTitle),
+                const SizedBox(height: AppSpace.s),
+                Text(l.appTagline,
+                    textAlign: TextAlign.center,
+                    style:
+                        AppText.callout.copyWith(color: AppColors.secondary)),
+                const SizedBox(height: AppSpace.xxl),
+                AppGroup(children: [
+                  if (_isSignUp)
+                    TextFormField(
+                      controller: _fullName,
+                      decoration: InputDecoration(
+                        labelText: l.loginName,
+                        // Шаг 22: в группе подпись не всплывает над
+                        // полем — иначе её обрезает край карточки.
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        prefixIcon: const Icon(AppIcons.user,
+                            size: AppSizes.icon, color: AppColors.secondary),
+                      ),
+                    ),
+                  TextFormField(
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    decoration: InputDecoration(
+                      labelText: l.loginEmail,
+                      // Шаг 22: в группе подпись не всплывает над
+                      // полем — иначе её обрезает край карточки.
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      prefixIcon: const Icon(AppIcons.mail,
+                          size: AppSizes.icon, color: AppColors.secondary),
+                    ),
+                    validator: (v) => (v == null || !v.contains('@'))
+                        ? l.loginEmailInvalid
+                        : null,
+                  ),
+                  TextFormField(
+                    controller: _password,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: l.loginPassword,
+                      // Шаг 22: в группе подпись не всплывает над
+                      // полем — иначе её обрезает край карточки.
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      prefixIcon: const Icon(AppIcons.lock,
+                          size: AppSizes.icon, color: AppColors.secondary),
+                    ),
+                    validator: (v) => (v == null || v.length < 6)
+                        ? l.loginPasswordTooShort
+                        : null,
+                  ),
+                ]),
+                const SizedBox(height: AppSpace.m),
+                AppButton.primary(
+                  label: _isSignUp ? l.loginSignUp : l.loginSignIn,
+                  loading: _loading,
+                  onPressed: _submit,
                 ),
-              ),
+                const SizedBox(height: AppSpace.s),
+                Center(
+                  child: AppButton.plain(
+                    label: _isSignUp ? l.loginHaveAccount : l.loginNoAccount,
+                    onPressed: _loading
+                        ? null
+                        : () => setState(() => _isSignUp = !_isSignUp),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

@@ -283,7 +283,7 @@ void main() {
     var voice = 0, add = 0;
     await t.pumpWidget(_app(Center(
       child: VoiceButton(
-        label: 'Эй, Helpy',
+        label: 'Hey Helpy',
         semanticLabel: 'Нажми и говори',
         onVoice: () => voice++,
         addLabel: 'Создать заявку',
@@ -291,7 +291,7 @@ void main() {
       ),
     )));
     expect(find.byIcon(AppIcons.mic), findsOneWidget);
-    await t.tap(find.text('Эй, Helpy'));
+    await t.tap(find.text('Hey Helpy'));
     await t.tap(find.byIcon(AppIcons.add));
     expect((voice, add), (1, 1));
     expect(find.bySemanticsLabel(RegExp('Нажми и говори')), findsOneWidget);

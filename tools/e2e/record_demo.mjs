@@ -242,13 +242,13 @@ async function executorOffscreen(orderTitle) {
 // Сценарий
 // ---------------------------------------------------------------------------
 async function pcScenario(page) {
-  await caption(page, 'Эй, Helpy — ИИ-сервис эксплуатации зданий: все заявки в одном месте');
+  await caption(page, 'Hey Helpy — ИИ-сервис эксплуатации зданий: все заявки в одном месте');
   await moveTo(page, 600, 420, 900);
   await hold(page, 3500);
 
   // 1. Заявка голосом.
   await caption(page, 'Заявка голосом: «Эй, Хелпи, в переговорной не работает кондиционер…»');
-  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Эй, Helpy/ }).first(), { pause: 600 });
+  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Hey Helpy/ }).first(), { pause: 600 });
   await see(page, /очень жарко/).waitFor({ timeout: 20000 });
   await hold(page, 1400);
   await tap(page, btn(page, /^Готово/), { pause: 200 });
@@ -347,7 +347,7 @@ async function pcScenario(page) {
   await caption(page, 'Каждому менеджеру — своя зона доступа: только Москва, только климат и сантехника');
   await moveTo(page, 1100, 500, 800);
   await hold(page, 4500);
-  await caption(page, 'Эй, Helpy: приём → отправка → исполнение → контроль');
+  await caption(page, 'Hey Helpy: приём → отправка → исполнение → контроль');
   await hold(page, 3500);
 }
 
@@ -355,13 +355,13 @@ async function pcScenario(page) {
 // Видео v2 (шаг 25): одна поломка от голоса до «выполнена ✅».
 // ---------------------------------------------------------------------------
 async function v2Scenario(page) {
-  await caption(page, 'Эй, Helpy — ИИ-сервис эксплуатации зданий');
+  await caption(page, 'Hey Helpy — ИИ-сервис эксплуатации зданий');
   await moveTo(page, 600, 420, 900);
   await hold(page, 3000);
 
   // 1. Голос → ИИ.
   await caption(page, 'Заявку не пишут — её говорят');
-  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Эй, Helpy/ }).first(), { pause: 600 });
+  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Hey Helpy/ }).first(), { pause: 600 });
   await see(page, /очень жарко/).waitFor({ timeout: 20000 });
   await hold(page, 1400);
   await tap(page, btn(page, /^Готово/), { pause: 200 });
@@ -433,7 +433,7 @@ async function v2Scenario(page) {
   await moveTo(page, 1050, 640, 900);
   await hold(page, 4000);
   await page.evaluate(() => window.__pdf(null));
-  await caption(page, 'Эй, Helpy: приём → отправка → исполнение → контроль');
+  await caption(page, 'Hey Helpy: приём → отправка → исполнение → контроль');
   await hold(page, 3500);
 }
 
@@ -444,11 +444,11 @@ async function back(page) {
 }
 
 async function phoneScenario(page) {
-  await caption(page, 'Эй, Helpy — заявки здания в кармане');
+  await caption(page, 'Hey Helpy — заявки здания в кармане');
   await moveTo(page, 200, 400, 800);
   await hold(page, 3000);
   await caption(page, 'Заявка голосом');
-  await tap(page, page.getByRole('button', { name: /^Эй, Helpy|Нажми и говори/ }).first(), { pause: 600 });
+  await tap(page, page.getByRole('button', { name: /^Hey Helpy|Нажми и говори/ }).first(), { pause: 600 });
   await see(page, /очень жарко/).waitFor({ timeout: 20000 });
   await hold(page, 1200);
   await tap(page, btn(page, /^Готово/), { pause: 200 });
@@ -478,7 +478,7 @@ async function phoneScenario(page) {
   await caption(page, 'ППР по графику');
   await section(page, /^ППР/);
   await hold(page, 3500);
-  await caption(page, 'Эй, Helpy: приём → отправка → исполнение → контроль');
+  await caption(page, 'Hey Helpy: приём → отправка → исполнение → контроль');
   await hold(page, 3000);
 }
 

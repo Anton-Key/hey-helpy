@@ -9,7 +9,7 @@ import {
 } from './lib.mjs';
 
 const TMP = mkdtempSync(join(tmpdir(), 'hh-e2e-'));
-// Геопозиция «БЦ «Демо»» (Белград) — визит в геозоне.
+// Геопозиция «Demo Tower» (Belgrade) — визит в геозоне.
 const BC_DEMO = { latitude: 44.80471, longitude: 20.44942, accuracy: 10 };
 
 /** Открыть заявку по названию через поиск во вкладке «Заявки». */
@@ -120,10 +120,12 @@ export const SCENARIOS = [
       const m = await ctx.page();
       await login(m, base, USERS.admin);
       const before = await reportTiles(m, base);
-      await home(m, base);
+      // Шаг 33: демо-данные на английском — фраза тоже английская (помещение
+      // «Meeting room, floor 3» находит разбор по словарю в приложении).
+      await home(m, base, `?voice=${encodeURIComponent('Hey, Helpy, the air conditioner in the meeting room on the third floor is not working, very hot')}`);
       await ctx.shot(m, 'home');
       await clickAction(m, /Нажми и говори/);
-      await see(m, /не работает кондиционер/).waitFor({ timeout: 15000 });
+      await see(m, /air conditioner in the meeting room/).waitFor({ timeout: 15000 });
       await settle(m, 1500);
       await ctx.shot(m, 'listening');
       await clickAction(m, /^Готово/);
@@ -137,7 +139,7 @@ export const SCENARIOS = [
         from work_orders w left join contractors c on c.id = w.assigned_contractor_id left join locations l on l.id = w.location_id
         where w.id = '${id}'`);
       ctx.notes.push(`заявка: ${row}`);
-      assert(row.startsWith('assigned|КлиматСервис|Переговорная'), `ждали «назначена КлиматСервис, Переговорная», в базе: ${row}`);
+      assert(row.startsWith('assigned|ClimaService|Meeting room'), `ждали «назначена ClimaService, Meeting room», в базе: ${row}`);
       await ctx.shot(m, 'sent');
 
       // 2. Исполнитель: начать работу (визит в геозоне), фото «после», на проверку.
@@ -171,13 +173,13 @@ export const SCENARIOS = [
       const after = await reportTiles(m, base);
       ctx.notes.push(`отчёт: заявок ${before.orders} → ${after.orders}, приняты с первого раза из ${before.firstTime} → ${after.firstTime}`);
       assert(after.orders === before.orders + 1 && after.firstTime === before.firstTime + 1, 'отчёт не посчитал заявку');
-      await scrollTo(m, /КлиматСервис/);
+      await scrollTo(m, /ClimaService/);
       await ctx.shot(m, 'report');
     },
   },
   {
     id: 2,
-    title: 'ППР: «ТО кондиционеров» → генерация задачи → исполнитель → принятие → «выполнено N из M»',
+    title: 'ППР: «AC maintenance» → генерация задачи → исполнитель → принятие → «выполнено N из M»',
     async run(ctx) {
       const { base } = ctx;
       const plan = uuid(801);
@@ -199,7 +201,7 @@ export const SCENARIOS = [
       const row = sql(`select w.status || '|' || coalesce(c.org_name, '-') || '|' || w.title from work_orders w
         left join contractors c on c.id = w.assigned_contractor_id where w.id = '${task}'`);
       ctx.notes.push(`задача: ${row}`);
-      assert(row.startsWith('assigned|МосКлимат'), `задача должна уйти МосКлимат: ${row}`);
+      assert(row.startsWith('assigned|NYC Climate'), `задача должна уйти NYC Climate: ${row}`);
       await home(m, base);
       await section(m, /^Плановое ТО/);
       const before = await summary();
@@ -207,7 +209,7 @@ export const SCENARIOS = [
 
       const e = await ctx.page({ width: 412, height: 915, geo: { latitude: 55.749, longitude: 37.537, accuracy: 10 } });
       await login(e, base, 'mosklimat@example.com');
-      await openOrder(e, base, 'ТО кондиционеров');
+      await openOrder(e, base, 'AC maintenance');
       await clickAction(e, /^Начать работу/);
       await waitDb(`select status from work_orders where id = '${task}'`, 'in_progress');
       await takeLivePhoto(e);
@@ -218,7 +220,7 @@ export const SCENARIOS = [
 
       await home(m, base);
       await section(m, /^Плановое ТО/);
-      await btn(m, /^ТО кондиционеров/).click();
+      await btn(m, /^AC maintenance/).click();
       await see(m, /История периодов/).waitFor({ timeout: 20000 });
       await settle(m, 1200);
       await btn(m, /Плановое ТО · .* · до/).click();
@@ -231,7 +233,7 @@ export const SCENARIOS = [
       const after = await summary();
       ctx.notes.push(`сводка: выполнено ${before.done} из ${before.total} → ${after.done} из ${after.total}`);
       assert(after.done === before.done + 1 && after.total === before.total, 'сводка ППР не изменилась');
-      await btn(m, /^ТО кондиционеров/).click();
+      await btn(m, /^AC maintenance/).click();
       await see(m, /История периодов/).waitFor({ timeout: 20000 });
       await see(m, /Выполнено/).waitFor({ timeout: 10000 });
       await ctx.shot(m, 'ppr-card-done');
@@ -242,32 +244,32 @@ export const SCENARIOS = [
     title: 'План этажа: «Показать на плане» → маркер; расстановка → помещение, номер «305», область; голосом «в 305-й не работает свет»',
     async run(ctx) {
       const { base } = ctx;
-      const room = uuid(23); // Open space, 2 этаж — в демо без точки на плане
+      const room = uuid(23); // Open space, floor 2 — в демо без точки на плане
       sql(`update locations set code = null, floor_id = null, plan_x = null, plan_y = null, plan_shape = null where id = '${room}'`);
       sql(`delete from work_orders where company_id = '${uuid(1)}' and title like 'Не работает свет%' and id::text not like 'de300000-%'`);
       const m = await ctx.page();
       await login(m, base, USERS.admin);
       // a) Заявка на оборудовании → «Показать на плане».
-      await openOrder(m, base, 'Течёт конденсат из кондиционера');
+      await openOrder(m, base, 'Condensate leaking from the server room');
       await clickAction(m, /Показать на плане/);
       await see(m, /На плане · \d/).waitFor({ timeout: 30000 });
       await settle(m, 1500);
-      assert(/floors\//.test(m.url()) || await see(m, /Кондиционер серверной/).isVisible(), 'план не открылся');
-      const focused = m.getByRole('button', { name: 'Кондиционер серверной' }).first();
-      assert(await focused.isVisible().catch(() => false), 'маркер «Кондиционер серверной» не виден');
-      ctx.notes.push('маркер оборудования на плане 3 этажа виден');
+      assert(/floors\//.test(m.url()) || await see(m, /Air conditioner, server room/).isVisible(), 'план не открылся');
+      const focused = m.getByRole('button', { name: 'Air conditioner, server room' }).first();
+      assert(await focused.isVisible().catch(() => false), 'маркер «Air conditioner, server room» не виден');
+      ctx.notes.push('маркер оборудования на плане floor 3 виден');
       await ctx.shot(m, 'show-on-plan');
 
-      // b) Режим расстановки 1 этажа: «Поставить сюда…» → Open space, номер 305, область.
+      // b) Режим расстановки floor 1: «Поставить сюда…» → Open space, номер 305, область.
       await openApp(m, base, `#/objects/${uuid(10)}/floors/${uuid(601)}?edit=1`);
       await see(m, /Режим расстановки/).waitFor({ timeout: 30000 });
       await settle(m, 1500);
-      // Маркеры на холсте: «102 · Ресепшен, 1 этаж, нет открытых заявок».
+      // Маркеры на холсте: «102 · Reception, floor 1, нет открытых заявок».
       const box = async (name) => m.getByRole('button', { name: new RegExp(`^\\d+ · ${name}, `) }).first().boundingBox();
-      const a = await box('Ресепшен, 1 этаж'); // (0.15, 0.5125)
-      const b = await box('Холл, 1 этаж'); // (0.45, 0.5125)
-      const c = await box('Электрощитовая, 1 этаж'); // (0.15, 0.2063)
-      assert(a && b && c, 'маркеры 1 этажа не найдены');
+      const a = await box('Reception, floor 1'); // (0.15, 0.5125)
+      const b = await box('Hall, floor 1'); // (0.45, 0.5125)
+      const c = await box('Electrical room, floor 1'); // (0.15, 0.2063)
+      assert(a && b && c, 'маркеры floor 1 не найдены');
       const kx = (b.x - a.x) / 0.30;
       const ky = (a.y - c.y) / (0.5125 - 0.2063);
       const at = (fx, fy) => ({ x: a.x + a.width / 2 + (fx - 0.15) * kx, y: a.y + a.height / 2 + (fy - 0.5125) * ky });
@@ -275,10 +277,10 @@ export const SCENARIOS = [
       await raw(m, () => m.mouse.click(spot.x, spot.y));
       await clickAction(m, /Поставить сюда/);
       // Пункт шторки (последний на экране; слева — такой же в списке «Не размещены»).
-      await m.getByRole('button', { name: /^Open space, 2 этаж/ }).last().click();
+      await m.getByRole('button', { name: /^Open space, floor 2/ }).last().click();
       await settle(m, 1500);
       await waitDb(`select floor_id from locations where id = '${room}'`, uuid(601));
-      const marker = () => m.getByRole('button', { name: /^(305 · )?Open space, 2 этаж, / }).first();
+      const marker = () => m.getByRole('button', { name: /^(305 · )?Open space, floor 2, / }).first();
       await marker().click();
       await settle(m, 1000);
       await clickAction(m, /^Номер помещения/);
@@ -329,16 +331,16 @@ export const SCENARIOS = [
         where w.company_id = '${uuid(1)}' and w.title like 'Не работает свет%' and w.created_at > now() - interval '2 minutes'`,
       (v) => v.length > 0);
       ctx.notes.push(`заявка «305»: ${row}`);
-      assert(row.startsWith('Open space, 2 этаж|ЭлектроПро'), `ждали Open space и ЭлектроПро: ${row}`);
+      assert(row.startsWith('Open space, floor 2|ElectroPro'), `ждали Open space и ElectroPro: ${row}`);
     },
   },
   {
     id: 4,
-    title: 'Регионы: «Европпа» → «Использовать «Европа»»; объединение регионов; «Весь регион» в заявках и отчётах',
+    title: 'Регионы: «Europpe» → «Использовать «Europe»»; объединение регионов; «Весь регион» в заявках и отчётах',
     async run(ctx) {
       const { base } = ctx;
-      sql(`update objects set region_id = '${uuid(901)}' where region_id in (select id from regions where name in ('Европпа', 'Балканы'))`);
-      sql(`delete from regions where company_id = '${uuid(1)}' and name in ('Европпа', 'Балканы')`);
+      sql(`update objects set region_id = '${uuid(901)}' where region_id in (select id from regions where name in ('Europpe', 'Балканы'))`);
+      sql(`delete from regions where company_id = '${uuid(1)}' and name in ('Europpe', 'Балканы')`);
       const m = await ctx.page();
       await login(m, base, USERS.admin);
       const openRegions = async () => {
@@ -349,7 +351,7 @@ export const SCENARIOS = [
         await settle(m, 1500);
         await scrollTo(m, /Регионы компании/);
         await btn(m, /Регионы компании/).click();
-        await see(m, /Европа/).waitFor({ timeout: 20000 });
+        await see(m, /Europe/).waitFor({ timeout: 20000 });
         await settle(m, 800);
       };
       const addRegion = async (name) => {
@@ -358,14 +360,14 @@ export const SCENARIOS = [
         await clickAction(m, /^Сохранить|^Создать|^Готово|^Добавить/);
       };
       await openRegions();
-      await addRegion('Европпа');
+      await addRegion('Europpe');
       await see(m, /Похоже/).waitFor({ timeout: 10000 });
       await ctx.shot(m, 'similar');
-      await clickAction(m, /Использовать «Европа»/);
-      assert(sql(`select count(*) from regions where company_id = '${uuid(1)}' and name = 'Европпа'`) === '0', '«Европпа» создан, хотя выбрали «Европа»');
-      ctx.notes.push('«Европпа» → предложено «Европа», дубль не создан');
+      await clickAction(m, /Использовать «Europe»/);
+      assert(sql(`select count(*) from regions where company_id = '${uuid(1)}' and name = 'Europpe'`) === '0', '«Europpe» создан, хотя выбрали «Europe»');
+      ctx.notes.push('«Europpe» → предложено «Europe», дубль не создан');
 
-      // Объединение: новый «Балканы», объект «Белград · Хаб 1» в нём → объединить с «Европа».
+      // Объединение: новый «Балканы», объект «Belgrade · Hub 1» в нём → объединить с «Europe».
       await addRegion('Балканы');
       const balkans = await waitDb(`select id from regions where company_id = '${uuid(1)}' and name = 'Балканы'`, (v) => v.length > 0);
       sql(`update objects set region_id = '${balkans}' where id = '${uuid(401)}'`);
@@ -373,28 +375,28 @@ export const SCENARIOS = [
       await m.getByRole('button', { name: /Балканы/ }).first().click();
       await settle(m, 800);
       await clickAction(m, /Объединить с/);
-      await clickAction(m, /^Европа/);
+      await clickAction(m, /^Europe/);
       await ctx.shot(m, 'merge-confirm');
       await clickAction(m, /^Объединить$/);
       await waitDb(`select count(*) from regions where id = '${balkans}'`, '0');
-      assert(sql(`select region_id from objects where id = '${uuid(401)}'`) === uuid(901), 'объект не перешёл в «Европа»');
-      ctx.notes.push('«Балканы» объединён с «Европа», объект перешёл');
+      assert(sql(`select region_id from objects where id = '${uuid(401)}'`) === uuid(901), 'объект не перешёл в «Europe»');
+      ctx.notes.push('«Балканы» объединён с «Europe», объект перешёл');
 
-      // «Весь регион» в заявках: СНГ.
+      // «Весь регион» в заявках: North America.
       await home(m, base);
       const pill = m.getByRole('button', { name: /^Объект/ }).first();
       if (await pill.isVisible().catch(() => false)) await pill.click();
       else { await btn(m, /^Фильтры/).click(); await settle(m, 800); await btn(m, /^Объект/).click(); }
       await settle(m, 1000);
-      await scrollTo(m, /СНГ/);
+      await scrollTo(m, /North America/);
       const whole = m.getByRole('button', { name: /Весь регион/ }).or(m.getByText(/Весь регион/));
       const n = await whole.count();
-      // «Весь регион» — под заголовком региона; у СНГ — второй по порядку (Европа, СНГ, …).
+      // «Весь регион» — под заголовком региона; у North America — второй по порядку (Europe, North America, …).
       let clicked = false;
       for (let i = 0; i < n && !clicked; i++) {
         const el = whole.nth(i);
         const label = (await el.getAttribute('aria-label').catch(() => '')) ?? '';
-        if (/СНГ/.test(label)) { await el.click(); clicked = true; }
+        if (/North America/.test(label)) { await el.click(); clicked = true; }
       }
       if (!clicked) await whole.nth(1).click();
       await settle(m, 600);
@@ -406,16 +408,16 @@ export const SCENARIOS = [
       const shown = (t.match(/(\d+) из \d+/) ?? [])[1];
       const all = +sql(`select count(*) from work_orders w join objects o on o.id = w.object_id
         where w.company_id = '${uuid(1)}' and o.region_id = '${uuid(902)}'`);
-      assert(+shown === all, `фильтр «Весь регион СНГ»: на экране ${shown}, заявок региона в базе ${all}`);
-      ctx.notes.push(`заявки «Весь регион СНГ»: ${shown} = в базе ${all}`);
+      assert(+shown === all, `фильтр «Весь регион North America»: на экране ${shown}, заявок региона в базе ${all}`);
+      ctx.notes.push(`заявки «Весь регион North America»: ${shown} = в базе ${all}`);
 
-      // Отчёты: фильтр «Регион» = СНГ.
+      // Отчёты: фильтр «Регион» = North America.
       await home(m, base);
       await section(m, /^Отчёты/);
       await see(m, /приняты с первого раза/).waitFor({ timeout: 20000 });
       await btn(m, /^Регион/).click();
       await settle(m, 800);
-      await clickAction(m, /^СНГ/);
+      await clickAction(m, /^North America/);
       const ap = btn(m, /^Применить|^Показать|^Готово/);
       if (await ap.isVisible().catch(() => false)) await ap.click();
       await settle(m, 2500);
@@ -423,8 +425,8 @@ export const SCENARIOS = [
       const orders = +(rt.match(/(\d+)\s*\n?\s*заяв/)?.[1] ?? NaN);
       const dbOrders = +sql(`select count(*) from work_orders w join objects o on o.id = w.object_id
         where w.company_id = '${uuid(1)}' and o.region_id = '${uuid(902)}' and w.created_at >= now() - interval '30 days'`);
-      ctx.notes.push(`отчёт по СНГ: заявок ${orders}, в базе за 30 дней ${dbOrders}`);
-      assert(orders > 0 && orders <= dbOrders + 1 && !/Европа\s*\n?\s*Заявок/.test(rt), 'отчёт с фильтром «СНГ» неверен');
+      ctx.notes.push(`отчёт по North America: заявок ${orders}, в базе за 30 дней ${dbOrders}`);
+      assert(orders > 0 && orders <= dbOrders + 1 && !/Europe\s*\n?\s*Заявок/.test(rt), 'отчёт с фильтром «North America» неверен');
       await ctx.shot(m, 'report-region');
     },
   },
@@ -440,7 +442,7 @@ export const SCENARIOS = [
       await see(m, /приняты с первого раза/).waitFor({ timeout: 20000 });
       await btn(m, /^Регион/).click();
       await settle(m, 800);
-      await clickAction(m, /^СНГ/);
+      await clickAction(m, /^North America/);
       const ap = btn(m, /^Применить|^Показать|^Готово/);
       if (await ap.isVisible().catch(() => false)) await ap.click();
       await settle(m, 2000);
@@ -449,9 +451,9 @@ export const SCENARIOS = [
       const text = execFileSync('pdftotext', ['-layout', pdf, '-'], { encoding: 'utf8' });
       ctx.notes.push(`PDF: ${pages} стр., ${Math.round(statSync(pdf).size / 1024)} КБ`);
       assert(pages > 0, 'в PDF нет страниц');
-      assert(/СНГ/.test(text), 'в тексте PDF нет фильтра «СНГ»');
-      assert(!/Европа|Белград|Дубай/.test(text), 'в PDF по СНГ попали другие регионы');
-      assert(/Москва|МосКлимат/.test(text), 'в PDF нет данных региона');
+      assert(/North America/.test(text), 'в тексте PDF нет фильтра «North America»');
+      assert(!/Europe|Belgrade|Dubai/.test(text), 'в PDF по North America попали другие регионы');
+      assert(/New York|NYC Climate/.test(text), 'в PDF нет данных региона');
     },
   },
   {
@@ -468,7 +470,7 @@ export const SCENARIOS = [
       const list = m.getByRole('button', { name: /^Список/ }).or(m.getByText(/^Список$/)).first();
       if (await list.isVisible().catch(() => false)) await list.click();
       await settle(m, 1200);
-      await btn(m, /^БЦ «Демо»/).click();
+      await btn(m, /^Demo Tower/).click();
       await see(m, /Адрес|Этажи/).waitFor({ timeout: 20000 });
       await settle(m, 1500);
       await scrollTo(m, /Импорт из Excel/);
@@ -477,11 +479,11 @@ export const SCENARIOS = [
       const csv = join(TMP, 'import.csv');
       writeFileSync(csv, [
         'Название;Помещение;Система;Инвентарный номер;Производитель;Модель;Серийный номер;Дата ввода',
-        'Кондиционер №3;Переговорная, 3 этаж;Климат;E2E-001;Daikin;FTXM25R;DK-1;2025-03-01',
+        'Air conditioner №3;Meeting room, floor 3;Климат;E2E-001;Daikin;FTXM25R;DK-1;2025-03-01',
         'Светильник;Нет такой комнаты;Электрика;E2E-002;Philips;RC132V;PH-1;2025-03-01',
-        'Насос;Кухня, 3 этаж;Лифты;E2E-003;Grundfos;UPS;GR-1;2025-03-01',
-        'ИБП;Серверная, 3 этаж;Электрика;E2E-004;APC;SRT;AS-1;2025-13-40',
-        'Щит освещения;Холл, 1 этаж;Электрика;E2E-005;ABB;MISTRAL;AB-1;01.02.2024',
+        'Насос;Kitchen, floor 3;Лифты;E2E-003;Grundfos;UPS;GR-1;2025-03-01',
+        'ИБП;Server room, floor 3;Электрика;E2E-004;APC;SRT;AS-1;2025-13-40',
+        'Щит освещения;Hall, floor 1;Электрика;E2E-005;ABB;MISTRAL;AB-1;01.02.2024',
       ].join('\n'));
       const chooser = m.waitForEvent('filechooser', { timeout: 15000 });
       await btn(m, /Выбрать файл/).click();
@@ -503,7 +505,7 @@ export const SCENARIOS = [
   },
   {
     id: 7,
-    title: 'Доступ: администратор задаёт зону «Климат + Сантехника · Москва» → второй менеджер не видит лишнего (списки, карта, отчёты, PDF); бригада «Пекин» не видит Шэньчжэнь',
+    title: 'Доступ: администратор задаёт зону «Климат + Сантехника · New York» → второй менеджер не видит лишнего (списки, карта, отчёты, PDF); бригада «Riyadh» не видит Abu Dhabi',
     async run(ctx) {
       const { base } = ctx;
       const m2 = 'd0000000-0000-4000-8000-000000000004';
@@ -515,8 +517,8 @@ export const SCENARIOS = [
       await settle(a, 1000);
       await btn(a, /^Моя компания/).click();
       await settle(a, 1500);
-      await scrollTo(a, /Менеджер Москва/);
-      await btn(a, /Менеджер Москва/).click();
+      await scrollTo(a, /New York Manager/);
+      await btn(a, /New York Manager/).click();
       await settle(a, 800);
       await clickAction(a, /^Зона доступа/);
       await see(a, /Вся компания/).waitFor({ timeout: 20000 });
@@ -533,8 +535,8 @@ export const SCENARIOS = [
         await settle(a, 400);
       }
       await clickAction(a, /Выбрать места/);
-      await scrollTo(a, /Весь город: Москва/);
-      await see(a, /Весь город: Москва/).click();
+      await scrollTo(a, /Весь город: New York/);
+      await see(a, /Весь город: New York/).click();
       await settle(a, 600);
       await ctx.shot(a, 'picker');
       await clickAction(a, /^Применить|^Показать|^Готово|^Выбрать/);
@@ -547,17 +549,17 @@ export const SCENARIOS = [
           (select string_agg(l.name, '+' order by l.name) from layers l where l.id = any(z.layer_ids))
         from access_zones z where z.profile_id = '${m2}'`, (v) => v.length > 0, 15000);
       ctx.notes.push(`зона в базе: ${zone}`);
-      assert(/^city:Москва:Климат\+Сантехника$/.test(zone), `зона сохранилась не так: ${zone}`);
+      assert(/^city:New York:Климат\+Сантехника$/.test(zone), `зона сохранилась не так: ${zone}`);
 
-      // Что второму менеджеру видеть нельзя: объекты не в Москве, заявки других систем, чужие подрядчики.
+      // Что второму менеджеру видеть нельзя: объекты не в New York, заявки других систем, чужие подрядчики.
       const ids = (q) => new Set(sql(q).split('\n').filter(Boolean));
       const C = uuid(1);
-      const badObjects = ids(`select id from objects where company_id = '${C}' and coalesce(city, '') <> 'Москва'`);
+      const badObjects = ids(`select id from objects where company_id = '${C}' and coalesce(city, '') <> 'New York'`);
       const badOrders = ids(`select w.id from work_orders w left join layers l on l.id = w.layer_id left join objects o on o.id = w.object_id
-        where w.company_id = '${C}' and (coalesce(o.city, '') <> 'Москва' or coalesce(l.name, '') not in ('Климат', 'Сантехника'))
+        where w.company_id = '${C}' and (coalesce(o.city, '') <> 'New York' or coalesce(l.name, '') not in ('Климат', 'Сантехника'))
           and w.created_by is distinct from '${m2}'`);
       const okContractors = ids(`select distinct cl.contractor_id from contractor_layers cl join layers l on l.id = cl.layer_id
-        left join objects o on o.id = cl.object_id where l.name in ('Климат', 'Сантехника') and (cl.object_id is null or o.city = 'Москва')
+        left join objects o on o.id = cl.object_id where l.name in ('Климат', 'Сантехника') and (cl.object_id is null or o.city = 'New York')
           and l.company_id = '${C}'`);
       const badContractors = new Set([...ids(`select id from contractors where company_id = '${C}'`)].filter((x) => !okContractors.has(x)));
       const m = await ctx.page();
@@ -575,7 +577,7 @@ export const SCENARIOS = [
       await home(m, base);
       await ctx.shot(m, 'm2-requests');
       const t1 = await screenText(m);
-      for (const w of ['Белград', 'Дубай', 'Пекин', 'Электрика']) assert(!t1.includes(w), `в заявках второго менеджера есть «${w}»`);
+      for (const w of ['Belgrade', 'Dubai', 'Riyadh', 'Электрика']) assert(!t1.includes(w), `в заявках второго менеджера есть «${w}»`);
       await section(m, /^Локации/);
       const mapBtn = m.getByRole('button', { name: /^Карта/ }).or(m.getByText(/^Карта$/)).first();
       if (await mapBtn.isVisible().catch(() => false)) { await mapBtn.click(); await settle(m, 3000); }
@@ -583,26 +585,26 @@ export const SCENARIOS = [
       await section(m, /^Подрядчики/);
       await ctx.shot(m, 'm2-contractors');
       const t3 = await screenText(m);
-      for (const w of ['ЭлектроПро', 'Gulf FM', 'Huaxin']) assert(!t3.includes(w), `в подрядчиках второго менеджера есть «${w}»`);
+      for (const w of ['ElectroPro', 'Gulf FM', 'Riyadh FM']) assert(!t3.includes(w), `в подрядчиках второго менеджера есть «${w}»`);
       await home(m, base);
       await section(m, /^Отчёты/);
       await see(m, /приняты с первого раза/).waitFor({ timeout: 20000 });
       await settle(m, 1500);
       await ctx.shot(m, 'm2-reports');
       const t4 = await screenText(m);
-      for (const w of ['Европа', 'Азия', 'ЭлектроПро', 'КлиматСервис']) assert(!t4.includes(w), `в отчётах второго менеджера есть «${w}»`);
+      for (const w of ['Europe', 'Middle East', 'ElectroPro', 'ClimaService']) assert(!t4.includes(w), `в отчётах второго менеджера есть «${w}»`);
       const pdf = await capturePdf(m);
       const text = execFileSync('pdftotext', ['-layout', pdf, '-'], { encoding: 'utf8' });
-      for (const w of ['Белград', 'Дубай', 'ЭлектроПро', 'КлиматСервис']) assert(!text.includes(w), `в PDF второго менеджера есть «${w}»`);
+      for (const w of ['Belgrade', 'Dubai', 'ElectroPro', 'ClimaService']) assert(!text.includes(w), `в PDF второго менеджера есть «${w}»`);
       await section(m, /^Плановое ТО/);
       await settle(m, 1500);
       const t5 = await screenText(m);
-      assert(!/Дубай|Абиджан|БЦ «Демо»/.test(t5), 'в ППР второго менеджера чужие объекты');
+      assert(!/Dubai|London|Demo Tower/.test(t5), 'в ППР второго менеджера чужие объекты');
       const leaks = [...seen].filter(([id]) => badObjects.has(id) || badOrders.has(id) || badContractors.has(id));
       ctx.notes.push(`ответов сервера: ${seen.size} id, запрещённых: ${leaks.length}`);
       assert(leaks.length === 0, `сервер отдал запрещённое: ${leaks.slice(0, 3).map(([id, t]) => `${t}:${id.slice(-3)}`).join(', ')}`);
 
-      // Бригада «Пекин» Huaxin FM: исполнитель не видит Шэньчжэнь.
+      // Бригада «Riyadh» Riyadh FM: исполнитель не видит Abu Dhabi.
       const e = await ctx.page({ width: 412, height: 915 });
       const eSeen = new Set();
       e.on('response', async (r) => {
@@ -612,13 +614,13 @@ export const SCENARIOS = [
       await login(e, base, 'beijing@example.com');
       await home(e, base);
       await ctx.shot(e, 'crew-beijing');
-      const szOrders = ids(`select w.id from work_orders w join objects o on o.id = w.object_id where o.city = 'Шэньчжэнь'`);
+      const szOrders = ids(`select w.id from work_orders w join objects o on o.id = w.object_id where o.city = 'Abu Dhabi'`);
       const bjOrders = ids(`select w.id from work_orders w join objects o on o.id = w.object_id
-        where o.city = 'Пекин' and w.assigned_contractor_id = '${uuid(509)}'`);
+        where o.city = 'Riyadh' and w.assigned_contractor_id = '${uuid(509)}'`);
       const te = await screenText(e);
-      assert(!te.includes('Шэньчжэнь'), 'исполнитель бригады «Пекин» видит Шэньчжэнь');
-      assert(![...szOrders].some((x) => eSeen.has(x)), 'сервер отдал бригаде «Пекин» заявки Шэньчжэня');
-      ctx.notes.push(`бригада «Пекин»: заявок Пекина видно ${[...bjOrders].filter((x) => eSeen.has(x)).length} из ${bjOrders.size}, Шэньчжэня — 0`);
+      assert(!te.includes('Abu Dhabi'), 'исполнитель бригады «Riyadh» видит Abu Dhabi');
+      assert(![...szOrders].some((x) => eSeen.has(x)), 'сервер отдал бригаде «Riyadh» заявки Abu Dhabi');
+      ctx.notes.push(`бригада «Riyadh»: заявок Riyadh видно ${[...bjOrders].filter((x) => eSeen.has(x)).length} из ${bjOrders.size}, Abu Dhabi — 0`);
     },
   },
   {
@@ -626,7 +628,7 @@ export const SCENARIOS = [
     title: 'Изоляция компаний: вторая компания с теми же названиями — ни один экран не показывает её данные',
     async run(ctx) {
       const { base } = ctx;
-      // В локальной базе две тестовые компании «Демо БЦ» (id c1…/c2…) — с теми же
+      // В локальной базе две тестовые компании «Demo Properties» (id c1…/c2…) — с теми же
       // названиями объектов, регионов, подрядчиков. Любой их id в ответах сервера — утечка.
       const m = await ctx.page();
       const foreign = [];
@@ -685,7 +687,7 @@ export const SCENARIOS = [
       await home(m, base);
       await section(m, /^Локации/);
       await check('Локации');
-      await btn(m, /^БЦ «Демо»/).click();
+      await btn(m, /^Demo Tower/).click();
       await settle(m, 2500);
       await check('Карточка объекта');
       await ctx.shot(m, 'object');
@@ -710,10 +712,11 @@ export const SCENARIOS = [
       const t2 = await screenText(m);
       assert(/миграци/i.test(t2), 'Регионы: нет «Нужна миграция 0015»');
       await ctx.shot(m, 'regions');
-      // Голосовая заявка на старой базе: создаётся и назначается.
-      await home(m, base);
+      // Голосовая заявка на старой базе: создаётся и назначается (фраза
+      // английская — демо-помещения на английском, шаг 33).
+      await home(m, base, `?voice=${encodeURIComponent('Hey, Helpy, the air conditioner in the meeting room on the third floor is not working, very hot')}`);
       await clickAction(m, /Нажми и говори/);
-      await see(m, /не работает кондиционер/).waitFor({ timeout: 15000 });
+      await see(m, /air conditioner in the meeting room/).waitFor({ timeout: 15000 });
       await clickAction(m, /^Готово/);
       await see(m, /Проверьте заявку/).waitFor({ timeout: 20000 });
       await clickAction(m, /^Отправить/);
@@ -734,7 +737,7 @@ export const SCENARIOS = [
         and id::text not like 'de300000-%'`);
       const m = await ctx.page();
       await login(m, base, USERS.admin);
-      // «Где я» запоминается на устройстве: сразу «БЦ «Демо»», без выбора.
+      // «Где я» запоминается на устройстве: сразу «Demo Tower», без выбора.
       const uid = sql(`select id from auth.users where email = '${USERS.admin}'`);
       await m.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
         [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|`]);
@@ -780,7 +783,7 @@ export const SCENARIOS = [
     async run(ctx) {
       const { base } = ctx;
       sql(`delete from work_orders where company_id = '${uuid(1)}' and title like 'E2E форма%'`);
-      // 1. Без геопозиции: создать заявку на «БЦ «Демо»», открыть форму снова — объект пуст.
+      // 1. Без геопозиции: создать заявку на «Demo Tower», открыть форму снова — объект пуст.
       const m = await ctx.page();
       await login(m, base, USERS.admin);
       await home(m, base);
@@ -789,8 +792,8 @@ export const SCENARIOS = [
       await typeInto(m, m.getByRole('textbox').first(), 'E2E форма 1');
       await btn(m, /^Выберите объект/).click();
       await settle(m, 800);
-      await m.getByRole('menuitem', { name: /БЦ «Демо»/ }).or(m.getByRole('option', { name: /БЦ «Демо»/ }))
-        .or(m.getByText(/БЦ «Демо»/)).first().click();
+      await m.getByRole('menuitem', { name: /Demo Tower/ }).or(m.getByRole('option', { name: /Demo Tower/ }))
+        .or(m.getByText(/Demo Tower/)).first().click();
       await settle(m, 800);
       await clickAction(m, /^Создать заявку$/);
       await waitDb(`select count(*) from work_orders where title = 'E2E форма 1'`, '1');
@@ -801,8 +804,8 @@ export const SCENARIOS = [
       await ctx.shot(m, 'form-empty');
       assert(await btn(m, /^Выберите объект/).isVisible(), 'в новой форме подставился объект прошлой заявки');
       await see(m, /Недавние/).waitFor({ timeout: 5000 });
-      ctx.notes.push('после заявки на «БЦ «Демо»» новая форма пустая, есть «Недавние»');
-      // 2. С геопозицией в 40 м от «БЦ «Демо»» — объект подставлен, без помещения.
+      ctx.notes.push('после заявки на «Demo Tower» новая форма пустая, есть «Недавние»');
+      // 2. С геопозицией в 40 м от «Demo Tower» — объект подставлен, без помещения.
       const g = await ctx.page({ geo: { latitude: 44.80507, longitude: 20.44942, accuracy: 10 } });
       await login(g, base, USERS.admin);
       await home(g, base);
@@ -810,7 +813,7 @@ export const SCENARIOS = [
       await see(g, /Рядом с вами · \d+ м/).waitFor({ timeout: 8000 });
       await ctx.shot(g, 'form-gps');
       const t = await screenText(g);
-      assert(/БЦ «Демо»/.test(t), 'по GPS не подставлен «БЦ «Демо»»');
+      assert(/Demo Tower/.test(t), 'по GPS не подставлен «Demo Tower»');
       ctx.notes.push(`GPS: ${t.match(/Рядом с вами · \d+ м/)?.[0]}`);
     },
   },
@@ -861,7 +864,7 @@ export const SCENARIOS = [
       sql(`delete from access_zones where profile_id = 'd0000000-0000-4000-8000-000000000004';
         insert into access_zones(company_id, profile_id, layer_ids, scope_kind, scope_ref)
         select '${uuid(1)}', 'd0000000-0000-4000-8000-000000000004',
-          array(select id from layers where company_id = '${uuid(1)}' and name in ('Климат', 'Сантехника')), 'city', 'Москва'`);
+          array(select id from layers where company_id = '${uuid(1)}' and name in ('Климат', 'Сантехника')), 'city', 'New York'`);
       const a = await ctx.page();
       await login(a, base, USERS.admin);
       await home(a, base);
@@ -901,7 +904,7 @@ export const SCENARIOS = [
   },
   {
     id: 14,
-    title: 'Акт подрядчику «КлиматСервис» за месяц: в «К оплате» только доказанные заявки → «Сформировать акт» → номер и PDF',
+    title: 'Акт подрядчику «ClimaService» за месяц: в «К оплате» только доказанные заявки → «Сформировать акт» → номер и PDF',
     async run(ctx) {
       const { base } = ctx;
       // Сколько доказанных по правилам акта — тем же расчётом в SQL.
@@ -944,28 +947,28 @@ export const SCENARIOS = [
   },
   {
     id: 15,
-    title: '«Камера-помощник» (заглушка камеры и ИИ, телефон): «Что это?» → «КД-301 · 91 %» и карточка → «Создать заявку» → заявка с фото',
+    title: '«Камера-помощник» (заглушка камеры и ИИ, телефон): «Что это?» → «AC-301 · 91 %» и карточка → «Создать заявку» → заявка с фото',
     async run(ctx) {
       const { base } = ctx;
       sql(`delete from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
         and id::text not like 'de300000-%'`);
       const m = await ctx.page({ width: 412, height: 915 });
       await login(m, base, USERS.admin);
-      // «Где я» — переговорная 301 «БЦ «Демо»» (запомнено на устройстве).
+      // «Где я» — переговорная 301 «Demo Tower» (запомнено на устройстве).
       const uid = sql(`select id from auth.users where email = '${USERS.admin}'`);
       await m.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
         [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|${uuid(21)}`]);
       await home(m, base);
       await btn(m, /Узнать оборудование по фото/).click();
       await btn(m, /^Что это\?/).waitFor({ timeout: 30000 });
-      await see(m, /Переговорная/).waitFor({ timeout: 15000 });
+      await see(m, /Meeting room/).waitFor({ timeout: 15000 });
       await ctx.shot(m, 'live');
       await btn(m, /^Что это\?/).click();
-      await see(m, /КД-301 · 91 %/).waitFor({ timeout: 30000 });
+      await see(m, /AC-301 · 91 %/).waitFor({ timeout: 30000 });
       await see(m, /Плановое ТО|ТО не запланировано/).waitFor({ timeout: 15000 });
       await settle(m, 800);
       const t = await screenText(m);
-      assert(/Кондиционер КД-301/.test(t), 'в карточке нет «Кондиционер КД-301»');
+      assert(/Air conditioner AC-301/.test(t), 'в карточке нет «Air conditioner AC-301»');
       assert(/Открытые заявки · \d+|Нет открытых заявок/.test(t), 'в карточке нет открытых заявок');
       assert(/Последняя работа|Выполненных работ ещё не было/.test(t), 'в карточке нет последней работы');
       ctx.notes.push('карточка: ' + (t.match(/Открытые заявки · \d+|Нет открытых заявок/)?.[0] ?? '?')
@@ -1007,7 +1010,7 @@ export const SCENARIOS = [
         'у менеджера не должно быть кнопок исполнителя');
       await ctx.shot(m, 'manager-assigned');
 
-      // 2. Исполнитель «КлиматСервис»: начать, живой снимок «после», сдать.
+      // 2. Исполнитель «ClimaService»: начать, живой снимок «после», сдать.
       const e = await ctx.page({ width: 412, height: 915, geo: BC_DEMO });
       await login(e, base, USERS.executor);
       await openOrder(e, base, title);
@@ -1016,7 +1019,7 @@ export const SCENARIOS = [
 
       // Менеджер видит ход работы, а не кнопки.
       await openOrder(m, base, title);
-      await see(m, /Выполняет КлиматСервис/).waitFor({ timeout: 15000 });
+      await see(m, /Выполняет ClimaService/).waitFor({ timeout: 15000 });
       t = await screenText(m);
       assert(!/Выполнено, на проверку|Сфотографировать результат/.test(t), 'у менеджера в работе — только строка-статус');
       await ctx.shot(m, 'manager-progress');
@@ -1040,7 +1043,7 @@ export const SCENARIOS = [
       if (await confirm.isVisible().catch(() => false)) await confirm.click();
       await waitDb(`select status from work_orders where id = '${id}'`, 'done');
 
-      // 4. Акт «КлиматСервис» за месяц: заявка — в «К оплате».
+      // 4. Акт «ClimaService» за месяц: заявка — в «К оплате».
       await home(m, base);
       await section(m, /^Отчёты/);
       await scrollTo(m, /Акты подрядчикам/);
@@ -1207,8 +1210,8 @@ export const SCENARIOS = [
       if (await btn(r, /^Выберите объект/).isVisible().catch(() => false)) {
         await btn(r, /^Выберите объект/).click();
         await settle(r, 800);
-        await r.getByRole('menuitem', { name: /БЦ «Демо»/ }).or(r.getByRole('option', { name: /БЦ «Демо»/ }))
-          .or(r.getByText(/БЦ «Демо»/)).first().click();
+        await r.getByRole('menuitem', { name: /Demo Tower/ }).or(r.getByRole('option', { name: /Demo Tower/ }))
+          .or(r.getByText(/Demo Tower/)).first().click();
         await settle(r, 800);
       }
       await btn(r, /^Сантехника$/).click();
@@ -1268,7 +1271,7 @@ export const SCENARIOS = [
     async run(ctx) {
       const { base } = ctx;
       const NAME = 'E2E Датчик протечки';
-      const room = uuid(21); // 301 · Переговорная, 3 этаж (этаж 602)
+      const room = uuid(21); // 301 · Meeting room, floor 3 (этаж 602)
       const floor = uuid(602);
       sql(`delete from assets where name = '${NAME}'`);
       const m = await ctx.page();
@@ -1278,7 +1281,7 @@ export const SCENARIOS = [
       const list = m.getByRole('button', { name: /^Список/ }).or(m.getByText(/^Список$/)).first();
       if (await list.isVisible().catch(() => false)) await list.click();
       await settle(m, 1200);
-      await btn(m, /^БЦ «Демо»/).click();
+      await btn(m, /^Demo Tower/).click();
       await see(m, /Адрес|Этажи/).waitFor({ timeout: 20000 });
       await settle(m, 1500);
       // 1. Форма «Новое оборудование»: название, помещение, «где именно».
@@ -1289,19 +1292,19 @@ export const SCENARIOS = [
       await typeInto(m, m.getByRole('textbox').first(), NAME);
       await see(m, /Выберите помещение/).click();
       await settle(m, 800);
-      await m.getByRole('menuitem', { name: /^301 · Переговорная/ }).or(m.getByRole('option', { name: /^301 · Переговорная/ }))
-        .or(m.getByRole('button', { name: /^301 · Переговорная/ })).last().click();
+      await m.getByRole('menuitem', { name: /^301 · Meeting room/ }).or(m.getByRole('option', { name: /^301 · Meeting room/ }))
+        .or(m.getByRole('button', { name: /^301 · Meeting room/ })).last().click();
       await settle(m, 800);
       await scrollTo(m, /^Потолок$/);
       await btn(m, /^Потолок$/).click();
       await typeInto(m, m.getByRole('textbox', { name: /Высота, м/ }), '2,8');
       await ctx.shot(m, 'form');
-      // 2. «Место на плане» → экран выбора точки (план 3 этажа у переговорной).
+      // 2. «Место на плане» → экран выбора точки (план floor 3 у переговорной).
       await scrollTo(m, /Место на плане/);
       await btn(m, /^Место на плане/).click();
       const marker = m.getByRole('button', { name: /метка на плане/ }).or(m.getByLabel(/метка на плане/)).first();
       await marker.waitFor({ timeout: 30000 });
-      await see(m, /3 этаж · 301 · Переговорная/).waitFor({ timeout: 10000 });
+      await see(m, /Floor 3 · 301 · Meeting room/).waitFor({ timeout: 10000 });
       await settle(m, 1500);
       await ctx.shot(m, 'picker');
       // Нажатие по плану правее и ниже маркера → маркер туда; затем
@@ -1329,7 +1332,7 @@ export const SCENARIOS = [
       assert(Math.abs(c2.x - c1.x + 30) < 4 && Math.abs(c2.y - c1.y - 10) < 4, 'маркер не перетащился');
       await ctx.shot(m, 'picker-moved');
       await clickAction(m, /^Готово/);
-      await see(m, /3 этаж · 301 · Переговорная.* · Изменить/).waitFor({ timeout: 10000 });
+      await see(m, /Floor 3 · 301 · Meeting room.* · Изменить/).waitFor({ timeout: 10000 });
       // 3. Сохранить → в базе этаж 602, точка внутри переговорной, монтаж в meta.
       await clickAction(m, /^Сохранить/);
       const saved = await waitDb(`select id || '|' || floor_id || '|' || plan_x || '|' || plan_y || '|' || location_id || '|'
@@ -1340,11 +1343,11 @@ export const SCENARIOS = [
       ctx.notes.push(`в базе: этаж ${fl === floor ? '602' : fl}, точка ${ax}, ${ay}, монтаж ${mount}, высота ${height}`);
       assert(fl === floor && loc === room, 'этаж или помещение сохранились не те');
       assert(mount === 'ceiling' && height === '2.8', 'монтаж и высота не сохранились в meta');
-      // Переговорная на схеме: rect [120, 120, 640, 560] из 2400×1600.
+      // Meeting room на схеме: rect [120, 120, 640, 560] из 2400×1600.
       assert(ax > 0.05 && ax < 0.317 && ay > 0.075 && ay < 0.425, 'точка вне переговорной');
       const [rx, ry] = sql(`select plan_x || ',' || plan_y from locations where id = '${room}'`).split(',').map(Number);
       assert(ax > rx && ay > ry, 'точка не сдвинулась вправо-вниз от точки помещения');
-      // 4. План 3 этажа: маркер оборудования там же — пересчёт по двум помещениям.
+      // 4. План floor 3: маркер оборудования там же — пересчёт по двум помещениям.
       await openApp(m, base, `#/objects/${uuid(10)}/floors/${floor}`);
       await see(m, /На плане · \d/).waitFor({ timeout: 30000 });
       await settle(m, 2000);

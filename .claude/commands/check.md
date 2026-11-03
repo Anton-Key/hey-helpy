@@ -33,10 +33,12 @@ allowed-tools: Bash(flutter analyze:*), Bash(flutter test:*), Bash(flutter build
 форматы дат, имена пакетов. Если сомневаешься — пометь «проверить», а не «ошибка».
 
 ## 5. Название продукта
-В интерфейсе допустимо только «Эй, Helpy» (RU) и «Hey Helpy» (EN), и только из ключа
-`appName` в `lib/l10n/*.arb`.
-- Ошибка: «Helpy» без «Эй, » / «Hey » в строковых литералах `lib/` вне `lib/l10n/`,
-  а также в значениях `.arb` (кроме фразы активации `wakePhrase`: «Эй, Хелпи» / «Hey, Helpy»).
+Название продукта на всех языках — только **«Hey Helpy»** (шаг 33), и в интерфейсе — только из
+ключа `appName` в `lib/l10n/*.arb`.
+- Ошибка: «Эй, Helpy» где угодно в `lib/`, `tools/site/`, `supabase/functions/`, в `.arb` и
+  `android/app/src/main/res/values*/strings.xml` (сторож — `test/terminology_test.dart`).
+- Ошибка: «Helpy» без «Hey » в строковых литералах `lib/` вне `lib/l10n/`, а также в значениях
+  `.arb` (кроме фразы активации `wakePhrase`: «Эй, Хелпи» (RU, её произносят голосом) / «Hey, Helpy»).
 - Не ошибка: имена классов и идентификаторы (`HeyHelpyApp`, `HeyHelpyTheme`), комментарии.
 - Проверь также подписи под иконкой: `android/app/src/main/res/values*/strings.xml`.
 

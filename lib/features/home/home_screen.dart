@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUnread();
   }
 
-  /// Кнопки «Эй, Helpy» / «+ Заявка» и горячие клавиши: открыть вкладку
+  /// Кнопки «Hey Helpy» / «+ Заявка» и горячие клавиши: открыть вкладку
   /// «Заявки», дальше её дело ([HomeActions]).
   void _requestAction(HomeAction a) {
     _contentNav.currentState?.popUntil((r) => r.isFirst);

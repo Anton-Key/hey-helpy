@@ -48,7 +48,11 @@ class _EvalScreenState extends State<EvalScreen> {
   EvalRunTotals? _totals;
   final Map<String, int> _resultCounts = {};
 
-  EvalSet? get _set => _sets.isEmpty ? null : _sets.first;
+  /// Выбранный набор (по умолчанию — самый новый).
+  String? _selectedId;
+  EvalSet? get _set => _sets.isEmpty
+      ? null
+      : _sets.firstWhere((x) => x.id == _selectedId, orElse: () => _sets.first);
 
   @override
   void initState() {
@@ -78,7 +82,10 @@ class _EvalScreenState extends State<EvalScreen> {
         _companyName = (c?['name'] as String?) ?? '';
       }
       final sets = await _repo.sets();
-      final set = sets.isEmpty ? null : sets.first;
+      final set = sets.isEmpty
+          ? null
+          : sets.firstWhere((x) => x.id == _selectedId,
+              orElse: () => sets.first);
       final r = await Future.wait<Object>([
         if (set != null)
           _repo.samples(set.id)
@@ -127,10 +134,15 @@ class _EvalScreenState extends State<EvalScreen> {
   String _setName(AppLocalizations l, int n) =>
       l.evalSetName(n, l.date(DateTime.now()));
 
-  /// Набор для новых фото: текущий, если не заморожен, иначе — новый.
+  /// Набор для новых фото: выбранный или самый новый незамороженный, иначе — новый.
   Future<EvalSet?> _writableSet() async {
     final set = _set;
     if (set != null && !set.frozen) return set;
+    final open = _sets.where((x) => !x.frozen).firstOrNull;
+    if (open != null) {
+      _selectedId = open.id;
+      return open;
+    }
     final l = context.l10n;
     final companyId = _companyId;
     if (companyId == null) return null;
@@ -138,6 +150,7 @@ class _EvalScreenState extends State<EvalScreen> {
         companyId: companyId, name: _setName(l, _sets.length + 1));
     setState(() {
       _sets = [created, ..._sets];
+      _selectedId = created.id;
       _samples = const [];
       _runs = const [];
     });
@@ -345,6 +358,33 @@ class _EvalScreenState extends State<EvalScreen> {
     }
   }
 
+  Future<void> _pickSet() async {
+    final l = context.l10n;
+    final picked = await showAppSheet<String>(
+      context: context,
+      builder: (ctx) => ListPickerSheet(
+        title: l.evalSets,
+        search: null,
+        children: [
+          AppGroup(margin: EdgeInsets.zero, children: [
+            for (final x in _sets)
+              AppCheckRow(
+                title: x.name,
+                subtitle: x.frozen
+                    ? l.evalSetFrozen(l.dateTime(x.frozenAt!))
+                    : l.evalSetOpen,
+                selected: x.id == _set?.id,
+                onTap: () => Navigator.pop(ctx, x.id),
+              ),
+          ]),
+        ],
+      ),
+    );
+    if (picked == null || !mounted || picked == _set?.id) return;
+    _selectedId = picked;
+    await _load();
+  }
+
   Future<void> _pickProvider() async {
     final l = context.l10n;
     final picked = await showAppSheet<String>(
@@ -430,7 +470,8 @@ class _EvalScreenState extends State<EvalScreen> {
                   ? l.evalSetFrozen(l.dateTime(set.frozenAt!))
                   : l.evalSetOpen,
           subtitleMaxLines: 3,
-          chevron: false,
+          chevron: _sets.length > 1,
+          onTap: _sets.length > 1 && !running ? _pickSet : null,
         ),
         if (set != null && set.frozen)
           AppRow(
@@ -474,10 +515,14 @@ class _EvalScreenState extends State<EvalScreen> {
         AppGroup(header: l.evalByKind, children: [
           for (final e in sum.byKind.take(12))
             AppRow(
-              leading: LeadingIcon(assetIcon(e.key, 'equipment')),
-              title: e.key == 'unknown'
-                  ? l.evalUnknownKind
-                  : equipmentKindLabel(l, e.key),
+              leading: LeadingIcon(e.key == kEvalUnregisteredKey
+                  ? AppIcons.eqOther
+                  : assetIcon(e.key, 'equipment')),
+              title: switch (e.key) {
+                kEvalUnregisteredKey => l.evalNotInRegistry,
+                'unknown' => l.evalUnknownKind,
+                _ => equipmentKindLabel(l, e.key),
+              },
               value: '${e.value}',
               chevron: false,
             ),

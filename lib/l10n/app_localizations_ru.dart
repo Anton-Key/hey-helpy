@@ -6344,10 +6344,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get evalNoExamples => 'В этом прогоне ошибок нет';
 
   @override
-  String get evalDownloadPdf => 'Скачать отчёт (PDF)';
+  String get evalDownloadPdf => 'Отчёт (PDF)';
 
   @override
-  String get evalDownloadCsv => 'Скачать данные (CSV)';
+  String get evalDownloadCsv => 'Данные (CSV)';
 
   @override
   String get evalReportFailed => 'Не удалось собрать отчёт';
@@ -6400,4 +6400,7 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get evalPdfDefinitions =>
       'Top-1: ИИ первой назвал именно ту единицу, что на фото. Ошибки и отсутствие ответа считаются неверными. 95% ДИ — интервал Уилсона.';
+
+  @override
+  String get evalSets => 'Наборы';
 }

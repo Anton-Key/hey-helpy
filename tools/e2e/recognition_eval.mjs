@@ -15,8 +15,9 @@
 // Итог — tools/e2e/out/recognition_eval.md. Цифры точности здесь — заглушка,
 // а не замер.
 //
-// --keep — не останавливать сервисы (для снимков экранов приложения):
-// HH_EVAL_FN_URL уже направлен на функцию.
+// --shots — после проверок собрать веб-версию для локального бэкенда
+// (build/web_eval) и снять экраны раздела в docs/screens/preview34/
+// (ПРЕДПРОСМОТР, английский интерфейс); --no-build — взять готовую сборку.
 
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -44,7 +45,8 @@ const admin = psql(`select id from auth.users where email = 'manager@example.com
 const executor = psql(`select id from auth.users where email = 'executor@example.com'`);
 psql(`update public.profiles set role = 'admin' where id = '${admin}'`);
 psql(`grant service_role to authenticator`);
-psql(`delete from public.recognition_eval_sets where company_id = '${COMPANY}'`);
+// Прошлые прогоны этого скрипта (замороженный набор не удаляется — только в локальной базе, без триггеров).
+psql(`set session_replication_role = replica; delete from public.recognition_eval_sets where company_id = '${COMPANY}'`);
 
 const now = Math.floor(Date.now() / 1000);
 const tok = (sub, email) => signJwt({ sub, email, role: 'authenticated', aud: 'authenticated', iat: now, exp: now + 7200 });
@@ -229,13 +231,109 @@ try {
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, lines.join('\n') + '\n');
   console.log(`\n${checks.filter((c) => c.ok).length} из ${checks.length} ✓ → ${out}`);
+  if (process.argv.includes('--shots')) await shots(reports);
 } finally {
-  if (!process.argv.includes('--keep')) {
-    fn.kill();
-    ai.close();
-    backend.stop();
-  } else {
-    console.log(`KEEP: backend ${backend.url}, anon ${backend.anonKey}`);
+  fn.kill();
+  ai.close();
+  backend.stop();
+}
+
+/** Снимки раздела «Recognition test» (ПРЕДПРОСМОТР) — 412 и 1280 px. */
+async function shots() {
+  const { chromium } = await import('../screens/node_modules/playwright/index.mjs');
+  const WEB = join(ROOT, 'build/web_eval');
+  if (!process.argv.includes('--no-build')) {
+    console.log('Сборка веб-версии для локального бэкенда…');
+    execFileSync('flutter', ['build', 'web', '--release', '--output', WEB,
+      `--dart-define=SUPABASE_URL=${backend.url}`, `--dart-define=SUPABASE_ANON_KEY=${backend.anonKey}`,
+      '--dart-define=VOICE_MOCK=true'], { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] });
   }
+  psql(`update public.profiles set locale = 'en' where id = '${admin}'`);
+  const { createServer: http } = await import('node:http');
+  const { existsSync, statSync } = await import('node:fs');
+  const { extname } = await import('node:path');
+  const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json',
+    '.wasm': 'application/wasm', '.png': 'image/png', '.ttf': 'font/ttf', '.otf': 'font/otf', '.css': 'text/css' };
+  const web = http((req, res) => {
+    const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    let file = join(WEB, path);
+    if (!file.startsWith(WEB) || !existsSync(file) || statSync(file).isDirectory()) file = join(WEB, 'index.html');
+    res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' });
+    res.end(readFileSync(file));
+  });
+  await new Promise((ok) => web.listen(0, '127.0.0.1', ok));
+  const BASE = `http://127.0.0.1:${web.address().port}/`;
+  const OUT = join(ROOT, 'docs/screens/preview34');
+  mkdirSync(OUT, { recursive: true });
+  const browser = await chromium.launch();
+  const rows = [];
+  for (const [w, h] of [[412, 915], [1280, 800]]) {
+    const page = await browser.newPage({ viewport: { width: w, height: h } });
+    const btn = (name) => page.getByRole('button', { name }).first();
+    const wheel = async (times, dy) => {
+      await page.mouse.move(w / 2, h / 2);
+      for (let i = 0; i < times; i++) { await page.mouse.wheel(0, dy); await page.waitForTimeout(200); }
+    };
+    const shot = async (key, title) => {
+      await page.waitForTimeout(1800);
+      const file = `admin-${w}-${key}.png`;
+      await page.screenshot({ path: join(OUT, file) });
+      rows.push(`| ${w} | ${title} | [${file}](${file}) |`);
+      console.log('📸', file);
+    };
+    try {
+      await page.goto(BASE, { waitUntil: 'load' });
+      const ph = page.locator('flt-semantics-placeholder');
+      await ph.waitFor({ state: 'attached', timeout: 60000 });
+      await ph.evaluate((el) => el.click());
+      const email = page.getByRole('textbox', { name: 'Email' });
+      await email.waitFor({ timeout: 60000 });
+      await email.click();
+      await page.keyboard.type('manager@example.com', { delay: 10 });
+      await page.getByRole('textbox', { name: 'Password' }).click();
+      await page.keyboard.type('local-only', { delay: 10 });
+      await btn(/^Sign in|^Log in/).click();
+      const profile = page.getByRole('tab', { name: /^Profile/ }).or(page.getByRole('button', { name: /^Profile/ })).first();
+      await profile.waitFor({ timeout: 60000 });
+      await profile.click();
+      await btn(/^My company/).click();
+      await page.waitForTimeout(2500);
+      const entry = btn(/^Recognition test/);
+      for (let i = 0; i < 20 && !(await entry.isVisible().catch(() => false)); i++) {
+        await page.mouse.move(w / 2, h / 2);
+        await page.mouse.wheel(0, 500);
+        await page.waitForTimeout(300);
+      }
+      await entry.click();
+      await page.getByText(/E2E set/).first().waitFor({ timeout: 30000 });
+      await shot('eval', '«Recognition test»: набор, счётчики, виды, запуск');
+      await wheel(6, 600);
+      await shot('eval-runs', '«Recognition test»: поставщик ИИ, запуск, прогоны');
+      await btn(/^test ·/).click();
+      await page.getByText(/^Top-1: /).first().waitFor({ timeout: 30000 });
+      await shot('report', 'Результаты прогона test: Top-1 с интервалом, Top-3, вид, ложные узнавания');
+      await wheel(4, 700);
+      await shot('report-thresholds', 'Результаты: пороги уверенности и разбивка');
+      await wheel(12, 700);
+      await shot('report-examples', 'Результаты: время ответа и примеры ошибок с миниатюрами');
+      await page.goBack();
+      await page.waitForTimeout(1500);
+      await page.goto(BASE + '#/', { waitUntil: 'load' }).catch(() => {});
+    } catch (e) {
+      rows.push(`| ${w} | ❌ ${String(e.message ?? e).split('\n')[0].replaceAll('|', '/')} | |`);
+      await page.screenshot({ path: join(OUT, `admin-${w}-error.png`) }).catch(() => {});
+      console.log('❌', e.message);
+    }
+    await page.close();
+  }
+  await browser.close();
+  web.close();
+  writeFileSync(join(OUT, 'README.md'), [
+    '# Шаг 34 — «Recognition test» (ПРЕДПРОСМОТР)',
+    '',
+    `Снято ${new Date().toISOString()} командой \`node tools/e2e/recognition_eval.mjs --shots\`: локальная база (миграции 0001–0028 + демо-данные), настоящая функция \`recognition-eval\`, **ИИ — заглушка**. Цифры на снимках — не замер точности.`,
+    '',
+    '| Ширина | Экран | Файл |', '|---|---|---|', ...rows, '',
+  ].join('\n'));
 }
 process.exitCode = checks.every((c) => c.ok) ? 0 : 1;

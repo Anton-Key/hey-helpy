@@ -6305,10 +6305,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get evalNoExamples => 'No errors in this run';
 
   @override
-  String get evalDownloadPdf => 'Download report (PDF)';
+  String get evalDownloadPdf => 'Report (PDF)';
 
   @override
-  String get evalDownloadCsv => 'Download data (CSV)';
+  String get evalDownloadCsv => 'Data (CSV)';
 
   @override
   String get evalReportFailed => 'Could not build the report';
@@ -6361,4 +6361,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get evalPdfDefinitions =>
       'Top-1: the AI named exactly the unit in the photo first. Errors and missing answers count as wrong. 95% CI — Wilson interval.';
+
+  @override
+  String get evalSets => 'Sets';
 }

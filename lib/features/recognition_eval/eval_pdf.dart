@@ -77,8 +77,11 @@ Future<Uint8List> buildEvalPdf({
   String counts(Map<String, int> m, String group) => m.entries
       .map((e) => '${evalConditionLabel(l, group, e.key)} ${e.value}')
       .join(' · ');
-  String kindName(String k) =>
-      k == 'unknown' ? l.evalUnknownKind : equipmentKindLabel(l, k);
+  String kindName(String k) => switch (k) {
+        kEvalUnregisteredKey => l.evalNotInRegistry,
+        'unknown' => l.evalUnknownKind,
+        _ => equipmentKindLabel(l, k),
+      };
 
   final thresholdRows = [
     for (final t in r.thresholds)

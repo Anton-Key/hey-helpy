@@ -10722,13 +10722,13 @@ abstract class AppLocalizations {
   /// Шаг 34: тест распознавания
   ///
   /// In ru, this message translates to:
-  /// **'Скачать отчёт (PDF)'**
+  /// **'Отчёт (PDF)'**
   String get evalDownloadPdf;
 
   /// Шаг 34: тест распознавания
   ///
   /// In ru, this message translates to:
-  /// **'Скачать данные (CSV)'**
+  /// **'Данные (CSV)'**
   String get evalDownloadCsv;
 
   /// Шаг 34: тест распознавания
@@ -10814,6 +10814,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Top-1: ИИ первой назвал именно ту единицу, что на фото. Ошибки и отсутствие ответа считаются неверными. 95% ДИ — интервал Уилсона.'**
   String get evalPdfDefinitions;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Наборы'**
+  String get evalSets;
 }
 
 class _AppLocalizationsDelegate

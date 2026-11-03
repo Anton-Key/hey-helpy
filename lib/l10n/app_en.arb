@@ -2206,9 +2206,9 @@
   "@evalExampleNone": {"description": "Шаг 34: тест распознавания"},
   "evalNoExamples": "No errors in this run",
   "@evalNoExamples": {"description": "Шаг 34: тест распознавания"},
-  "evalDownloadPdf": "Download report (PDF)",
+  "evalDownloadPdf": "Report (PDF)",
   "@evalDownloadPdf": {"description": "Шаг 34: тест распознавания"},
-  "evalDownloadCsv": "Download data (CSV)",
+  "evalDownloadCsv": "Data (CSV)",
   "@evalDownloadCsv": {"description": "Шаг 34: тест распознавания"},
   "evalReportFailed": "Could not build the report",
   "@evalReportFailed": {"description": "Шаг 34: тест распознавания"},
@@ -2237,5 +2237,7 @@
   "evalPdfPage": "Page {page} of {total}",
   "@evalPdfPage": {"placeholders": {"page": {"type": "int"}, "total": {"type": "int"}}, "description": "Шаг 34: тест распознавания"},
   "evalPdfDefinitions": "Top-1: the AI named exactly the unit in the photo first. Errors and missing answers count as wrong. 95% CI — Wilson interval.",
-  "@evalPdfDefinitions": {"description": "Шаг 34: тест распознавания"}
+  "@evalPdfDefinitions": {"description": "Шаг 34: тест распознавания"},
+  "evalSets": "Sets",
+  "@evalSets": {"description": "Шаг 34: тест распознавания"}
 }

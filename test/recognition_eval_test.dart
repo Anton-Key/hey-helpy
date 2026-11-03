@@ -166,7 +166,7 @@ void main() {
     expect(s.test, 2);
     expect(s.byKind.first.key, 'ac');
     expect(s.byKind.first.value, 3);
-    expect(s.byKind.last.key, 'unknown');
+    expect(s.byKind.last.key, kEvalUnregisteredKey);
     expect(s.remaining, 296);
     expect(
         EvalSummary.of(List.generate(301, (i) => _s('$i', unit: 'A')))
@@ -332,6 +332,8 @@ void main() {
           fonts: fonts,
           thumbs: const {});
       expect(String.fromCharCodes(bytes.take(5)), '%PDF-');
+      final out = Platform.environment['EVAL_PDF_OUT'];
+      if (out != null) File('$out-$lang.pdf').writeAsBytesSync(bytes);
       expect(bytes.length, greaterThan(2000));
     }
   });

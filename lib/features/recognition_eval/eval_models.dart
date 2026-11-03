@@ -3,6 +3,9 @@
 // Метрики считает функция (supabase/functions/_shared/eval_metrics.ts),
 // здесь — только показ. Тесты: test/recognition_eval_test.dart.
 
+/// Ключ «нет в реестре» в сводке по видам.
+const kEvalUnregisteredKey = '_unregistered';
+
 /// Цель набора — 300 фото (презентация: «тест из 300–500 фото»).
 const kEvalTargetPhotos = 300;
 
@@ -194,7 +197,8 @@ class EvalSummary {
   static EvalSummary of(List<EvalSample> s) {
     final kinds = <String, int>{};
     for (final x in s) {
-      final k = x.trueKind ?? 'unknown';
+      final k =
+          x.unregistered ? kEvalUnregisteredKey : (x.trueKind ?? 'unknown');
       kinds[k] = (kinds[k] ?? 0) + 1;
     }
     final byKind = kinds.entries.toList()

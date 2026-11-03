@@ -252,9 +252,11 @@ export function computeMetrics(
     units: new Set(regs.map((s) => s.true_equipment_id)).size,
     rooms: new Set(samples.map((s) => s.room_id)).size,
     sites: new Set(samples.map((s) => s.site_id)).size,
+    // «Нет в реестре» — отдельной строкой (ключ как в приложении).
     kinds: tally(
       samples.map((s) =>
-        canonicalKind(s.true_kind) ?? (s.true_kind ? s.true_kind : "unknown")
+        !s.true_equipment_id ? "_unregistered" : canonicalKind(s.true_kind) ??
+          (s.true_kind ? s.true_kind : "unknown")
       ),
     ),
     conditions: {

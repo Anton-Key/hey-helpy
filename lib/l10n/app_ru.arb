@@ -2947,9 +2947,9 @@
   "@evalExampleNone": {"description": "Шаг 34: тест распознавания"},
   "evalNoExamples": "В этом прогоне ошибок нет",
   "@evalNoExamples": {"description": "Шаг 34: тест распознавания"},
-  "evalDownloadPdf": "Скачать отчёт (PDF)",
+  "evalDownloadPdf": "Отчёт (PDF)",
   "@evalDownloadPdf": {"description": "Шаг 34: тест распознавания"},
-  "evalDownloadCsv": "Скачать данные (CSV)",
+  "evalDownloadCsv": "Данные (CSV)",
   "@evalDownloadCsv": {"description": "Шаг 34: тест распознавания"},
   "evalReportFailed": "Не удалось собрать отчёт",
   "@evalReportFailed": {"description": "Шаг 34: тест распознавания"},
@@ -2978,5 +2978,7 @@
   "evalPdfPage": "Стр. {page} из {total}",
   "@evalPdfPage": {"placeholders": {"page": {"type": "int"}, "total": {"type": "int"}}, "description": "Шаг 34: тест распознавания"},
   "evalPdfDefinitions": "Top-1: ИИ первой назвал именно ту единицу, что на фото. Ошибки и отсутствие ответа считаются неверными. 95% ДИ — интервал Уилсона.",
-  "@evalPdfDefinitions": {"description": "Шаг 34: тест распознавания"}
+  "@evalPdfDefinitions": {"description": "Шаг 34: тест распознавания"},
+  "evalSets": "Наборы",
+  "@evalSets": {"description": "Шаг 34: тест распознавания"}
 }

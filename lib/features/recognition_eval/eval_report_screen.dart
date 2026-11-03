@@ -159,8 +159,11 @@ class _EvalReportScreenState extends State<EvalReportScreen> {
     );
   }
 
-  String _kind(AppLocalizations l, String k) =>
-      k == 'unknown' ? l.evalUnknownKind : equipmentKindLabel(l, k);
+  String _kind(AppLocalizations l, String k) => switch (k) {
+        kEvalUnregisteredKey => l.evalNotInRegistry,
+        'unknown' => l.evalUnknownKind,
+        _ => equipmentKindLabel(l, k),
+      };
 
   List<Widget> _body(AppLocalizations l, EvalReport r) {
     final frozen = r.run.setFrozenAt;

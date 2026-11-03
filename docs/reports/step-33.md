@@ -11,7 +11,7 @@
 - [x] 4. Демо-данные на английском (Refresh demo сам переименовывает)
 - [x] 5. Новые изображения в приложении и на сайте
 - [x] 6. Кадры и документы на английском
-- [ ] 7. Проверки и отчёт
+- [x] 7. Проверки и отчёт
 
 ## Что сделано
 
@@ -113,6 +113,67 @@
 | 30.10 | Блок 4: демо-данные EN, проверка «как на рабочей базе» | блок 4 |
 | 30.10 | Блок 5: иллюстрации, сайт, приложение | блок 5 |
 | 30.10 | Блок 6: /screens EN, DEMO_SCRIPT EN, CLAUDE.md; e2e 15 из 18 → исправления | блок 6 |
+| 30.10 | Блок 7: e2e — английские фразы, 19 из 19; герой сайта 54 КБ | блок 7 (`6f388ff`) |
+| 02.11 | Блок 7: сессия оборвалась на середине `/screens`; перезапуск e2e 1, 3, 4, 9 ✅, Lighthouse, html-validate, тесты; место на диске освобождено (3,2 → 7,0 ГБ) | — |
+| 03.11 | Блок 7: `/screens --local` — 115 ❌ из-за селекторов → исправлены в `screens.mjs`, полный прогон; размеры сборок; итог | блок 7 (итог) |
+
+## Проверки
+| Проверка | Итог |
+|---|---|
+| `flutter analyze lib test` | ✅ No issues found |
+| `flutter test` | ✅ 540 из 540 (при параллельном e2e один раз упал `live_shot_test.dart` по времени — отдельно и в полном прогоне без нагрузки проходит) |
+| `deno check supabase/functions/*/*.ts` / `deno test supabase/functions` | ✅ / ✅ 118 из 118 |
+| `tools/db_test/run.sh` (миграции 0001–0027, права, демо-сиды дважды) | ✅ 16 наборов, 0 ошибок (блок 4); новых миграций в шаге нет |
+| Сквозные e2e (`tools/e2e/run.sh`) | ✅ 19 из 19 (30.10); перезапуск 1, 3, 4, 9 — 03.11 ✅ 4 из 4 (108 / 72 / 73 / 70 с) |
+| Сайт: `build.mjs` + `check.mjs` | ✅ 15 HTML-страниц, 14 адресов в sitemap, 14 ботов в robots.txt; `site/` после пересборки не изменился |
+| Сайт: `html-validate@9` | ✅ 0 ошибок на 15 страницах |
+| Сайт: Lighthouse 12, мобильный | ✅ EN `/`: 99 / 100 / 100 / 100 (LCP 2,1 с, CLS 0, TBT 70 мс); RU `/ru/`: 99 / 100 / 100 / 100 (LCP 2,0 с, CLS 0, TBT 20 мс). ⚠️ Первый замер под нагрузкой e2e дал 87–89 и CLS 0,143 у RU — на свободной машине повторился чисто |
+| `/screens --local` | SCREENS_RESULT |
+| Размер веб-сборки | WEB_SIZE |
+| Размер APK | APK_SIZE |
+
+## Новые и изменённые файлы
+Полный список — `git diff --name-status origin/main...step-33` (135 файлов без снимков). Главное:
+- `lib/core/locale_controller.dart` — `en` по умолчанию; `test/locale_default_test.dart`.
+- `lib/l10n/app_ru.arb`, `app_en.arb` (+ сгенерированные `app_localizations*.dart`) — «Hey Helpy», подписи иллюстраций, онбординга, шторки AR, пустых состояний; без РФ.
+- `lib/core/design/illustration.dart` (новый), `surfaces.dart`, `design.dart`, `tokens.dart`, `nav_bar.dart`, `side_nav.dart` — `AppIllustration`, `AppEmptyState(image:)`; `test/illustration_test.dart`, `test/design_test.dart`.
+- `lib/features/auth/login_screen.dart` (иллюстрация на ПК), `onboarding/onboarding_screen.dart` (3 слайда), `arlabel/ar_intro.dart` (новый) + `arlabel_launch.dart`, `camera/camera_screen.dart` (шторка «How AR labels work»), `requests/requests_tab.dart`, `equipment/equipment_section.dart` (пустые состояния), `home/home_chrome.dart`, `home/home_screen.dart`.
+- `lib/features/acts/*` — USD по умолчанию, подрядчик по умолчанию по id; `reports/report_pdf.dart` — комментарии; тесты актов.
+- `assets/illustrations/*.webp` (8, новые), `assets/marketing/*` (латиница, исправленный `fridge.png`, исходник `fridge_original.png`), `assets/site/ill-*.webp` (8), `og-ru.png`, `sizes.json`; `pubspec.yaml` — папка `assets/illustrations/`.
+- `assets/demo_photos/*`, `assets/demo_plans/*` + `tools/demo_photos/generate.mjs`, `tools/demo_plans/{generate.mjs,plans.json}` — английские подписи.
+- `supabase/functions/_shared/ai.ts` (новый, бывший `yandex.ts`), `ai_test.ts` (новый), `yandex.ts` (реэкспорт), `vision.ts`, `voice-intake/index.ts`, `photo-identify/index.ts`, `telegram-bot/{index.ts,stt.ts,texts.ts,bot_test.ts}` — поставщик ИИ через секреты, «Hey Helpy» в боте.
+- `supabase/seed/demo.sql`, `demo_history.sql` — демо-данные на английском, 3 региона, USD; `.github/workflows/refresh-demo.yml` — проверка по id.
+- `site/**` (сгенерировано), `tools/site/{build,check,config,content.en,content.ru,og,shots}.mjs`, `site.css`, `package.json` — английский в корне, `/ru/`, без РФ, иллюстрации.
+- `tools/screens/en_ui.mjs` (новый), `screens.mjs`, `local_screens.mjs`, `local_pitch.mjs`, `tg_*_mock.mjs` — съёмка на английском, `--local`; `tools/e2e/{e2e.mjs,prep.sql,scenarios.mjs,record_demo.mjs}` — новые названия и английские фразы; `tools/marketing/fix_fridge_typo.py` (новый).
+- `docs/DEMO_SCRIPT.md`, `DEMO_DAY_CHECKLIST.md`, `docs/design/DESIGN.md`, `CLAUDE.md`, `.claude/commands/check.md`, `docs/reports/step-32.md` (итоги), `docs/reports/step-33.md`.
+- `docs/screens/latest/` — снимки на английском (локальная база, «ПРЕДПРОСМОТР»), `docs/screens/site/`, `docs/screens/marketing/`.
+
+## Миграции
+Новых миграций нет. 0027 применена 30.10.2026 и внесена в «Применённые».
+
+## Что сделать вам
+1. **Проверить и слить PR** — GitHub → Pull requests → «Шаг 33…» → Files changed / отчёт → **Merge pull request**. После слияния сами запустятся «Deploy web» (приложение + сайт, 3–5 минут) и «Build APK» (ссылка `latest-apk`).
+2. **Выложить функции** (новый `_shared/ai.ts`, тексты бота с «Hey Helpy»): Actions → **Deploy functions** → Run workflow (ветка `main`) → Review deployments → `production-db` → **Approve and deploy**. В Summary у всех 5 функций — «401 без токена ✓».
+3. **Перезалить демо-данные на английском**: Actions → **Refresh demo** → Run workflow (ветка `main`) → Review deployments → `production-db` → **Approve and deploy**. В Summary — 94 заявки «Demo Properties». Refresh demo сам переименует объекты, подрядчиков, оборудование, заявки, поставит язык `en` демо-пользователям и удалит регионы 904–905 и прежние акты (снимки с рублями).
+4. **По желанию — другой поставщик ИИ** (без этого всё работает на прежнем, как сейчас): Supabase → Edge Functions → Secrets → `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL_TEXT`, `AI_MODEL_VISION` (+ `AI_MODEL_STT` для голосовых в боте) → Save. Проверить: «Моя компания» → «Готовность к показу» — голос и «По фото» зелёные.
+5. **После Refresh demo** — попросить Claude переснять `/screens` на рабочей базе (сейчас снимки — с локальной базы, с пометкой «ПРЕДПРОСМОТР»).
+6. Поставить свежий APK поверх старого: https://github.com/Anton-Key/hey-helpy/releases/download/latest-apk/hey-helpy.apk
+
+## Как проверить руками
+- Открыть сайт https://anton-key.github.io/hey-helpy/site/ — английский, герой с иллюстрацией номера отеля; `/site/ru/` — русский; нигде нет «Россия», «Yandex», рублей.
+- Новое устройство / браузер в режиме инкогнито → приложение — сразу на английском; переключатель RU / EN работает.
+- ПК: экран входа — иллюстрация справа. Новая компания — 3 слайда онбординга.
+- После Refresh demo: «Локации» — Belgrade, New York, Dubai, Berlin, London, Abu Dhabi, Riyadh; регионы Europe / North America / Middle East; «Отчёты» → «Акты подрядчикам» — суммы в $.
+- Android: «Камера-помощник» → при первом открытии шторка «How AR labels work».
+- Бот: `/start` — «Hey Helpy».
+
+## Ограничения и что не сделано
+- ⚠️ Снимки `/screens` — с локальной базы (новые демо-данные ещё не на рабочей), помечены «ПРЕДПРОСМОТР». Переснять после Refresh demo.
+- ⚠️ Сквозные тесты идут на русском интерфейсе (проверяют поведение, не язык).
+- ⚠️ `contractor_rates.currency` в базе по умолчанию `'RUB'` (0021): приложение всегда передаёт валюту явно; отдельную миграцию не делал.
+- ⚠️ Сообщения SQL-скриптов демо и названия видов работ в базе («Климат»…) — по-русски; людям видны их переводы из `name_i18n`.
+- ⚠️ Старые адреса сайта `/en/…` больше не работают (английский — в корне).
+- ⚠️ Файлы PDF прежних актов остаются в хранилище после Refresh demo.
 
 ## Где остановился
-Блоки 1–6 готовы. Идёт блок 7: перезапуск сценариев e2e 1, 3, 4, 9; затем Lighthouse и html-validate сайта, `/screens --local`, размеры сборок, итог.
+Шаг готов к проверке. Следующее — слияние и действия из «Что сделать вам».

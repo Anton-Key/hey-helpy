@@ -315,7 +315,7 @@ async function openMap(page, preview) {
   await nav(page, 'Локации').click();
   await settle(page, 1200);
   await page.getByRole('button', { name: 'Карта', exact: true }).first().click();
-  await see(page, /Объекты на карте|Поиск по названию/).waitFor({ timeout: 20000 });
+  await see(page, /Объекты на карте|Поиск по названию|Locations on the map|Search by name/i).waitFor({ timeout: 20000 });
   await settle(page, 1500);
   await waitTiles(page);
 }
@@ -367,9 +367,9 @@ if (!LOCAL && !existsSync(ENV_FILE)) {
 }
 // Локальная база: пользователи-заглушки tools/db_test (пароль бэкенд не проверяет).
 const env = LOCAL
-  ? { DEMO_MANAGER_EMAIL: 'manager@example.com', DEMO_MANAGER_PASSWORD: 'local',
-      DEMO_EXECUTOR_EMAIL: 'executor@example.com', DEMO_EXECUTOR_PASSWORD: 'local',
-      DEMO_REQUESTER_EMAIL: 'requester@example.com', DEMO_REQUESTER_PASSWORD: 'local' }
+  ? { DEMO_MANAGER_EMAIL: 'manager@example.com', DEMO_MANAGER_PASSWORD: 'local-only',
+      DEMO_EXECUTOR_EMAIL: 'executor@example.com', DEMO_EXECUTOR_PASSWORD: 'local-only',
+      DEMO_REQUESTER_EMAIL: 'requester@example.com', DEMO_REQUESTER_PASSWORD: 'local-only' }
   : readEnv(ENV_FILE);
 const missing = NEED.filter((k) => !env[k]);
 if (missing.length) {
@@ -541,7 +541,7 @@ async function openPlan(page, objectN, floorN) {
   const placeholder = page.locator('flt-semantics-placeholder');
   await placeholder.waitFor({ state: 'attached', timeout: 60000 });
   await placeholder.evaluate((el) => el.click());
-  await see(page, /(На плане|On plan) · \d/).waitFor({ timeout: 60000 });
+  await see(page, /(На плане|On plan|Not placed) · \d/).waitFor({ timeout: 60000 });
   await settle(page, 2500);
 }
 
@@ -569,7 +569,7 @@ const nav = (page, label) => page.getByRole('tab', { name: label })
 async function openVoice(page) {
   await home(page);
   await page.getByRole('button', { name: 'Нажми и говори' }).first().click();
-  await see(page, 'очень жарко').waitFor({ timeout: 20000 });
+  await see(page, /очень жарко|really hot/).waitFor({ timeout: 20000 });
   await settle(page, 1000);
 }
 
@@ -670,10 +670,10 @@ const SCREENS = [
   { key: 'filters-active', title: 'Заявки — применённые фильтры по ссылке (таблетки «×», «Сбросить всё»)', run: async (p) => {
       await homeWith(p, 'pri=critical,high&st=overdue,new,assigned,in_progress&period=30d&sort=priority');
       // Таблетка «Срочность: Критический +1» — значит, ссылка применилась.
-      await p.getByRole('button', { name: /^Срочность: Критический \+1/ }).first().waitFor({ timeout: 15000 });
+      await p.getByRole('button', { name: /^(Срочность: Критический|Priority: Critical|Urgency: Critical) \+1/ }).first().waitFor({ timeout: 15000 });
       // «Найдено N из M» — теперь подпись сегментов для диктора; на экране —
       // «Все · N из M» у выбранного сегмента (на ширине < 400 — «N»).
-      await see(p, /Найдено \d+ из \d+/).waitFor({ timeout: 15000 });
+      await see(p, /(Найдено|Showing) \d+ (из|of) \d+/).waitFor({ timeout: 15000 });
       await see(p, 'Сбросить всё').waitFor({ timeout: 5000 });
       return 'ссылка #/?pri=critical,high&st=overdue,new,assigned,in_progress&period=30d&sort=priority';
     }, after: async (p) => { await resetOrderFilter(p); } },
@@ -681,8 +681,8 @@ const SCREENS = [
   { key: 'filters-panel', title: 'Окно «Фильтры» с «Показать N заявок»', managerOnly: true, run: async (p) => {
       await homeWith(p, 'period=30d&st=overdue');
       await openAllFilters(p);
-      const label = await see(p, /Показать \d+ заяв/).textContent({ timeout: 10000 }).catch(() => null);
-      await see(p, /Показать \d+ заяв/).waitFor({ timeout: 10000 });
+      const label = await see(p, /(Показать|Show) \d+ (заяв|work order)/).textContent({ timeout: 10000 }).catch(() => null);
+      await see(p, /(Показать|Show) \d+ (заяв|work order)/).waitFor({ timeout: 10000 });
       await settle(p, 600);
       return `${p.viewportSize().width >= 900 ? 'панель справа' : 'шторка на весь экран'}; число считает сервер${label ? '' : ''}`;
     }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
@@ -707,14 +707,14 @@ const SCREENS = [
       await openFilterKind(p, 'Период');
       await see(p, 'По сроку').waitFor({ timeout: 10000 });
       await settle(p, 600);
-      await p.getByRole('button', { name: /Свой период/ }).last().click();
+      await p.getByRole('button', { name: /Свой период|Custom range/ }).last().click();
       await settle(p, 1500);
       return 'окно «Период» (по дате создания / по сроку, пресеты) и календарь «с — по»; закрыто без выбора';
     }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
   // Сортировка — отдельная кнопка справа от «Фильтры».
   { key: 'filter-sort', title: 'Сортировка списка заявок', managerOnly: true, run: async (p) => {
       await home(p);
-      await p.getByRole('button', { name: /^(Сначала новые|Новые)$/ }).first().click();
+      await p.getByRole('button', { name: /^(Сначала новые|Новые|Newest first|Newest)$/ }).first().click();
       await see(p, 'По срочности').waitFor({ timeout: 10000 });
       await settle(p, 800);
       return '6 вариантов, галочка у текущей; выбор сразу применяется (здесь закрыто без выбора)';
@@ -752,7 +752,7 @@ const SCREENS = [
       await p.getByRole('button', { name: /CityElectric/ }).first().click();
       await see(p, /Виды работ/).waitFor({ timeout: 15000 });
       await settle(p, 1200);
-      return 'виды работ; объекты по городам: МОСКВА · 2';
+      return 'виды работ; объекты по городам: NEW YORK · 2';
     } },
   { key: 'order', title: `Карточка заявки «${DEMO_ORDER}»`, run: async (p) => {
       await home(p);
@@ -774,7 +774,7 @@ const SCREENS = [
       await p.getByRole('menuitem', { name: 'Удалить' }).waitFor({ timeout: 5000 });
       await p.getByRole('menuitem', { name: 'Отменить' }).waitFor({ timeout: 2000 });
       await p.getByRole('menuitem', { name: 'Удалить' }).click();
-      await see(p, 'Удалить заявку безвозвратно?').waitFor({ timeout: 5000 });
+      await see(p, /Удалить заявку безвозвратно|Delete this work order permanently/).waitFor({ timeout: 5000 });
       await settle(p, 800);
       return 'меню «⋯» в шапке: «Отменить», «Удалить»; диалог закрыт кнопкой «Отмена»';
     }, after: async (p) => {
@@ -811,7 +811,7 @@ const SCREENS = [
       await settle(p);
       await p.getByRole('button', { name: /Назначить|Изменить/ }).first().click();
       // Подписи секций в шторке — прописными («ЗАКРЕПЛЕНЫ ЗА…»): без учёта регистра.
-      await see(p, /^Подрядчики$|Закреплены за этим видом работ|никто не закреплён/i)
+      await see(p, /^Подрядчики$|Закреплены за этим видом работ|никто не закреплён|Nobody is assigned/i)
         .waitFor({ timeout: 20000 });
       await settle(p);
       return `заявка «${chosen}» (фильтр по статусу)`;
@@ -1034,7 +1034,7 @@ const SCREENS = [
       await settle(p, 800);
       await p.getByRole('button', { name: 'Заявки', exact: true }).last().click();
       await chip(p, 'Объект').waitFor({ timeout: 15000 });
-      await btn(p, 'Объект: Belgrade · Demo Tower').waitFor({ timeout: 15000 });
+      await btn(p, /(Объект|Site|Location): Belgrade · Demo Tower/).waitFor({ timeout: 15000 });
       await settle(p, 2000);
       return 'фильтр «Объект» = Demo Tower (та же таблетка, что в строке фильтров), снимается крестиком';
     }, after: async (p) => {
@@ -1075,7 +1075,7 @@ const SCREENS = [
   { key: 'plan-marker', title: 'План — шторка маркера «Air conditioner, server room»', run: async (p) => {
       await openPlan(p, 10, 602);
       await p.getByRole('button', { name: /^Air conditioner, server room, / }).first().click({ force: true });
-      await see(p, 'Создать заявку здесь').waitFor({ timeout: 10000 });
+      await see(p, /Создать заявку здесь|Create work order here|New work order here/).waitFor({ timeout: 10000 });
       await settle(p, 1000);
       return 'подзаголовок без повтора этажа («… · Server room, floor 3»), открытая просроченная заявка, «Создать заявку здесь»';
     }, after: async (p) => { await p.keyboard.press('Escape'); await settle(p, 400); } },
@@ -1171,7 +1171,7 @@ const SCREENS = [
       await home(p);
       await openOrder(p, 'Condensate leaking from the server room AC');
       await btn(p, 'Показать на плане').click();
-      await see(p, /Не размещены|На плане/).waitFor({ timeout: 20000 });
+      await see(p, /Не размещены|На плане|Not placed ·|On plan ·/).waitFor({ timeout: 20000 });
       // Волны идут 4 с после открытия: кадр — пока они видны (после
       // приближения ~0,6 с), затем — спокойный ореол.
       await settle(p, 1400);
@@ -1186,7 +1186,7 @@ const SCREENS = [
   { key: 'notifications', title: 'Уведомления', run: async (p) => {
       await home(p);
       await p.getByRole('button', { name: /^Уведомления/ }).first().click();
-      await see(p, /За последние 14 дней|Уведомлений нет/).waitFor({ timeout: 20000 });
+      await see(p, /За последние 14 дней|Уведомлений нет|Last 14 days|Nothing new/).waitFor({ timeout: 20000 });
       await settle(p, 2500);
     } },
   // ---- Разделы шагов 16–17 на рабочей базе (после 0015 и 0016, шаг 19).
@@ -1226,7 +1226,7 @@ async function openPpr(page) {
   await home(page);
   await page.getByRole('tab', { name: /^Плановое ТО/ }).or(page.getByRole('button', { name: /^Плановое ТО$/ }))
     .or(page.getByText(/^Плановое ТО$/)).first().click();
-  await see(page, /выполнено \d+ из \d+/).waitFor({ timeout: 20000 });
+  await see(page, /(выполнено \d+ из|\d+ of) \d+( done)?/).waitFor({ timeout: 20000 });
   await settle(page, 1500);
 }
 
@@ -1257,7 +1257,7 @@ async function openCompany(page) {
   await profileTab(page).click();
   await settle(page, 1000);
   await btn(page, /^Моя компания/).click();
-  await see(page, /Сотрудники|СОТРУДНИКИ/).waitFor({ timeout: 20000 });
+  await see(page, /Сотрудники|СОТРУДНИКИ|People: \d/i).waitFor({ timeout: 20000 });
   await settle(page, 1500);
 }
 
@@ -1286,7 +1286,7 @@ async function openCrew(page, contractor, crew) {
   await openContractor(page, contractor);
   await toBottom(page);
   await page.getByRole('button', { name: new RegExp('^' + crew) }).first().click();
-  await see(page, /Исполнители|ИСПОЛНИТЕЛИ/).waitFor({ timeout: 15000 });
+  await see(page, /Исполнители|ИСПОЛНИТЕЛИ|Executors|Workers and contacts/i).waitFor({ timeout: 15000 });
   await settle(page, 1500);
 }
 
@@ -1345,7 +1345,7 @@ async function cameraCard(page) {
   await openCamera(page);
   await btn(page, /^Что это\?/).click();
   await see(page, /AC-301 · \d+ %/).waitFor({ timeout: 30000 });
-  await see(page, /Плановое ТО|ТО не запланировано/).waitFor({ timeout: 20000 });
+  await see(page, /Плановое ТО|ТО не запланировано|Maintenance|No maintenance scheduled/).waitFor({ timeout: 20000 });
   await settle(page, 1500);
 }
 
@@ -1360,14 +1360,14 @@ function NEW_SCREENS() {
   const list = [
     { key: 'ppr-list', title: 'ППР — список планов, сводка «Октябрь: выполнено N из 8»', run: async (p) => {
         await openPpr(p);
-        return 'сводка — ' + ((await see(p, /выполнено \d+ из \d+/).textContent().catch(() => '')) || 'есть');
+        return 'сводка — ' + ((await see(p, /(выполнено \d+ из|\d+ of) \d+( done)?/).textContent().catch(() => '')) || 'есть');
       } },
     { key: 'ppr-card', title: 'ППР — карточка плана «AC maintenance» (история периодов)', run: async (p) => {
         await openPlanCard(p, 'AC maintenance');
       } },
     { key: 'ppr-task', title: 'Задача периода — карточка заявки «ППР · октябрь 2026 · до 31 окт.»', run: async (p) => {
         await openPlanCard(p, 'AC maintenance');
-        await btn(p, /Плановое ТО · .* · до/).click();
+        await btn(p, /(Плановое ТО|Maintenance) · .* · (до|due)/).click();
         await see(p, /Подрядчик/).waitFor({ timeout: 20000 });
         await settle(p, 1500);
       } },
@@ -1378,7 +1378,7 @@ function NEW_SCREENS() {
     { key: 'object-picker', title: 'Окно выбора объектов: «Весь регион», «Вся страна», «Весь город»', run: async (p) => {
         await home(p);
         await openFilterKind(p, 'Объект');
-        await see(p, /Весь регион|Вся страна/).waitFor({ timeout: 20000 });
+        await see(p, /Весь регион|Вся страна|Whole region|Whole country/).waitFor({ timeout: 20000 });
         await settle(p, 1000);
         return 'закрыто без применения';
       }, after: async (p) => { await closePicker(p); await resetOrderFilter(p); } },
@@ -1543,7 +1543,7 @@ const PITCH = [
       await home(p);
       await openOrder(p, 'Condensate leaking from the server room AC');
       await btn(p, 'Показать на плане').click();
-      await see(p, /Не размещены|На плане/).waitFor({ timeout: 20000 });
+      await see(p, /Не размещены|На плане|Not placed ·|On plan ·/).waitFor({ timeout: 20000 });
       await settle(p, 200);
       await btn(p, 'Вписать план').click();
       await p.mouse.move(5, 5);

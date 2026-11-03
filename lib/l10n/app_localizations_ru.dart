@@ -5918,4 +5918,486 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get onbSlideNext => 'Следующий слайд';
+
+  @override
+  String get evalTitle => 'Тест распознавания';
+
+  @override
+  String get evalMenuHint =>
+      'Точность распознавания оборудования на ваших фото';
+
+  @override
+  String get evalIntro =>
+      'Отметьте, что на фото, сами — до того, как его увидит ИИ. Примерно 30 % единиц оборудования попадают в dev (для настройки), 70 % — в test (итоговая цифра). Все фото одной единицы — в одном наборе. Перед итоговым прогоном заморозьте test-набор.';
+
+  @override
+  String evalSetName(int n, String date) {
+    return 'Набор $n · $date';
+  }
+
+  @override
+  String get evalNewSet => 'Новый набор';
+
+  @override
+  String get evalNewSetHint =>
+      'Текущий набор заморожен — новые фото идут в новый набор';
+
+  @override
+  String get evalEmpty =>
+      'Фото пока нет. Добавьте первое: выберите объект и помещение, сделайте снимок и отметьте, что на нём.';
+
+  @override
+  String evalSetFrozen(String date) {
+    return 'Заморожен $date — фото менять нельзя';
+  }
+
+  @override
+  String get evalSetOpen => 'Не заморожен — фото можно добавлять и удалять';
+
+  @override
+  String get evalKpiPhotos => 'Фото';
+
+  @override
+  String get evalKpiUnits => 'Единиц';
+
+  @override
+  String get evalKpiRooms => 'Помещений';
+
+  @override
+  String get evalKpiSites => 'Объектов';
+
+  @override
+  String evalSplitLine(int dev, int test, int unreg) {
+    return 'dev $dev · test $test · нет в реестре $unreg';
+  }
+
+  @override
+  String evalToTarget(int n) {
+    return 'До цели 300 фото осталось $n';
+  }
+
+  @override
+  String get evalTargetReached => 'Цель 300 фото достигнута';
+
+  @override
+  String get evalByKind => 'По видам оборудования';
+
+  @override
+  String get evalUnknownKind => 'Вид не указан';
+
+  @override
+  String get evalAddPhoto => 'Добавить фото';
+
+  @override
+  String get evalPhotos => 'Фото набора';
+
+  @override
+  String get evalFreeze => 'Заморозить test-набор';
+
+  @override
+  String get evalFreezeTitle => 'Заморозить test-набор?';
+
+  @override
+  String get evalFreezeText =>
+      'После этого фото набора нельзя добавлять, менять и удалять. Новые фото — в новый набор.';
+
+  @override
+  String get evalFreezeConfirm => 'Заморозить';
+
+  @override
+  String get evalFrozenDone => 'Test-набор заморожен';
+
+  @override
+  String get evalFreezeNoTest => 'В наборе пока нет фото test';
+
+  @override
+  String get evalRunHeader => 'Запуск теста';
+
+  @override
+  String get evalRunDev => 'Прогон на dev';
+
+  @override
+  String get evalRunTest => 'Итоговый прогон на test';
+
+  @override
+  String get evalRunNeedsFreeze =>
+      'Чтобы запустить итоговый тест, заморозьте test-набор';
+
+  @override
+  String get evalRunRule =>
+      'Подсказки и настройки подбираем только на dev. На test — один итоговый прогон.';
+
+  @override
+  String get evalProvider => 'Поставщик ИИ';
+
+  @override
+  String evalProviderDefault(String model) {
+    return 'Как у пользователей · $model';
+  }
+
+  @override
+  String evalProviderOther(String provider, String model) {
+    return '$provider · $model';
+  }
+
+  @override
+  String get evalProviderUnknown =>
+      'Не удалось получить список поставщиков ИИ. Проверьте, что функция recognition-eval выложена.';
+
+  @override
+  String evalRunning(int done, int total) {
+    return 'Распознаю $done из $total…';
+  }
+
+  @override
+  String get evalStop => 'Остановить';
+
+  @override
+  String get evalRuns => 'Прогоны';
+
+  @override
+  String evalRunRow(String split, String date) {
+    return '$split · $date';
+  }
+
+  @override
+  String evalRunRunning(int done, int total) {
+    return 'Идёт · $done из $total';
+  }
+
+  @override
+  String evalRunDone(int n) {
+    return 'Готово · $n фото';
+  }
+
+  @override
+  String get evalRunCancelled => 'Остановлен';
+
+  @override
+  String get evalContinue => 'Продолжить';
+
+  @override
+  String get evalRetryErrors => 'Повторить ошибки ИИ';
+
+  @override
+  String get evalFinishRun => 'Закончить прогон';
+
+  @override
+  String get evalCancelRun => 'Остановить прогон';
+
+  @override
+  String get evalRunFailed =>
+      'Не удалось запустить тест. Проверьте, что применена миграция 0028 и выложена функция recognition-eval.';
+
+  @override
+  String get evalProviderMissing => 'Этот поставщик ИИ не настроен';
+
+  @override
+  String get evalConfigChanged =>
+      'Настройки ИИ сменились во время прогона — запустите новый прогон';
+
+  @override
+  String evalRunSummary(int ok, int errors, int failed) {
+    return 'Готово: ответов $ok, ошибок ИИ $errors, не отправлено $failed';
+  }
+
+  @override
+  String get evalAddTitle => 'Добавить фото';
+
+  @override
+  String get evalStepPlace => 'Где';
+
+  @override
+  String get evalChooseSite => 'Выберите объект';
+
+  @override
+  String get evalChooseRoom => 'Выберите помещение';
+
+  @override
+  String get evalStepPhoto => 'Фото';
+
+  @override
+  String get evalTakePhoto => 'Сфотографировать';
+
+  @override
+  String get evalUploadPhoto => 'Загрузить фото';
+
+  @override
+  String get evalRetake => 'Переснять';
+
+  @override
+  String get evalStepTruth => 'Что на фото';
+
+  @override
+  String get evalTruthHint =>
+      'Отметьте сами — ИИ на этом шаге не запускается, его ответ не влияет на разметку.';
+
+  @override
+  String get evalNotInRegistry => 'Нет в реестре';
+
+  @override
+  String get evalNotInRegistryHint =>
+      'Оборудование, которого нет в реестре помещения, — проверка, что ИИ не выдумывает';
+
+  @override
+  String get evalRoomNoUnits => 'В реестре помещения нет оборудования';
+
+  @override
+  String get evalStepConditions => 'Условия съёмки';
+
+  @override
+  String get evalLight => 'Свет';
+
+  @override
+  String get evalLight_good => 'Хороший';
+
+  @override
+  String get evalLight_dim => 'Полумрак';
+
+  @override
+  String get evalLight_backlight => 'Против света';
+
+  @override
+  String get evalDistance => 'Расстояние';
+
+  @override
+  String get evalDistance_close => 'Близко';
+
+  @override
+  String get evalDistance_medium => 'Средне';
+
+  @override
+  String get evalDistance_far => 'Далеко';
+
+  @override
+  String get evalAngle => 'Ракурс';
+
+  @override
+  String get evalAngle_front => 'Спереди';
+
+  @override
+  String get evalAngle_side => 'Сбоку';
+
+  @override
+  String get evalOcclusion => 'Частично закрыто';
+
+  @override
+  String get evalSave => 'Сохранить';
+
+  @override
+  String get evalSaveNext => 'Сохранить и снять ещё';
+
+  @override
+  String get evalSeries =>
+      'Серия: та же единица и условия — снимите следующий кадр';
+
+  @override
+  String evalSaved(String split) {
+    return 'Сохранено · $split';
+  }
+
+  @override
+  String get evalSaveFailed => 'Не удалось сохранить фото';
+
+  @override
+  String get evalFillAll => 'Выберите объект, помещение, фото и что на нём';
+
+  @override
+  String get evalDeletePhoto => 'Удалить фото';
+
+  @override
+  String get evalDeleteTitle => 'Удалить это фото?';
+
+  @override
+  String get evalDeleted => 'Фото удалено';
+
+  @override
+  String evalPhotoRow(String what, String split) {
+    return '$what · $split';
+  }
+
+  @override
+  String get evalReportTitle => 'Результаты теста';
+
+  @override
+  String get evalTop1 => 'Top-1 — именно та единица';
+
+  @override
+  String get evalTop3 => 'Top-3 — единица среди 3 кандидатов';
+
+  @override
+  String get evalKind => 'Вид оборудования';
+
+  @override
+  String get evalFalse => 'Ложные «узнавания»';
+
+  @override
+  String get evalFalseHint =>
+      'На фото оборудование не из реестра, а ИИ первой назвал единицу из реестра';
+
+  @override
+  String evalSampleLine(int n, int units, int rooms, int sites) {
+    return 'n = $n фото · $units единиц · $rooms помещений · $sites объектов';
+  }
+
+  @override
+  String get evalThresholds => 'По порогу уверенности';
+
+  @override
+  String evalThresholdRow(String t) {
+    return 'Порог $t';
+  }
+
+  @override
+  String get evalThresholdAny => 'Порог 0 — первый кандидат как есть';
+
+  @override
+  String evalThresholdLine(String cov, String acc, String fr) {
+    return 'отвечает $cov · точность $acc · ложные $fr';
+  }
+
+  @override
+  String get evalThresholdHint =>
+      'ИИ отвечает, если балл первого кандидата не ниже порога и не равен второму; иначе спрашивает человека.';
+
+  @override
+  String get evalBreakdown => 'Разбивка';
+
+  @override
+  String get evalBySimilar => 'Похожие единицы в помещении';
+
+  @override
+  String get evalSimilar_several_similar => 'Несколько похожих';
+
+  @override
+  String get evalSimilar_single => 'Одна такого вида';
+
+  @override
+  String get evalByLight => 'По свету';
+
+  @override
+  String get evalByDistance => 'По расстоянию';
+
+  @override
+  String get evalByAngle => 'По ракурсу';
+
+  @override
+  String get evalByOcclusion => 'Частично закрыто';
+
+  @override
+  String get evalOcclusion_yes => 'Закрыто';
+
+  @override
+  String get evalOcclusion_no => 'Не закрыто';
+
+  @override
+  String evalGroupLine(String top1, String top3, int n) {
+    return 'Top-1 $top1 · Top-3 $top3 · n = $n';
+  }
+
+  @override
+  String get evalSpeed => 'Время ответа и стоимость';
+
+  @override
+  String evalLatency(String median, String p95) {
+    return 'Медиана $median мс · 95-й процентиль $p95 мс';
+  }
+
+  @override
+  String evalTokens(String n) {
+    return 'Токенов на фото (медиана): $n';
+  }
+
+  @override
+  String evalCost(String cost) {
+    return 'Стоимость 1 фото: \$$cost';
+  }
+
+  @override
+  String get evalCostNone => 'Стоимость 1 фото: поставщик не сообщает';
+
+  @override
+  String evalErrorsLine(int errors, int missing) {
+    return 'Ошибок ИИ: $errors · без ответа: $missing — считаются неверными';
+  }
+
+  @override
+  String get evalExamples => 'Где ИИ ошибся';
+
+  @override
+  String evalExampleWrong(String truth, String predicted) {
+    return 'На самом деле: $truth · ИИ: $predicted';
+  }
+
+  @override
+  String evalExampleFalse(String predicted) {
+    return 'Нет в реестре · ИИ: $predicted';
+  }
+
+  @override
+  String get evalExampleError => 'ИИ не ответил';
+
+  @override
+  String get evalExampleNone => 'ничего';
+
+  @override
+  String get evalNoExamples => 'В этом прогоне ошибок нет';
+
+  @override
+  String get evalDownloadPdf => 'Скачать отчёт (PDF)';
+
+  @override
+  String get evalDownloadCsv => 'Скачать данные (CSV)';
+
+  @override
+  String get evalReportFailed => 'Не удалось собрать отчёт';
+
+  @override
+  String get evalOpenReport => 'Результаты';
+
+  @override
+  String evalFootnote(String date) {
+    return 'Замер на собственном test-наборе компании; test-набор заморожен $date; без подстройки под фото test.';
+  }
+
+  @override
+  String get evalFootnoteDev =>
+      'Замер на dev-наборе (для настройки) — не цифра для инвесторов.';
+
+  @override
+  String evalRunMeta(String provider, String model, String hash) {
+    return '$provider · $model · версия подсказки $hash';
+  }
+
+  @override
+  String get evalComposition => 'Состав набора';
+
+  @override
+  String get evalConditions => 'Условия съёмки';
+
+  @override
+  String get evalPdfTitle => 'Тест распознавания оборудования';
+
+  @override
+  String evalPdfGenerated(String company, String date) {
+    return '$company · сформирован $date';
+  }
+
+  @override
+  String get evalPdfThreshold => 'Порог';
+
+  @override
+  String get evalPdfAnswers => 'Отвечает';
+
+  @override
+  String get evalPdfAccuracy => 'Точность';
+
+  @override
+  String evalPdfPage(int page, int total) {
+    return 'Стр. $page из $total';
+  }
+
+  @override
+  String get evalPdfDefinitions =>
+      'Top-1: ИИ первой назвал именно ту единицу, что на фото. Ошибки и отсутствие ответа считаются неверными. 95% ДИ — интервал Уилсона.';
 }

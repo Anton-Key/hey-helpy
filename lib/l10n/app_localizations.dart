@@ -9992,6 +9992,828 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Следующий слайд'**
   String get onbSlideNext;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Тест распознавания'**
+  String get evalTitle;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Точность распознавания оборудования на ваших фото'**
+  String get evalMenuHint;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Отметьте, что на фото, сами — до того, как его увидит ИИ. Примерно 30 % единиц оборудования попадают в dev (для настройки), 70 % — в test (итоговая цифра). Все фото одной единицы — в одном наборе. Перед итоговым прогоном заморозьте test-набор.'**
+  String get evalIntro;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Набор {n} · {date}'**
+  String evalSetName(int n, String date);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый набор'**
+  String get evalNewSet;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Текущий набор заморожен — новые фото идут в новый набор'**
+  String get evalNewSetHint;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото пока нет. Добавьте первое: выберите объект и помещение, сделайте снимок и отметьте, что на нём.'**
+  String get evalEmpty;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Заморожен {date} — фото менять нельзя'**
+  String evalSetFrozen(String date);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Не заморожен — фото можно добавлять и удалять'**
+  String get evalSetOpen;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото'**
+  String get evalKpiPhotos;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Единиц'**
+  String get evalKpiUnits;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Помещений'**
+  String get evalKpiRooms;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Объектов'**
+  String get evalKpiSites;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'dev {dev} · test {test} · нет в реестре {unreg}'**
+  String evalSplitLine(int dev, int test, int unreg);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'До цели 300 фото осталось {n}'**
+  String evalToTarget(int n);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Цель 300 фото достигнута'**
+  String get evalTargetReached;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'По видам оборудования'**
+  String get evalByKind;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Вид не указан'**
+  String get evalUnknownKind;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить фото'**
+  String get evalAddPhoto;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото набора'**
+  String get evalPhotos;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Заморозить test-набор'**
+  String get evalFreeze;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Заморозить test-набор?'**
+  String get evalFreezeTitle;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'После этого фото набора нельзя добавлять, менять и удалять. Новые фото — в новый набор.'**
+  String get evalFreezeText;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Заморозить'**
+  String get evalFreezeConfirm;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Test-набор заморожен'**
+  String get evalFrozenDone;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'В наборе пока нет фото test'**
+  String get evalFreezeNoTest;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Запуск теста'**
+  String get evalRunHeader;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Прогон на dev'**
+  String get evalRunDev;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Итоговый прогон на test'**
+  String get evalRunTest;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Чтобы запустить итоговый тест, заморозьте test-набор'**
+  String get evalRunNeedsFreeze;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Подсказки и настройки подбираем только на dev. На test — один итоговый прогон.'**
+  String get evalRunRule;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Поставщик ИИ'**
+  String get evalProvider;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Как у пользователей · {model}'**
+  String evalProviderDefault(String model);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'{provider} · {model}'**
+  String evalProviderOther(String provider, String model);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось получить список поставщиков ИИ. Проверьте, что функция recognition-eval выложена.'**
+  String get evalProviderUnknown;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Распознаю {done} из {total}…'**
+  String evalRunning(int done, int total);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Остановить'**
+  String get evalStop;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Прогоны'**
+  String get evalRuns;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'{split} · {date}'**
+  String evalRunRow(String split, String date);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Идёт · {done} из {total}'**
+  String evalRunRunning(int done, int total);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово · {n} фото'**
+  String evalRunDone(int n);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Остановлен'**
+  String get evalRunCancelled;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Продолжить'**
+  String get evalContinue;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Повторить ошибки ИИ'**
+  String get evalRetryErrors;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Закончить прогон'**
+  String get evalFinishRun;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Остановить прогон'**
+  String get evalCancelRun;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось запустить тест. Проверьте, что применена миграция 0028 и выложена функция recognition-eval.'**
+  String get evalRunFailed;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Этот поставщик ИИ не настроен'**
+  String get evalProviderMissing;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Настройки ИИ сменились во время прогона — запустите новый прогон'**
+  String get evalConfigChanged;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Готово: ответов {ok}, ошибок ИИ {errors}, не отправлено {failed}'**
+  String evalRunSummary(int ok, int errors, int failed);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить фото'**
+  String get evalAddTitle;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Где'**
+  String get evalStepPlace;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите объект'**
+  String get evalChooseSite;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите помещение'**
+  String get evalChooseRoom;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото'**
+  String get evalStepPhoto;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографировать'**
+  String get evalTakePhoto;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузить фото'**
+  String get evalUploadPhoto;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Переснять'**
+  String get evalRetake;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Что на фото'**
+  String get evalStepTruth;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Отметьте сами — ИИ на этом шаге не запускается, его ответ не влияет на разметку.'**
+  String get evalTruthHint;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет в реестре'**
+  String get evalNotInRegistry;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Оборудование, которого нет в реестре помещения, — проверка, что ИИ не выдумывает'**
+  String get evalNotInRegistryHint;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'В реестре помещения нет оборудования'**
+  String get evalRoomNoUnits;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Условия съёмки'**
+  String get evalStepConditions;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Свет'**
+  String get evalLight;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Хороший'**
+  String get evalLight_good;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Полумрак'**
+  String get evalLight_dim;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Против света'**
+  String get evalLight_backlight;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Расстояние'**
+  String get evalDistance;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Близко'**
+  String get evalDistance_close;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Средне'**
+  String get evalDistance_medium;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Далеко'**
+  String get evalDistance_far;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Ракурс'**
+  String get evalAngle;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Спереди'**
+  String get evalAngle_front;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Сбоку'**
+  String get evalAngle_side;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Частично закрыто'**
+  String get evalOcclusion;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить'**
+  String get evalSave;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить и снять ещё'**
+  String get evalSaveNext;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Серия: та же единица и условия — снимите следующий кадр'**
+  String get evalSeries;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранено · {split}'**
+  String evalSaved(String split);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить фото'**
+  String get evalSaveFailed;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите объект, помещение, фото и что на нём'**
+  String get evalFillAll;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить фото'**
+  String get evalDeletePhoto;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить это фото?'**
+  String get evalDeleteTitle;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото удалено'**
+  String get evalDeleted;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'{what} · {split}'**
+  String evalPhotoRow(String what, String split);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Результаты теста'**
+  String get evalReportTitle;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Top-1 — именно та единица'**
+  String get evalTop1;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Top-3 — единица среди 3 кандидатов'**
+  String get evalTop3;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Вид оборудования'**
+  String get evalKind;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Ложные «узнавания»'**
+  String get evalFalse;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'На фото оборудование не из реестра, а ИИ первой назвал единицу из реестра'**
+  String get evalFalseHint;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'n = {n} фото · {units} единиц · {rooms} помещений · {sites} объектов'**
+  String evalSampleLine(int n, int units, int rooms, int sites);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'По порогу уверенности'**
+  String get evalThresholds;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Порог {t}'**
+  String evalThresholdRow(String t);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Порог 0 — первый кандидат как есть'**
+  String get evalThresholdAny;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'отвечает {cov} · точность {acc} · ложные {fr}'**
+  String evalThresholdLine(String cov, String acc, String fr);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'ИИ отвечает, если балл первого кандидата не ниже порога и не равен второму; иначе спрашивает человека.'**
+  String get evalThresholdHint;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Разбивка'**
+  String get evalBreakdown;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Похожие единицы в помещении'**
+  String get evalBySimilar;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Несколько похожих'**
+  String get evalSimilar_several_similar;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Одна такого вида'**
+  String get evalSimilar_single;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'По свету'**
+  String get evalByLight;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'По расстоянию'**
+  String get evalByDistance;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'По ракурсу'**
+  String get evalByAngle;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Частично закрыто'**
+  String get evalByOcclusion;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Закрыто'**
+  String get evalOcclusion_yes;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Не закрыто'**
+  String get evalOcclusion_no;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Top-1 {top1} · Top-3 {top3} · n = {n}'**
+  String evalGroupLine(String top1, String top3, int n);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Время ответа и стоимость'**
+  String get evalSpeed;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Медиана {median} мс · 95-й процентиль {p95} мс'**
+  String evalLatency(String median, String p95);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Токенов на фото (медиана): {n}'**
+  String evalTokens(String n);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Стоимость 1 фото: \${cost}'**
+  String evalCost(String cost);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Стоимость 1 фото: поставщик не сообщает'**
+  String get evalCostNone;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Ошибок ИИ: {errors} · без ответа: {missing} — считаются неверными'**
+  String evalErrorsLine(int errors, int missing);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Где ИИ ошибся'**
+  String get evalExamples;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'На самом деле: {truth} · ИИ: {predicted}'**
+  String evalExampleWrong(String truth, String predicted);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет в реестре · ИИ: {predicted}'**
+  String evalExampleFalse(String predicted);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'ИИ не ответил'**
+  String get evalExampleError;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'ничего'**
+  String get evalExampleNone;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'В этом прогоне ошибок нет'**
+  String get evalNoExamples;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать отчёт (PDF)'**
+  String get evalDownloadPdf;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать данные (CSV)'**
+  String get evalDownloadCsv;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось собрать отчёт'**
+  String get evalReportFailed;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Результаты'**
+  String get evalOpenReport;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Замер на собственном test-наборе компании; test-набор заморожен {date}; без подстройки под фото test.'**
+  String evalFootnote(String date);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Замер на dev-наборе (для настройки) — не цифра для инвесторов.'**
+  String get evalFootnoteDev;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'{provider} · {model} · версия подсказки {hash}'**
+  String evalRunMeta(String provider, String model, String hash);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Состав набора'**
+  String get evalComposition;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Условия съёмки'**
+  String get evalConditions;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Тест распознавания оборудования'**
+  String get evalPdfTitle;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'{company} · сформирован {date}'**
+  String evalPdfGenerated(String company, String date);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Порог'**
+  String get evalPdfThreshold;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Отвечает'**
+  String get evalPdfAnswers;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Точность'**
+  String get evalPdfAccuracy;
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Стр. {page} из {total}'**
+  String evalPdfPage(int page, int total);
+
+  /// Шаг 34: тест распознавания
+  ///
+  /// In ru, this message translates to:
+  /// **'Top-1: ИИ первой назвал именно ту единицу, что на фото. Ошибки и отсутствие ответа считаются неверными. 95% ДИ — интервал Уилсона.'**
+  String get evalPdfDefinitions;
 }
 
 class _AppLocalizationsDelegate

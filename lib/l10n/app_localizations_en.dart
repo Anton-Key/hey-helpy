@@ -5880,4 +5880,485 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onbSlideNext => 'Next slide';
+
+  @override
+  String get evalTitle => 'Recognition test';
+
+  @override
+  String get evalMenuHint =>
+      'Measure equipment recognition accuracy on your own photos';
+
+  @override
+  String get evalIntro =>
+      'Label each photo yourself before the AI sees it. About 30% of equipment units go to dev (for tuning) and 70% to test (the final number). All photos of one unit stay in the same split. Freeze the test set before the final run.';
+
+  @override
+  String evalSetName(int n, String date) {
+    return 'Set $n · $date';
+  }
+
+  @override
+  String get evalNewSet => 'New set';
+
+  @override
+  String get evalNewSetHint =>
+      'The current set is frozen — new photos go to a new set';
+
+  @override
+  String get evalEmpty =>
+      'No photos yet. Add the first one: choose a site and room, take a photo and mark what is in it.';
+
+  @override
+  String evalSetFrozen(String date) {
+    return 'Frozen $date — photos cannot be changed';
+  }
+
+  @override
+  String get evalSetOpen => 'Not frozen — photos can be added and deleted';
+
+  @override
+  String get evalKpiPhotos => 'Photos';
+
+  @override
+  String get evalKpiUnits => 'Units';
+
+  @override
+  String get evalKpiRooms => 'Rooms';
+
+  @override
+  String get evalKpiSites => 'Sites';
+
+  @override
+  String evalSplitLine(int dev, int test, int unreg) {
+    return 'dev $dev · test $test · not in registry $unreg';
+  }
+
+  @override
+  String evalToTarget(int n) {
+    return '$n more photos to reach the 300-photo target';
+  }
+
+  @override
+  String get evalTargetReached => 'Target of 300 photos reached';
+
+  @override
+  String get evalByKind => 'By equipment type';
+
+  @override
+  String get evalUnknownKind => 'Type not set';
+
+  @override
+  String get evalAddPhoto => 'Add photo';
+
+  @override
+  String get evalPhotos => 'Photos in the set';
+
+  @override
+  String get evalFreeze => 'Freeze test set';
+
+  @override
+  String get evalFreezeTitle => 'Freeze the test set?';
+
+  @override
+  String get evalFreezeText =>
+      'After this, photos in this set cannot be added, changed or deleted. New photos go to a new set.';
+
+  @override
+  String get evalFreezeConfirm => 'Freeze';
+
+  @override
+  String get evalFrozenDone => 'Test set frozen';
+
+  @override
+  String get evalFreezeNoTest => 'There are no test photos in the set yet';
+
+  @override
+  String get evalRunHeader => 'Run test';
+
+  @override
+  String get evalRunDev => 'Run on dev';
+
+  @override
+  String get evalRunTest => 'Final run on test';
+
+  @override
+  String get evalRunNeedsFreeze => 'Freeze the test set to run the final test';
+
+  @override
+  String get evalRunRule =>
+      'Tune prompts and settings on dev only. Run test once, at the end.';
+
+  @override
+  String get evalProvider => 'AI provider';
+
+  @override
+  String evalProviderDefault(String model) {
+    return 'As for users · $model';
+  }
+
+  @override
+  String evalProviderOther(String provider, String model) {
+    return '$provider · $model';
+  }
+
+  @override
+  String get evalProviderUnknown =>
+      'Could not get the list of AI providers. Check that the recognition-eval function is deployed.';
+
+  @override
+  String evalRunning(int done, int total) {
+    return 'Recognizing $done of $total…';
+  }
+
+  @override
+  String get evalStop => 'Stop';
+
+  @override
+  String get evalRuns => 'Runs';
+
+  @override
+  String evalRunRow(String split, String date) {
+    return '$split · $date';
+  }
+
+  @override
+  String evalRunRunning(int done, int total) {
+    return 'In progress · $done of $total';
+  }
+
+  @override
+  String evalRunDone(int n) {
+    return 'Done · $n photos';
+  }
+
+  @override
+  String get evalRunCancelled => 'Stopped';
+
+  @override
+  String get evalContinue => 'Continue';
+
+  @override
+  String get evalRetryErrors => 'Retry AI errors';
+
+  @override
+  String get evalFinishRun => 'Finish run';
+
+  @override
+  String get evalCancelRun => 'Stop run';
+
+  @override
+  String get evalRunFailed =>
+      'Could not run the test. Check that migration 0028 is applied and the recognition-eval function is deployed.';
+
+  @override
+  String get evalProviderMissing => 'This AI provider is not configured';
+
+  @override
+  String get evalConfigChanged =>
+      'AI settings changed during the run — start a new run';
+
+  @override
+  String evalRunSummary(int ok, int errors, int failed) {
+    return 'Done: $ok answered, $errors AI errors, $failed not sent';
+  }
+
+  @override
+  String get evalAddTitle => 'Add photo';
+
+  @override
+  String get evalStepPlace => 'Where';
+
+  @override
+  String get evalChooseSite => 'Choose site';
+
+  @override
+  String get evalChooseRoom => 'Choose room';
+
+  @override
+  String get evalStepPhoto => 'Photo';
+
+  @override
+  String get evalTakePhoto => 'Take photo';
+
+  @override
+  String get evalUploadPhoto => 'Upload photo';
+
+  @override
+  String get evalRetake => 'Retake';
+
+  @override
+  String get evalStepTruth => 'What is in the photo';
+
+  @override
+  String get evalTruthHint =>
+      'Mark it yourself — the AI does not run at this step, so its answer cannot influence the label.';
+
+  @override
+  String get evalNotInRegistry => 'Not in the registry';
+
+  @override
+  String get evalNotInRegistryHint =>
+      'Equipment that is not in this room\'s registry — checks that the AI does not invent a unit';
+
+  @override
+  String get evalRoomNoUnits => 'No equipment in this room\'s registry';
+
+  @override
+  String get evalStepConditions => 'Shooting conditions';
+
+  @override
+  String get evalLight => 'Light';
+
+  @override
+  String get evalLight_good => 'Good';
+
+  @override
+  String get evalLight_dim => 'Dim';
+
+  @override
+  String get evalLight_backlight => 'Backlight';
+
+  @override
+  String get evalDistance => 'Distance';
+
+  @override
+  String get evalDistance_close => 'Close';
+
+  @override
+  String get evalDistance_medium => 'Medium';
+
+  @override
+  String get evalDistance_far => 'Far';
+
+  @override
+  String get evalAngle => 'Angle';
+
+  @override
+  String get evalAngle_front => 'Front';
+
+  @override
+  String get evalAngle_side => 'Side';
+
+  @override
+  String get evalOcclusion => 'Partly covered';
+
+  @override
+  String get evalSave => 'Save';
+
+  @override
+  String get evalSaveNext => 'Save and take next';
+
+  @override
+  String get evalSeries =>
+      'Series: the same unit and conditions are kept — take the next shot';
+
+  @override
+  String evalSaved(String split) {
+    return 'Saved · $split';
+  }
+
+  @override
+  String get evalSaveFailed => 'Could not save the photo';
+
+  @override
+  String get evalFillAll => 'Choose the site, room, photo and what is in it';
+
+  @override
+  String get evalDeletePhoto => 'Delete photo';
+
+  @override
+  String get evalDeleteTitle => 'Delete this photo?';
+
+  @override
+  String get evalDeleted => 'Photo deleted';
+
+  @override
+  String evalPhotoRow(String what, String split) {
+    return '$what · $split';
+  }
+
+  @override
+  String get evalReportTitle => 'Test results';
+
+  @override
+  String get evalTop1 => 'Top-1 — exact unit';
+
+  @override
+  String get evalTop3 => 'Top-3 — unit among the 3 candidates';
+
+  @override
+  String get evalKind => 'Equipment type';
+
+  @override
+  String get evalFalse => 'False recognitions';
+
+  @override
+  String get evalFalseHint =>
+      'Equipment not in the registry, but the AI named a registry unit first';
+
+  @override
+  String evalSampleLine(int n, int units, int rooms, int sites) {
+    return 'n = $n photos · $units units · $rooms rooms · $sites sites';
+  }
+
+  @override
+  String get evalThresholds => 'By confidence threshold';
+
+  @override
+  String evalThresholdRow(String t) {
+    return 'Threshold $t';
+  }
+
+  @override
+  String get evalThresholdAny => 'Threshold 0 — top candidate as is';
+
+  @override
+  String evalThresholdLine(String cov, String acc, String fr) {
+    return 'answers $cov · accuracy $acc · false recognitions $fr';
+  }
+
+  @override
+  String get evalThresholdHint =>
+      'The AI answers when the top candidate\'s score is at least the threshold and not tied with the second; otherwise it asks a person.';
+
+  @override
+  String get evalBreakdown => 'Breakdown';
+
+  @override
+  String get evalBySimilar => 'Similar units in the room';
+
+  @override
+  String get evalSimilar_several_similar => 'Several similar units';
+
+  @override
+  String get evalSimilar_single => 'Single unit of its type';
+
+  @override
+  String get evalByLight => 'By light';
+
+  @override
+  String get evalByDistance => 'By distance';
+
+  @override
+  String get evalByAngle => 'By angle';
+
+  @override
+  String get evalByOcclusion => 'Partly covered';
+
+  @override
+  String get evalOcclusion_yes => 'Covered';
+
+  @override
+  String get evalOcclusion_no => 'Not covered';
+
+  @override
+  String evalGroupLine(String top1, String top3, int n) {
+    return 'Top-1 $top1 · Top-3 $top3 · n = $n';
+  }
+
+  @override
+  String get evalSpeed => 'Response time and cost';
+
+  @override
+  String evalLatency(String median, String p95) {
+    return 'Median $median ms · 95th percentile $p95 ms';
+  }
+
+  @override
+  String evalTokens(String n) {
+    return 'Tokens per photo (median): $n';
+  }
+
+  @override
+  String evalCost(String cost) {
+    return 'Cost per photo: \$$cost';
+  }
+
+  @override
+  String get evalCostNone => 'Cost per photo: not reported by the provider';
+
+  @override
+  String evalErrorsLine(int errors, int missing) {
+    return 'AI errors: $errors · no answer: $missing — counted as wrong';
+  }
+
+  @override
+  String get evalExamples => 'Where the AI was wrong';
+
+  @override
+  String evalExampleWrong(String truth, String predicted) {
+    return 'Actual: $truth · AI: $predicted';
+  }
+
+  @override
+  String evalExampleFalse(String predicted) {
+    return 'Not in registry · AI: $predicted';
+  }
+
+  @override
+  String get evalExampleError => 'The AI did not answer';
+
+  @override
+  String get evalExampleNone => 'nothing';
+
+  @override
+  String get evalNoExamples => 'No errors in this run';
+
+  @override
+  String get evalDownloadPdf => 'Download report (PDF)';
+
+  @override
+  String get evalDownloadCsv => 'Download data (CSV)';
+
+  @override
+  String get evalReportFailed => 'Could not build the report';
+
+  @override
+  String get evalOpenReport => 'Results';
+
+  @override
+  String evalFootnote(String date) {
+    return 'Measured on the company\'s own test set; test set frozen on $date; no tuning on test photos.';
+  }
+
+  @override
+  String get evalFootnoteDev =>
+      'Measured on the dev set (used for tuning) — not a number for investors.';
+
+  @override
+  String evalRunMeta(String provider, String model, String hash) {
+    return '$provider · $model · prompt version $hash';
+  }
+
+  @override
+  String get evalComposition => 'Test set';
+
+  @override
+  String get evalConditions => 'Shooting conditions';
+
+  @override
+  String get evalPdfTitle => 'Equipment recognition test';
+
+  @override
+  String evalPdfGenerated(String company, String date) {
+    return '$company · generated $date';
+  }
+
+  @override
+  String get evalPdfThreshold => 'Threshold';
+
+  @override
+  String get evalPdfAnswers => 'Answers';
+
+  @override
+  String get evalPdfAccuracy => 'Accuracy';
+
+  @override
+  String evalPdfPage(int page, int total) {
+    return 'Page $page of $total';
+  }
+
+  @override
+  String get evalPdfDefinitions =>
+      'Top-1: the AI named exactly the unit in the photo first. Errors and missing answers count as wrong. 95% CI — Wilson interval.';
 }

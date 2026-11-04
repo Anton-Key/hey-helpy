@@ -1324,20 +1324,38 @@ function DEMO_ASSET_NAME() { return 'Air conditioner, server room'; }
  * «По фото» в боковом меню (ПК) → «Где я»: Demo Tower · 301. Снимок — заглушка
  * VOICE_MOCK: нарисованный кондиционер (assets/demo_photos), ответ без модели.
  */
+const AR_INTRO_SEEN = new WeakSet();
 async function openPhoto(page, { here = true } = {}) {
   await home(page);
   await page.getByRole('button', { name: /^(Узнать оборудование по фото|По фото)$/ }).first().click();
   // Шаг 25: «По фото» открывает «Камеру»; прежний экран — «Выбрать фото».
-  await see(page, /Сфотографировать|Что это\?/).first().waitFor({ timeout: 20000 });
-  // Шаг 33: при первом открытии камеры — шторка «How AR labels work» (появляется с задержкой).
-  const gotIt = see(page, /^(Понятно|Got it)$/);
-  if (await gotIt.waitFor({ timeout: 4000 }).then(() => true, () => false)) {
-    await gotIt.click();
-    await settle(page, 600);
+  // Шаг 33: при первом открытии камеры — шторка «How AR labels work» (появляется
+  // с задержкой, иллюстрация грузится). Она может всплыть и после «Что это?»,
+  // поэтому — цикл до 40 с: шторка → «Понятно»; камера → «Выбрать фото»;
+  // «Сфотографировать» — готово.
+  const gotIt = page.getByRole('button', { name: /^(Понятно|Got it)$/ })
+    .or(page.getByText(/^(Понятно|Got it)$/)).first();
+  const deadline = Date.now() + 40000;
+  let quietSince = Date.now();
+  for (;;) {
+    if (await gotIt.isVisible().catch(() => false)) {
+      await gotIt.click().catch(() => {});
+      await settle(page, 800);
+      quietSince = Date.now();
+      continue;
+    }
+    if (await see(page, 'Сфотографировать').isVisible().catch(() => false)) {
+      // Шторка ещё могла не всплыть — первый раз ждём её несколько секунд.
+      if (AR_INTRO_SEEN.has(page) || Date.now() - quietSince > 6000) break;
+    } else if (await btn(page, /^Выбрать фото/).isVisible().catch(() => false)
+        && Date.now() - quietSince > (AR_INTRO_SEEN.has(page) ? 1000 : 6000)) {
+      await btn(page, /^Выбрать фото/).click().catch(() => {});
+      await settle(page, 800);
+    }
+    if (Date.now() > deadline) break;
+    await settle(page, 400);
   }
-  if (await btn(page, /^Что это\?/).isVisible().catch(() => false)) {
-    await btn(page, /^Выбрать фото/).click();
-  }
+  AR_INTRO_SEEN.add(page);
   await see(page, 'Сфотографировать').waitFor({ timeout: 20000 });
   await settle(page, 1200);
   if (!here) return;

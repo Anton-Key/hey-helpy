@@ -67,9 +67,12 @@ abstract class LiveCamera {
 /// Камера для этой платформы (или заглушка с `VOICE_MOCK`).
 ///
 /// [mockFrame] — кадр заглушки (фото «после» — чистый блок, шаг 35c).
-LiveCamera createLiveCamera({String mockFrame = kMockCameraFrame}) =>
+/// [tallCapture] — заглушка на высоком экране отдаёт и вертикальный снимок
+/// («Камера-помощник»: стоп-кадр на весь экран); фото заявки — всегда 4:3.
+LiveCamera createLiveCamera(
+        {String mockFrame = kMockCameraFrame, bool tallCapture = false}) =>
     photoIdentifyMock
-        ? MockLiveCamera(frame: mockFrame)
+        ? MockLiveCamera(frame: mockFrame, tallCapture: tallCapture)
         : platform.createPlatformCamera();
 
 /// Есть ли смысл открывать «Камеру»: на Android — всегда (ошибку покажет
@@ -99,11 +102,17 @@ String mockTallFrame(String frame) => frame.replaceFirst('.jpg', '_tall.jpg');
 /// Заглушка камеры: «видео» — нарисованная картинка, кадр — её байты.
 class MockLiveCamera implements LiveCamera {
   MockLiveCamera(
-      {this.fail, AssetBundle? bundle, this.frame = kMockCameraFrame})
+      {this.fail,
+      AssetBundle? bundle,
+      this.frame = kMockCameraFrame,
+      this.tallCapture = false})
       : _bundle = bundle ?? rootBundle;
 
   /// Картинка, которую «видит» камера.
   final String frame;
+
+  /// Снимок на высоком экране — вертикальный кадр (как превью), иначе 4:3.
+  final bool tallCapture;
 
   /// Последний экран был выше, чем шире, — снимок тоже вертикальный.
   bool _tall = false;
@@ -148,7 +157,9 @@ class MockLiveCamera implements LiveCamera {
 
   @override
   Future<Uint8List> capture() async =>
-      (await _bundle.load(shownFrame)).buffer.asUint8List();
+      (await _bundle.load(tallCapture ? shownFrame : frame))
+          .buffer
+          .asUint8List();
 
   /// Нарисованный кадр неподвижен — «телефон не двигается».
   @override

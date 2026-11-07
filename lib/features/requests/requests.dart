@@ -707,7 +707,7 @@ class _WorkOrderDetailScreenState extends State<WorkOrderDetailScreen> {
     try {
       // «После» — только живой камерой со штампом (шаг 26); «до» — как раньше.
       photo = stage == 'after'
-          ? await captureLivePhoto(context, stamp: _stamp())
+          ? await captureLivePhoto(context, stamp: _stamp(), after: true)
           : await capturePhoto();
     } on CaptureException catch (e) {
       _ok(

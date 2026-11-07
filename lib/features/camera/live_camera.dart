@@ -65,8 +65,12 @@ abstract class LiveCamera {
 }
 
 /// Камера для этой платформы (или заглушка с `VOICE_MOCK`).
-LiveCamera createLiveCamera() =>
-    photoIdentifyMock ? MockLiveCamera() : platform.createPlatformCamera();
+///
+/// [mockFrame] — кадр заглушки (фото «после» — чистый блок, шаг 35c).
+LiveCamera createLiveCamera({String mockFrame = kMockCameraFrame}) =>
+    photoIdentifyMock
+        ? MockLiveCamera(frame: mockFrame)
+        : platform.createPlatformCamera();
 
 /// Есть ли смысл открывать «Камеру»: на Android — всегда (ошибку покажет
 /// сам экран), в браузере — есть `getUserMedia` и хотя бы одна камера.
@@ -84,10 +88,17 @@ Future<bool> liveCameraAvailable(
 /// Кадр-картинка вместо камеры (фрагмент иллюстрации художника, шаг 35c) (`VOICE_MOCK`, тесты). Не фото объекта.
 const kMockCameraFrame = 'assets/demo_photos/ac_indoor.jpg';
 
+/// Кадр заглушки для фото «после»: тот же блок, подтёка нет (шаг 35c).
+const kMockAfterFrame = 'assets/demo_photos/ac_after.jpg';
+
 /// Заглушка камеры: «видео» — нарисованная картинка, кадр — её байты.
 class MockLiveCamera implements LiveCamera {
-  MockLiveCamera({this.fail, AssetBundle? bundle})
+  MockLiveCamera(
+      {this.fail, AssetBundle? bundle, this.frame = kMockCameraFrame})
       : _bundle = bundle ?? rootBundle;
+
+  /// Картинка, которую «видит» камера.
+  final String frame;
 
   /// Чем «упасть» при [start] (тест экрана с ошибкой).
   final CameraProblem? fail;
@@ -116,12 +127,12 @@ class MockLiveCamera implements LiveCamera {
   }
 
   @override
-  Widget preview() => Image.asset(kMockCameraFrame,
+  Widget preview() => Image.asset(frame,
       bundle: _bundle, fit: BoxFit.cover, gaplessPlayback: true);
 
   @override
   Future<Uint8List> capture() async =>
-      (await _bundle.load(kMockCameraFrame)).buffer.asUint8List();
+      (await _bundle.load(frame)).buffer.asUint8List();
 
   /// Нарисованный кадр неподвижен — «телефон не двигается».
   @override

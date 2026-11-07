@@ -18,6 +18,7 @@ import '../../core/app_message.dart';
 import '../telegram/telegram_screens.dart';
 import '../systems/systems_screen.dart';
 import '../readiness/readiness_screen.dart';
+import '../recognition_eval/eval_screen.dart';
 
 /// Сроки приглашения на выбор (дней). Больше 7 не даём: так решено в 0008.
 const _inviteDays = [1, 3, 7];
@@ -497,6 +498,17 @@ class _MyCompanyScreenState extends State<MyCompanyScreen> {
                     onTap: () => Navigator.push(
                         context,
                         appRoute((_) => const ReadinessScreen(),
+                            title: l.profileMyCompany)),
+                  ),
+                // Тест точности распознавания (шаг 34): только администратор.
+                if (_me.role == UserRole.admin)
+                  AppRow(
+                    leading: const LeadingIcon(AppIcons.scan),
+                    title: l.evalTitle,
+                    subtitle: l.evalMenuHint,
+                    onTap: () => Navigator.push(
+                        context,
+                        appRoute((_) => const EvalScreen(),
                             title: l.profileMyCompany)),
                   ),
               ]),

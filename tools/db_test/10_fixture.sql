@@ -304,3 +304,39 @@ end $$;
 
 select t.make_company28(1);
 select t.make_company28(2);
+
+-- 0028 (шаг 34): тест распознавания — замороженный набор, фото кондиционера
+-- 701 и фото «нет в реестре», прогон и ответ ИИ, файл в eval-photos.
+create or replace function t.make_company34(k int) returns void
+language plpgsql as $$
+declare
+  c uuid := t.id(k, 1);
+begin
+  insert into public.recognition_eval_sets(id, company_id, name, created_by)
+  values (t.id(k, 1001), c, 'Набор 1', t.id(k, 101));
+  insert into public.recognition_eval_samples(id, set_id, company_id, created_by, photo_path, site_id, room_id,
+                                              true_equipment_id, true_is_unregistered, series_id,
+                                              light, distance, angle, occlusion)
+  values
+    (t.id(k, 1002), t.id(k, 1001), c, t.id(k, 101), format('%s/%s/%s.jpg', c, t.id(k, 1001), t.id(k, 1007)),
+     t.id(k, 10), t.id(k, 21), t.id(k, 701), false, null, 'good', 'close', 'front', false),
+    (t.id(k, 1003), t.id(k, 1001), c, t.id(k, 101), format('%s/%s/%s.jpg', c, t.id(k, 1001), t.id(k, 1008)),
+     t.id(k, 10), t.id(k, 21), null, true, t.id(k, 1009), 'dim', 'far', 'side', true);
+  perform set_config('hh.eval_freeze', 'on', true);
+  update public.recognition_eval_sets set frozen_at = now(), frozen_by = t.id(k, 101) where id = t.id(k, 1001);
+  perform set_config('hh.eval_freeze', '', true);
+  insert into public.recognition_eval_runs(id, company_id, set_id, split, created_by, provider, model_vision,
+                                           prompt_hash, sample_count, status)
+  values (t.id(k, 1004), c, t.id(k, 1001), 'dev', t.id(k, 101), 'yandex', 'qwen', repeat('b', 64), 2, 'done');
+  insert into public.recognition_eval_results(id, run_id, sample_id, company_id, predicted_equipment_id,
+                                              candidates, confidence, predicted_kind, ms)
+  values (t.id(k, 1005), t.id(k, 1004), t.id(k, 1002), c, t.id(k, 701),
+          jsonb_build_array(jsonb_build_object('asset_id', t.id(k, 701), 'score', 0.75)), 0.75, 'ac', 4100);
+  insert into storage.buckets(id, name, public) values ('eval-photos', 'eval-photos', false)
+  on conflict (id) do nothing;
+  insert into storage.objects(id, bucket_id, name, owner, owner_id) values
+    (t.id(k, 1006), 'eval-photos', format('%s/%s/%s.jpg', c, t.id(k, 1001), t.id(k, 1007)), t.id(k, 101), t.id(k, 101)::text);
+end $$;
+
+select t.make_company34(1);
+select t.make_company34(2);

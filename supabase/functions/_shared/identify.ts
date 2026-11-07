@@ -145,7 +145,7 @@ export function resolveLayer(v: unknown, layers: LayerRef[]): LayerRef | null {
   return findLayer(layers, v);
 }
 
-const VISION_PROMPT =
+export const VISION_PROMPT =
   `Ты — инженер эксплуатации здания. На фото — оборудование в здании. Верни ТОЛЬКО JSON-объект, без markdown:
 - "equipment": true, если в кадре есть инженерное оборудование или его часть; false — если оборудования нет (человек, лицо, животное, пейзаж, документ, экран с текстом, пустая стена или пол). При false: "kind" — "other", "layer", "nameplate", "defect" — null.
 - "kind": ТОЛЬКО один код из «Виды», который лучше всего подходит; не уверен или нет в списке — "other".

@@ -81,9 +81,9 @@ for (const s of SCENES) {
   images.push({ name: s.name, truth: s.truth, jpeg: await page.screenshot({ type: 'jpeg', quality: 80 }) });
 }
 await browser.close();
-// Демо-картинки: корпус кондиционера нарисован в tools/demo_photos/generate.mjs.
+// Демо-картинки: фрагмент иллюстрации художника (tools/demo_photos/from_art.py, шаг 35c), рамка блока — на глаз.
 for (const n of ['ac_indoor', 'ac_after']) {
-  images.push({ name: n, truth: [200, 250, 880, 300], jpeg: readFileSync(join(ROOT, 'assets/demo_photos', `${n}.jpg`)) });
+  images.push({ name: n, truth: [220, 50, 830, 420], jpeg: readFileSync(join(ROOT, 'assets/demo_photos', `${n}.jpg`)) });
 }
 
 if (process.argv.includes('--dry')) {

@@ -134,6 +134,8 @@ async function context({ geo, record = false } = {}) {
       return orig.call(URL, obj);
     };
     window.print = () => {};
+    // Шторка «Как работают AR-метки» (шаг 33) — уже «просмотрена», как в сквозных тестах.
+    try { localStorage.setItem('flutter.ar_intro_seen', 'true'); } catch {}
   });
   if (V2) {
     await ctx.addInitScript(EN_INIT);
@@ -247,7 +249,7 @@ async function executorOffscreen(orderTitle) {
     await btn(e, /^Снять/).waitFor({ timeout: 20000 });
     await btn(e, /^Снять/).click();
     await settle(e, 1200);
-    await btn(e, /^Готово/).click();
+    await btn(e, /^(Готово|Use photo)/).click();
   } else {
     const chooser = e.waitForEvent('filechooser', { timeout: 15000 });
     await btn(e, /Сфотографировать результат/).click();
@@ -410,10 +412,10 @@ async function v2Scenario(page) {
   await moveTo(page, 1650, 700, 900);
   await hold(page, 5500);
   await caption(page, 'A work order with a photo — in one tap');
-  await tap(page, btn(page, /^Создать заявку/), { pause: 1500 });
-  await see(page, /Снимок будет приложен/).waitFor({ timeout: 15000 });
+  await tap(page, btn(page, /^(Создать заявку|Create work order)/), { pause: 1500 });
+  await see(page, /Снимок будет приложен к заявке/).waitFor({ timeout: 15000 });
   await hold(page, 2500);
-  await tap(page, page.getByRole('button', { name: /^Создать заявку$/ }).last(), { pause: 1500 });
+  await tap(page, page.getByRole('button', { name: /^(Создать заявку|Create work order)$/ }).last(), { pause: 1500 });
   const id = await waitDb(`select id from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
     and id::text not like 'de300000-%' order by created_at desc limit 1`, (v) => v.length > 0, 20000);
   const title = sql(`select title from work_orders where id = '${id}'`);

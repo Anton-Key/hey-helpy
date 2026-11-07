@@ -22,6 +22,15 @@ async function phone(browser) {
   // Шаг 35b: кадры питча — на английском (интерфейс и демо-данные).
   const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, locale: 'en-US', deviceScaleFactor: 2 });
   await ctx.addInitScript(EN_INIT);
+  // PDF плаката: запомнить Blob для окна печати, само окно не открывать.
+  await ctx.addInitScript(() => {
+    const orig = URL.createObjectURL;
+    URL.createObjectURL = function (obj) {
+      try { if (obj && obj.type === 'application/pdf') window.__pdfBlob = obj; } catch {}
+      return orig.call(URL, obj);
+    };
+    window.print = () => {};
+  });
   const page = englishPage(await ctx.newPage());
   await login(page, web.base, USERS.admin);
   return page;
@@ -35,6 +44,41 @@ async function hereMeetingRoom(page) {
 }
 
 const FRAMES = [
+  // Шаг 35b: плакат A4 с QR объекта «Demo Tower» (PDF из приложения → PNG 150 dpi, как прежний кадр).
+  {
+    file: '19-telegram-qr-poster',
+    pdf: true,
+    async run(page) {
+      await home(page, web.base);
+      await page.getByRole('button', { name: /^Локации/ }).or(page.getByRole('tab', { name: /^Локации/ }))
+        .or(page.getByText(/^Локации$/)).first().click();
+      await settle(page, 2000);
+      const list = page.getByRole('button', { name: /^Список/ }).or(page.getByText(/^Список$/)).first();
+      if (await list.isVisible().catch(() => false)) await list.click();
+      await settle(page, 1500);
+      await btn(page, /^Demo Tower/).click();
+      await settle(page, 2500);
+      await scrollTo(page, /Заявки через Telegram/);
+      await btn(page, /^Заявки через Telegram/).click();
+      await settle(page, 2500);
+      const create = btn(page, /^Создать ссылку и QR-код/);
+      if (await create.isVisible().catch(() => false)) { await create.click(); await settle(page, 2500); }
+      await btn(page, /^Плакат для печати \(PDF\)/).click();
+      for (let i = 0; i < 120 && !(await page.evaluate(() => !!window.__pdfBlob)); i++) await page.waitForTimeout(500);
+      const b64 = await page.evaluate(async () => {
+        const blob = window.__pdfBlob;
+        if (!blob) return null;
+        const buf = new Uint8Array(await blob.arrayBuffer());
+        let s = '';
+        for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+        return btoa(s);
+      });
+      if (!b64) throw new Error('PDF плаката не получен');
+      const pdf = join(TMP, 'poster.pdf');
+      writeFileSync(pdf, Buffer.from(b64, 'base64'));
+      execFileSync('pdftoppm', ['-png', '-r', '150', '-f', '1', '-l', '1', '-singlefile', pdf, join(OUT, '19-telegram-qr-poster')]);
+    },
+  },
   {
     file: '21-camera-card-phone',
     async run(page) {
@@ -71,6 +115,7 @@ const FRAMES = [
       await see(page, /(Фото|Photos?) · 2/i).scrollIntoViewIfNeeded();
       // «Фото · 2» — у верхнего края: ниже видны «До», «После» и документы.
       const box = await see(page, /(Фото|Photos?) · 2/i).boundingBox();
+      await page.mouse.move(206, 500);
       if (box) await page.mouse.wheel(0, box.y - 110);
       await settle(page, 2500);
     },
@@ -90,7 +135,7 @@ try {
     try {
       await fr.run(page);
       const path = join(OUT, `${fr.file}.png`);
-      await page.screenshot({ path });
+      if (!fr.pdf) await page.screenshot({ path });
       try { execFileSync('pngquant', ['--force', '--skip-if-larger', '--quality=70-95', '--ext', '.png', path]); } catch {}
       console.log(`  ✅ ${fr.file}.png`);
     } catch (e) {

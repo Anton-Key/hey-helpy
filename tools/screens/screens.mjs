@@ -1662,7 +1662,7 @@ async function capturePdf(page) {
   await see(page, '30 дней').waitFor({ timeout: 20000 });
   await settle(page, 3000);
   // Первая кнопка с этим словом — ⓘ «Печать отчёта», вторая — сам принтер.
-  const print = page.getByRole('button', { name: /Печать|Распечатать|PDF/ });
+  const print = page.getByRole('button', { name: /Печать|Распечатать|PDF|^Print/ });
   const logs = [];
   const onLog = (m) => { if (m.type() !== 'debug') logs.push(m.text().slice(0, 400)); };
   page.on('console', onLog);

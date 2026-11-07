@@ -35,7 +35,7 @@ async function takeLivePhoto(page) {
   await clickAction(page, /Сфотографировать результат/);
   await btn(page, /^Снять/).waitFor({ timeout: 20000 });
   await btn(page, /^Снять/).click();
-  await clickAction(page, /^Готово/);
+  await clickAction(page, /^(Готово|Use photo)/);
 }
 
 /** Весь текст экрана (дерево доступности Flutter). */
@@ -1187,7 +1187,7 @@ export const SCENARIOS = [
       await typeInto(m, m.getByRole('textbox').last(), L('Звонил исполнителю, визит подтверждён охраной', 'Called the technician; the visit was confirmed by security'));
       await btn(m, /^Подтвердить к оплате$/).click();
       await waitDb(`select decision from act_proof_decisions where work_order_id = '${b.id}' order by decided_at desc limit 1`, 'approve', 20000);
-      await see(m, /решение менеджера/).waitFor({ timeout: 20000 });
+      await see(m, EN ? /manager/i : /решение менеджера/).waitFor({ timeout: 20000 });
       await scrollTo(m, new RegExp(T2.slice(0, 14)));
       await ctx.shot(m, 'act-approved');
     },

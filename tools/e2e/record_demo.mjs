@@ -3,6 +3,9 @@
 //   --v2 (шаг 25) — видео показа v2 (ПК, 2–2,5 мин): голос → «Камера-помощник» →
 //   заявка с фото → исполнитель «после» → приёмка → акт «к оплате» → уведомление
 //   в Telegram (макет, кадр 22) → docs/demo/hey-helpy-demo-v2.mp4.
+//   Шаг 35b: v2 — на АНГЛИЙСКОМ (интерфейс, демо-данные, фраза, подписи). Ответы «ИИ» здесь —
+//   заглушки локального бэкенда, поэтому весь ролик идёт с пометкой в углу
+//   «Demo data · AI responses simulated» (нельзя выдавать заглушку за настоящий ответ).
 // Запуск через record_demo.sh (база, сборка, PostgREST).
 //
 // Как устроено:
@@ -19,6 +22,7 @@ import { mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } 
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { startLocalBackend } from '../screens/local_backend.mjs';
+import { EN_INIT, englishPage } from '../screens/en_ui.mjs';
 import {
   ROOT, USERS, btn, chromium, home, login, openApp, profileTab, raw, see, settle, sql, startWeb, typeInto, uuid, waitDb,
 } from './lib.mjs';
@@ -72,6 +76,15 @@ const OVERLAY = () => {
       + 'max-width:80%;box-shadow:0 20px 60px rgba(0,0,0,.35);border-radius:6px;z-index:2147483644;'
       + 'pointer-events:none;opacity:0;transition:opacity .4s, transform .4s;background:#fff;';
     document.body.append(img, cap, ring, c);
+    if (window.__badge) {
+      const b = document.createElement('div');
+      b.id = 'hh-badge';
+      b.textContent = window.__badge;
+      b.style.cssText = 'position:fixed;top:14px;right:18px;z-index:2147483645;pointer-events:none;'
+        + 'background:rgba(6,43,35,.82);color:#fff;font:600 17px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;'
+        + 'padding:7px 14px;border-radius:999px;';
+      document.body.append(b);
+    }
     window.addEventListener('mousemove', (e) => {
       c.style.left = `${e.clientX - 3}px`;
       c.style.top = `${e.clientY - 2}px`;
@@ -111,7 +124,7 @@ const OVERLAY = () => {
 
 async function context({ geo, record = false } = {}) {
   const ctx = await browser.newContext({
-    viewport: { width: VIEW.width, height: VIEW.height }, deviceScaleFactor: VIEW.scale, locale: 'ru-RU',
+    viewport: { width: VIEW.width, height: VIEW.height }, deviceScaleFactor: VIEW.scale, locale: V2 ? 'en-US' : 'ru-RU',
     ...(geo ? { geolocation: geo, permissions: ['geolocation'] } : {}),
   });
   await ctx.addInitScript(() => {
@@ -121,7 +134,13 @@ async function context({ geo, record = false } = {}) {
       return orig.call(URL, obj);
     };
     window.print = () => {};
+    // Шторка «Как работают AR-метки» (шаг 33) — уже «просмотрена», как в сквозных тестах.
+    try { localStorage.setItem('flutter.ar_intro_seen', 'true'); } catch {}
   });
+  if (V2) {
+    await ctx.addInitScript(EN_INIT);
+    if (record) await ctx.addInitScript(() => { window.__badge = 'Demo data · AI responses simulated'; });
+  }
   if (record) await ctx.addInitScript(OVERLAY);
   return ctx;
 }
@@ -206,7 +225,7 @@ async function wheel(page, dy, times = 4) {
 // ---------------------------------------------------------------------------
 async function executorOffscreen(orderTitle) {
   const ctx = await context({ geo: { latitude: 44.80471, longitude: 20.44942, accuracy: 8 } });
-  const e = await ctx.newPage();
+  const e = V2 ? englishPage(await ctx.newPage()) : await ctx.newPage();
   await login(e, base, USERS.executor);
   await home(e, base);
   await typeInto(e, e.getByRole('textbox').first(), orderTitle.slice(0, 24));
@@ -224,9 +243,18 @@ async function executorOffscreen(orderTitle) {
     'color=c=0xEEF4F2:s=1200x900,drawbox=x=250:y=260:w=700:h=260:color=0xFFFFFF:t=fill,'
     + 'drawbox=x=250:y=260:w=700:h=260:color=0x9AA9A4:t=6,drawbox=x=300:y=440:w=600:h=18:color=0x6B7B76:t=fill,'
     + 'drawbox=x=820:y=300:w=80:h=40:color=0x2DB89A:t=fill', '-frames:v', '1', photo]);
-  const chooser = e.waitForEvent('filechooser', { timeout: 15000 });
-  await btn(e, /Сфотографировать результат/).click();
-  await (await chooser).setFiles(photo);
+  if (V2) {
+    // Шаг 26: фото «после» — только живой камерой (в сборке e2e — заглушка камеры).
+    await btn(e, /Сфотографировать результат/).click();
+    await btn(e, /^Снять/).waitFor({ timeout: 20000 });
+    await btn(e, /^Снять/).click();
+    await settle(e, 1200);
+    await btn(e, /^(Готово|Use photo)/).click();
+  } else {
+    const chooser = e.waitForEvent('filechooser', { timeout: 15000 });
+    await btn(e, /Сфотографировать результат/).click();
+    await (await chooser).setFiles(photo);
+  }
   await waitDb(`select count(*) from attachments where work_order_id = '${id}' and stage = 'after'`, '1', 20000);
   await settle(e, 1500);
   await btn(e, /Выполнено, на проверку/).click();
@@ -355,45 +383,45 @@ async function pcScenario(page) {
 // Видео v2 (шаг 25): одна поломка от голоса до «выполнена ✅».
 // ---------------------------------------------------------------------------
 async function v2Scenario(page) {
-  await caption(page, 'Hey Helpy — ИИ-сервис эксплуатации зданий');
+  await caption(page, 'Hey Helpy — AI service for property maintenance');
   await moveTo(page, 600, 420, 900);
   await hold(page, 3000);
 
   // 1. Голос → ИИ.
-  await caption(page, 'Заявку не пишут — её говорят');
+  await caption(page, 'Work orders are not typed — they are spoken');
   await tap(page, page.getByRole('button', { name: /Нажми и говори|^Hey Helpy/ }).first(), { pause: 600 });
-  await see(page, /очень жарко/).waitFor({ timeout: 20000 });
+  await see(page, /very hot/).waitFor({ timeout: 20000 });
   await hold(page, 1400);
   await tap(page, btn(page, /^Готово/), { pause: 200 });
-  await caption(page, 'ИИ разбирает речь…');
+  await caption(page, 'Parsing the request…');
   await see(page, /Проверьте заявку/).waitFor({ timeout: 20000 });
-  await caption(page, 'ИИ понял: что сломалось, где и насколько срочно — и назначил подрядчика');
+  await caption(page, 'What broke, where and how urgent — and the contractor is assigned');
   await moveTo(page, 1100, 330, 700);
   await hold(page, 3800);
   await tap(page, btn(page, /^Отправить/), { pause: 1800 });
 
   // 2. «Камера-помощник».
-  await caption(page, 'Исполнитель у оборудования: навёл камеру — «Что это?»');
+  await caption(page, 'At the equipment: point the camera — “What is this?”');
   await tap(page, page.getByRole('button', { name: /^(По фото|Узнать оборудование по фото)$/ }).first(), { pause: 1500 });
   await btn(page, /^Что это\?/).waitFor({ timeout: 20000 });
   await hold(page, 2500);
   await tap(page, btn(page, /^Что это\?/), { pause: 300 });
-  await see(page, /КД-301 · \d+ %/).waitFor({ timeout: 30000 });
+  await see(page, /AC-301 · \d+ ?%/).waitFor({ timeout: 30000 });
   await see(page, /Открытые заявки · \d+|Нет открытых заявок/).waitFor({ timeout: 20000 });
-  await caption(page, 'Распознавание оборудования камерой: «Кондиционер КД-301» — заявки, плановое ТО, история');
+  await caption(page, 'Equipment recognition by camera: “Air conditioner AC-301” — work orders, maintenance, history');
   await moveTo(page, 1650, 700, 900);
   await hold(page, 5500);
-  await caption(page, 'Заявка с фото — в одно касание');
-  await tap(page, btn(page, /^Создать заявку/), { pause: 1500 });
-  await see(page, /Снимок будет приложен/).waitFor({ timeout: 15000 });
+  await caption(page, 'A work order with a photo — in one tap');
+  await tap(page, btn(page, /^(Создать заявку|Create work order)/), { pause: 1500 });
+  await see(page, /Снимок будет приложен к заявке/).waitFor({ timeout: 15000 });
   await hold(page, 2500);
-  await tap(page, page.getByRole('button', { name: /^Создать заявку$/ }).last(), { pause: 1500 });
+  await tap(page, page.getByRole('button', { name: /^(Создать заявку|Create work order)$/ }).last(), { pause: 1500 });
   const id = await waitDb(`select id from work_orders where company_id = '${uuid(1)}' and input_channel = 'camera'
     and id::text not like 'de300000-%' order by created_at desc limit 1`, (v) => v.length > 0, 20000);
   const title = sql(`select title from work_orders where id = '${id}'`);
 
   // 3. Исполнитель за кадром: в геозоне, фото «после», на проверку.
-  await caption(page, 'Исполнитель отмечается на объекте и фотографирует результат…');
+  await caption(page, 'The technician checks in on site and photographs the result…');
   await hold(page, 2200);
   pause();
   await executorOffscreen(title);
@@ -403,11 +431,11 @@ async function v2Scenario(page) {
   await page.waitForTimeout(1500);
   resume();
   await search(page, title.slice(0, 14));
-  await tap(page, btn(page, new RegExp('^' + title.slice(0, 14))), { pause: 1800 });
-  await caption(page, 'Доказательство: визит в геозоне, фото «до» и «после»');
+  await tap(page, btn(page, new RegExp('^' + title.slice(0, 14).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))), { pause: 1800 });
+  await caption(page, 'Proof: a visit inside the geofence, “before” and “after” photos');
   await wheel(page, 700, 6);
   await hold(page, 4200);
-  await caption(page, 'Заявку нельзя закрыть без подтверждения — менеджер принимает работу');
+  await caption(page, 'A work order cannot be closed without confirmation — the manager accepts the work');
   await tap(page, btn(page, /^Принять работу/), { pause: 900 });
   const confirm = btn(page, /^Принять$/);
   if (await confirm.isVisible().catch(() => false)) await tap(page, confirm, { pause: 1200 });
@@ -415,12 +443,12 @@ async function v2Scenario(page) {
 
   // 4. Акт «к оплате».
   await section(page, /^Отчёты/);
-  await caption(page, 'Платим подрядчику только за доказанную работу');
+  await caption(page, 'The contractor is paid only for proven work');
   const acts = page.getByRole('button', { name: /^Акты подрядчикам/ }).first();
   await acts.scrollIntoViewIfNeeded().catch(() => {});
   await tap(page, acts, { pause: 2000 });
   await see(page, /К оплате · \d+/).waitFor({ timeout: 30000 });
-  await caption(page, 'Акт «КлиматСервис»: к оплате — только с фото и геозоной, остальное не принимается');
+  await caption(page, 'ClimaService act: payable — only with a photo and a geofenced visit; the rest is not accepted');
   await moveTo(page, 1000, 520, 900);
   await hold(page, 5500);
 
@@ -428,12 +456,12 @@ async function v2Scenario(page) {
   const { readFileSync } = await import('node:fs');
   const tg = 'data:image/png;base64,' + readFileSync(join(ROOT, 'docs/screens/pitch/22-telegram-done-phone.png')).toString('base64');
   await page.evaluate((x) => window.__pdf(x), tg);
-  await caption(page, 'Кто сообщил о поломке через Telegram, получает «выполнена ✅» с фото (макет чата)');
+  await caption(page, 'Whoever reported the fault via Telegram gets “completed ✅” with a photo (chat mock-up)');
   await moveTo(page, 900, 500, 900);
   await moveTo(page, 1050, 640, 900);
   await hold(page, 4000);
   await page.evaluate(() => window.__pdf(null));
-  await caption(page, 'Hey Helpy: приём → отправка → исполнение → контроль');
+  await caption(page, 'Hey Helpy: intake → dispatch → execution → control');
   await hold(page, 3500);
 }
 
@@ -508,15 +536,20 @@ try {
     insert into access_zones(company_id, profile_id, layer_ids, scope_kind, scope_ref)
     select '${uuid(1)}', 'd0000000-0000-4000-8000-000000000004',
       array(select id from layers where company_id = '${uuid(1)}' and name in ('Климат', 'Сантехника')), 'city', 'Москва'`);
+  // Шаг 35b: v2 — английский интерфейс у всех (prep.sql ставит демо-пользователям русский для e2e).
+  if (V2) sql(`update profiles set locale = 'en' where company_id = '${uuid(1)}'`);
   const ctx = await context({ record: true });
-  const page = await ctx.newPage();
+  const page = V2 ? englishPage(await ctx.newPage()) : await ctx.newPage();
   // Вход и прогрев — до записи.
   await login(page, base, USERS.admin);
   // v2: «Где я» для «Камеры» — переговорная 301 «БЦ «Демо»» (запомнено на устройстве).
   const uid = sql(`select id from auth.users where email = '${USERS.admin}'`);
   await page.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
     [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|${uuid(21)}`]);
-  await openApp(page, base, `?voice=${encodeURIComponent('Эй, Хелпи, в переговорной на третьем этаже не работает кондиционер, очень жарко')}`);
+  const phrase = V2
+    ? 'Hey Helpy, the air conditioner in the meeting room on the third floor isn\'t working, it\'s very hot'
+    : 'Эй, Хелпи, в переговорной на третьем этаже не работает кондиционер, очень жарко';
+  await openApp(page, base, `?voice=${encodeURIComponent(phrase)}`);
   await profileTab(page).waitFor({ timeout: 60000 });
   await settle(page, 3000);
   await page.evaluate(() => window.__caption?.(''));

@@ -31,6 +31,7 @@ li{margin:.3em 0}
 .top .wrap{display:flex;align-items:center;gap:16px;min-height:64px}
 .logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:20px;color:var(--link);text-decoration:none;margin-inline-end:auto}
 .logo svg{flex:none}
+.logo span,.nav-d a,.lang,.top .btn{white-space:nowrap}
 .nav-d{display:none;list-style:none;margin:0;padding:0;gap:4px}
 .nav-d a,.menu a{color:var(--ink);text-decoration:none;padding:8px 10px;border-radius:8px;display:block}
 .nav-d a:hover,.menu a:hover{background:var(--mint-soft)}
@@ -50,6 +51,8 @@ li{margin:.3em 0}
 @media (min-width:960px){
   .nav-d{display:flex}.menu{display:none}.top .btn{display:inline-flex}
 }
+/* Шаг 35: шесть пунктов меню (с «Окупаемостью») — на 960–1119 px плотнее, чтобы шапка была в одну строку. */
+@media (min-width:960px) and (max-width:1119px){.top .wrap{gap:8px}.nav-d a{padding:8px 7px;font-size:16px}}
 
 /* Содержание */
 main{padding:24px 0 48px}
@@ -129,6 +132,45 @@ tr:last-child td{border-bottom:0}
 @media (min-width:640px){.ills{grid-template-columns:repeat(2,1fr)}}
 .ills h3{font-size:17px;margin:10px 0 2px}
 .ills p{font-size:15px;margin:0;color:var(--muted)}
+
+/* Калькулятор окупаемости (шаг 35, страница roi/) */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.roi{display:grid;gap:24px;margin:24px 0 48px;align-items:start}
+@media (min-width:900px){.roi{grid-template-columns:1fr 1fr}.roi-out{position:sticky;top:88px}}
+.roi-form,.roi-out{background:var(--card);border-radius:var(--radius);padding:20px;margin:0}
+.roi-form h2,.roi-out h2{font-size:22px}
+.roi-field{display:grid;gap:6px;margin:0 0 16px}
+.roi-field>label{font-weight:600}
+.roi-field .note,.roi-more .note{margin:0}
+.roi-form input[type=text],.roi-form select{font:inherit;min-height:48px;padding:10px 12px;border-radius:var(--radius-s);border:1px solid #6F7E79;background:#fff;color:var(--ink);width:100%;min-width:0}
+.roi-form input[aria-invalid=true]{border:2px solid #B3261E}
+.roi-row{display:flex;gap:10px;align-items:center}
+.roi-unit{flex:none;width:7.5em}
+.roi-unit[hidden]{display:none}
+.roi-form input[type=range]{flex:1;min-width:0;accent-color:var(--link);height:44px}
+.roi-form output{font-weight:600;min-width:4em;text-align:end}
+.roi-check{display:flex;gap:10px;align-items:center;margin:0 0 16px;min-height:44px}
+.roi-check input{width:22px;height:22px;flex:none;accent-color:var(--link)}
+.roi-more{border-top:1px solid var(--line);padding-top:12px}
+.roi-more summary{cursor:pointer;font-weight:600;color:var(--link);min-height:44px;display:flex;align-items:center}
+.roi-more[open] summary{margin-bottom:12px}
+.roi-err{color:#B3261E;font-size:15px;font-weight:600;margin:0}
+.roi-big{display:grid;gap:12px;margin:0 0 16px}
+@media (min-width:480px){.roi-big{grid-template-columns:auto 1fr}}
+.roi-big p{margin:0;background:var(--mint-soft);border-radius:var(--radius-s);padding:14px 16px}
+.roi-big .lbl{display:block;font-size:15px;color:var(--muted)}
+.roi-big strong{font-size:clamp(30px,6vw,40px);line-height:1.15;margin-inline-end:6px}
+.roi-big .per{color:var(--muted)}
+.roi-big .sub{display:block;font-size:15px;color:var(--muted)}
+.roi-dl{margin:0 0 12px;display:grid;gap:0}
+.roi-dl div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.roi-dl dt{color:var(--muted)}
+.roi-dl dd{margin:0;font-weight:600;text-align:end}
+.roi-dl dd .note{display:block;font-weight:400;margin:2px 0 0}
+.roi-range{font-weight:600}
+.roi-t td{white-space:nowrap}
+@media (max-width:600px){.roi-t table{font-size:14px}.roi-t th,.roi-t td{padding:8px 8px}.roi-dl div{display:block}.roi-dl dd{text-align:start}}
+.roi-honest{font-size:15px;color:var(--muted);border-inline-start:4px solid var(--accent);padding-inline-start:12px;margin:12px 0}
 
 /* Подвал */
 .foot{background:var(--card);border-top:1px solid var(--line);padding:32px 0;font-size:15px}

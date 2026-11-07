@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор окупаемости — Hey Helpy</title>
+<meta name="description" content="Оценка выгоды, если платить подрядчикам только за доказанную работу: время персонала и отсечённые переплаты, 3 % по умолчанию (3–10 %). США, UK/ЕС, Залив.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://anton-key.github.io/hey-helpy/site/ru/roi/">
+<link rel="alternate" hreflang="en" href="https://anton-key.github.io/hey-helpy/site/roi/">
+<link rel="alternate" hreflang="ru" href="https://anton-key.github.io/hey-helpy/site/ru/roi/">
+<link rel="alternate" hreflang="x-default" href="https://anton-key.github.io/hey-helpy/site/roi/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hey Helpy">
+<meta property="og:title" content="Калькулятор окупаемости — Hey Helpy">
+<meta property="og:description" content="Оценка выгоды, если платить подрядчикам только за доказанную работу: время персонала и отсечённые переплаты, 3 % по умолчанию (3–10 %). США, UK/ЕС, Залив.">
+<meta property="og:url" content="https://anton-key.github.io/hey-helpy/site/ru/roi/">
+<meta property="og:image" content="https://anton-key.github.io/hey-helpy/site/img/og-ru.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Hey Helpy">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Калькулятор окупаемости — Hey Helpy">
+<meta name="twitter:description" content="Оценка выгоды, если платить подрядчикам только за доказанную работу: время персонала и отсечённые переплаты, 3 % по умолчанию (3–10 %). США, UK/ЕС, Залив.">
+<meta name="twitter:image" content="https://anton-key.github.io/hey-helpy/site/img/og-ru.png">
+<meta name="theme-color" content="#2DB89A">
+<link rel="icon" href="../../favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="../../img/icon-192.png">
+<link rel="manifest" href="../../site.webmanifest">
+<link rel="preload" href="../../fonts/onest-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../fonts/onest-600.woff2" as="font" type="font/woff2" crossorigin>
+<style>@font-face{font-family:Onest;font-weight:400;font-style:normal;font-display:swap;src:url(../../fonts/onest-400.woff2) format("woff2")}@font-face{font-family:Onest;font-weight:600;font-style:normal;font-display:swap;src:url(../../fonts/onest-600.woff2) format("woff2")}:root{--accent:#2DB89A;--on-accent:#062B23;--link:#0B7A62;--mint:#D8F0EA;--mint-soft:#EAF7F3;--ink:#0F1A17;--muted:#46524E;--bg:#F2F4F3;--card:#FFFFFF;--line:#DCE2DF;--radius:16px;--radius-s:10px;--max:1120px;--gutter:16px;--font:Onest,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--font)}img,video{max-width:100%;height:auto;display:block}a{color:var(--link);text-underline-offset:3px}a:hover{text-decoration-thickness:2px}:focus-visible{outline:3px solid var(--link);outline-offset:2px;border-radius:6px}h1,h2,h3{font-weight:600;line-height:1.2;margin:0 0 .5em;letter-spacing:-.01em}h1{font-size:clamp(30px,6vw,52px)}h2{font-size:clamp(24px,3.6vw,34px);margin-top:0}h3{font-size:20px}p,ul,ol{margin:0 0 1em}ul,ol{padding-inline-start:1.3em}li{margin:.3em 0}.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}.skip{position:absolute;inset-inline-start:-999px;top:8px;background:var(--card);padding:8px 12px;border-radius:8px;z-index:10}.skip:focus{inset-inline-start:8px}.top{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.top .wrap{display:flex;align-items:center;gap:16px;min-height:64px}.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:20px;color:var(--link);text-decoration:none;margin-inline-end:auto}.logo svg{flex:none}.logo span,.nav-d a,.lang,.top .btn{white-space:nowrap}.nav-d{display:none;list-style:none;margin:0;padding:0;gap:4px}.nav-d a,.menu a{color:var(--ink);text-decoration:none;padding:8px 10px;border-radius:8px;display:block}.nav-d a:hover,.menu a:hover{background:var(--mint-soft)}.nav-d a[aria-current],.menu a[aria-current]{color:var(--link);font-weight:600}.lang{font-weight:600;text-decoration:none;padding:8px;color:var(--link)}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 22px;border-radius:999px;font-weight:600;text-decoration:none;border:0;font:inherit;font-weight:600;cursor:pointer;background:var(--accent);color:var(--on-accent)}.btn:hover{background:#26A58A}.btn.ghost{background:var(--mint);color:var(--on-accent)}.btn.ghost:hover{background:#C7E9E0}.btn.small{min-height:40px;padding:8px 16px}.top .btn{display:none}.menu{position:relative}.menu summary{list-style:none;cursor:pointer;padding:10px 14px;border-radius:999px;background:var(--mint);color:var(--on-accent);font-weight:600;min-height:44px;display:flex;align-items:center}.menu summary::-webkit-details-marker{display:none}.menu ul{position:absolute;inset-inline-end:0;top:calc(100% + 8px);background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:8px;margin:0;list-style:none;min-width:230px;box-shadow:0 12px 32px rgba(15,26,23,.12)}.menu li{margin:0}@media (min-width:960px){.nav-d{display:flex}.menu{display:none}.top .btn{display:inline-flex}}@media (min-width:960px) and (max-width:1119px){.top .wrap{gap:8px}.nav-d a{padding:8px 7px;font-size:16px}}main{padding:24px 0 48px}main section{margin:0 0 48px}.crumbs ol{list-style:none;padding:0;margin:0 0 16px;display:flex;flex-wrap:wrap;gap:6px;font-size:15px;color:var(--muted)}.crumbs li{margin:0}.crumbs li+li::before{content:"›";margin-inline-end:6px}.kicker{color:var(--link);font-weight:600;margin-bottom:.6em}.lead{font-size:clamp(18px,2.4vw,21px);color:var(--ink);max-width:44em}.note{color:var(--muted);font-size:15px}.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}.hero{display:grid;gap:32px;align-items:center;padding-top:8px}@media (min-width:860px){.hero{grid-template-columns:1.25fr .75fr}}.hero .shot{justify-self:center}.shot{margin:0}.shot img{border-radius:var(--radius);box-shadow:0 1px 2px rgba(15,26,23,.08),0 12px 32px rgba(15,26,23,.10);background:var(--card)}.shot.phone{width:min(300px,80vw)}.shot.phone img{width:100%}.shot.center{display:flex;justify-content:center}.shot.wide img,figure.big img{width:100%}figure.big{margin:24px 0}figcaption{font-size:14px;color:var(--muted);margin-top:8px}.steps{list-style:none;padding:0;counter-reset:s;display:grid;gap:16px}@media (min-width:640px){.steps{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}}.steps li{counter-increment:s;background:var(--card);border-radius:var(--radius);padding:20px;margin:0}.steps li::before{content:counter(s);display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--mint);color:var(--on-accent);font-weight:600;margin-bottom:10px}.steps p{font-size:16px;margin:0}.cards{display:grid;gap:16px}@media (min-width:860px){.cards{grid-template-columns:repeat(3,1fr)}}.card{background:var(--card);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:12px}.card h3{margin:0}.card p{margin:0;font-size:16px}.card img{border-radius:var(--radius-s);width:100%;max-width:260px;aspect-ratio:480/1066;height:auto;object-fit:cover;object-position:top;margin:auto auto 0;border:1px solid var(--line)}.split{display:grid;gap:24px;align-items:start}@media (min-width:860px){.split{grid-template-columns:1fr auto}.split .shot.wide{max-width:560px}}.ticks{list-style:none;padding:0}.ticks li{padding-inline-start:30px;position:relative}.ticks li::before{content:"✓";position:absolute;inset-inline-start:0;color:var(--link);font-weight:600}.toc ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;margin:0 0 40px}.toc li{margin:0}.toc a{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--card);text-decoration:none;color:var(--ink);font-size:15px}.toc a:hover{background:var(--mint)}.table-wrap{overflow-x:auto;margin:0 0 1em}table{border-collapse:collapse;width:100%;background:var(--card);border-radius:var(--radius);overflow:hidden;font-size:16px}caption{text-align:start;font-weight:600;padding:0 0 8px}th,td{text-align:start;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}th{background:var(--mint-soft)}tr:last-child td{border-bottom:0}.video{margin:0}.video video{width:100%;border-radius:var(--radius);background:#0F1A17;aspect-ratio:16/9}.faq section{background:var(--card);border-radius:var(--radius);padding:20px;margin:0 0 12px}.faq h2{font-size:20px}.faq p{margin:0}.cta{background:var(--ink);color:#fff;border-radius:24px;padding:32px 24px}.cta h2{color:#fff}.cta p{color:#D5DEDA;max-width:40em}.cta .btn.ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px #8FD9C6}.notice{background:var(--card);border-radius:var(--radius);padding:20px;border-inline-start:4px solid var(--accent);margin:0 0 32px}.notice.contact{display:grid;gap:20px;align-items:center}@media (min-width:640px){.notice.contact{grid-template-columns:1fr 200px}}.qr{margin:0;text-align:center}.qr svg{width:180px;height:180px;display:block;margin:0 auto;border-radius:12px;border:1px solid var(--line)}.qr figcaption{margin-top:10px}.form{background:var(--card);border-radius:var(--radius);padding:20px;display:grid;gap:14px;max-width:560px;margin:0 0 32px}.form label{font-weight:600;display:grid;gap:6px}.form input,.form textarea{font:inherit;padding:12px;border-radius:var(--radius-s);border:1px solid #9AA8A3;background:#fff;color:var(--ink)}.form textarea{min-height:120px}.err{text-align:center;padding:64px 0}.actions.center{justify-content:center}.ill{margin:0}.ill img{width:100%;height:auto;border-radius:var(--radius);box-shadow:0 1px 2px rgba(15,26,23,.08),0 12px 32px rgba(15,26,23,.10)}.ill figcaption{font-size:13px}.ill.tall{width:min(320px,80vw);justify-self:center;margin:0 auto}.ills{display:grid;gap:16px;margin:24px 0}@media (min-width:640px){.ills{grid-template-columns:repeat(2,1fr)}}.ills h3{font-size:17px;margin:10px 0 2px}.ills p{font-size:15px;margin:0;color:var(--muted)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.roi{display:grid;gap:24px;margin:24px 0 48px;align-items:start}@media (min-width:900px){.roi{grid-template-columns:1fr 1fr}.roi-out{position:sticky;top:88px}}.roi-form,.roi-out{background:var(--card);border-radius:var(--radius);padding:20px;margin:0}.roi-form h2,.roi-out h2{font-size:22px}.roi-field{display:grid;gap:6px;margin:0 0 16px}.roi-field>label{font-weight:600}.roi-field .note,.roi-more .note{margin:0}.roi-form input[type=text],.roi-form select{font:inherit;min-height:48px;padding:10px 12px;border-radius:var(--radius-s);border:1px solid #6F7E79;background:#fff;color:var(--ink);width:100%;min-width:0}.roi-form input[aria-invalid=true]{border:2px solid #B3261E}.roi-row{display:flex;gap:10px;align-items:center}.roi-unit{flex:none;width:7.5em}.roi-unit[hidden]{display:none}.roi-form input[type=range]{flex:1;min-width:0;accent-color:var(--link);height:44px}.roi-form output{font-weight:600;min-width:4em;text-align:end}.roi-check{display:flex;gap:10px;align-items:center;margin:0 0 16px;min-height:44px}.roi-check input{width:22px;height:22px;flex:none;accent-color:var(--link)}.roi-more{border-top:1px solid var(--line);padding-top:12px}.roi-more summary{cursor:pointer;font-weight:600;color:var(--link);min-height:44px;display:flex;align-items:center}.roi-more[open] summary{margin-bottom:12px}.roi-err{color:#B3261E;font-size:15px;font-weight:600;margin:0}.roi-big{display:grid;gap:12px;margin:0 0 16px}@media (min-width:480px){.roi-big{grid-template-columns:auto 1fr}}.roi-big p{margin:0;background:var(--mint-soft);border-radius:var(--radius-s);padding:14px 16px}.roi-big .lbl{display:block;font-size:15px;color:var(--muted)}.roi-big strong{font-size:clamp(30px,6vw,40px);line-height:1.15;margin-inline-end:6px}.roi-big .per{color:var(--muted)}.roi-big .sub{display:block;font-size:15px;color:var(--muted)}.roi-dl{margin:0 0 12px;display:grid;gap:0}.roi-dl div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line)}.roi-dl dt{color:var(--muted)}.roi-dl dd{margin:0;font-weight:600;text-align:end}.roi-dl dd .note{display:block;font-weight:400;margin:2px 0 0}.roi-range{font-weight:600}.roi-t td{white-space:nowrap}@media (max-width:600px){.roi-t table{font-size:14px}.roi-t th,.roi-t td{padding:8px 8px}.roi-dl div{display:block}.roi-dl dd{text-align:start}}.roi-honest{font-size:15px;color:var(--muted);border-inline-start:4px solid var(--accent);padding-inline-start:12px;margin:12px 0}.foot{background:var(--card);border-top:1px solid var(--line);padding:32px 0;font-size:15px}.foot .wrap{display:grid;gap:16px}.foot ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:4px 16px}.foot li{margin:0}.foot a{color:var(--ink);display:inline-block;padding:6px 0}.foot p{margin:0;color:var(--muted)}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}</style>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://anton-key.github.io/hey-helpy/site/#organization",
+   "name": "Hey Helpy",
+   "url": "https://anton-key.github.io/hey-helpy/site/",
+   "logo": {
+    "@type": "ImageObject",
+    "url": "https://anton-key.github.io/hey-helpy/site/img/icon-512.png",
+    "width": 512,
+    "height": 512
+   },
+   "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "sales",
+    "url": "https://t.me/HeyHelpy_bot?start=demo",
+    "availableLanguage": [
+     "ru",
+     "en"
+    ]
+   },
+   "sameAs": [
+    "https://t.me/HeyHelpy_bot"
+   ]
+  },
+  {
+   "@type": "WebPage",
+   "@id": "https://anton-key.github.io/hey-helpy/site/ru/roi/",
+   "url": "https://anton-key.github.io/hey-helpy/site/ru/roi/",
+   "name": "Калькулятор окупаемости — Hey Helpy",
+   "description": "Оценка выгоды, если платить подрядчикам только за доказанную работу: время персонала и отсечённые переплаты, 3 % по умолчанию (3–10 %). США, UK/ЕС, Залив.",
+   "inLanguage": "ru",
+   "dateModified": "2026-11-07",
+   "isPartOf": {
+    "@id": "https://anton-key.github.io/hey-helpy/site/#website"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Главная",
+     "item": "https://anton-key.github.io/hey-helpy/site/ru/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Сколько вы сэкономите, если платить только за доказанное?",
+     "item": "https://anton-key.github.io/hey-helpy/site/ru/roi/"
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержанию</a>
+<header class="top"><div class="wrap">
+<a class="logo" href="../../ru/"><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#2DB89A"/><path d="M9 9v14M23 9v14M9 16h14" stroke="#062B23" stroke-width="3" stroke-linecap="round"/></svg><span>Hey Helpy</span></a>
+<nav aria-label="Основное меню"><ul class="nav-d"><li><a href="../../ru/features/">Возможности</a></li><li><a href="../../ru/industries/">Для кого</a></li><li><a href="../../ru/security/">Безопасность</a></li><li><a href="../../ru/roi/" aria-current="page">Окупаемость</a></li><li><a href="../../ru/faq/">Вопросы</a></li><li><a href="../../ru/contact/">Контакты</a></li></ul></nav>
+<a class="lang" href="../../roi/" hreflang="en" lang="en" title="English">EN</a>
+<a class="btn ghost small" href="https://anton-key.github.io/hey-helpy/">Войти</a>
+<details class="menu"><summary>Меню</summary><ul><li><a href="../../ru/features/">Возможности</a></li><li><a href="../../ru/industries/">Для кого</a></li><li><a href="../../ru/security/">Безопасность</a></li><li><a href="../../ru/roi/" aria-current="page">Окупаемость</a></li><li><a href="../../ru/faq/">Вопросы</a></li><li><a href="../../ru/contact/">Контакты</a></li><li><a href="https://anton-key.github.io/hey-helpy/">Войти</a></li></ul></details>
+</div></header>
+<main id="main"><div class="wrap">
+<nav class="crumbs" aria-label="Навигационная цепочка"><ol><li><a href="../../ru/">Главная</a></li><li aria-current="page">Сколько вы сэкономите, если платить только за доказанное?</li></ol></nav>
+<h1>Сколько вы сэкономите, если платить только за доказанное?</h1>
+<p class="lead">Оценка за минуту для вашего портфеля: время персонала, которое берёт на себя Hey Helpy (рассылка заявок, сбор фото и актов, сверка ведомости), плюс переплаты подрядчикам, которые вы перестаёте оплачивать, — работа без доказательства не оплачивается. Значения по умолчанию осторожные: переплаты 3 %, ползунок — от 3 до 10 %.</p>
+<noscript><p class="notice">Для интерактивного калькулятора нужен JavaScript. Ниже — контрольные примеры, цены и как мы считаем: те же формулы, что в калькуляторе.</p></noscript>
+<div class="roi">
+<form id="roi-form" class="roi-form" hidden novalidate aria-labelledby="roi-form-h">
+<h2 id="roi-form-h">Ваши объекты</h2>
+<div class="roi-field">
+<label for="roi-region">Регион</label>
+<select id="roi-region" name="roi-region"><option value="US">США (USD)</option><option value="EU">Великобритания / Европа (EUR)</option><option value="GCC">Залив — ОАЭ, Саудовская Аравия (AED)</option></select>
+<p class="roi-err" id="roi-region-err" hidden></p>
+</div>
+<div class="roi-field">
+<label for="roi-sites">Число объектов</label>
+<input id="roi-sites" name="roi-sites" type="text" inputmode="decimal" autocomplete="off" value="1" aria-describedby="roi-sites-hint roi-sites-err">
+<p class="note" id="roi-sites-hint">От 1 до 500.</p><p class="roi-err" id="roi-sites-err" hidden></p>
+</div>
+<div class="roi-field">
+<label for="roi-area">Средняя площадь объекта</label>
+<div class="roi-row"><input id="roi-area" name="roi-area" type="text" inputmode="decimal" autocomplete="off" value="5000" aria-describedby="roi-area-hint roi-area-err"><span id="roi-unit-wrap" class="roi-unit"><label class="sr" for="roi-unit">Единица площади</label><select id="roi-unit" name="roi-unit"><option value="m2">м²</option><option value="sqft">кв. футы</option></select></span></div>
+<p class="note" id="roi-area-hint">Site S — до 3 000 м², M — до 10 000 м², L — до 30 000 м².</p><p class="roi-err" id="roi-area-err" hidden></p>
+</div>
+<div class="roi-field">
+<label for="roi-spend">Расходы на подрядчиков на объект в месяц (<span id="roi-spend-cur">USD</span>)</label>
+<input id="roi-spend" name="roi-spend" type="text" inputmode="decimal" autocomplete="off" value="" aria-describedby="roi-spend-hint roi-spend-err">
+<p class="note" id="roi-spend-hint">Оставьте пустым — посчитаем по площади, или введите свою сумму.</p><p class="roi-err" id="roi-spend-err" hidden></p>
+</div>
+<div class="roi-field">
+<label for="roi-over">Переплаты в счетах подрядчиков</label>
+<div class="roi-row"><input id="roi-over" name="roi-over" type="range" min="3" max="10" step="0.5" value="3" aria-describedby="roi-over-hint"><output id="roi-over-out" for="roi-over">3 %</output></div>
+<p class="note" id="roi-over-hint">3 % — осторожная оценка. Ползунок — до 10 %.</p><p class="roi-err" id="roi-over-err" hidden></p>
+</div>
+<div class="roi-check"><input id="roi-annual" name="roi-annual" type="checkbox"><label for="roi-annual">Оплата за год (15 % скидка)</label></div>
+<details class="roi-more">
+<summary>Дополнительно: часы и выплаты подрядчикам</summary>
+<div class="roi-field">
+<label for="roi-hc">Часы координатора, сэкономленные на объект в месяц</label>
+<input id="roi-hc" name="roi-hc" type="text" inputmode="decimal" autocomplete="off" value="15" aria-describedby="roi-hc-hint roi-hc-err">
+<p class="note" id="roi-hc-hint">От 0 до 744.</p><p class="roi-err" id="roi-hc-err" hidden></p>
+</div>
+<div class="roi-field">
+<label for="roi-hf">Часы facility-менеджера, сэкономленные на объект в месяц</label>
+<input id="roi-hf" name="roi-hf" type="text" inputmode="decimal" autocomplete="off" value="5" aria-describedby="roi-hf-hint roi-hf-err">
+<p class="note" id="roi-hf-hint">От 0 до 744.</p><p class="roi-err" id="roi-hf-err" hidden></p>
+</div>
+<div class="roi-check"><input id="roi-payouts" name="roi-payouts" type="checkbox" aria-describedby="roi-payouts-hint"><label for="roi-payouts">Платить подрядчикам через Hey Helpy (с 2028)</label></div>
+<p class="note" id="roi-payouts-hint">$2 / €2 / AED 7 за выплату, платите вы — не процент от счёта.</p>
+<div id="roi-k-wrap" hidden><div class="roi-field">
+<label for="roi-k">Выплат на объект в месяц</label>
+<input id="roi-k" name="roi-k" type="text" inputmode="decimal" autocomplete="off" value="10" aria-describedby="roi-k-hint roi-k-err">
+<p class="note" id="roi-k-hint">По умолчанию около 10.</p><p class="roi-err" id="roi-k-err" hidden></p>
+</div></div>
+</details>
+<p class="actions"><button class="btn ghost" type="submit">Посчитать</button></p>
+</form>
+<section id="roi-out" class="roi-out" hidden aria-labelledby="roi-out-h">
+<h2 id="roi-out-h">Ваша оценка</h2>
+<div aria-live="polite">
+<p id="roi-o-err" class="roi-err" hidden>Проверьте отмеченные поля — тогда появится оценка.</p>
+<div id="roi-o-custom" class="notice" hidden><p>Для объектов больше 30 000 м² — индивидуальная цена, поэтому расчёт не показываем. Запросите демо — посчитаем вместе для вашего портфеля.</p></div>
+<div id="roi-o-calc">
+<div class="roi-big">
+<p id="roi-o-roi-wrap"><span class="lbl">Окупаемость</span><strong id="roi-o-roi">—</strong></p>
+<p id="roi-o-net-wrap"><span class="lbl">Чистая выгода</span><strong id="roi-o-net-m">—</strong><span class="per">в месяц</span><span class="sub"><span id="roi-o-net-y">—</span> в год</span></p>
+<p id="roi-o-value-big" hidden><span class="lbl">Выгода</span><strong id="roi-o-value-m">—</strong><span class="per">в месяц</span><span class="sub"><span id="roi-o-value-y">—</span> в год</span></p>
+</div>
+<dl class="roi-dl">
+<div><dt>Выгода</dt><dd id="roi-o-value">—</dd></div>
+<div><dt>Стоимость Hey Helpy</dt><dd><span id="roi-o-cost">—</span><span class="note">Подрядчики пользуются бесплатно и ничего не платят.</span></dd></div>
+<div><dt>Время персонала</dt><dd id="roi-o-time">—</dd></div>
+<div><dt id="roi-o-over-lbl">Отсечённые переплаты</dt><dd id="roi-o-over">—</dd></div>
+</dl>
+<p id="roi-o-range" class="roi-range">—</p>
+<p id="roi-o-gulf" class="notice" hidden>В Заливе основная выгода — контроль переплат и записи для проверок гражданской обороны, а не время персонала.</p>
+</div>
+</div>
+<p class="roi-honest">Это оценка на основе отраслевых данных и наших допущений, а не обещание. Реальные цифры покажет пилот на ваших объектах.</p>
+<p class="actions"><a class="btn" href="https://t.me/HeyHelpy_bot?start=roi">Запросить демо</a></p>
+</section>
+</div>
+
+<section aria-labelledby="roi-ex">
+<h2 id="roi-ex">Контрольные примеры</h2>
+<p>Один объект 5 000 м² (Site M), часы по умолчанию, помесячная оплата, без платы за выплаты. Суммы в месяц, в валюте региона.</p>
+<div class="table-wrap roi-t"><table>
+<caption>1 объект, 5 000 м², в месяц</caption>
+<thead><tr><th scope="col">В месяц</th><th scope="col">США</th><th scope="col">UK / ЕС</th><th scope="col">Залив</th></tr></thead>
+<tbody>
+<tr><th scope="row">Расходы на подрядчиков</th><td>$6 750</td><td>€4 824</td><td>AED 17 352</td></tr>
+<tr><th scope="row">Время персонала</th><td>$986</td><td>€446</td><td>AED 607</td></tr>
+<tr><th scope="row">Отсечённые переплаты при 3 %</th><td>$202</td><td>€145</td><td>AED 521</td></tr>
+<tr><th scope="row">Выгода при 3 %</th><td>$1 188</td><td>€591</td><td>AED 1 127</td></tr>
+<tr><th scope="row">Цена Hey Helpy</th><td>$450</td><td>€349</td><td>AED 1 100</td></tr>
+<tr><th scope="row">Чистая выгода при 3 %</th><td>$738</td><td>€242</td><td>AED 27</td></tr>
+<tr><th scope="row">Окупаемость при 3 %</th><td><strong>×2,6</strong></td><td><strong>×1,7</strong></td><td><strong>×1,0</strong></td></tr>
+<tr><th scope="row">Чистая выгода при 10 %</th><td>$1 211</td><td>€579</td><td>AED 1 242</td></tr>
+<tr><th scope="row">Окупаемость при 10 %</th><td><strong>×3,7</strong></td><td><strong>×2,7</strong></td><td><strong>×2,1</strong></td></tr>
+</tbody>
+</table></div>
+<p class="roi-honest">Это оценка на основе отраслевых данных и наших допущений, а не обещание. Реальные цифры покажет пилот на ваших объектах.</p>
+<p class="note">В Заливе при 3 % окупаемость около ×1,0 — так и показываем. Время персонала там дешевле, поэтому основная выгода — контроль переплат и записи для проверок гражданской обороны.</p>
+</section>
+
+<section aria-labelledby="roi-price">
+<h2 id="roi-price">Цены</h2>
+<div class="table-wrap roi-t"><table>
+<caption>Подписка за объект в месяц</caption>
+<thead><tr><th scope="col">Ступень</th><th scope="col">Площадь объекта</th><th scope="col">США</th><th scope="col">UK / ЕС</th><th scope="col">Залив</th></tr></thead>
+<tbody>
+<tr><th scope="row">Site S</th><td>до 3 000 м²</td><td>$250</td><td>€199</td><td>AED 650</td></tr>
+<tr><th scope="row">Site M</th><td>3 000–10 000 м²</td><td>$450</td><td>€349</td><td>AED 1 100</td></tr>
+<tr><th scope="row">Site L</th><td>10 000–30 000 м²</td><td>$750</td><td>€579</td><td>AED 2 000</td></tr>
+<tr><th scope="row">Больше 30 000 м²</th><td>—</td><td>индивидуально</td><td>индивидуально</td><td>индивидуально</td></tr>
+</tbody>
+</table></div>
+<ul class="ticks"><li><strong>Подрядчики пользуются бесплатно и ничего не платят.</strong> Платит только клиент.</li><li>Скидка 15 % при оплате за год вперёд.</li><li>Никакого процента от расходов на подрядчиков — цена зависит только от площади объекта.</li><li>Опция с 2028 года: оплата подрядчикам через Hey Helpy и банк-партнёра — $2 / €2 / AED 7 за выплату, платит клиент, не зависит от суммы счёта. В калькуляторе по умолчанию выключена.</li><li>Платный пилот: 90 дней за 50 % цены, засчитывается в годовой договор (в расчёт не включён).</li></ul>
+</section>
+
+<section aria-labelledby="roi-how">
+<h2 id="roi-how">Как мы считаем</h2>
+<ol><li><strong>Время персонала.</strong> Сэкономленные часы на объект в месяц (по умолчанию 15 часов координатора и 5 часов facility-менеджера) × стоимость часа. Стоимость часа = годовая зарплата × 1,25 (налоги и социальные взносы) / 2 080 рабочих часов.</li><li><strong>Отсечённые переплаты.</strong> Расходы на подрядчиков на объект в месяц × доля переплат. По умолчанию расходы на подрядчиков = площадь × затраты на ремонт и ТО на м² в год × 70 % (доля, уходящая подрядчикам) / 12. Можно ввести свою сумму.</li><li><strong>Выгода</strong> = время персонала + отсечённые переплаты, умноженные на число объектов.</li><li><strong>Стоимость Hey Helpy</strong> = подписка по ступени площади объекта (−15 % при оплате за год) + плата за выплаты, если включена, умноженные на число объектов.</li><li><strong>Чистая выгода</strong> = выгода − стоимость; за год — × 12. <strong>Окупаемость</strong> = выгода / стоимость, показываем как «×2,6». Диапазон — тот же расчёт при 3 % и при 10 % переплат.</li><li>Деньги округляем до целых единиц валюты, окупаемость — до одного знака после запятой. Для объектов больше 30 000 м² — индивидуальная цена, расчёт не показываем.</li></ol>
+<div class="table-wrap roi-t"><table>
+<caption>Допущения по регионам (значения по умолчанию)</caption>
+<thead><tr><th scope="col">Параметр</th><th scope="col">США</th><th scope="col">UK / ЕС</th><th scope="col">Залив</th><th scope="col">Метка</th></tr></thead>
+<tbody>
+<tr><th scope="row">Зарплата координатора по эксплуатации, год</th><td>$73 792</td><td>€33 644</td><td>AED 33 600</td><td>факт</td></tr>
+<tr><th scope="row">Зарплата facility-менеджера, год</th><td>$106 660</td><td>€47 500</td><td>AED 101 130</td><td>факт</td></tr>
+<tr><th scope="row">Множитель налогов и социальных взносов</th><td>1,25</td><td>1,25</td><td>1,25</td><td>допущение</td></tr>
+<tr><th scope="row">Рабочих часов в году (40 ч × 52 нед.)</th><td>2 080</td><td>2 080</td><td>2 080</td><td>допущение</td></tr>
+<tr><th scope="row">Координатор, стоимость часа</th><td>$44,35</td><td>€20,22</td><td>AED 20,19</td><td>расчёт</td></tr>
+<tr><th scope="row">Facility-менеджер, стоимость часа</th><td>$64,10</td><td>€28,55</td><td>AED 60,78</td><td>расчёт</td></tr>
+<tr><th scope="row">Затраты на ремонт и ТО на м² в год</th><td>$23,14</td><td>€16,54</td><td>AED 59,49</td><td>оценка</td></tr>
+<tr><th scope="row">Доля затрат, уходящая подрядчикам</th><td>70 %</td><td>70 %</td><td>70 %</td><td>допущение</td></tr>
+<tr><th scope="row">Сэкономленные часы на объект в месяц</th><td>15 коорд. + 5 FM</td><td>15 коорд. + 5 FM</td><td>15 коорд. + 5 FM</td><td>допущение</td></tr>
+<tr><th scope="row">Переплаты в счетах подрядчиков</th><td>3 % (3 %–10 %)</td><td>3 % (3 %–10 %)</td><td>3 % (3 %–10 %)</td><td>допущение</td></tr>
+</tbody>
+</table></div>
+<p class="note">Затраты на ремонт в США: $2,15 за кв. фут в год (медиана IFMA 2025 / BOMA 2024 через Oxmaint); 1 м² = 10,7639 кв. фута. UK / ЕС = 80 % от США, Залив = 70 % (наши допущения). Курсы фиксированные: 1 EUR = 1,1193 USD, 1 USD = 3,6725 AED. Зарплаты UK / ЕС: координатор — Payscale UK (£28 044) в пересчёте на евро, facility-менеджер — StepStone DE. Зарплаты в Заливе — по малым выборкам. Сэкономленные часы — из опыта основателя, проверим на пилотах.</p>
+<h3>Источники</h3>
+<ul><li><a href="https://www.salary.com/research/salary/listing/facilities-coordinator-salary" rel="noopener">Salary.com — зарплата координатора по эксплуатации (США)</a></li><li><a href="https://www.bls.gov/ooh/management/administrative-services-managers.htm" rel="noopener">Бюро трудовой статистики США (BLS) — менеджеры административных служб и эксплуатации</a></li><li><a href="https://www.payscale.com/research/UK/Job=Facilities_Coordinator/Salary" rel="noopener">Payscale UK — зарплата координатора по эксплуатации</a></li><li><a href="https://stepstone.de/gehalt/Facility-Manager-in.html" rel="noopener">StepStone DE — зарплата facility-менеджера</a></li><li><a href="https://www.payscale.com/research/AE/Job=Facilities_Coordinator/Salary" rel="noopener">Payscale ОАЭ — зарплата координатора по эксплуатации</a></li><li><a href="https://oxmaint.com/industries/facility-management/facility-management-cost-per-sqft-benchmarks-2026" rel="noopener">Oxmaint — затраты на эксплуатацию на кв. фут, 2026 (медиана IFMA 2025 / BOMA 2024)</a></li><li><a href="https://www.vixxo.com/facilities-management-news/the-hidden-cost-of-overcharges-how-vixxo-verify-found-2.6m-in-savings" rel="noopener">Vixxo — скрытая цена переплат (оценка вендора)</a></li><li><a href="https://servicechannel.com/case-study/ovation-brands/" rel="noopener">ServiceChannel — кейс Ovation Brands</a></li></ul>
+<p class="note">Переплаты 10–15 % — оценка вендора Vixxo, заинтересованной стороны, поэтому для нас это только верхняя граница, а не значение по умолчанию. В кейсе ServiceChannel (Ovation Brands) средняя стоимость счёта снизилась на 11,8 %; ACFE 2024 описывает мошенничество со счетами в целом. Платящих клиентов у Hey Helpy пока нет: ни одна из этих цифр — не результат наших клиентов.</p>
+</section>
+
+<section class="cta" aria-labelledby="cta">
+<h2 id="cta">Проверьте на своих объектах</h2>
+<p>Пилот покажет реальные цифры вместо оценки: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p>
+<p class="actions"><a class="btn" href="https://t.me/HeyHelpy_bot?start=roi">Запросить демо</a> <a class="btn ghost" href="../../ru/faq/">Вопросы и ответы</a></p>
+</section>
+<script>
+(function(){
+'use strict';
+
+const FX = { EUR_USD: 1.1193, USD_AED: 3.6725 };
+const SQFT_PER_M2 = 10.7639;
+const US_REPAIR_PER_SQFT = 2.15;
+const COMMON = {
+  burden: 1.25,
+  hoursYear: 2080,
+  contractorShare: 0.7,
+  hoursCoord: 15,
+  hoursFm: 5,
+  overbilling: 0.03,
+  overbillingMin: 0.03,
+  overbillingMax: 0.1,
+  annualDiscount: 0.15,
+  payoutsPerSite: 10,
+  areaM2: 5000,
+  maxSites: 500,
+  maxAreaM2: 1000000,
+  maxHours: 744,
+  maxPayouts: 1000,
+  tiers: { S: 3000, M: 10000, L: 30000 },
+};
+const REGIONS = {
+  US: {
+    currency: 'USD', symbol: '$', coordSalary: 73792, fmSalary: 106660,
+    repairShare: 1, usdPerUnit: 1,
+    prices: { S: 250, M: 450, L: 750 }, payoutFee: 2,
+  },
+  EU: {
+    currency: 'EUR', symbol: '€', coordSalary: 33644, fmSalary: 47500,
+    repairShare: 0.8, usdPerUnit: FX.EUR_USD,
+    prices: { S: 199, M: 349, L: 579 }, payoutFee: 2,
+  },
+  GCC: {
+    currency: 'AED', symbol: 'AED ', coordSalary: 33600, fmSalary: 101130,
+    repairShare: 0.7, usdPerUnit: 1 / FX.USD_AED,
+    prices: { S: 650, M: 1100, L: 2000 }, payoutFee: 7,
+  },
+};
+const REGION_KEYS = ['US', 'EU', 'GCC'];
+function hourCost(region, who) {
+  const r = REGIONS[region];
+  return ((who === 'fm' ? r.fmSalary : r.coordSalary) * COMMON.burden) / COMMON.hoursYear;
+}
+function repairRateM2(region) {
+  const r = REGIONS[region];
+  return (US_REPAIR_PER_SQFT * SQFT_PER_M2 * r.repairShare) / r.usdPerUnit;
+}
+const sqftToM2 = (sqft) => sqft / SQFT_PER_M2;
+function tierFor(areaM2) {
+  const t = COMMON.tiers;
+  if (areaM2 <= t.S) return 'S';
+  if (areaM2 <= t.M) return 'M';
+  if (areaM2 <= t.L) return 'L';
+  return 'custom';
+}
+function defaultContractorSpend(region, areaM2) {
+  return (areaM2 * repairRateM2(region) * COMMON.contractorShare) / 12;
+}
+function parseNum(v) {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === 'number') return v;
+  let s = String(v).trim().replace(/[\s  ]/g, '');
+  if (s === '') return undefined;
+  if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+  else s = s.replace(',', '.');
+  return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
+}
+function validate(input) {
+  const errors = {};
+  const values = {};
+  const num = (key, { required = false, def, min, max, integer = false, minExclusive = false }) => {
+    let v = parseNum(input[key]);
+    if (v === undefined) {
+      if (required) errors[key] = 'required';
+      v = def;
+    } else if (!Number.isFinite(v)) errors[key] = 'number';
+    else if (integer && !Number.isInteger(v)) errors[key] = 'integer';
+    else if (minExclusive ? v <= min : v < min) errors[key] = 'min';
+    else if (max !== undefined && v > max) errors[key] = 'max';
+    values[key] = v;
+  };
+  values.region = REGIONS[input.region] ? input.region : 'US';
+  num('sites', { required: true, min: 1, max: COMMON.maxSites, integer: true });
+  num('areaM2', { required: true, min: 0, minExclusive: true, max: COMMON.maxAreaM2 });
+  num('contractorSpend', { min: 0 });
+  num('hoursCoord', { def: COMMON.hoursCoord, min: 0, max: COMMON.maxHours });
+  num('hoursFm', { def: COMMON.hoursFm, min: 0, max: COMMON.maxHours });
+  num('overbilling', { def: COMMON.overbilling, min: COMMON.overbillingMin - 1e-9, max: COMMON.overbillingMax + 1e-9 });
+  num('payoutsPerSite', { def: COMMON.payoutsPerSite, min: 0, max: COMMON.maxPayouts, integer: true });
+  values.annual = !!input.annual;
+  values.payouts = !!input.payouts;
+  return { values, errors };
+}
+function scenario(v, price, spend, p) {
+  const timeValue = v.hoursCoord * hourCost(v.region, 'coord') + v.hoursFm * hourCost(v.region, 'fm');
+  const overbillingValue = p * spend;
+  const value = timeValue + overbillingValue;
+  const valueTotal = v.sites * value;
+  const costTotal = price === null ? null : v.sites * price;
+  const net = costTotal === null ? null : valueTotal - costTotal;
+  return {
+    overbilling: p,
+    timeValue: v.sites * timeValue,
+    overbillingValue: v.sites * overbillingValue,
+    valueMonth: valueTotal,
+    valueYear: valueTotal * 12,
+    costMonth: costTotal,
+    costYear: costTotal === null ? null : costTotal * 12,
+    netMonth: net,
+    netYear: net === null ? null : net * 12,
+    roi: costTotal ? valueTotal / costTotal : null,
+  };
+}
+function calc(input, { showPrices = true } = {}) {
+  const { values: v, errors } = validate(input);
+  if (Object.keys(errors).length) return { ok: false, errors };
+  const r = REGIONS[v.region];
+  const tier = tierFor(v.areaM2);
+  if (tier === 'custom') return { ok: true, region: v.region, currency: r.currency, tier, custom: true };
+  const spend = v.contractorSpend === undefined ? defaultContractorSpend(v.region, v.areaM2) : v.contractorSpend;
+  const listPrice = r.prices[tier];
+  const fullPrice = listPrice * (v.annual ? 1 - COMMON.annualDiscount : 1) + (v.payouts ? r.payoutFee * v.payoutsPerSite : 0);
+  const price = showPrices ? fullPrice : null;
+  const base = scenario(v, price, spend, v.overbilling);
+  const low = scenario(v, price, spend, COMMON.overbillingMin);
+  const high = scenario(v, price, spend, COMMON.overbillingMax);
+  const roiLow = (low.valueMonth) / (v.sites * fullPrice);
+  return {
+    ok: true,
+    region: v.region,
+    currency: r.currency,
+    tier,
+    custom: false,
+    showPrices,
+    sites: v.sites,
+    contractorSpend: spend,
+    contractorSpendDefault: v.contractorSpend === undefined,
+    listPrice: showPrices ? listPrice : null,
+    pricePerSite: price,
+    base,
+    low,
+    high,
+    gulfHint: v.region === 'GCC' && roiLow < 1.3,
+  };
+}
+function roundMoney(x) {
+  return Math.sign(x) * Math.round(Math.abs(x));
+}
+const roundRoi = (x) => Math.round(x * 10) / 10;
+function fmtInt(n, lang) {
+  const s = String(Math.abs(roundMoney(n))).replace(/\B(?=(\d{3})+(?!\d))/g, lang === 'ru' ? ' ' : ',');
+  return (roundMoney(n) < 0 ? '−' : '') + s;
+}
+function fmtMoney(n, region, lang) {
+  const neg = roundMoney(n) < 0;
+  return (neg ? '−' : '') + REGIONS[region].symbol + fmtInt(Math.abs(n), lang);
+}
+function fmtRoi(x, lang) {
+  const s = roundRoi(x).toFixed(1);
+  return '×' + (lang === 'ru' ? s.replace('.', ',') : s);
+}
+function fmtPct(p, lang) {
+  const n = Math.round(p * 1000) / 10;
+  const s = Number.isInteger(n) ? String(n) : n.toFixed(1);
+  return lang === 'ru' ? `${s.replace('.', ',')} %` : `${s}%`;
+}
+function fmtDec(x, lang) {
+  const [i, d] = x.toFixed(2).split('.');
+  return fmtInt(Number(i), lang) + (lang === 'ru' ? ',' : '.') + d;
+}
+
+
+function roiInit(T, CFG) {
+  var form = document.getElementById('roi-form');
+  var out = document.getElementById('roi-out');
+  if (!form || !out) return;
+  var lang = T.lang;
+  var $ = function (id) { return document.getElementById(id); };
+  var f = {
+    region: $('roi-region'), sites: $('roi-sites'), area: $('roi-area'), unit: $('roi-unit'),
+    spend: $('roi-spend'), over: $('roi-over'), annual: $('roi-annual'),
+    hoursCoord: $('roi-hc'), hoursFm: $('roi-hf'), payouts: $('roi-payouts'), payoutsPerSite: $('roi-k'),
+  };
+  var errField = {
+    sites: f.sites, areaM2: f.area, contractorSpend: f.spend, hoursCoord: f.hoursCoord,
+    hoursFm: f.hoursFm, overbilling: f.over, payoutsPerSite: f.payoutsPerSite,
+  };
+  var unit = 'm2';
+  function set(id, text) { var e = $(id); if (e) e.textContent = text; }
+  function show(id, on) { var e = $(id); if (e) e.hidden = !on; }
+  function fmt(tpl, vars) { return tpl.replace(/\{(\w+)\}/g, function (m, k) { return k in vars ? vars[k] : m; }); }
+  function money(x, region) { return fmtMoney(x, region, lang); }
+  function areaM2() {
+    var v = f.area.value;
+    if (unit !== 'sqft') return v;
+    var n = parseNum(v);
+    return n === undefined || !isFinite(n) ? v : sqftToM2(n);
+  }
+  function showErrors(errors) {
+    Object.keys(errField).forEach(function (k) {
+      var input = errField[k];
+      var msg = $(input.id + '-err');
+      var code = errors[k];
+      if (code) {
+        input.setAttribute('aria-invalid', 'true');
+        msg.textContent = (T.err[k] && (T.err[k][code] || T.err[k].any)) || T.err.any;
+        msg.hidden = false;
+      } else {
+        input.removeAttribute('aria-invalid');
+        msg.textContent = '';
+        msg.hidden = true;
+      }
+    });
+  }
+  function update() {
+    var region = f.region.value;
+    var cur = REGIONS[region].currency;
+    show('roi-unit-wrap', region === 'US');
+    if (region !== 'US' && unit === 'sqft') switchUnit('m2');
+    set('roi-spend-cur', cur);
+    set('roi-over-out', fmtPct(Number(f.over.value) / 100, lang));
+    show('roi-k-wrap', f.payouts.checked);
+    var input = {
+      region: region, sites: f.sites.value, areaM2: areaM2(), contractorSpend: f.spend.value,
+      hoursCoord: f.hoursCoord.value, hoursFm: f.hoursFm.value, overbilling: Number(f.over.value) / 100,
+      annual: f.annual.checked, payouts: f.payouts.checked, payoutsPerSite: f.payoutsPerSite.value,
+    };
+    var r = calc(input, { showPrices: CFG.showPrices });
+    showErrors(r.ok ? {} : r.errors);
+    var a = parseNum(input.areaM2);
+    if (typeof a === 'number' && isFinite(a) && a > 0) {
+      var def = defaultContractorSpend(region, a);
+      set('roi-spend-hint', fmt(T.spendHint, { v: money(def, region) }));
+      f.spend.placeholder = fmtInt(def, lang);
+    } else {
+      set('roi-spend-hint', T.spendHintEmpty);
+      f.spend.placeholder = '';
+    }
+    show('roi-o-err', !r.ok);
+    show('roi-o-custom', r.ok && r.custom);
+    show('roi-o-calc', r.ok && !r.custom);
+    if (!r.ok || r.custom) return;
+    var b = r.base;
+    var p = fmtPct(b.overbilling, lang);
+    show('roi-o-roi-wrap', CFG.showPrices);
+    show('roi-o-net-wrap', CFG.showPrices);
+    show('roi-o-value-big', !CFG.showPrices);
+    if (CFG.showPrices) {
+      set('roi-o-roi', fmtRoi(b.roi, lang));
+      set('roi-o-net-m', money(b.netMonth, region));
+      set('roi-o-net-y', money(b.netYear, region));
+      set('roi-o-cost', fmt(T.costValue, { m: money(b.costMonth, region), tier: r.tier, site: money(r.pricePerSite, region) }));
+      set('roi-o-range', fmt(T.range, {
+        low: money(r.low.netMonth, region), high: money(r.high.netMonth, region),
+        roiLow: fmtRoi(r.low.roi, lang), roiHigh: fmtRoi(r.high.roi, lang),
+      }));
+    } else {
+      set('roi-o-value-m', money(b.valueMonth, region));
+      set('roi-o-value-y', money(b.valueYear, region));
+      set('roi-o-cost', T.priceOnRequest);
+      set('roi-o-range', fmt(T.rangeNoPrice, { low: money(r.low.valueMonth, region), high: money(r.high.valueMonth, region) }));
+    }
+    set('roi-o-value', fmt(T.perMonthYear, { m: money(b.valueMonth, region), y: money(b.valueYear, region) }));
+    set('roi-o-time', money(b.timeValue, region));
+    set('roi-o-over-lbl', fmt(T.overLabel, { p: p }));
+    set('roi-o-over', money(b.overbillingValue, region));
+    show('roi-o-gulf', r.gulfHint);
+  }
+  function switchUnit(to) {
+    if (to === unit) return;
+    var n = parseNum(f.area.value);
+    if (typeof n === 'number' && isFinite(n)) {
+      var v = to === 'sqft' ? n * SQFT_PER_M2 : n / SQFT_PER_M2;
+      f.area.value = String(Math.round(v));
+    }
+    unit = to;
+    f.unit.value = to;
+  }
+  f.unit.addEventListener('change', function () { switchUnit(f.unit.value === 'sqft' ? 'sqft' : 'm2'); update(); });
+  form.addEventListener('input', update);
+  form.addEventListener('change', update);
+  form.addEventListener('submit', function (e) { e.preventDefault(); update(); });
+  form.hidden = false;
+  out.hidden = false;
+  update();
+}
+
+roiInit({"lang":"ru","spendHint":"Рассчитано по площади: {v} в месяц. Оставьте пустым или введите свою сумму.","spendHintEmpty":"Оставьте пустым — посчитаем по площади, или введите свою сумму.","costValue":"{m} в месяц (Site {tier}, {site} за объект)","range":"Чистая выгода от {low} (3 %) до {high} (10 %) в месяц; окупаемость от {roiLow} до {roiHigh}.","rangeNoPrice":"Выгода от {low} (3 %) до {high} (10 %) в месяц.","perMonthYear":"{m} в месяц · {y} в год","overLabel":"Отсечённые переплаты ({p})","priceOnRequest":"Цена — по запросу","err":{"any":"Введите число.","sites":{"required":"Введите число объектов.","number":"Только цифры, например 12.","any":"Введите целое число от 1 до 500."},"areaM2":{"required":"Введите среднюю площадь объекта.","number":"Только цифры, например 5000.","min":"Площадь должна быть больше 0.","max":"Слишком много — не больше 1 000 000 м²."},"contractorSpend":{"number":"Только цифры — или оставьте пустым.","any":"Введите 0 или больше — или оставьте пустым."},"hoursCoord":{"number":"Только цифры, например 15.","any":"Введите от 0 до 744 часов."},"hoursFm":{"number":"Только цифры, например 5.","any":"Введите от 0 до 744 часов."},"overbilling":{"any":"Выберите от 3 до 10 %."},"payoutsPerSite":{"number":"Только цифры, например 10.","any":"Введите целое число от 0 до 1 000."}}},{"showPrices":true});
+})();
+</script>
+</div></main>
+<footer class="foot"><div class="wrap">
+<ul><li><a href="../../ru/features/">Возможности</a></li><li><a href="../../ru/industries/">Для кого</a></li><li><a href="../../ru/security/">Безопасность</a></li><li><a href="../../ru/roi/">Окупаемость</a></li><li><a href="../../ru/faq/">Вопросы</a></li><li><a href="../../ru/contact/">Контакты</a></li><li><a href="../../ru/privacy/">Конфиденциальность</a></li><li><a href="https://anton-key.github.io/hey-helpy/">Войти</a></li><li><a href="../../llms.txt">Для ИИ-ассистентов: llms.txt</a></li></ul>
+<p>ИИ-сервис эксплуатации недвижимости и контроля подрядчиков. Продукт в стадии MVP.</p>
+<p>© 2026 Hey Helpy</p>
+</div></footer>
+</body>
+</html>

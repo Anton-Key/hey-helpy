@@ -1646,6 +1646,12 @@ const PITCH = [
       await btn(p, /^Акты подрядчикам/).click();
       await see(p, /К оплате · \d+/).waitFor({ timeout: 30000 });
       await settle(p, 1500);
+      // Шаг 35b: в начале месяца акт почти пуст — показываем прошлый месяц (доказательства демо-истории).
+      if (await see(p, /К оплате · 0(?!\d)/).isVisible().catch(() => false)) {
+        await p.getByRole('button', { name: /Предыдущий месяц/ }).first().click();
+        await see(p, /К оплате · [1-9]/).waitFor({ timeout: 30000 }).catch(() => {});
+        await settle(p, 1500);
+      }
     } },
 ];
 
@@ -1656,7 +1662,7 @@ async function capturePdf(page) {
   await see(page, '30 дней').waitFor({ timeout: 20000 });
   await settle(page, 3000);
   // Первая кнопка с этим словом — ⓘ «Печать отчёта», вторая — сам принтер.
-  const print = page.getByRole('button', { name: /Печать|Распечатать|PDF/ });
+  const print = page.getByRole('button', { name: /Печать|Распечатать|PDF|^Print/ });
   const logs = [];
   const onLog = (m) => { if (m.type() !== 'debug') logs.push(m.text().slice(0, 400)); };
   page.on('console', onLog);

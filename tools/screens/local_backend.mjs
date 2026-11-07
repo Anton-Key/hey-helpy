@@ -72,7 +72,8 @@ function psqlAs(uid, sql) {
 }
 
 /** Подменённый «ИИ» voice-intake: слой по ключевым словам, помещение по номеру или названию. */
-export function mockAi(uid, text) {
+export function mockAi(uid, text, locale = 'ru') {
+  const en = locale === 'en';
   const company = psql(`select company_id from public.profiles where id = ${lit(uid)}`);
   const layers = psql(`select id || '|' || name from public.layers where company_id = ${lit(company)}`)
     .split('\n').filter(Boolean).map((l) => { const [id, name] = l.split('|'); return { id, name }; });
@@ -86,11 +87,13 @@ export function mockAi(uid, text) {
   const loc = null;
   const [locId, locName] = loc ? loc.split('|') : [null, null];
   const clean = text.replace(/^\s*(эй,?\s*хелпи|hey,?\s*helpy)[,!.]?\s*/i, '');
-  const title = (layerName === 'Климат' ? 'Не работает кондиционер' : layerName === 'Электрика' ? 'Не работает свет'
+  // Шаг 35b: язык заголовка — как у запроса (английский ролик демо).
+  const title = (layerName === 'Климат' ? (en ? 'Air conditioner not working' : 'Не работает кондиционер')
+    : layerName === 'Электрика' ? (en ? 'Light not working' : 'Не работает свет')
     : clean.split(/[,.]/)[0]).slice(0, 60);
   return { source: 'ai', title: locName ? `${title} — ${locName}`.slice(0, 60) : title,
     description: clean.charAt(0).toUpperCase() + clean.slice(1), layer_id: layer?.id ?? null, layer: layer?.name ?? null,
-    location_id: locId, location_hint: locName, priority: /жарко|очень|срочно|urgent/.test(t) ? 'high' : 'normal',
+    location_id: locId, location_hint: locName, priority: /жарко|очень|срочно|urgent|very hot|asap/.test(t) ? 'high' : 'normal',
     confidence: 0.92, transcript: text };
 }
 
@@ -321,7 +324,7 @@ export async function startLocalBackend({ port = 54321, postgrest = process.env.
         const text = String(b.text ?? '').trim();
         if (!text || text.length > 1000) return send(res, 400, { error: 'bad_request' });
         await new Promise((d) => setTimeout(d, +(process.env.HH_MOCK_AI_MS ?? 1200)));
-        return send(res, 200, mockAi(p.sub, text));
+        return send(res, 200, mockAi(p.sub, text, b.locale === 'en' ? 'en' : 'ru'));
       }
       // Шаг 27: сверка отпечатков фото из очереди без сети — как Edge
       // Function offline-sync: SHA-256 по загруженному файлу.

@@ -10,7 +10,7 @@ export const SITE_URL = process.env.SITE_URL || 'https://anton-key.github.io/hey
 export const APP_URL = 'https://anton-key.github.io/hey-helpy/';
 
 /** Дата последнего изменения содержания (sitemap lastmod, dateModified). Менять при правке текстов. */
-export const UPDATED = '2026-10-23';
+export const UPDATED = '2026-11-07';
 
 /**
  * Контакт для заявок на демо / пилот — Telegram-бот (решение владельца, шаг 29).
@@ -20,15 +20,25 @@ export const UPDATED = '2026-10-23';
 export const CONTACT = {
   bot: 'HeyHelpy_bot',
   demoUrl: 'https://t.me/HeyHelpy_bot?start=demo',
+  // Шаг 35: «Запросить демо» со страницы калькулятора — тот же вход, бот помечает источник «roi».
+  roiUrl: 'https://t.me/HeyHelpy_bot?start=roi',
 };
+
+/**
+ * Калькулятор окупаемости (шаг 35, страница roi/): показывать ли цены Hey Helpy и ROI.
+ * true — прейскурант из tools/site/roi.mjs, стоимость, чистая выгода и ROI «×N».
+ * false — только выгода в деньгах, вместо цены «Цена — по запросу» / “Pricing on request”.
+ * Поменять → node tools/site/build.mjs → коммит (подробно — docs/site/README.md).
+ */
+export const ROI_SHOW_PRICES = true;
 
 /** Демо-ролик: файл в репозитории и данные для VideoObject. */
 export const VIDEO = {
   src: 'docs/demo/hey-helpy-demo-v2.mp4',
   file: 'media/hey-helpy-demo.mp4',
   poster: 'img/video-poster.webp',
-  uploadDate: '2026-10-14',
-  duration: 'PT2M9S',
+  uploadDate: '2026-11-07',
+  duration: 'PT2M17S',
   width: 1920,
   height: 1080,
 };

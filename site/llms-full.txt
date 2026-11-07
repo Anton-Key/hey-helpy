@@ -1,12 +1,12 @@
 # Hey Helpy — full description / полное описание
 
-Updated: 2026-10-23. Source: https://anton-key.github.io/hey-helpy/site/
+Updated: 2026-11-07. Source: https://anton-key.github.io/hey-helpy/site/
 App: https://anton-key.github.io/hey-helpy/
 Request a demo: https://t.me/HeyHelpy_bot?start=demo
 
 # English
 
-Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.
+Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; subscription per site from $250 per month by site area, contractors pay nothing; pilots available.
 
 URL: https://anton-key.github.io/hey-helpy/site/
 Hey Helpy — for business and shopping centres, chains and retail, property management and FM companies, public-sector customers
@@ -15,7 +15,7 @@ Hey Helpy — for business and shopping centres, chains and retail, property man
 
 **Pay contractors only for proven work.** A work order is created by text, camera or voice — in the app or via Telegram, with nothing to install. The service figures out what broke and where, sends it to the right contractor and collects proof of completion.
 
-Request a demo Watch the video
+Request a demo Estimate your ROI Watch the video
 
 [Screenshot: Hotel room: an AR label above the air conditioner with diagnostics and an open work order]
 
@@ -90,17 +90,18 @@ Security systems have their own contractor, equipment and history.
 #### Camera assistant
 Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.
 
-[Screenshot: Camera assistant: air conditioner KD-301 recognised at 91 %, card with an open work order, maintenance and last job (app in Russian)]
+[Screenshot: Camera assistant: air conditioner AC-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job]
+Demo frame — not measured accuracy
 
 #### Work orders from Telegram
 A requester reports a fault in Telegram via the site’s QR code — no app needed. The contractor’s technician gets a notification from the bot and handles the work order in the app.
 
-[Screenshot: Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)]
+[Screenshot: Technician chat with the bot: a new work order notification (mock-up with the bot’s texts)]
 
 #### “Before” and “after” photos
 The work order holds all the proof: photos before and after, time, place, documents.
 
-[Screenshot: Work order card: “before” and “after” photos and a maintenance document (app in Russian)]
+[Screenshot: Work order card: “before” and “after” photos and a maintenance document]
 
 [Screenshot: Contractor acts: 5 work orders payable, 4 without proof, 56 % of work proven]
 
@@ -159,7 +160,7 @@ Tap “Hey Helpy” and speak. The text appears as you talk; speech recognition 
 
 - The contractor is assigned automatically by system and site.
 
-[Screenshot: Voice work order check: parsed by AI, system HVAC, room 301 meeting room, priority high (app in Russian)]
+[Screenshot: Voice work order check: parsed by AI, system HVAC, room 301 meeting room, priority high]
 
 ### Photo and the camera assistant
 
@@ -175,11 +176,13 @@ A technician or employee points the phone camera at the equipment and taps “Wh
 
 - If there is no equipment in the frame, the service says so. The recognition shot is neither stored nor logged.
 
-[Screenshot: Camera assistant: frozen frame labelled “KD-301 · 91 %” and the air conditioner card (app in Russian)]
+[Screenshot: Camera assistant: frozen frame labelled “AC-301 · 91 %” and the air conditioner card]
+
+_Demo frame — not measured accuracy_
 
 ### AR labels
 
-Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “KD-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.
+Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “AC-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.
 
 - Tap the label to open the equipment card or create a work order with the site, room and equipment already filled in.
 
@@ -203,7 +206,7 @@ Point the camera — a label with open work orders and preventive maintenance ap
 
 - **The contractor’s technician** only gets a Telegram notification about a new work order; the work order itself is received and handled in the app.
 
-[Screenshot: Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)]
+[Screenshot: Technician chat with the bot: a new work order notification (mock-up with the bot’s texts)]
 
 ### Proof-based payment
 
@@ -217,7 +220,7 @@ The monthly contractor act is built automatically and splits work orders into th
 
 Amounts are calculated from the contractor’s rates “per work order” and “per maintenance visit”. The act gets a number like АКТ-2026-001 and exports to PDF and Excel; a re-issued act gets a new number and the previous one is marked “replaced”.
 
-[Screenshot: Contractor acts screen: “Payable” and “No proof” groups with reasons (app in Russian)]
+[Screenshot: Contractor acts screen: “Payable” and “No proof” groups with reasons]
 
 _Contractor act: what is payable, what is not, and why. App screen, demo data._
 
@@ -277,7 +280,7 @@ The creation time of a work order, like the time of the technician’s actions, 
 
 - Maintenance visits are paid at their own rate in the contractor act.
 
-[Screenshot: Preventive maintenance: monthly tasks grouped into “Not started”, “In progress”, “Done” (app in Russian)]
+[Screenshot: Preventive maintenance: monthly tasks grouped into “Not started”, “In progress”, “Done”]
 
 ### Floor plans and equipment
 
@@ -297,7 +300,7 @@ _Floor plan: overdue work stands out (drawn demo plan). App screen, demo data._
 
 Documents can be attached to a work order: PDF, DOC(X), XLS(X), JPG, PNG, TXT — up to 20 MB. Files are private: they open via a temporary link and only for those who can see the work order.
 
-[Screenshot: Work order card: “before” and “after” photos and the Documents section (app in Russian)]
+[Screenshot: Work order card: “before” and “after” photos and the Documents section]
 
 ### Reports
 
@@ -309,7 +312,7 @@ Documents can be attached to a work order: PDF, DOC(X), XLS(X), JPG, PNG, TXT �
 
 - History of accepted and cancelled work orders for a period.
 
-[Screenshot: Contractor report for 30 days: visits, time, on-time share, first-time acceptance (app in Russian)]
+[Screenshot: Contractor report for 30 days: visits, time, on-time share, first-time acceptance]
 
 _Contractor control in numbers (demo data). App screen, demo data._
 
@@ -425,6 +428,127 @@ Clients: web version in the browser and the Android app.
 
 ---
 
+URL: https://anton-key.github.io/hey-helpy/site/roi/
+## How much would proven work save you?
+
+A one-minute estimate for your portfolio: the staff time Hey Helpy takes over (sending work orders, collecting photos and acts, reconciling the monthly statement) plus the contractor overbilling you stop paying for, because work without proof is not paid. We use cautious defaults: 3% overbilling, adjustable from 3% to 10%.
+
+### Reference examples
+
+One site of 5,000 m² (Site M), default hours, monthly billing, no payout fee. Amounts per month, in the currency of the region.
+
+1 site, 5,000 m², per month
+
+| Per month | United States | UK / EU | Gulf |
+
+| Contractor spend | $6,750 | €4,824 | AED 17,352 |
+
+| Staff time | $986 | €446 | AED 607 |
+
+| Cut overbilling at 3% | $202 | €145 | AED 521 |
+
+| Benefit at 3% | $1,188 | €591 | AED 1,127 |
+
+| Hey Helpy price | $450 | €349 | AED 1,100 |
+
+| Net benefit at 3% | $738 | €242 | AED 27 |
+
+| Return at 3% | ×2.6 | ×1.7 | ×1.0 |
+
+| Net benefit at 10% | $1,211 | €579 | AED 1,242 |
+
+| Return at 10% | ×3.7 | ×2.7 | ×2.1 |
+
+This is an estimate based on industry data and our assumptions, not a promise. A pilot on your sites will show real numbers.
+
+In the Gulf, at 3% the return is about ×1.0 — we show it as it is. Staff time costs less there, so the main benefit is control of overbilling and records for civil defence inspections.
+
+### Prices
+
+Subscription per site, per month
+
+| Tier | Site area | United States | UK / EU | Gulf |
+
+| Site S | up to 3,000 m² | $250 | €199 | AED 650 |
+
+| Site M | 3,000–10,000 m² | $450 | €349 | AED 1,100 |
+
+| Site L | 10,000–30,000 m² | $750 | €579 | AED 2,000 |
+
+| Over 30,000 m² | — | custom | custom | custom |
+
+- **Contractors use it free and pay nothing.** Only the customer pays.
+
+- 15% off when paying a year in advance.
+
+- No percentage of your contractor spend — the price depends only on the site area.
+
+- Optional, from 2028: paying contractors through Hey Helpy via a partner bank — $2 / €2 / AED 7 per payout, paid by the customer, regardless of the invoice amount. Off by default in the calculator.
+
+- Paid pilot: 90 days at 50% of the price, credited towards an annual contract (not included in the calculation).
+
+### How we calculate
+
+- **Staff time.** Hours saved per site per month (by default 15 coordinator hours and 5 facility manager hours) × the cost of an hour. The cost of an hour = annual salary × 1.25 (taxes and social contributions) / 2,080 working hours.
+
+- **Cut overbilling.** Contractor spend per site per month × the overbilling share. By default, contractor spend = site area × repair and maintenance cost per m² per year × 70% (the share that goes to contractors) / 12. You can enter your own figure.
+
+- **Benefit** = staff time + cut overbilling, multiplied by the number of sites.
+
+- **Hey Helpy cost** = subscription for the site’s area tier (−15% for annual payment) + the optional payout fee, multiplied by the number of sites.
+
+- **Net benefit** = benefit − cost; per year = × 12. **Return** = benefit / cost, shown as “×2.6”. The range is the same calculation at 3% and at 10% overbilling.
+
+- Money is rounded to whole units of currency, the return to one decimal place. Sites over 30,000 m² have custom pricing — we do not estimate them.
+
+Default assumptions by region
+
+| Parameter | United States | UK / EU | Gulf | Type |
+
+| Facilities coordinator salary, per year | $73,792 | €33,644 | AED 33,600 | fact |
+
+| Facility manager salary, per year | $106,660 | €47,500 | AED 101,130 | fact |
+
+| Taxes and social contributions multiplier | 1.25 | 1.25 | 1.25 | assumption |
+
+| Working hours per year (40 h × 52 weeks) | 2,080 | 2,080 | 2,080 | assumption |
+
+| Coordinator, cost per hour | $44.35 | €20.22 | AED 20.19 | calculated |
+
+| Facility manager, cost per hour | $64.10 | €28.55 | AED 60.78 | calculated |
+
+| Repair and maintenance cost per m² per year | $23.14 | €16.54 | AED 59.49 | estimate |
+
+| Share of that cost paid to contractors | 70% | 70% | 70% | assumption |
+
+| Hours saved per site per month | 15 coordinator + 5 FM | 15 coordinator + 5 FM | 15 coordinator + 5 FM | assumption |
+
+| Overbilling in contractor invoices | 3% (3%–10%) | 3% (3%–10%) | 3% (3%–10%) | assumption |
+
+US repair cost: $2.15 per sq ft per year (IFMA 2025 / BOMA 2024 median via Oxmaint); 1 m² = 10.7639 sq ft. UK / EU = 80% of the US figure, Gulf = 70% (our assumptions). Fixed exchange rates: 1 EUR = 1.1193 USD, 1 USD = 3.6725 AED. UK / EU salaries: coordinator — Payscale UK (£28,044) converted to euros, facility manager — StepStone DE. Gulf salaries are based on small samples. Hours saved come from the founder’s experience and will be checked in pilots.
+
+#### Sources
+
+- Salary.com — Facilities Coordinator salary (US)
+
+- U.S. Bureau of Labor Statistics — Administrative Services and Facilities Managers
+
+- Payscale UK — Facilities Coordinator salary
+
+- StepStone DE — Facility Manager salary
+
+- Payscale UAE — Facilities Coordinator salary
+
+- Oxmaint — facility management cost per sq ft benchmarks 2026 (IFMA 2025 / BOMA 2024 median)
+
+- Vixxo — the hidden cost of overcharges (vendor estimate)
+
+- ServiceChannel — Ovation Brands case study
+
+Overbilling of 10–15% is an estimate by Vixxo, a vendor with an interest in the topic, so we use it only as the upper bound, never as the default. The ServiceChannel case (Ovation Brands) reports an 11.8% lower average invoice; ACFE 2024 describes billing fraud in general. Hey Helpy has no paying customers yet: none of these numbers are our customers’ results.
+
+---
+
 URL: https://anton-key.github.io/hey-helpy/site/faq/
 ## Frequently asked questions
 
@@ -459,7 +583,10 @@ In a browser on desktop and mobile (voice input in Chrome and Edge) and in the A
 English (default) and Russian; the language is switched in settings.
 
 ### How much does it cost?
-Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.
+A subscription per site per month, by site area: from $250 / €199 / AED 650 (Site S, up to 3,000 m²); 15% off when paying annually; sites over 30,000 m² — custom pricing. Contractors use it free and pay nothing. There is no percentage of your contractor spend. A paid pilot is available: 90 days at 50% of the price, credited towards an annual contract. Prices and the calculation are on the ROI calculator page. Open the ROI calculator.
+
+### Will Hey Helpy pay for itself?
+Estimate it for your portfolio in the ROI calculator. It counts the staff time Hey Helpy takes over and the contractor overbilling you stop paying for, with a cautious 3% by default (3–10%). For one 5,000 m² site in the US the estimate is about ×2.6 at 3%; in the Gulf it is about ×1.0, and we show that as it is. This is an estimate, not a promise — a pilot shows real numbers. Open the ROI calculator.
 
 ---
 
@@ -486,7 +613,7 @@ Already have access? Sign in to the app.
 
 # Русский
 
-Hey Helpy — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, цена — по запросу, доступен пилот.
+Hey Helpy — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, подписка за объект — от $250 в месяц по площади, подрядчики не платят, доступен пилот.
 
 URL: https://anton-key.github.io/hey-helpy/site/ru/
 Hey Helpy — для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков
@@ -495,7 +622,7 @@ Hey Helpy — для бизнес-центров и ТЦ, сетей и рите
 
 **Платим подрядчику только за доказанную работу.** Заявку создают текстом, камерой или голосом — в приложении или в Telegram, без установки. Сервис сам понимает, что и где сломалось, отправляет нужному подрядчику и собирает доказательства выполнения.
 
-Запросить демо Смотреть видео
+Запросить демо Посчитать окупаемость Смотреть видео
 
 [Кадр: Гостиничный номер: над кондиционером — AR-метка с диагностикой и открытой заявкой]
 
@@ -570,7 +697,8 @@ _Иллюстрация_
 #### Камера-помощник
 Навели камеру на кондиционер — сервис узнал, какое именно это оборудование из реестра, и показал его открытые заявки, плановое ТО и последнюю работу.
 
-[Кадр: Камера-помощник: кондиционер КД-301 узнан с уверенностью 91 %, карточка с открытой заявкой, плановым ТО и последней работой]
+[Кадр: Камера-помощник: кондиционер AC-301 с пометкой 91 % на демо-кадре, карточка с открытой заявкой, плановым ТО и последней работой]
+Демо-кадр, не замеренная точность
 
 #### Заявки из Telegram
 Заявитель сообщает о поломке в Telegram по QR-коду объекта — без приложения. Исполнителю подрядчика бот присылает уведомление, а работу он ведёт в приложении.
@@ -655,11 +783,13 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/features/
 
 - Если в кадре нет оборудования, сервис так и говорит. Снимок для распознавания не сохраняется и не пишется в журнал.
 
-[Кадр: Камера-помощник: стоп-кадр с рамкой «КД-301 · 91 %» и карточкой кондиционера]
+[Кадр: Камера-помощник: стоп-кадр с рамкой «AC-301 · 91 %» и карточкой кондиционера]
+
+_Демо-кадр, не замеренная точность_
 
 ### AR-метки
 
-Навёл камеру — над оборудованием появляется табличка с открытыми заявками и плановым ТО, например «КД-301 · 1 открытая заявка · ТО до 31.10». Табличка остаётся на месте, пока вы ходите по помещению.
+Навёл камеру — над оборудованием появляется табличка с открытыми заявками и плановым ТО, например «AC-301 · 1 открытая заявка · ТО до 31.10». Табличка остаётся на месте, пока вы ходите по помещению.
 
 - Касание таблички — карточка оборудования или новая заявка с уже заполненными объектом, помещением и оборудованием.
 
@@ -905,6 +1035,127 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/security/
 
 ---
 
+URL: https://anton-key.github.io/hey-helpy/site/ru/roi/
+## Сколько вы сэкономите, если платить только за доказанное?
+
+Оценка за минуту для вашего портфеля: время персонала, которое берёт на себя Hey Helpy (рассылка заявок, сбор фото и актов, сверка ведомости), плюс переплаты подрядчикам, которые вы перестаёте оплачивать, — работа без доказательства не оплачивается. Значения по умолчанию осторожные: переплаты 3 %, ползунок — от 3 до 10 %.
+
+### Контрольные примеры
+
+Один объект 5 000 м² (Site M), часы по умолчанию, помесячная оплата, без платы за выплаты. Суммы в месяц, в валюте региона.
+
+1 объект, 5 000 м², в месяц
+
+| В месяц | США | UK / ЕС | Залив |
+
+| Расходы на подрядчиков | $6 750 | €4 824 | AED 17 352 |
+
+| Время персонала | $986 | €446 | AED 607 |
+
+| Отсечённые переплаты при 3 % | $202 | €145 | AED 521 |
+
+| Выгода при 3 % | $1 188 | €591 | AED 1 127 |
+
+| Цена Hey Helpy | $450 | €349 | AED 1 100 |
+
+| Чистая выгода при 3 % | $738 | €242 | AED 27 |
+
+| Окупаемость при 3 % | ×2,6 | ×1,7 | ×1,0 |
+
+| Чистая выгода при 10 % | $1 211 | €579 | AED 1 242 |
+
+| Окупаемость при 10 % | ×3,7 | ×2,7 | ×2,1 |
+
+Это оценка на основе отраслевых данных и наших допущений, а не обещание. Реальные цифры покажет пилот на ваших объектах.
+
+В Заливе при 3 % окупаемость около ×1,0 — так и показываем. Время персонала там дешевле, поэтому основная выгода — контроль переплат и записи для проверок гражданской обороны.
+
+### Цены
+
+Подписка за объект в месяц
+
+| Ступень | Площадь объекта | США | UK / ЕС | Залив |
+
+| Site S | до 3 000 м² | $250 | €199 | AED 650 |
+
+| Site M | 3 000–10 000 м² | $450 | €349 | AED 1 100 |
+
+| Site L | 10 000–30 000 м² | $750 | €579 | AED 2 000 |
+
+| Больше 30 000 м² | — | индивидуально | индивидуально | индивидуально |
+
+- **Подрядчики пользуются бесплатно и ничего не платят.** Платит только клиент.
+
+- Скидка 15 % при оплате за год вперёд.
+
+- Никакого процента от расходов на подрядчиков — цена зависит только от площади объекта.
+
+- Опция с 2028 года: оплата подрядчикам через Hey Helpy и банк-партнёра — $2 / €2 / AED 7 за выплату, платит клиент, не зависит от суммы счёта. В калькуляторе по умолчанию выключена.
+
+- Платный пилот: 90 дней за 50 % цены, засчитывается в годовой договор (в расчёт не включён).
+
+### Как мы считаем
+
+- **Время персонала.** Сэкономленные часы на объект в месяц (по умолчанию 15 часов координатора и 5 часов facility-менеджера) × стоимость часа. Стоимость часа = годовая зарплата × 1,25 (налоги и социальные взносы) / 2 080 рабочих часов.
+
+- **Отсечённые переплаты.** Расходы на подрядчиков на объект в месяц × доля переплат. По умолчанию расходы на подрядчиков = площадь × затраты на ремонт и ТО на м² в год × 70 % (доля, уходящая подрядчикам) / 12. Можно ввести свою сумму.
+
+- **Выгода** = время персонала + отсечённые переплаты, умноженные на число объектов.
+
+- **Стоимость Hey Helpy** = подписка по ступени площади объекта (−15 % при оплате за год) + плата за выплаты, если включена, умноженные на число объектов.
+
+- **Чистая выгода** = выгода − стоимость; за год — × 12. **Окупаемость** = выгода / стоимость, показываем как «×2,6». Диапазон — тот же расчёт при 3 % и при 10 % переплат.
+
+- Деньги округляем до целых единиц валюты, окупаемость — до одного знака после запятой. Для объектов больше 30 000 м² — индивидуальная цена, расчёт не показываем.
+
+Допущения по регионам (значения по умолчанию)
+
+| Параметр | США | UK / ЕС | Залив | Метка |
+
+| Зарплата координатора по эксплуатации, год | $73 792 | €33 644 | AED 33 600 | факт |
+
+| Зарплата facility-менеджера, год | $106 660 | €47 500 | AED 101 130 | факт |
+
+| Множитель налогов и социальных взносов | 1,25 | 1,25 | 1,25 | допущение |
+
+| Рабочих часов в году (40 ч × 52 нед.) | 2 080 | 2 080 | 2 080 | допущение |
+
+| Координатор, стоимость часа | $44,35 | €20,22 | AED 20,19 | расчёт |
+
+| Facility-менеджер, стоимость часа | $64,10 | €28,55 | AED 60,78 | расчёт |
+
+| Затраты на ремонт и ТО на м² в год | $23,14 | €16,54 | AED 59,49 | оценка |
+
+| Доля затрат, уходящая подрядчикам | 70 % | 70 % | 70 % | допущение |
+
+| Сэкономленные часы на объект в месяц | 15 коорд. + 5 FM | 15 коорд. + 5 FM | 15 коорд. + 5 FM | допущение |
+
+| Переплаты в счетах подрядчиков | 3 % (3 %–10 %) | 3 % (3 %–10 %) | 3 % (3 %–10 %) | допущение |
+
+Затраты на ремонт в США: $2,15 за кв. фут в год (медиана IFMA 2025 / BOMA 2024 через Oxmaint); 1 м² = 10,7639 кв. фута. UK / ЕС = 80 % от США, Залив = 70 % (наши допущения). Курсы фиксированные: 1 EUR = 1,1193 USD, 1 USD = 3,6725 AED. Зарплаты UK / ЕС: координатор — Payscale UK (£28 044) в пересчёте на евро, facility-менеджер — StepStone DE. Зарплаты в Заливе — по малым выборкам. Сэкономленные часы — из опыта основателя, проверим на пилотах.
+
+#### Источники
+
+- Salary.com — зарплата координатора по эксплуатации (США)
+
+- Бюро трудовой статистики США (BLS) — менеджеры административных служб и эксплуатации
+
+- Payscale UK — зарплата координатора по эксплуатации
+
+- StepStone DE — зарплата facility-менеджера
+
+- Payscale ОАЭ — зарплата координатора по эксплуатации
+
+- Oxmaint — затраты на эксплуатацию на кв. фут, 2026 (медиана IFMA 2025 / BOMA 2024)
+
+- Vixxo — скрытая цена переплат (оценка вендора)
+
+- ServiceChannel — кейс Ovation Brands
+
+Переплаты 10–15 % — оценка вендора Vixxo, заинтересованной стороны, поэтому для нас это только верхняя граница, а не значение по умолчанию. В кейсе ServiceChannel (Ovation Brands) средняя стоимость счёта снизилась на 11,8 %; ACFE 2024 описывает мошенничество со счетами в целом. Платящих клиентов у Hey Helpy пока нет: ни одна из этих цифр — не результат наших клиентов.
+
+---
+
 URL: https://anton-key.github.io/hey-helpy/site/ru/faq/
 ## Частые вопросы
 
@@ -939,7 +1190,10 @@ Android-приложение работает без интернета: нов�
 На английском (по умолчанию) и русском; язык переключается в настройках.
 
 ### Сколько стоит?
-Цена — по запросу и зависит от количества объектов. Сейчас продукт в стадии MVP, и мы предлагаем пилот на ваших объектах. Запросить демо или пилот — кнопкой «Запросить демо»: откроется наш бот в Telegram.
+Подписка за объект в месяц, по площади: от $250 / €199 / AED 650 (Site S, до 3 000 м²); скидка 15 % при оплате за год; объекты больше 30 000 м² — индивидуальная цена. Подрядчики пользуются бесплатно и ничего не платят. Процента от расходов на подрядчиков нет. Есть платный пилот: 90 дней за 50 % цены, засчитывается в годовой договор. Цены и расчёт — на странице калькулятора окупаемости. Открыть калькулятор окупаемости.
+
+### Окупится ли Hey Helpy для нас?
+Оцените для своего портфеля в калькуляторе окупаемости. Он считает время персонала, которое берёт на себя Hey Helpy, и переплаты подрядчикам, которые вы перестаёте оплачивать, — осторожно, 3 % по умолчанию (3–10 %). Для одного объекта 5 000 м² в США оценка — около ×2,6 при 3 %; в Заливе — около ×1,0, и так и показываем. Это оценка, а не обещание: реальные цифры покажет пилот. Открыть калькулятор окупаемости.
 
 ---
 

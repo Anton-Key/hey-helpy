@@ -30,9 +30,11 @@ jobs:
         run: bash .github/scripts/check-pr-migrations.sh
 
       # Сайт продукта (шаг 29): site/ совпадает с генератором tools/site/ и проходит проверки
-      # (один h1, ссылки, JSON-LD, robots.txt, sitemap.xml, llms.txt, без JS). Без сети и без браузера.
+      # (один h1, ссылки, JSON-LD, robots.txt, sitemap.xml, llms.txt, JS только на странице калькулятора).
+      # Шаг 35: сначала тесты формул калькулятора окупаемости (tools/site/roi.mjs). Без сети и без браузера.
       - name: Сайт продукта
         run: |
+          node --test tools/site/roi.test.mjs
           node tools/site/build.mjs --out build/site
           git diff --exit-code -- site/ || { echo "::error::site/ устарел — запустите node tools/site/build.mjs и закоммитьте"; exit 1; }
           node tools/site/check.mjs build/site

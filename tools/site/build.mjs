@@ -11,7 +11,8 @@
 import { readFileSync, writeFileSync, mkdirSync, cpSync, copyFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE_URL, APP_URL, UPDATED, CONTACT, VIDEO, BRAND } from './config.mjs';
+import { SITE_URL, APP_URL, UPDATED, CONTACT, VIDEO, BRAND, ROI_SHOW_PRICES } from './config.mjs';
+import { REGIONS, fmtMoney } from './roi.mjs';
 import * as ru from './content.ru.mjs';
 import * as en from './content.en.mjs';
 
@@ -20,8 +21,9 @@ const root = join(here, '../..');
 const siteDir = join(root, 'site');
 const sizes = JSON.parse(readFileSync(join(root, 'assets/site/sizes.json'), 'utf8'));
 const LANGS = { ru, en };
-const KEYS = ['home', 'features', 'industries', 'security', 'faq', 'contact', 'privacy'];
-const NAV = ['features', 'industries', 'security', 'faq', 'contact'];
+const KEYS = ['home', 'features', 'industries', 'security', 'roi', 'faq', 'contact', 'privacy'];
+// Шаг 35: «ROI» / «Окупаемость» — калькулятор окупаемости (единственная страница со скриптом).
+const NAV = ['features', 'industries', 'security', 'roi', 'faq', 'contact'];
 
 /** Порядок ИИ-ботов и поисковиков в robots.txt — требования владельца (шаг 29). */
 export const BOTS = [
@@ -58,11 +60,13 @@ function helpers(lang, slug) {
     rel,
     link: (key, text, hash = '') => `<a href="${href(key, hash)}">${text}</a>`,
     appLink: (text) => `<a href="${APP_URL}">${text}</a>`,
-    img: (name, alt, { eager = false, cls = '' } = {}) => `<figure class="shot ${cls}">${imgTag(name, alt, eager)}</figure>`,
+    img: (name, alt, { eager = false, cls = '', caption = '' } = {}) => `<figure class="shot ${cls}">${imgTag(name, alt, eager)}${caption ? `<figcaption>${caption}</figcaption>` : ''}</figure>`,
     // Шаг 33: иллюстрации-концепт (assets/site/ill-*.webp) — с подписью «Иллюстрация».
     ill: (name, alt, { eager = false, cls = '' } = {}) => `<figure class="ill ${cls}">${imgTag(`ill-${name}`, alt, eager)}<figcaption>${ui.illNote}</figcaption></figure>`,
     figure: (name, alt, caption) => `<figure class="big">${imgTag(name, alt)}<figcaption>${caption}. ${ui.shotNote}.</figcaption></figure>`,
-    card: (name, title, text, alt) => `<article class="card"><h3>${title}</h3><p>${text}</p>${imgTag(name, alt)}</article>`,
+    card: (name, title, text, alt, note = '') => `<article class="card"><h3>${title}</h3><p>${text}</p>${imgTag(name, alt)}${note ? `<p class="note">${note}</p>` : ''}</article>`,
+    // Шаг 35: пометка у кадров с «AC-301 · 91 %» — это демо-кадр, а не замеренная точность.
+    demoFrame: ui.demoFrame,
     cta: (kind) => `<a class="btn${kind === 'primary' ? '' : ' ghost'}" href="${CONTACT.demoUrl}">${ui.demo}</a>`,
     video: (label) => `<figure class="video"><video controls preload="none" playsinline width="${VIDEO.width}" height="${VIDEO.height}" poster="${rel}${VIDEO.poster}" aria-label="${esc(label)}"><source src="${rel}${VIDEO.file}" type="video/mp4"><a href="${rel}${VIDEO.file}">${esc(label)}</a></video><figcaption>${ui.videoNote}</figcaption></figure>`,
     ctaBlock: () => lang === 'ru'
@@ -116,7 +120,11 @@ function softwareApp(lang) {
     offers: {
       '@type': 'Offer',
       url: CONTACT.demoUrl,
-      description: isRu ? 'Цена по запросу; доступен пилот' : 'Pricing on request; pilot available',
+      description: ROI_SHOW_PRICES
+        ? (isRu
+          ? `Подписка за объект в месяц по площади: от ${fmtMoney(REGIONS.US.prices.S, 'US', 'ru')} / ${fmtMoney(REGIONS.EU.prices.S, 'EU', 'ru')} / ${fmtMoney(REGIONS.GCC.prices.S, 'GCC', 'ru')}; подрядчики не платят; доступен пилот`
+          : `Subscription per site per month by area: from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} / ${fmtMoney(REGIONS.EU.prices.S, 'EU', 'en')} / ${fmtMoney(REGIONS.GCC.prices.S, 'GCC', 'en')}; contractors pay nothing; pilot available`)
+        : (isRu ? 'Цена по запросу; доступен пилот' : 'Pricing on request; pilot available'),
     },
     publisher: { '@id': abs('#organization') },
   };
@@ -127,13 +135,13 @@ function videoObject(lang) {
     '@type': 'VideoObject',
     name: lang === 'ru' ? 'Демо «Hey Helpy» за две минуты' : 'Hey Helpy two-minute demo',
     description: lang === 'ru'
-      ? 'Сквозная история одной поломки: голосовая заявка, ИИ разбирает её, камера-помощник узнаёт оборудование, фото «после» и акт подрядчику, в котором к оплате только доказанная работа.'
-      : 'The full story of one fault: a voice work order parsed by AI, the camera assistant recognising the equipment, the “after” photo and a contractor act where only proven work is payable. Video in Russian.',
+      ? 'Сквозная история одной поломки: голосовая заявка, ИИ разбирает её, камера-помощник узнаёт оборудование, фото «после» и акт подрядчику, в котором к оплате только доказанная работа. Ролик на английском, демо-данные, ответы ИИ в записи — имитация.'
+      : 'The full story of one fault: a voice work order parsed by AI, the camera assistant recognising the equipment, the “after” photo and a contractor act where only proven work is payable. Demo data; AI responses in the recording are simulated.',
     thumbnailUrl: abs(VIDEO.poster),
     uploadDate: VIDEO.uploadDate,
     duration: VIDEO.duration,
     contentUrl: abs(VIDEO.file),
-    inLanguage: 'ru',
+    inLanguage: 'en',
     publisher: { '@id': abs('#organization') },
   };
 }
@@ -279,6 +287,10 @@ ${footer('en', h)}
 /** HTML → простой Markdown для llms-full.txt (только наши шаблоны, не общий парсер). */
 export function htmlToText(html) {
   return html
+    .replace(/<script[\s\S]*?<\/script>/g, '')
+    .replace(/<noscript>[\s\S]*?<\/noscript>/g, '')
+    .replace(/<form [\s\S]*?<\/form>/g, '')
+    .replace(/<section id="roi-out"[\s\S]*?<\/section>/g, '')
     .replace(/<nav class="toc"[\s\S]*?<\/nav>/g, '')
     .replace(/<figure class="video">[\s\S]*?<\/figure>/g, '')
     .replace(/<figcaption>([\s\S]*?)<\/figcaption>/g, '\n_$1_\n')
@@ -326,7 +338,8 @@ ${KEYS.map((k) => L('ru', k)).join('\n')}
 - UI languages: English (default), Russian
 - AI: language and multimodal AI models via an OpenAI-compatible API; the provider is configurable per deployment
 - Data: cloud PostgreSQL (Supabase), EU region today; US and UAE regions, a dedicated cloud or the customer's own servers are discussed for a pilot
-- Pricing: on request; pilot available
+- Pricing: ${ROI_SHOW_PRICES ? `subscription per site per month by site area (Site S / M / L), from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} / ${fmtMoney(REGIONS.EU.prices.S, 'EU', 'en')} / ${fmtMoney(REGIONS.GCC.prices.S, 'GCC', 'en')}; contractors pay nothing; no percentage of contractor spend; paid pilot available` : 'on request; pilot available'}
+- ROI calculator: ${abs(en.pages.roi.slug)} — estimates staff time saved and contractor overbilling cut (3% by default, 3–10%) against the Hey Helpy price; the figures are model estimates, not customer results
 - Contact: Telegram ${CONTACT.demoUrl}; no e-mail or phone published
 - Stage: MVP (October 2026)
 - No reviews, ratings or public customer references are published

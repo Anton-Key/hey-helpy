@@ -20,7 +20,17 @@ export const UPDATED = '2026-10-23';
 export const CONTACT = {
   bot: 'HeyHelpy_bot',
   demoUrl: 'https://t.me/HeyHelpy_bot?start=demo',
+  // Шаг 35: «Запросить демо» со страницы калькулятора — тот же вход, бот помечает источник «roi».
+  roiUrl: 'https://t.me/HeyHelpy_bot?start=roi',
 };
+
+/**
+ * Калькулятор окупаемости (шаг 35, страница roi/): показывать ли цены Hey Helpy и ROI.
+ * true — прейскурант из tools/site/roi.mjs, стоимость, чистая выгода и ROI «×N».
+ * false — только выгода в деньгах, вместо цены «Цена — по запросу» / “Pricing on request”.
+ * Поменять → node tools/site/build.mjs → коммит (подробно — docs/site/README.md).
+ */
+export const ROI_SHOW_PRICES = true;
 
 /** Демо-ролик: файл в репозитории и данные для VideoObject. */
 export const VIDEO = {

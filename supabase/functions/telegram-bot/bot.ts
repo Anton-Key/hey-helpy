@@ -175,6 +175,8 @@ export interface Session {
   /** Автор черновика (Telegram user id): в группе жмёт кнопки только он. */
   author: number | null;
   photo_file_id?: string | null;
+  /** Откуда пришла заявка на демо (шаг 35): "roi" — со страницы калькулятора окупаемости. */
+  source?: "roi" | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -438,7 +440,7 @@ async function handleMessage(m: TgMessage, turn: Turn, bot: string) {
   // Только личный чат; кто пишет (гость, пользователь, незнакомец) — не важно.
   if (!group && deps.db.leadSave) {
     const s = await deps.db.sessionGet(chat);
-    if (s?.step === "lead") return void await onLead(m, turn);
+    if (s?.step === "lead") return void await onLead(m, turn, s.source ?? null);
   }
   const who = await deps.db.resolve(chat, group);
   turn.log.who = who.kind;
@@ -496,9 +498,11 @@ async function handleCommand(name: string, arg: string, m: TgMessage, turn: Turn
       if (group && arg.startsWith("grp_")) return void await handleCommand("connect", arg.slice(4), m, turn, bot);
       // «Запросить демо» на сайте (?start=demo, шаг 29): ни компаний, ни объектов — только просьба
       // написать одно сообщение. Привязки чата не меняются.
-      if (!group && arg === "demo" && deps.db.leadSave) {
-        await deps.db.sessionPut(chat, { step: "lead", draft: null, card: null, author: from?.id ?? null });
-        turn.log.result = "demo_start";
+      // Шаг 35: ?start=roi — то же со страницы калькулятора; в заявке пометка источника (без изменений базы).
+      if (!group && (arg === "demo" || arg === "roi") && deps.db.leadSave) {
+        const source = arg === "roi" ? "roi" : null;
+        await deps.db.sessionPut(chat, { step: "lead", draft: null, card: null, author: from?.id ?? null, source });
+        turn.log.result = source ? "demo_start_roi" : "demo_start";
         return void await say(turn, "demoAsk");
       }
       if (!group && arg.startsWith("link_")) {
@@ -585,8 +589,11 @@ export function leadWho(from: TgUser | undefined): string {
   return parts.length ? parts.join(" · ") : "—";
 }
 
+/** Пометка источника в тексте лида: таблица sales.site_leads не меняется (шаг 35). */
+export const LEAD_SOURCE_TAG = { roi: "[ROI calculator] " } as const;
+
 /** Одно сообщение после /start demo → sales.site_leads (+ чат владельца, если задан). */
-async function onLead(m: TgMessage, turn: Turn) {
+async function onLead(m: TgMessage, turn: Turn, source: "roi" | null = null) {
   const { deps, chat, lang, from } = turn;
   turn.log.type = "lead";
   const text = (m.text ?? "").trim();
@@ -594,14 +601,15 @@ async function onLead(m: TgMessage, turn: Turn) {
     turn.log.result = m.voice ? "lead_voice" : "lead_not_text";
     return void await say(turn, "demoTextOnly");
   }
-  if (text.length > LEAD_MAX) {
+  const tag = source ? LEAD_SOURCE_TAG[source] : "";
+  if (tag.length + text.length > LEAD_MAX) {
     turn.log.result = "lead_too_long";
     return void await say(turn, "demoTooLong");
   }
   const name = [from?.first_name, from?.last_name].filter((x) => x && x.trim()).join(" ").trim() || null;
   let r: J;
   try {
-    r = await deps.db.leadSave!(chat, from?.username ?? null, name, lang, text);
+    r = await deps.db.leadSave!(chat, from?.username ?? null, name, lang, tag + text);
   } catch {
     r = { ok: false, error: "unavailable" };
   }
@@ -615,7 +623,7 @@ async function onLead(m: TgMessage, turn: Turn) {
     try {
       const html = esc(t("ru", "demoNotice", {})).replace(
         /\{(\w+)\}/g,
-        (mm, k) => (k === "who" ? esc(leadWho(from)) : k === "text" ? esc(text) : mm),
+        (mm, k) => (k === "who" ? esc(leadWho(from)) : k === "text" ? esc(tag + text) : mm),
       );
       await deps.tg.send(deps.leadsChat, html);
       forwarded = true;

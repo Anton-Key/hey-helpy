@@ -971,3 +971,31 @@ Deno.test("leadsChatId и leadWho", () => {
   assertEquals(leadWho({ id: 1, username: "a", first_name: "Анна", last_name: "К." }), "@a · Анна К.");
   assertEquals(leadWho({ id: 1 }), "—");
 });
+
+// --- Шаг 35: «Запросить демо» со страницы калькулятора окупаемости (?start=roi) ---
+
+Deno.test("demo: /start roi — та же просьба, в лиде и у владельца пометка «[ROI calculator]»", async () => {
+  const w = world({ who: { kind: "none" }, lead: { ok: true }, leadsChat: OWNER });
+  await handleUpdate(msg({ text: "/start roi", lang: "en" }), w.deps);
+  assertStringIncludes(w.sent[0].html, "In one message, tell us");
+  assertEquals(w.calls.includes("resolve"), false);
+  assertEquals(w.sessions.get(CHAT)?.source, "roi");
+  await handleUpdate(msg({ text: "Acme, 12 sites in Dubai", lang: "en" }), w.deps);
+  assertEquals(w.leads.length, 1);
+  assertEquals(w.leads[0].text, "[ROI calculator] Acme, 12 sites in Dubai");
+  assertStringIncludes(w.sent.find((x) => x.chat === OWNER)!.html, "[ROI calculator] Acme");
+  assertEquals(JSON.stringify(w.logs).includes("Acme"), false, "текст лида не пишется в лог");
+});
+
+Deno.test("demo: /start demo — без пометки; длинный текст с пометкой укладывается в лимит", async () => {
+  const w = world({ who: { kind: "none" }, lead: { ok: true } });
+  await handleUpdate(msg({ text: "/start demo" }), w.deps);
+  await handleUpdate(msg({ text: "Компания" }), w.deps);
+  assertEquals(w.leads[0].text, "Компания");
+
+  const r = world({ who: { kind: "none" }, lead: { ok: true } });
+  await handleUpdate(msg({ text: "/start roi" }), r.deps);
+  await handleUpdate(msg({ text: "x".repeat(1995) }), r.deps);
+  assertEquals(r.leads.length, 0, "с пометкой длиннее 2000 — просим короче");
+  assertStringIncludes(r.sent.at(-1)!.html, "Слишком длинно");
+});

@@ -81,9 +81,25 @@ for (const f of html) {
     if (!home && !types.has('BreadcrumbList')) err(name, 'JSON-LD без BreadcrumbList');
     if (/\/faq\//.test(name) && !types.has('FAQPage')) err(name, 'JSON-LD без FAQPage');
   }
-  // Без JS: исполняемых скриптов нет (кроме JSON-LD).
-  const scripts = [...s.matchAll(/<script(?![^>]*application\/ld\+json)[^>]*>/g)];
-  if (scripts.length) err(name, `исполняемый <script> (${scripts.length}) — текст должен быть виден без JS`);
+  // Без JS: исполняемых скриптов нет (кроме JSON-LD). Исключение (шаг 35) — калькулятор окупаемости roi/:
+  // один встроенный скрипт без src, без сети, cookies и хранилищ; форма скрыта до запуска скрипта,
+  // а без JS видны таблица контрольных примеров и «Как мы считаем».
+  const scripts = [...s.matchAll(/<script(?![^>]*application\/ld\+json)[^>]*>([\s\S]*?)<\/script>/g)];
+  const isRoi = /^(ru\/)?roi\/index\.html$/.test(name);
+  if (scripts.length && !isRoi) err(name, `исполняемый <script> (${scripts.length}) — текст должен быть виден без JS`);
+  if (isRoi) {
+    if (scripts.length !== 1) err(name, `калькулятор: скриптов ${scripts.length}, нужен ровно один встроенный`);
+    for (const [tag, code] of scripts) {
+      if (/\ssrc=/.test(tag)) err(name, 'калькулятор: внешний скрипт (src) запрещён');
+      const bad = code.match(/\b(fetch|XMLHttpRequest|sendBeacon|WebSocket|EventSource|localStorage|sessionStorage|indexedDB|document\.cookie|import\s*\()/);
+      if (bad) err(name, `калькулятор: «${bad[1]}» — без сети, cookies и хранилищ`);
+    }
+    if (!/<form id="roi-form"[^>]* hidden/.test(s)) err(name, 'калькулятор: форма должна быть скрыта без JS (hidden)');
+    if (!/<table>[\s\S]*?<\/table>/.test(s)) err(name, 'калькулятор: без JS нужна таблица контрольных примеров');
+    if (!/(not a promise|а не обещание)/.test(s)) err(name, 'калькулятор: нет честной подписи под результатом');
+  }
+  // Ничего «гарантированного» (бриф калькулятора, раздел 9).
+  if (/guarantee|гарантир/i.test(s.replace(/<style>[\s\S]*?<\/style>/, ''))) err(name, '«гарантия» на сайте — обещаний не даём');
   // Картинки
   for (const [img] of s.matchAll(/<img [^>]*>/g)) {
     if (!/ alt="[^"]+"/.test(img)) err(name, `img без alt: ${img.slice(0, 80)}`);

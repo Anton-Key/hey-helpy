@@ -1,6 +1,10 @@
 // Site copy — English (address «/en/»). Same facts as content.ru.mjs; terms as in the app
 // (CLAUDE.md, «Языки»): Work order, Contractor, Preventive maintenance, Floor plan, Access zone, System, Contractor act.
 
+import { ROI_SHOW_PRICES } from './config.mjs';
+import { REGIONS, fmtMoney } from './roi.mjs';
+import { roiBody, exampleRoi } from './roi_page.mjs';
+
 export const ui = {
   lang: 'en',
   locale: 'en_US',
@@ -15,10 +19,163 @@ export const ui = {
   footerAi: 'For AI assistants',
   shotNote: 'App screen, demo data',
   illNote: 'Illustration',
+  demoFrame: 'Demo frame — not measured accuracy',
+  roiCta: 'Estimate your ROI',
+  roiLink: 'Open the ROI calculator',
   videoNote: 'The video is in Russian with on-screen captions, 2 min 9 s, no sound.',
 };
 
-export const llmsIntro = 'Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; pricing on request; pilots available.';
+export const llmsIntro = 'Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; ' + (ROI_SHOW_PRICES ? `subscription per site from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} per month by site area, contractors pay nothing` : 'pricing on request') + '; pilots available.';
+
+// Калькулятор окупаемости (шаг 35). Тексты — из docs/site/roi-calculator-brief.md (разделы 2–9),
+// цифры подставляет roi_page.mjs из tools/site/roi.mjs.
+const SOURCES = [
+  ['Salary.com — Facilities Coordinator salary (US)', 'https://www.salary.com/research/salary/listing/facilities-coordinator-salary'],
+  ['U.S. Bureau of Labor Statistics — Administrative Services and Facilities Managers', 'https://www.bls.gov/ooh/management/administrative-services-managers.htm'],
+  ['Payscale UK — Facilities Coordinator salary', 'https://www.payscale.com/research/UK/Job=Facilities_Coordinator/Salary'],
+  ['StepStone DE — Facility Manager salary', 'https://stepstone.de/gehalt/Facility-Manager-in.html'],
+  ['Payscale UAE — Facilities Coordinator salary', 'https://www.payscale.com/research/AE/Job=Facilities_Coordinator/Salary'],
+  ['Oxmaint — facility management cost per sq ft benchmarks 2026 (IFMA 2025 / BOMA 2024 median)', 'https://oxmaint.com/industries/facility-management/facility-management-cost-per-sqft-benchmarks-2026'],
+  ['Vixxo — the hidden cost of overcharges (vendor estimate)', 'https://www.vixxo.com/facilities-management-news/the-hidden-cost-of-overcharges-how-vixxo-verify-found-2.6m-in-savings'],
+  ['ServiceChannel — Ovation Brands case study', 'https://servicechannel.com/case-study/ovation-brands/'],
+];
+
+export const roi = {
+  h1: 'How much would proven work save you?',
+  lead: 'A one-minute estimate for your portfolio: the staff time Hey Helpy takes over (sending work orders, collecting photos and acts, reconciling the monthly statement) plus the contractor overbilling you stop paying for, because work without proof is not paid. We use cautious defaults: 3% overbilling, adjustable from 3% to 10%.',
+  noJs: 'The interactive calculator needs JavaScript. Below are reference examples, prices and how we calculate — the same formulas the calculator uses.',
+  demo: 'Request a demo',
+  honest: 'This is an estimate based on industry data and our assumptions, not a promise. A pilot on your sites will show real numbers.',
+  priceOnRequest: 'Pricing on request',
+  custom: 'custom',
+  regionShort: { US: 'United States', EU: 'UK / EU', GCC: 'Gulf' },
+  regionLong: { US: 'United States (USD)', EU: 'UK / Europe (EUR)', GCC: 'Gulf — UAE, Saudi Arabia (AED)' },
+  tierName: { S: 'Site S', M: 'Site M', L: 'Site L', custom: 'Over 30,000 m²' },
+  tierArea: { S: 'up to {s} m²', M: '{s}–{m} m²', L: '{m}–{l} m²', custom: '—' },
+  ex: {
+    title: 'Reference examples',
+    text: 'One site of 5,000 m² (Site M), default hours, monthly billing, no payout fee. Amounts per month, in the currency of the region.',
+    caption: '1 site, 5,000 m², per month',
+    metric: 'Per month',
+    spend: 'Contractor spend',
+    time: 'Staff time',
+    over: 'Cut overbilling at {p}',
+    value: 'Benefit at {p}',
+    price: 'Hey Helpy price',
+    net: 'Net benefit at {p}',
+    roi: 'Return at {p}',
+    gulfNote: 'In the Gulf, at 3% the return is about ×1.0 — we show it as it is. Staff time costs less there, so the main benefit is control of overbilling and records for civil defence inspections.',
+  },
+  prices: {
+    title: 'Prices',
+    caption: 'Subscription per site, per month',
+    tier: 'Tier',
+    area: 'Site area',
+    notes: [
+      '<strong>Contractors use it free and pay nothing.</strong> Only the customer pays.',
+      '{d} off when paying a year in advance.',
+      'No percentage of your contractor spend — the price depends only on the site area.',
+      'Optional, from 2028: paying contractors through Hey Helpy via a partner bank — {us} / {eu} / {gcc} per payout, paid by the customer, regardless of the invoice amount. Off by default in the calculator.',
+      'Paid pilot: 90 days at 50% of the price, credited towards an annual contract (not included in the calculation).',
+    ],
+    free: 'Contractors use it free and pay nothing.',
+  },
+  kind: { fact: 'fact', assumption: 'assumption', calc: 'calculated', estimate: 'estimate' },
+  how: {
+    title: 'How we calculate',
+    steps: [
+      '<strong>Staff time.</strong> Hours saved per site per month (by default 15 coordinator hours and 5 facility manager hours) × the cost of an hour. The cost of an hour = annual salary × 1.25 (taxes and social contributions) / 2,080 working hours.',
+      '<strong>Cut overbilling.</strong> Contractor spend per site per month × the overbilling share. By default, contractor spend = site area × repair and maintenance cost per m² per year × 70% (the share that goes to contractors) / 12. You can enter your own figure.',
+      '<strong>Benefit</strong> = staff time + cut overbilling, multiplied by the number of sites.',
+      '<strong>Hey Helpy cost</strong> = subscription for the site’s area tier (−15% for annual payment) + the optional payout fee, multiplied by the number of sites.',
+      '<strong>Net benefit</strong> = benefit − cost; per year = × 12. <strong>Return</strong> = benefit / cost, shown as “×2.6”. The range is the same calculation at 3% and at 10% overbilling.',
+      'Money is rounded to whole units of currency, the return to one decimal place. Sites over 30,000 m² have custom pricing — we do not estimate them.',
+    ],
+    tableCaption: 'Default assumptions by region',
+    param: 'Parameter',
+    type: 'Type',
+    coordSalary: 'Facilities coordinator salary, per year',
+    fmSalary: 'Facility manager salary, per year',
+    burden: 'Taxes and social contributions multiplier',
+    hoursYear: 'Working hours per year (40 h × 52 weeks)',
+    coordHour: 'Coordinator, cost per hour',
+    fmHour: 'Facility manager, cost per hour',
+    repair: 'Repair and maintenance cost per m² per year',
+    share: 'Share of that cost paid to contractors',
+    hours: 'Hours saved per site per month',
+    hoursValue: '{c} coordinator + {f} FM',
+    overbilling: 'Overbilling in contractor invoices',
+    overbillingValue: '{p} ({min}–{max})',
+    notes: 'US repair cost: ${sqft} per sq ft per year (IFMA 2025 / BOMA 2024 median via Oxmaint); 1 m² = {m2} sq ft. UK / EU = {eu} of the US figure, Gulf = {gcc} (our assumptions). Fixed exchange rates: 1 EUR = {eur} USD, 1 USD = {aed} AED. UK / EU salaries: coordinator — Payscale UK (£28,044) converted to euros, facility manager — StepStone DE. Gulf salaries are based on small samples. Hours saved come from the founder’s experience and will be checked in pilots.',
+    sourcesTitle: 'Sources',
+    sources: SOURCES,
+    vendorNote: 'Overbilling of 10–15% is an estimate by Vixxo, a vendor with an interest in the topic, so we use it only as the upper bound, never as the default. The ServiceChannel case (Ovation Brands) reports an 11.8% lower average invoice; ACFE 2024 describes billing fraud in general. Hey Helpy has no paying customers yet: none of these numbers are our customers’ results.',
+  },
+  form: {
+    submit: 'Calculate',
+    title: 'Your sites',
+    region: 'Region',
+    sites: 'Number of sites',
+    sitesHint: 'From 1 to {max}.',
+    area: 'Average site area',
+    unit: 'Unit of area',
+    m2: 'm²',
+    sqft: 'sq ft',
+    areaHint: 'Site S — up to {s} m², M — up to {m} m², L — up to {l} m².',
+    spend: 'Contractor spend per site, per month',
+    over: 'Overbilling in contractor invoices',
+    overHint: '3% is a cautious estimate. Move the slider up to 10%.',
+    annual: 'Pay annually ({d} off)',
+    more: 'Advanced: hours and contractor payouts',
+    hc: 'Coordinator hours saved per site, per month',
+    hf: 'Facility manager hours saved per site, per month',
+    hoursHint: 'From 0 to 744.',
+    payouts: 'Pay contractors through Hey Helpy (from 2028)',
+    payoutsHint: '{us} / {eu} / {gcc} per payout, paid by you — not a percentage of the invoice.',
+    k: 'Payouts per site, per month',
+    kHint: 'About 10 by default.',
+  },
+  out: {
+    title: 'Your estimate',
+    roi: 'Return on cost',
+    net: 'Net benefit',
+    value: 'Benefit',
+    perMonth: '/ month',
+    perYear: '/ year',
+    cost: 'Hey Helpy cost',
+    free: 'Contractors use it free and pay nothing.',
+    time: 'Staff time',
+    over: 'Cut overbilling',
+    fix: 'Check the highlighted fields — then the estimate will appear.',
+    custom: 'Sites over 30,000 m² (about 322,900 sq ft) have custom pricing, so we do not show an estimate for them. Request a demo — we will calculate it together for your portfolio.',
+    gulf: 'In the Gulf, the main benefit is control of overbilling and records for civil defence inspections, not staff time.',
+  },
+  js: {
+    spendHint: 'Calculated from the area: {v} per month. Leave empty or enter your own figure.',
+    spendHintEmpty: 'Leave empty to calculate it from the area, or enter your own figure.',
+    costValue: '{m} per month (Site {tier}, {site} per site)',
+    range: 'Net benefit from {low} (3%) to {high} (10%) per month; return from {roiLow} to {roiHigh}.',
+    rangeNoPrice: 'Benefit from {low} (3%) to {high} (10%) per month.',
+    perMonthYear: '{m} per month · {y} per year',
+    overLabel: 'Cut overbilling ({p})',
+    priceOnRequest: 'Pricing on request',
+    err: {
+      any: 'Enter a number.',
+      sites: { required: 'Enter the number of sites.', number: 'Use digits only, for example 12.', any: 'Enter a whole number from 1 to 500.' },
+      areaM2: { required: 'Enter the average site area.', number: 'Use digits only, for example 5000.', min: 'The area must be greater than 0.', max: 'That is too large — enter up to 1,000,000 m².' },
+      contractorSpend: { number: 'Use digits only, or leave empty.', any: 'Enter 0 or more, or leave empty.' },
+      hoursCoord: { number: 'Use digits only, for example 15.', any: 'Enter from 0 to 744 hours.' },
+      hoursFm: { number: 'Use digits only, for example 5.', any: 'Enter from 0 to 744 hours.' },
+      overbilling: { any: 'Choose from 3% to 10%.' },
+      payoutsPerSite: { number: 'Use digits only, for example 10.', any: 'Enter a whole number from 0 to 1,000.' },
+    },
+  },
+  cta: {
+    title: 'Check it on your own sites',
+    text: 'A pilot shows real numbers instead of estimates: your sites, your contractors, payment only for proven work.',
+    faq: 'Questions and answers',
+  },
+};
 
 export const pages = {
   home: {
@@ -33,7 +190,7 @@ export const pages = {
     <p class="kicker">Hey Helpy — for business and shopping centres, chains and retail, property management and FM companies, public-sector customers</p>
     <h1>AI service for property maintenance and contractor control</h1>
     <p class="lead"><strong>Pay contractors only for proven work.</strong> A work order is created by text, camera or voice — in the app or via Telegram, with nothing to install. The service figures out what broke and where, sends it to the right contractor and collects proof of completion.</p>
-    <p class="actions">${h.cta('primary')} <a class="btn ghost" href="#video">Watch the video</a></p>
+    <p class="actions">${h.cta('primary')} ${h.link('roi', ui.roiCta).replace('<a ', '<a class="btn ghost" ')} <a class="btn ghost" href="#video">Watch the video</a></p>
   </div>
   ${h.ill('hotel_ac', 'Hotel room: an AR label above the air conditioner with diagnostics and an open work order', { eager: true })}
 </section>
@@ -70,7 +227,7 @@ export const pages = {
 <section aria-labelledby="features">
   <h2 id="features">Highlights</h2>
   <div class="cards">
-    ${h.card('camera', 'Camera assistant', 'Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.', 'Camera assistant: air conditioner KD-301 recognised at 91 %, card with an open work order, maintenance and last job (app in Russian)')}
+    ${h.card('camera', 'Camera assistant', 'Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.', 'Camera assistant: air conditioner KD-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job (app in Russian)', h.demoFrame)}
     ${h.card('telegram', 'Work orders from Telegram', 'A requester reports a fault in Telegram via the site’s QR code — no app needed. The contractor’s technician gets a notification from the bot and handles the work order in the app.', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)')}
     ${h.card('photos', '“Before” and “after” photos', 'The work order holds all the proof: photos before and after, time, place, documents.', 'Work order card: “before” and “after” photos and a maintenance document (app in Russian)')}
   </div>
@@ -156,7 +313,7 @@ ${h.ctaBlock()}
         <li>If there is no equipment in the frame, the service says so. The recognition shot is neither stored nor logged.</li>
       </ul>
     </div>
-    ${h.img('camera', 'Camera assistant: frozen frame labelled “KD-301 · 91 %” and the air conditioner card (app in Russian)', { cls: 'phone' })}
+    ${h.img('camera', 'Camera assistant: frozen frame labelled “KD-301 · 91 %” and the air conditioner card (app in Russian)', { cls: 'phone', caption: h.demoFrame })}
   </div>
 </section>
 
@@ -424,12 +581,15 @@ ${h.ctaBlock()}
       ['Where is the data stored?', 'Currently in a cloud PostgreSQL database (Supabase) in the EU region; company data is isolated by database access policies. Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud and installation on the customer’s own servers are discussed during a pilot.'],
       ['Which devices does it run on?', 'In a browser on desktop and mobile (voice input in Chrome and Edge) and in the Android app. There is no iPhone app yet.'],
       ['Which languages does the interface support?', 'English (default) and Russian; the language is switched in settings.'],
-      ['How much does it cost?', 'Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.'],
+      ['How much does it cost?', ROI_SHOW_PRICES
+        ? `A subscription per site per month, by site area: from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} / ${fmtMoney(REGIONS.EU.prices.S, 'EU', 'en')} / ${fmtMoney(REGIONS.GCC.prices.S, 'GCC', 'en')} (Site S, up to 3,000 m²); 15% off when paying annually; sites over 30,000 m² — custom pricing. Contractors use it free and pay nothing. There is no percentage of your contractor spend. A paid pilot is available: 90 days at 50% of the price, credited towards an annual contract. Prices and the calculation are on the ROI calculator page.`
+        : 'Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.', 'roi'],
+      ['Will Hey Helpy pay for itself?', 'Estimate it for your portfolio in the ROI calculator. It counts the staff time Hey Helpy takes over and the contractor overbilling you stop paying for, with a cautious 3% by default (3–10%). ' + (ROI_SHOW_PRICES ? `For one 5,000 m² site in the US the estimate is about ${exampleRoi('US', 'en')} at 3%; in the Gulf it is about ${exampleRoi('GCC', 'en')}, and we show that as it is. ` : '') + 'This is an estimate, not a promise — a pilot shows real numbers.', 'roi'],
     ],
     body: (h, page) => `
 <h1>Frequently asked questions</h1>
 <div class="faq">
-${page.faq.map(([q, a], i) => `  <section aria-labelledby="q${i + 1}"><h2 id="q${i + 1}">${q}</h2><p>${a}</p></section>`).join('\n')}
+${page.faq.map(([q, a, link], i) => `  <section aria-labelledby="q${i + 1}"><h2 id="q${i + 1}">${q}</h2><p>${a}${link ? ` ${h.link(link, ui.roiLink)}.` : ''}</p></section>`).join('\n')}
 </div>
 ${h.ctaBlock()}
 `,
@@ -455,6 +615,15 @@ ${h.contact()}
   <p>Already have access? ${h.appLink('Sign in to the app')}.</p>
 </section>
 `,
+  },
+
+  roi: {
+    slug: 'roi/',
+    nav: 'ROI',
+    title: 'ROI calculator — Hey Helpy',
+    description: 'Estimate what paying contractors only for proven work could save across your sites: staff time and cut overbilling, 3% by default (3–10%). US, UK/EU, Gulf.',
+    h1: roi.h1,
+    body: (h) => roiBody(h, roi, 'en'),
   },
 
   privacy: {
@@ -492,3 +661,4 @@ export const notFound = {
   h1: 'Page not found',
   text: 'This page does not exist. The address may have changed.',
 };
+

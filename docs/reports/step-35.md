@@ -137,16 +137,146 @@
 Продолжение в ветке `step-35` (PR #34 ещё не слит). Замечание владельца 07.11.2026: в кадрах сайта — русский интерфейс и старые демо-данные.
 
 ## Чек-лист 35b
-- [ ] 1. Опись картинок и видео сайта и `docs/screens/pitch/` (источник, кириллица по OCR)
-- [ ] 2. Пересъёмка кадров на английском (рабочая база, EN), макет чата бота на английском, подрядчику — только «Open»
-- [ ] 3. Ролик «Two-minute demo» на английском + постер
-- [ ] 4. Проверки: `ocr_check.mjs`, сборка, `check.mjs`, html-validate, Lighthouse, снимки главной
-- [ ] Итог, «Что сделать вам», PR ready
+- [x] 1. Опись картинок и видео сайта и `docs/screens/pitch/` (источник, кириллица по OCR) — таблица ниже
+- [x] 2. Пересъёмка кадров на английском; макеты чата бота на английском, у подрядчика — только «Open»
+- [x] 3. Ролик «Two-minute demo» на английском + постер
+- [x] 4. Проверки: `ocr_check.mjs`, сборка, `check.mjs`, html-validate, Lighthouse, снимки главной
+- [x] Итог, «Что сделать вам», PR ready
+
+## Что сделано
+
+### Блок 1. Опись и проверка `tools/site/ocr_check.mjs`
+- Все картинки сайта — `assets/site/` (кадры приложения → WebP через `tools/site/images.mjs`, постер — кадр ролика, OG — `tools/site/og.mjs`, иллюстрации шага 33 `ill-*`, QR — SVG, не проверяется), ролик `docs/demo/hey-helpy-demo-v2.mp4`, кадры питча `docs/screens/pitch/` (28 файлов). На сайте используются 8 кадров приложения: 04 (`voice`), 21 (`camera`), 28 (`telegram`), 24 (`photos`), 20 (`act`), 06 (`plan`), 10 (`reports`), 13 (`ppr`).
+- Новый скрипт `tools/site/ocr_check.mjs` (вручную): tesseract `rus+eng` по каждой картинке (×2 для мелкого текста) и по кадру в секунду ролика. «Русское» слово — 4+ буквы, только кириллица, есть буква, которую OCR не путает с латиницей (Б, Д, Ж, З, Л, Ф, Ц, Ч, Ь, Ы, Э, Ю, Я…), и нет невозможного в русском письме («ыы»). Без этого фильтра английский текст давал ложные срабатывания: Cancel → «Сапсе», company → «сотрапу». Проверенный глазами шум и одно исключение (карта, см. ⚠️) записаны в скрипте с причиной. Код выхода 1, если кириллица есть.
+- ⚠️ **В «PR check» не добавлен**: tesseract с русским языком ставится через apt (~1 мин), а проверка 48 файлов идёт ~10 минут на 2 ядрах — дольше всей остальной проверки PR. Запуск — вручную после пересъёмки кадров.
+
+### Таблица «файл → источник → кириллица до / после»
+«До» — файлы из `main` (`04d0d16`), «после» — ветка; одна и та же проверка. Число — сколько «русских» слов нашёл OCR.
+
+| Файл | Источник | До | После |
+|---|---|---|---|
+| `assets/site/act.webp` | кадр питча 20 → `images.mjs` | да (75) | нет |
+| `assets/site/camera.webp` | кадр 21 → `images.mjs` | да (23) | нет |
+| `assets/site/ill-cctv.webp` | иллюстрация шага 33 (без интерфейса) | нет | нет |
+| `assets/site/ill-faucet.webp` | иллюстрация шага 33 (без интерфейса) | нет | нет |
+| `assets/site/ill-fridge.webp` | иллюстрация шага 33 (без интерфейса) | нет | нет |
+| `assets/site/ill-hotel_ac.webp` | иллюстрация шага 33 (без интерфейса) | нет | нет |
+| `assets/site/ill-iso.webp` | иллюстрация шага 33 (без интерфейса) | нет | нет |
+| `assets/site/ill-led.webp` | иллюстрация шага 33 (без интерфейса) | нет | нет |
+| `assets/site/ill-phone.webp` | иллюстрация шага 33 (без интерфейса) | нет | нет |
+| `assets/site/ill-pipe.webp` | иллюстрация шага 33 (без интерфейса) | нет | нет |
+| `assets/site/og-en.png` | `og.mjs` (voice + camera) | да (29) | нет |
+| `assets/site/og-ru.png` | `og.mjs` (voice + camera) | да (32) | нет |
+| `assets/site/photos.webp` | кадр 24 → `images.mjs` | да (21) | нет |
+| `assets/site/plan.webp` | кадр 06 → `images.mjs` | да (75) | нет |
+| `assets/site/ppr.webp` | кадр 13 → `images.mjs` | да (85) | нет |
+| `assets/site/reports.webp` | кадр 10 → `images.mjs` | да (63) | нет |
+| `assets/site/telegram.webp` | кадр 28 (макет) → `images.mjs` | да (22) | нет |
+| `assets/site/video-poster.webp` | ролик v2, 34-я с → `images.mjs` | да (62) | нет |
+| `assets/site/voice.webp` | кадр 04 → `images.mjs` | да (49) | нет |
+| `docs/screens/pitch/01-requests-phone.png` | `screens.mjs --pitch` (рабочая база) | да (55) | нет |
+| `docs/screens/pitch/02-filters-phone.png` | `screens.mjs --pitch` (рабочая база) | да (18) | нет |
+| `docs/screens/pitch/03-voice-listening-phone.png` | `screens.mjs --pitch` (рабочая база) | да (16) | нет |
+| `docs/screens/pitch/04-voice-ai-check-phone.png` | `screens.mjs --pitch` (рабочая база) | да (47) | нет |
+| `docs/screens/pitch/05-order-show-on-plan-phone.png` | `local_pitch.mjs` (локальная) | да (37) | нет |
+| `docs/screens/pitch/06-floor-plan-desktop.png` | `local_pitch.mjs` (локальная) | да (92) | нет |
+| `docs/screens/pitch/07-floor-plan-marker-phone.png` | `local_pitch.mjs` (локальная) | да (16) | нет |
+| `docs/screens/pitch/08-world-map-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (65) | исключение (7) |
+| `docs/screens/pitch/09-moscow-map-phone.png` | `screens.mjs --pitch` (рабочая база) | да (28) | нет |
+| `docs/screens/pitch/10-reports-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (62) | нет |
+| `docs/screens/pitch/11-contractor-card-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (46) | нет |
+| `docs/screens/pitch/12-home-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (94) | нет |
+| `docs/screens/pitch/13-ppr-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (85) | нет |
+| `docs/screens/pitch/14-locations-regions-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (69) | нет |
+| `docs/screens/pitch/15-report-pdf-page1.png` | `screens.mjs --pitch` (рабочая база) | да (93) | нет |
+| `docs/screens/pitch/16-equipment-card-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (40) | нет |
+| `docs/screens/pitch/17-crew-zone-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (24) | нет |
+| `docs/screens/pitch/18-photo-identify-phone.png` | `screens.mjs --pitch` (рабочая база) | да (30) | нет |
+| `docs/screens/pitch/19-telegram-qr-poster.png` | `local_pitch.mjs` (локальная) | да (14) | нет |
+| `docs/screens/pitch/20-act-proven-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (75) | нет |
+| `docs/screens/pitch/21-camera-card-phone.png` | `screens.mjs --pitch` (рабочая база) | да (21) | нет |
+| `docs/screens/pitch/22-telegram-done-phone.png` | `tg_notify_mock.mjs` (макет) | да (20) | нет |
+| `docs/screens/pitch/23-systems-desktop.png` | `screens.mjs --pitch` (рабочая база) | да (51) | нет |
+| `docs/screens/pitch/24-order-photos-phone.png` | `local_pitch.mjs` (локальная) | да (21) | нет |
+| `docs/screens/pitch/25-offline-queue-phone.png` | e2e сценарий 17 EN | да (33) | нет |
+| `docs/screens/pitch/26-offline-proof-phone.png` | e2e сценарий 17 EN | да (30) | нет |
+| `docs/screens/pitch/27-act-decision-desktop.png` | e2e сценарий 17 EN | да (77) | нет |
+| `docs/screens/pitch/28-telegram-assign-phone.png` | `tg_assign_mock.mjs` (макет) | да (22) | нет |
+| `docs/demo/hey-helpy-demo-v2.mp4 (129 кадров)` | `record_demo.sh --v2-only` (локальная база) | да (6036) | нет (после проверки кадров глазами: 14 слов шума — «РНОТОЗ» = PHOTOS, «нмде» = ✓ HVAC и т. п., занесены в список шума) |
+
+⚠️ OCR пропускает мелкий текст: на кадрах 05 и 07 русские подписи на плане этажа он не нашёл, а глазами они видны. Поэтому все кадры питча я ещё и просмотрел глазами: русского текста нет нигде, кроме подложки карты на 08.
+
+### Блок 2. Пересъёмка кадров
+- **Рабочая база, английский интерфейс** (`screens.mjs --pitch`, только чтение): 01–04, 08–18, 20, 21, 23. Голос (04) разобран **настоящим ИИ** рабочей базы («Parsed by AI»). Первый прогон упал на 16 кадрах с «Page crashed» — не хватило памяти (параллельно шла сборка Flutter и OCR). Повтор по одному — ✅.
+- **Акт (20)**: в начале месяца акт «ClimaService» почти пуст (0 к оплате), поэтому кадр показывает **прошлый месяц** (октябрь: 4 к оплате, $240, «Needs manager’s decision · 2»). В `screens.mjs` добавлено: если «To pay · 0», нажимается «Previous month».
+- **PDF отчёта (15)**: кнопка печати искалась по русскому «Печать» — добавлено английское «Print».
+- **Локальная база** (`local_pitch.mjs`, теперь на английском): 05, 06, 07 (план этажа) — ⚠️ в «Demo Properties» рабочей базы лежат **старые картинки планов с русскими подписями** (их когда-то загрузили через приложение; Refresh demo картинки не трогает), а локальный бэкенд отдаёт английские ДЕМО-СХЕМЫ `assets/demo_plans/` (с пометкой «DEMO PLAN · not a real floor plan»); 19 — плакат A4 с QR «Something broken?» (PDF из приложения → PNG 150 dpi, тот же размер 1241×1754); 24 — фото «до / после» и документ `maintenance-certificate.pdf` (сгенерированная пустая страница).
+- **Сквозной сценарий 17 на английском** (`E2E_LANG=en node tools/e2e/e2e.mjs --only=17 --shots`): кадры 25 (без сети, «saved on the phone: 6 actions»), 26 («Taken offline … time verified ✓»), 27 (акт «Needs manager’s decision»). В `e2e.mjs` — переключатель `E2E_LANG=en` (английский интерфейс, обёртка селекторов `englishPage`), в сценарии 17 — английские названия заявок и чек-листа. Без переключателя всё как раньше (по-русски).
+- **Макеты чата бота** — английские тексты `texts.ts` (EN), аватар «HH»: 22 — гость получает «received → work started 🔧 → completed ✅» с фото; 28 — исполнитель «ClimaService» получает «🆕 New work order …» **только с кнопкой «Open»** (без «Start work» — решение владельца шага 32; сам бот не менялся).
+- Подпись «Demo frame — not measured accuracy» у «AC-301 · 91 %» — осталась (на английском кадре цифра тоже есть).
+- **Сайт**: все кадры — английские на обеих версиях (`/` и `/ru/`); `alt` и подписи — на языке страницы. Из `alt` убраны «(app in Russian)» и «KD-301» (теперь «AC-301»). OG-картинки — ⚠️ см. ниже. `images.mjs` пересобрал WebP: размеры те же (480×1066, 1200×676, постер 1280×720) — без сдвига вёрстки.
+
+### Блок 3. Ролик на английском
+- `tools/e2e/record_demo.mjs --v2` теперь на английском: интерфейс, демо-данные, фраза «Hey Helpy, the air conditioner in the meeting room on the third floor isn't working, it's very hot», подписи внизу — английские (без «прибор» / «Эй, Helpy»). Сюжет тот же: голос → ИИ-разбор → «Камера-помощник» (Air conditioner AC-301) → заявка с фото → исполнитель за кадром (геозона, живое фото «после») → приёмка → акт «к оплате» → уведомление в Telegram (английский макет 22).
+- ⚠️ **Запись — на локальной базе с заглушкой ИИ**: записывать на рабочей базе нельзя — сценарий создаёт заявки, фото и визиты (данные клиента «Demo Properties» и файлы в Storage). Чтобы заглушку не приняли за настоящий ответ, **весь ролик идёт с пометкой в правом верхнем углу «Demo data · AI responses simulated»**; на сайте под роликом — то же («AI responses in the recording are simulated»), в JSON-LD `VideoObject` — так же, язык `en`.
+- Заглушка ИИ (`local_backend.mjs`) теперь отвечает по-английски для английского запроса («Air conditioner not working») и понимает «very hot» как высокую срочность.
+- Поправлено по ходу: шторка «How AR labels work» (шаг 33) перекрывала камеру — в записи помечена «просмотренной», как в сквозных тестах; живое фото «после» (шаг 26) — «Take photo → Use photo» вместо выбора файла.
+- Итог: **2 мин 17 с, 1920×1080, H.264, без звука, 2,65 МБ** (было 2 мин 9 с, 2,35 МБ: +13 %, в пределах ±20 %). Постер — кадр 34-й секунды: готовая карточка «Check your request» с «Parsed by AI» и пометкой «AI responses simulated», WebP 1280×720.
+
+### Блок 4. Проверки
+| Проверка | Результат |
+|---|---|
+| `node tools/site/ocr_check.mjs` | ✅ кириллицы нет в 47 из 48 файлов (сайт — во всех: 19 картинок и ролик); 08 — исключение (подложка карты OSM). До шага — кириллица в 40 из 48 |
+| `node tools/site/build.mjs --out build/site` + `check.mjs` | ✅ 17 HTML-страниц, 16 адресов |
+| `html-validate@9` | 0 ошибок |
+| Lighthouse главной EN, мобильный (3 прогона; машина 2 ядра) | ветка: 91–99 / 100 / 100 / 100, LCP 2,0–2,1 с, **CLS 0**, TBT 60–360 мс; `main` в тех же условиях: 96–99 / 100 / 100 / 100, LCP 2,0–2,1 с, CLS 0, TBT 40–190 мс — разница в пределах шума, размеры картинок те же |
+| `tools/site/shots.mjs` | ✅ 360 / 412 px все страницы; новые снимки главной `home-360-*`, `home-412-*`, `home-1280-*` (EN, RU) в `docs/screens/site/` |
+| `node --test tools/site/roi.test.mjs` | 17 / 17 ✅ |
+| Сквозной сценарий 17 (EN) | ✅ (113 с) |
+
+## ⚠️ Решения 35b
+- ⚠️ **Карта мира (кадр 08)**: без ключа CARTO приложение берёт подложку OpenStreetMap, а она подписывает города на местном языке («Москва», «Беларусь», рядом — по-арабски и по-гречески). Интерфейс на кадре английский. Ключа `MAP_TILE_KEY` в локальном `env.json` нет. Кадр 08 занесён в исключения `ocr_check.mjs` с причиной. На сайте кадров карты нет. Переснять: добавить `MAP_TILE_KEY` в `env.json` → `cd tools/screens && node screens.mjs --pitch --only=08,09`.
+- ⚠️ **OG-картинка русской версии — тоже английская** (`og.mjs`): в картинках сайта не должно быть кириллицы. Заголовок и описание ссылки (`og:title`, `og:description`) у `/ru/` остаются русскими.
+- ⚠️ **Кадры плана этажа (05, 06, 07) — с локальной базы**: в рабочей базе — старые русские картинки планов. Чтобы рабочая база показывала английские схемы, их нужно перезагрузить в приложении (см. «Что сделать вам», необязательно).
+- ⚠️ Кадр 24 прокручивается клавишами ↓ (колесо мыши в этом месте Flutter не применял) — фото и документ в кадре.
+- ⚠️ QR на плакате (19) — ссылка объекта «Demo Tower» из демо-данных (`report_links` 981, токен `demo-bc-object-qr-2026` — тот же, что в рабочей базе после Refresh demo).
+- Старые ролики `hey-helpy-demo.mp4` и `hey-helpy-demo-phone.mp4` (шаг 18, русские) на сайте не используются — не переписывались.
+
+## Новые и изменённые файлы (35b)
+| Файл | Что |
+|---|---|
+| `tools/site/ocr_check.mjs` | новый — проверка «нет кириллицы в картинках и ролике» |
+| `tools/site/og.mjs` | OG RU = EN |
+| `tools/site/images.mjs` | постер — 34-я секунда нового ролика |
+| `tools/site/content.en.mjs`, `content.ru.mjs`, `build.mjs`, `config.mjs` | подписи к ролику (английский, «AI responses simulated»), `alt` без «app in Russian», AC-301, `VideoObject` (`en`, 2:17, 07.11.2026) |
+| `tools/site/shots.mjs` | снимки главной 412 и 1280 px |
+| `tools/screens/screens.mjs` | акт — прошлый месяц, если текущий пуст; кнопка «Print» |
+| `tools/screens/local_pitch.mjs` | английский интерфейс; кадры 05, 06, 07, 19, 24 |
+| `tools/screens/local_backend.mjs` | заглушка ИИ: английский заголовок, «very hot» → высокая срочность |
+| `tools/screens/tg_assign_mock.mjs`, `tg_notify_mock.mjs` | английские макеты, у подрядчика — только «Open» |
+| `tools/e2e/record_demo.mjs` | ролик v2 на английском, пометка «Demo data · AI responses simulated», живое фото «после», шторка AR-меток |
+| `tools/e2e/e2e.mjs`, `scenarios.mjs` | `E2E_LANG=en` для сценария 17; «Use photo» в живой камере |
+| `docs/screens/pitch/*.png` (28), `README.md` | все кадры на английском, откуда каждый |
+| `docs/demo/hey-helpy-demo-v2.mp4` | английский ролик |
+| `assets/site/*.webp`, `og-*.png` | английские кадры, постер, OG |
+| `docs/screens/site/home-*.png` | снимки главной |
+| `CLAUDE.md` | правило «кадры сайта и питча — только английские», `ocr_check.mjs` |
+
+## Что сделать вам (35b)
+1. **Слить PR #34**: https://github.com/Anton-Key/hey-helpy/pull/34 → «Merge pull request». «Deploy web» выложит сайт сам (3–5 минут; ход — https://github.com/Anton-Key/hey-helpy/actions/workflows/deploy-web.yml, если не запустился — там же «Run workflow», ветка `main`).
+2. **Открыть https://anton-key.github.io/hey-helpy/site/** и проверить: ролик «Two-minute demo» — английский, в углу «Demo data · AI responses simulated»; в «Highlights» три кадра — «Air conditioner AC-301», чат бота «New work order … Open», заявка с фото «Before / After»; то же на https://anton-key.github.io/hey-helpy/site/ru/.
+3. *(Необязательно)* Чтобы и рабочая база показывала английские планы этажей: войти администратором «Demo Properties» → «Локации» → «Demo Tower» → «Этажи» → этаж → «Заменить план» и загрузить файлы из репозитория `assets/demo_plans/bc-demo-floor-1.png`, `bc-demo-floor-3.png` (и `skyline-floor-15.png` для «Skyline»). Это нарисованные демо-схемы, не реальные планы.
+4. *(Необязательно)* Ключ CARTO в локальный `env.json` (`"MAP_TILE_KEY": "…"`) — тогда кадры карты 08 и 09 можно переснять с английскими подписями подложки.
 
 ## Журнал 35b
 | Время (UTC) | Что сделано | Коммит |
 |---|---|---|
-| 07.11 | Раздел 35b создан | — |
+| 07.11 | Раздел 35b, tesseract, `ocr_check.mjs`, опись «до» | — |
+| 07.11 | Макеты чата EN, сценарий ролика EN | Шаг 35b (блок 1–2) |
+| 07.11 | Кадры питча с рабочей базы (21 из 22, затем 15 и 20) | Шаг 35b (блок 2) |
+| 07.11 | Кадры 24–27 (локально, сценарий 17 EN), акт за прошлый месяц | Шаг 35b (блок 2) |
+| 07.11 | Ролик EN (4 попытки: шторка AR-меток, «Use photo», подписи), постер, картинки и OG сайта | Шаг 35b (блок 2–3) |
+| 07.11 | План этажа 05–07 локально, фильтр шума OCR, проверки, отчёт | Шаг 35b (итог) |
 
 ## Где остановился (35b)
-Блок 1: ставлю tesseract, пишу `tools/site/ocr_check.mjs`, опись.
+Шаг завершён. PR #34 готов к проверке.

@@ -14,10 +14,11 @@ const b64 = (f) => readFileSync(join(root, f)).toString('base64');
 const font = (w) => `@font-face{font-family:Onest;font-weight:${w};src:url(data:font/woff2;base64,${b64(`site/fonts/onest-${w}.woff2`)})}`;
 const img = (n) => `data:image/webp;base64,${b64(`assets/site/${n}.webp`)}`;
 
-const T = {
-  ru: { brand: 'Hey Helpy', h: 'ИИ-сервис эксплуатации недвижимости и контроля подрядчиков', s: 'Платим подрядчику только за доказанную работу' },
-  en: { brand: 'Hey Helpy', h: 'AI service for property maintenance and contractor control', s: 'Pay contractors only for proven work' },
-};
+// Шаг 35b: продукт по умолчанию на английском — карточка русской версии тоже английская
+// (в картинках сайта нет кириллицы, проверяет tools/site/ocr_check.mjs). Текст ссылки (og:title,
+// og:description) у русской страницы остаётся русским.
+const EN = { brand: 'Hey Helpy', h: 'AI service for property maintenance and contractor control', s: 'Pay contractors only for proven work' };
+const T = { ru: EN, en: EN };
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });

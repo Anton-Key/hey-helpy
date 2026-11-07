@@ -1,10 +1,9 @@
-// Кадр питча 28 (шаг 28): МАКЕТ чата исполнителя «КлиматСервис» с ботом
-// @HeyHelpy_bot — бот присылает «Новая заявка» с кнопками «▶️ Взять в работу»
-// и «Открыть»; выше — прошлая заявка, уже взятая из Telegram (сообщение
-// заменилось на «вы взяли её в работу»). Тексты — как у бота
-// (supabase/functions/telegram-bot/texts.ts: assignNew, assignPriority, bTake,
-// bOpen, bAssignOff, takeOk). Это HTML-макет, не снимок настоящего Telegram:
-// оформление общее «чатное», без логотипов и фирменных знаков.
+// Кадр питча 28 (шаг 28, английский — шаг 35b): МАКЕТ чата исполнителя «ClimaService» с ботом
+// @HeyHelpy_bot — бот присылает «New work order» с кнопкой «Open». Решение владельца (шаг 32):
+// подрядчик получает и ведёт заявку в приложении, Telegram для него — только уведомления,
+// поэтому в макете нет «▶️ Start work» (сам бот не менялся). Тексты — английские тексты бота
+// (supabase/functions/telegram-bot/texts.ts, EN: assignNew, assignPriority, bOpen, bAssignOff).
+// Это HTML-макет, не снимок настоящего Telegram: оформление общее «чатное», без логотипов.
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node tg_assign_mock.mjs
 // → docs/screens/pitch/28-telegram-assign-phone.png
 import { execFileSync } from 'node:child_process';
@@ -16,7 +15,7 @@ const ROOT = join(import.meta.dirname, '../..');
 const OUT = join(ROOT, 'docs/screens/pitch/28-telegram-assign-phone.png');
 const font = (w) => readFileSync(join(ROOT, `assets/fonts/Onest-${w}.ttf`)).toString('base64');
 
-const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8">
+const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <style>
 @font-face{font-family:Onest;src:url(data:font/ttf;base64,${font('Regular')});font-weight:400}
 @font-face{font-family:Onest;src:url(data:font/ttf;base64,${font('Medium')});font-weight:500}
@@ -43,20 +42,21 @@ body{width:412px;height:915px;font-family:Onest,sans-serif;background:#d9e4dc;co
 .mic{width:40px;height:40px;border-radius:50%;background:#2db89a}
 b{font-weight:600}
 </style></head><body>
-<div class="top"><div class="back">‹</div><div class="ava">EH</div>
-  <div><div class="name">Hey Helpy</div><div class="sub">бот · @HeyHelpy_bot</div></div></div>
+<div class="top"><div class="back">‹</div><div class="ava">HH</div>
+  <div><div class="name">Hey Helpy</div><div class="sub">bot · @HeyHelpy_bot</div></div></div>
 <div class="chat">
-  <div class="day">Сегодня</div>
-  <div class="msg in">🔧 Заявка № 5C81E0 «Шумит вентилятор фанкойла» — вы взяли её в работу. Фото «после» и сдача — в приложении.<div class="t">08:47</div></div>
-  <div class="kb"><div class="row"><div class="btn">Открыть</div></div></div>
-  <div class="msg in"><b>🆕 Новая заявка № 3F2A1C: Капает вода с кондиционера</b><br>
-    <span class="where">📍 БЦ «Демо» · 301 Переговорная · срочность высокая</span><div class="t">09:12</div></div>
+  <div class="day">Today</div>
+  <div class="msg in"><b>🆕 New work order #5C81E0: Noisy fan in the meeting room</b><br>
+    <span class="where">📍 Demo Tower · 301 Meeting room · priority: normal</span><div class="t">08:41</div></div>
+  <div class="kb"><div class="row"><div class="btn">Open</div></div></div>
+  <div class="msg in"><b>🆕 New work order #3F2A1C: Water dripping from the AC</b><br>
+    <span class="where">📍 Demo Tower · 301 Meeting room · priority: high</span><div class="t">09:12</div></div>
   <div class="kb">
-    <div class="row"><div class="btn main">▶️ Взять в работу</div><div class="btn">Открыть</div></div>
-    <div class="row"><div class="btn">🔕 Не присылать заявки</div></div>
+    <div class="row"><div class="btn main">Open</div></div>
+    <div class="row"><div class="btn">🔕 Stop work order alerts</div></div>
   </div>
 </div>
-<div class="bar"><div class="field">Сообщение</div><div class="mic"></div></div>
+<div class="bar"><div class="field">Message</div><div class="mic"></div></div>
 </body></html>`;
 
 const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });

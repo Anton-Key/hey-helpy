@@ -227,9 +227,9 @@ export const pages = {
 <section aria-labelledby="features">
   <h2 id="features">Highlights</h2>
   <div class="cards">
-    ${h.card('camera', 'Camera assistant', 'Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.', 'Camera assistant: air conditioner KD-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job (app in Russian)', h.demoFrame)}
-    ${h.card('telegram', 'Work orders from Telegram', 'A requester reports a fault in Telegram via the site’s QR code — no app needed. The contractor’s technician gets a notification from the bot and handles the work order in the app.', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)')}
-    ${h.card('photos', '“Before” and “after” photos', 'The work order holds all the proof: photos before and after, time, place, documents.', 'Work order card: “before” and “after” photos and a maintenance document (app in Russian)')}
+    ${h.card('camera', 'Camera assistant', 'Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.', 'Camera assistant: air conditioner AC-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job', h.demoFrame)}
+    ${h.card('telegram', 'Work orders from Telegram', 'A requester reports a fault in Telegram via the site’s QR code — no app needed. The contractor’s technician gets a notification from the bot and handles the work order in the app.', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts)')}
+    ${h.card('photos', '“Before” and “after” photos', 'The work order holds all the proof: photos before and after, time, place, documents.', 'Work order card: “before” and “after” photos and a maintenance document')}
   </div>
   ${h.figure('act', 'Contractor acts: 5 work orders payable, 4 without proof, 56 % of work proven', 'Contractor act: only proven work is payable')}
   <p>${h.link('features', 'All features →')}</p>
@@ -296,7 +296,7 @@ ${h.ctaBlock()}
         <li>The contractor is assigned automatically by system and site.</li>
       </ul>
     </div>
-    ${h.img('voice', 'Voice work order check: parsed by AI, system HVAC, room 301 meeting room, priority high (app in Russian)', { cls: 'phone' })}
+    ${h.img('voice', 'Voice work order check: parsed by AI, system HVAC, room 301 meeting room, priority high', { cls: 'phone' })}
   </div>
 </section>
 
@@ -313,13 +313,13 @@ ${h.ctaBlock()}
         <li>If there is no equipment in the frame, the service says so. The recognition shot is neither stored nor logged.</li>
       </ul>
     </div>
-    ${h.img('camera', 'Camera assistant: frozen frame labelled “KD-301 · 91 %” and the air conditioner card (app in Russian)', { cls: 'phone', caption: h.demoFrame })}
+    ${h.img('camera', 'Camera assistant: frozen frame labelled “AC-301 · 91 %” and the air conditioner card', { cls: 'phone', caption: h.demoFrame })}
   </div>
 </section>
 
 <section aria-labelledby="ar">
   <h2 id="ar">AR labels</h2>
-  <p>Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “KD-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.</p>
+  <p>Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “AC-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.</p>
   <ul>
     <li>Tap the label to open the equipment card or create a work order with the site, room and equipment already filled in.</li>
     <li>The equipment is recognised by the same service as in the camera assistant; the shot is neither stored nor logged.</li>
@@ -341,7 +341,7 @@ ${h.ctaBlock()}
         <li><strong>The contractor’s technician</strong> only gets a Telegram notification about a new work order; the work order itself is received and handled in the app.</li>
       </ul>
     </div>
-    ${h.img('telegram', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)', { cls: 'phone' })}
+    ${h.img('telegram', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts)', { cls: 'phone' })}
   </div>
 </section>
 
@@ -354,7 +354,7 @@ ${h.ctaBlock()}
     <li><strong>No proof</strong> — with the reason: no “after” photo, visit outside the geofence, no visit, work not accepted.</li>
   </ol>
   <p>Amounts are calculated from the contractor’s rates “per work order” and “per maintenance visit”. The act gets a number like АКТ-2026-001 and exports to PDF and Excel; a re-issued act gets a new number and the previous one is marked “replaced”.</p>
-  ${h.figure('act', 'Contractor acts screen: “Payable” and “No proof” groups with reasons (app in Russian)', 'Contractor act: what is payable, what is not, and why')}
+  ${h.figure('act', 'Contractor acts screen: “Payable” and “No proof” groups with reasons', 'Contractor act: what is payable, what is not, and why')}
   <h3>What counts as proof</h3>
   <ul>
     <li><strong>“After” photo</strong> — live app camera only, no gallery. A stamp is burnt into the image: date and time, site, room, “inside geofence”. A photo from a file (possible only in a browser without a camera) is labelled and does not count as proof in the act.</li>
@@ -405,7 +405,7 @@ ${h.ctaBlock()}
         <li>Maintenance visits are paid at their own rate in the contractor act.</li>
       </ul>
     </div>
-    ${h.img('ppr', 'Preventive maintenance: monthly tasks grouped into “Not started”, “In progress”, “Done” (app in Russian)', { cls: 'wide' })}
+    ${h.img('ppr', 'Preventive maintenance: monthly tasks grouped into “Not started”, “In progress”, “Done”', { cls: 'wide' })}
   </div>
 </section>
 
@@ -423,7 +423,7 @@ ${h.ctaBlock()}
 <section aria-labelledby="docs">
   <h2 id="docs">Documents</h2>
   <p>Documents can be attached to a work order: PDF, DOC(X), XLS(X), JPG, PNG, TXT — up to 20 MB. Files are private: they open via a temporary link and only for those who can see the work order.</p>
-  ${h.img('photos', 'Work order card: “before” and “after” photos and the Documents section (app in Russian)', { cls: 'phone center' })}
+  ${h.img('photos', 'Work order card: “before” and “after” photos and the Documents section', { cls: 'phone center' })}
 </section>
 
 <section aria-labelledby="reports">
@@ -434,7 +434,7 @@ ${h.ctaBlock()}
     <li>Report as PDF in one tap; contractor act as PDF and Excel.</li>
     <li>History of accepted and cancelled work orders for a period.</li>
   </ul>
-  ${h.figure('reports', 'Contractor report for 30 days: visits, time, on-time share, first-time acceptance (app in Russian)', 'Contractor control in numbers (demo data)')}
+  ${h.figure('reports', 'Contractor report for 30 days: visits, time, on-time share, first-time acceptance', 'Contractor control in numbers (demo data)')}
 </section>
 
 <section aria-labelledby="zones">

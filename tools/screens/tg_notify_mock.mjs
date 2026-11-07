@@ -1,4 +1,4 @@
-// Кадр питча 22 (шаг 25): МАКЕТ чата с ботом @HeyHelpy_bot — гость по QR
+// Кадр питча 22 (шаг 25, английский — шаг 35b, тексты бота EN): МАКЕТ чата с ботом @HeyHelpy_bot — гость по QR
 // написал о поломке, бот принял заявку и потом прислал «выполнена ✅» с фото
 // «после». Тексты — как у бота (supabase/functions/telegram-bot/texts.ts:
 // created, notifyDone, bNotifyOff); фото — нарисованная картинка
@@ -17,9 +17,9 @@ const photo = readFileSync(join(ROOT, 'assets/demo_photos/ac_after.jpg')).toStri
 const font = (w) => readFileSync(join(ROOT, `assets/fonts/Onest-${w}.ttf`)).toString('base64');
 
 const number = '7F3A2C';
-const title = 'Капает вода с кондиционера';
+const title = 'Water dripping from the AC';
 
-const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8">
+const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <style>
 @font-face{font-family:Onest;src:url(data:font/ttf;base64,${font('Regular')});font-weight:400}
 @font-face{font-family:Onest;src:url(data:font/ttf;base64,${font('Medium')});font-weight:500}
@@ -46,18 +46,18 @@ body{width:412px;height:915px;font-family:Onest,sans-serif;background:#d9e4dc;co
 .mic{width:40px;height:40px;border-radius:50%;background:#2db89a}
 b{font-weight:600}
 </style></head><body>
-<div class="top"><div class="back">‹</div><div class="ava">EH</div>
-  <div><div class="name">Hey Helpy</div><div class="sub">бот · @HeyHelpy_bot</div></div></div>
+<div class="top"><div class="back">‹</div><div class="ava">HH</div>
+  <div><div class="name">Hey Helpy</div><div class="sub">bot · @HeyHelpy_bot</div></div></div>
 <div class="chat">
-  <div class="day">Сегодня</div>
-  <div class="msg out">В переговорной 301 с кондиционера капает вода на ковёр<div class="t">09:12 ✓✓</div></div>
-  <div class="msg in">Заявка № ${number} принята. Менеджер уже видит её.<div class="t">09:12</div></div>
-  <div class="msg in">Заявка № ${number} «${title}»: взята в работу 🔧<div class="t">10:05</div></div>
+  <div class="day">Today</div>
+  <div class="msg out">Water is dripping from the AC onto the carpet in meeting room 301<div class="t">09:12 ✓✓</div></div>
+  <div class="msg in">Work order #${number} received. The manager can already see it.<div class="t">09:12</div></div>
+  <div class="msg in">Work order #${number} “${title}”: work started 🔧<div class="t">10:05</div></div>
   <div class="msg in photo"><img src="data:image/jpeg;base64,${photo}" alt="">
-    <div class="cap">Заявка № ${number} «${title}»: <b>выполнена ✅</b><div class="t">11:40</div></div></div>
-  <div class="btn">🔕 Не присылать уведомления</div>
+    <div class="cap">Work order #${number} “${title}”: <b>completed ✅</b><div class="t">11:40</div></div></div>
+  <div class="btn">🔕 Stop notifications</div>
 </div>
-<div class="bar"><div class="field">Сообщение</div><div class="mic"></div></div>
+<div class="bar"><div class="field">Message</div><div class="mic"></div></div>
 </body></html>`;
 
 const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });

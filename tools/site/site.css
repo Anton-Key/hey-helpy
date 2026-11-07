@@ -31,6 +31,7 @@ li{margin:.3em 0}
 .top .wrap{display:flex;align-items:center;gap:16px;min-height:64px}
 .logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:20px;color:var(--link);text-decoration:none;margin-inline-end:auto}
 .logo svg{flex:none}
+.logo span,.nav-d a,.lang,.top .btn{white-space:nowrap}
 .nav-d{display:none;list-style:none;margin:0;padding:0;gap:4px}
 .nav-d a,.menu a{color:var(--ink);text-decoration:none;padding:8px 10px;border-radius:8px;display:block}
 .nav-d a:hover,.menu a:hover{background:var(--mint-soft)}
@@ -50,6 +51,8 @@ li{margin:.3em 0}
 @media (min-width:960px){
   .nav-d{display:flex}.menu{display:none}.top .btn{display:inline-flex}
 }
+/* Шаг 35: шесть пунктов меню (с «Окупаемостью») — на 960–1119 px плотнее, чтобы шапка была в одну строку. */
+@media (min-width:960px) and (max-width:1119px){.top .wrap{gap:8px}.nav-d a{padding:8px 7px;font-size:16px}}
 
 /* Содержание */
 main{padding:24px 0 48px}
@@ -165,6 +168,8 @@ tr:last-child td{border-bottom:0}
 .roi-dl dd{margin:0;font-weight:600;text-align:end}
 .roi-dl dd .note{display:block;font-weight:400;margin:2px 0 0}
 .roi-range{font-weight:600}
+.roi-t td{white-space:nowrap}
+@media (max-width:600px){.roi-t table{font-size:14px}.roi-t th,.roi-t td{padding:8px 8px}.roi-dl div{display:block}.roi-dl dd{text-align:start}}
 .roi-honest{font-size:15px;color:var(--muted);border-inline-start:4px solid var(--accent);padding-inline-start:12px;margin:12px 0}
 
 /* Подвал */

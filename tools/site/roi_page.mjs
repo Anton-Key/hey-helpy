@@ -74,7 +74,7 @@ function examplesTable(T, lang) {
       row(T.ex.price, () => T.priceOnRequest),
     );
   }
-  return `<div class="table-wrap"><table>
+  return `<div class="table-wrap roi-t"><table>
 <caption>${T.ex.caption}</caption>
 <thead><tr><th scope="col">${T.ex.metric}</th>${REGION_KEYS.map((r) => `<th scope="col">${T.regionShort[r]}</th>`).join('')}</tr></thead>
 <tbody>
@@ -89,7 +89,7 @@ function pricesTable(T, lang) {
     s: fmtInt(COMMON.tiers.S, lang), m: fmtInt(COMMON.tiers.M, lang), l: fmtInt(COMMON.tiers.L, lang),
   });
   const row = (k) => `<tr><th scope="row">${T.tierName[k]}</th><td>${area(k)}</td>${REGION_KEYS.map((r) => `<td>${k === 'custom' ? T.custom : money(REGIONS[r].prices[k], r, lang)}</td>`).join('')}</tr>`;
-  return `<div class="table-wrap"><table>
+  return `<div class="table-wrap roi-t"><table>
 <caption>${T.prices.caption}</caption>
 <thead><tr><th scope="col">${T.prices.tier}</th><th scope="col">${T.prices.area}</th>${REGION_KEYS.map((r) => `<th scope="col">${T.regionShort[r]}</th>`).join('')}</tr></thead>
 <tbody>
@@ -104,7 +104,7 @@ function assumptionsTable(T, lang) {
   const per = (r, x) => `${REGIONS[r].symbol}${fmtDec(x, lang)}`;
   const row = (label, f, kind) => `<tr><th scope="row">${label}</th>${REGION_KEYS.map((r) => `<td>${f(r)}</td>`).join('')}<td>${T.kind[kind]}</td></tr>`;
   const same = (v) => () => v;
-  return `<div class="table-wrap"><table>
+  return `<div class="table-wrap roi-t"><table>
 <caption>${T.how.tableCaption}</caption>
 <thead><tr><th scope="col">${T.how.param}</th>${REGION_KEYS.map((r) => `<th scope="col">${T.regionShort[r]}</th>`).join('')}<th scope="col">${T.how.type}</th></tr></thead>
 <tbody>

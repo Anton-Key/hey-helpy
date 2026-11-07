@@ -4,8 +4,9 @@
 //   node tools/site/ocr_check.mjs a.png b.webp    → только эти файлы
 // Что проверяет: все картинки assets/site/ (кроме QR и SVG), docs/screens/pitch/*.png, демо-ролик сайта
 // (кадр в секунду). Нужны tesseract (+ языки rus, eng) и ffmpeg: sudo apt-get install -y tesseract-ocr tesseract-ocr-rus.
-// OCR rus+eng иногда читает английские буквы как русские (Н, Е, Р, С…), поэтому «русским» считается слово
-// из 3+ букв, в котором есть буква, не похожая на латинскую (Б, Г, Д, Ж, З, И, Л, П, Ф, Ц, Ч, Ш, Ы, Э, Ю, Я…).
+// OCR rus+eng читает английские буквы как русские (Cancel → «Сапсе»), поэтому «русским» считается слово
+// из 4+ букв только кириллицей, в котором есть буква, не похожая на латинскую (Б, Д, Ж, З, Л, Ф, Ц, Ч, Ь, Ы, Э, Ю, Я…),
+// и нет невозможного в русском письме («ыы» — шум значков). Порог проверен на кадрах «до» (шаг 35b).
 // В «PR check» не входит: tesseract с русским языком ставится дольше всей остальной проверки (⚠️ шаг 35b).
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, rmSync, writeFileSync, existsSync } from 'node:fs';
@@ -26,10 +27,24 @@ const files = args.length ? args : [
   join(root, VIDEO.src),
 ];
 
-/** Буквы кириллицы, которых нет среди похожих на латинские. */
-const NOT_LATIN_LOOKING = /[БбГгДдЖжЗзИиЙйЛлПпФфЦцЧчШшЩщЪъЫыЬьЭэЮюЯяЁё]/;
+/**
+ * Буквы кириллицы, которые OCR не путает с латиницей. Остальные (а в е к м н о р с т у х п г и ш)
+ * в английском тексте распознаются «по-русски»: Cancel → «Сапсе», company → «сотрапу».
+ */
+const STRONG = /[БбДдЖжЗзЙйЛлФфЦцЧчЩщЪъЫыЬьЭэЮюЯяЁё]/;
+/** Невозможное в русском письме — шум распознавания значков («фнныы»). */
+const IMPOSSIBLE = /ыы|ьь|ъъ|^[ЫыЬьЪъ]|[ЬьЪъ][ЬьЪъЫы]|[аеёиоуыэюя]ы/i;
+/** Проверенный глазами шум распознавания (шаг 35b): наклонный текст кадров на OG-картинке. */
+const KNOWN_NOISE = new Set(['Чопег']);
+/**
+ * Исключения — файл, где кириллица есть, но это не интерфейс и не демо-данные (с причиной в отчёте).
+ * 08 — подложка карты OpenStreetMap (без ключа CARTO) подписывает города на местном языке
+ * («Москва», «Беларусь»); интерфейс на кадре английский. Переснять с ключом: MAP_TILE_KEY в env.json.
+ */
+const ALLOW = { 'docs/screens/pitch/08-world-map-desktop.png': 'подложка карты OSM: местные названия городов' };
 export function cyrillicWords(text) {
-  return (text.match(/[A-Za-zА-Яа-яЁё]{3,}/g) || []).filter((w) => /[А-Яа-яЁё]/.test(w) && NOT_LATIN_LOOKING.test(w));
+  return (text.match(/[A-Za-zА-Яа-яЁё]{4,}/g) || [])
+    .filter((w) => !/[A-Za-z]/.test(w) && STRONG.test(w) && !IMPOSSIBLE.test(w) && !KNOWN_NOISE.has(w));
 }
 
 const tmp = mkdtempSync(join(tmpdir(), 'ocr-'));
@@ -69,9 +84,10 @@ for (const f of files) {
 }
 rmSync(tmp, { recursive: true, force: true });
 
-const bad = rows.filter((r) => r.words.length);
+for (const r of rows) if (r.words.length && ALLOW[r.rel]) { r.note = `исключение: ${ALLOW[r.rel]}`; r.allowed = true; }
+const bad = rows.filter((r) => r.words.length && !r.allowed);
 if (mdOut) {
-  const md = ['| Файл | Кириллица | Примеры |', '|---|---|---|', ...rows.map((r) => `| \`${r.rel}\` | ${r.words.length ? `да (${r.words.length})` : 'нет'} | ${[...new Set(r.words)].slice(0, 5).join(', ')}${r.note ? ` (${r.note})` : ''} |`)].join('\n');
+  const md = ['| Файл | Кириллица | Примеры |', '|---|---|---|', ...rows.map((r) => `| \`${r.rel}\` | ${r.words.length ? (r.allowed ? `исключение (${r.words.length})` : `да (${r.words.length})`) : 'нет'} | ${[...new Set(r.words)].slice(0, 5).join(', ')}${r.note ? ` (${r.note})` : ''} |`)].join('\n');
   writeFileSync(mdOut, md + '\n');
 }
 console.log(bad.length ? `\nС кириллицей: ${bad.length} из ${rows.length}` : `\n✓ кириллицы нет: ${rows.length} файлов`);

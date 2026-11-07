@@ -18,9 +18,10 @@ const OUT = join(ROOT, 'docs/screens/pitch');
 const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7).split(',');
 const TMP = mkdtempSync(join(tmpdir(), 'hh-pitch-'));
 
-async function phone(browser) {
+async function phone(browser, desktop = false) {
   // Шаг 35b: кадры питча — на английском (интерфейс и демо-данные).
-  const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, locale: 'en-US', deviceScaleFactor: 2 });
+  const ctx = await browser.newContext({ viewport: desktop ? { width: 1920, height: 1080 } : { width: 412, height: 915 },
+    locale: 'en-US', deviceScaleFactor: desktop ? 1 : 2 });
   await ctx.addInitScript(EN_INIT);
   // PDF плаката: запомнить Blob для окна печати, само окно не открывать.
   await ctx.addInitScript(() => {
@@ -44,6 +45,62 @@ async function hereMeetingRoom(page) {
 }
 
 const FRAMES = [
+  // Шаг 35b: кадры с планом этажа (05, 07) — тоже локально, с английскими ДЕМО-СХЕМАМИ.
+  {
+    file: '05-order-show-on-plan-phone',
+    async run(page) {
+      await home(page, web.base);
+      const row = page.getByRole('button', { name: 'Condensate leaking from the server room AC' }).first();
+      if (!(await row.isVisible().catch(() => false))) {
+        await page.getByRole('textbox').first().click();
+        await page.keyboard.type('Condensate leaking', { delay: 30 });
+        await settle(page, 1500);
+      }
+      await row.click();
+      await see(page, 'Показать на плане').waitFor({ timeout: 20000 });
+      await see(page, 'Показать на плане').scrollIntoViewIfNeeded().catch(() => {});
+      await settle(page, 2500);
+    },
+  },
+  {
+    file: '07-floor-plan-marker-phone',
+    async run(page) {
+      await page.goto('about:blank');
+      await page.goto(`${web.base}#/objects/${uuid(10)}/floors/${uuid(602)}`, { waitUntil: 'load' });
+      const placeholder = page.locator('flt-semantics-placeholder');
+      await placeholder.waitFor({ state: 'attached', timeout: 60000 });
+      await placeholder.evaluate((el) => el.click());
+      await see(page, /(На плане|On plan|Not placed) · \d/).waitFor({ timeout: 60000 });
+      await settle(page, 2500);
+      await page.getByRole('button', { name: /^Air conditioner, server room, / }).first().click({ force: true });
+      await see(page, /Create work order here|New work order here/).waitFor({ timeout: 10000 });
+      await settle(page, 1500);
+    },
+  },
+  // Шаг 35b: план этажа на ПК — на локальной базе, потому что в «Demo Properties» рабочей базы
+  // загружены старые картинки планов с русскими подписями; здесь — английские ДЕМО-СХЕМЫ assets/demo_plans.
+  {
+    file: '06-floor-plan-desktop',
+    desktop: true,
+    async run(page) {
+      await home(page, web.base);
+      const title = 'Condensate leaking from the server room AC';
+      const row = page.getByRole('button', { name: title }).first();
+      if (!(await row.isVisible().catch(() => false))) {
+        await page.getByRole('textbox').first().click();
+        await page.keyboard.type('Condensate leaking', { delay: 30 });
+        await settle(page, 1500);
+      }
+      await row.click();
+      await settle(page, 2000);
+      await btn(page, /Показать на плане/).click();
+      await see(page, /Not placed ·|On plan ·/).waitFor({ timeout: 20000 });
+      await settle(page, 800);
+      await btn(page, /Вписать план/).click();
+      await page.mouse.move(5, 5);
+      await settle(page, 1500);
+    },
+  },
   // Шаг 35b: плакат A4 с QR объекта «Demo Tower» (PDF из приложения → PNG 150 dpi, как прежний кадр).
   {
     file: '19-telegram-qr-poster',
@@ -134,7 +191,7 @@ let failed = 0;
 try {
   for (const fr of FRAMES) {
     if (ONLY && !ONLY.some((o) => fr.file.startsWith(o))) continue;
-    const page = await phone(browser);
+    const page = await phone(browser, !!fr.desktop);
     try {
       await fr.run(page);
       const path = join(OUT, `${fr.file}.png`);

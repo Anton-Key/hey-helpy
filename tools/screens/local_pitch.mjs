@@ -11,6 +11,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { startLocalBackend } from './local_backend.mjs';
+import { EN_INIT, englishPage } from './en_ui.mjs';
 import { ROOT, USERS, btn, chromium, home, login, scrollTo, see, settle, sql, startWeb, uuid } from '../e2e/lib.mjs';
 
 const OUT = join(ROOT, 'docs/screens/pitch');
@@ -18,8 +19,10 @@ const ONLY = process.argv.find((a) => a.startsWith('--only='))?.slice(7).split('
 const TMP = mkdtempSync(join(tmpdir(), 'hh-pitch-'));
 
 async function phone(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, locale: 'ru-RU', deviceScaleFactor: 2 });
-  const page = await ctx.newPage();
+  // Шаг 35b: кадры питча — на английском (интерфейс и демо-данные).
+  const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, locale: 'en-US', deviceScaleFactor: 2 });
+  await ctx.addInitScript(EN_INIT);
+  const page = englishPage(await ctx.newPage());
   await login(page, web.base, USERS.admin);
   return page;
 }
@@ -53,7 +56,7 @@ const FRAMES = [
       const id = uuid(111);
       sql(`delete from attachments where work_order_id = '${id}' and kind = 'document'`);
       // Сгенерированный PDF в одну пустую страницу — не реальный документ.
-      const f = join(TMP, 'akt-to-kd.pdf');
+      const f = join(TMP, 'maintenance-certificate.pdf');
       writeFileSync(f, '%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n');
       await home(page, web.base);
       await page.evaluate((h) => { location.hash = h; }, `/orders/${id}`);
@@ -62,12 +65,12 @@ const FRAMES = [
       const chooser = page.waitForEvent('filechooser', { timeout: 15000 });
       await btn(page, /^Прикрепить файл/).click();
       await (await chooser).setFiles(f);
-      await see(page, /Документы · 1/).waitFor({ timeout: 20000 });
+      await see(page, /(Документы|Documents) · 1/i).waitFor({ timeout: 20000 });
       await settle(page, 1000);
-      await scrollTo(page, /Фото · 2/);
-      await see(page, /Фото · 2/).scrollIntoViewIfNeeded();
+      await scrollTo(page, /(Фото|Photos?) · 2/i);
+      await see(page, /(Фото|Photos?) · 2/i).scrollIntoViewIfNeeded();
       // «Фото · 2» — у верхнего края: ниже видны «До», «После» и документы.
-      const box = await see(page, /Фото · 2/).boundingBox();
+      const box = await see(page, /(Фото|Photos?) · 2/i).boundingBox();
       if (box) await page.mouse.wheel(0, box.y - 110);
       await settle(page, 2500);
     },
@@ -75,6 +78,7 @@ const FRAMES = [
 ];
 
 process.env.HH_MOCK_AI = '1';
+sql(`update profiles set locale = 'en' where company_id = '${uuid(1)}'`);
 const backend = await startLocalBackend({ port: 54321 });
 const web = await startWeb();
 const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });

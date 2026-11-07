@@ -4,7 +4,8 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { startLocalBackend } from '../screens/local_backend.mjs';
-import { DB, chromium, startWeb } from './lib.mjs';
+import { DB, chromium, sql, startWeb, COMPANY } from './lib.mjs';
+import { englishPage } from '../screens/en_ui.mjs';
 import { SCENARIOS } from './scenarios.mjs';
 
 const OUT = join(import.meta.dirname, 'out');
@@ -16,6 +17,9 @@ mkdirSync(OUT, { recursive: true });
 const OLD = DB === 'hh_old';
 
 process.env.HH_MOCK_AI = '1';
+// Шаг 35b: E2E_LANG=en — английский интерфейс (кадры питча 25–27 из сценария 17 с --shots).
+const EN = process.env.E2E_LANG === 'en';
+if (EN) sql(`update profiles set locale = 'en' where company_id = '${COMPANY}'`);
 const backend = await startLocalBackend({ port: 54321 });
 const web = await startWeb();
 const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] }); // /dev/shm в контейнере — 64 МБ
@@ -30,9 +34,10 @@ for (const s of SCENARIOS) {
   const errors = [];
   const ctx = {
     base: web.base,
-    async page({ width = 1280, height = 800, geo, locale = 'ru-RU' } = {}) {
+    async page({ width = 1280, height = 800, geo, locale = EN ? 'en-US' : 'ru-RU' } = {}) {
       const c = await browser.newContext({ viewport: { width, height }, locale, deviceScaleFactor: 1,
         ...(geo ? { geolocation: geo, permissions: ['geolocation'] } : {}) });
+      if (EN) await c.addInitScript(() => { window.__hhLang = 'en'; });
       await c.addInitScript(() => {
         const orig = URL.createObjectURL;
         URL.createObjectURL = function (obj) {
@@ -43,12 +48,12 @@ for (const s of SCENARIOS) {
         // Шаг 33: по умолчанию приложение на английском; сценарии проверяют
         // поведение по русским подписям — язык интерфейса задаём заранее
         // (как сохранённый выбор, shared_preferences в браузере).
-        try { if (!localStorage.getItem('flutter.locale')) localStorage.setItem('flutter.locale', JSON.stringify('ru')); } catch {}
+        try { if (!localStorage.getItem('flutter.locale')) localStorage.setItem('flutter.locale', JSON.stringify(window.__hhLang || 'ru')); } catch {}
         // Шторка «Как работают AR-метки» (шаг 33) — уже «просмотрена».
         try { localStorage.setItem('flutter.ar_intro_seen', 'true'); } catch {}
       });
       contexts.push(c);
-      const p = await c.newPage();
+      const p = EN ? englishPage(await c.newPage()) : await c.newPage();
       p.on('pageerror', (e) => errors.push(String(e.message).slice(0, 200)));
       // Сообщения приложения (debugPrint) — в out/console-<сценарий>.log, для разбора падений.
       p.on('console', (m) => appendFileSync(join(OUT, `console-${s.id}.log`), m.text() + '\n'));

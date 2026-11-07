@@ -1646,6 +1646,12 @@ const PITCH = [
       await btn(p, /^Акты подрядчикам/).click();
       await see(p, /К оплате · \d+/).waitFor({ timeout: 30000 });
       await settle(p, 1500);
+      // Шаг 35b: в начале месяца акт почти пуст — показываем прошлый месяц (доказательства демо-истории).
+      if (await see(p, /К оплате · 0(?!\d)/).isVisible().catch(() => false)) {
+        await p.getByRole('button', { name: /Предыдущий месяц/ }).first().click();
+        await see(p, /К оплате · [1-9]/).waitFor({ timeout: 30000 }).catch(() => {});
+        await settle(p, 1500);
+      }
     } },
 ];
 

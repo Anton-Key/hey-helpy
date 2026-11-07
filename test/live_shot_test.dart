@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -37,6 +36,11 @@ void main() {
     expect(before, File(kMockCameraFrame).readAsBytesSync());
     expect(after, File(kMockAfterFrame).readAsBytesSync());
     expect(before, isNot(equals(after)));
+    expect(mockTallFrame(kMockCameraFrame),
+        'assets/demo_photos/ac_indoor_tall.jpg');
+    for (final f in [kMockCameraFrame, kMockAfterFrame]) {
+      expect(File(mockTallFrame(f)).existsSync(), isTrue, reason: f);
+    }
   });
 
   testWidgets('фото «после»: затвор → стоп-кадр → «Готово» — снимок камеры',

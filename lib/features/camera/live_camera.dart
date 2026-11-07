@@ -85,11 +85,16 @@ Future<bool> liveCameraAvailable(
   }
 }
 
-/// Кадр-картинка вместо камеры (фрагмент иллюстрации художника, шаг 35c) (`VOICE_MOCK`, тесты). Не фото объекта.
+/// Кадр-картинка вместо камеры (`VOICE_MOCK`, тесты) — фрагмент иллюстрации
+/// художника (`tools/demo_photos/from_art.py`, шаг 35c). Не фото объекта.
 const kMockCameraFrame = 'assets/demo_photos/ac_indoor.jpg';
 
 /// Кадр заглушки для фото «после»: тот же блок, подтёка нет (шаг 35c).
 const kMockAfterFrame = 'assets/demo_photos/ac_after.jpg';
+
+/// Тот же сюжет кадром 1:2 — для высокого экрана телефона: при заполнении
+/// экрана картинкой 4:3 видна только треть ширины (середина блока).
+String mockTallFrame(String frame) => frame.replaceFirst('.jpg', '_tall.jpg');
 
 /// Заглушка камеры: «видео» — нарисованная картинка, кадр — её байты.
 class MockLiveCamera implements LiveCamera {
@@ -99,6 +104,12 @@ class MockLiveCamera implements LiveCamera {
 
   /// Картинка, которую «видит» камера.
   final String frame;
+
+  /// Последний экран был выше, чем шире, — снимок тоже вертикальный.
+  bool _tall = false;
+
+  /// Картинка под форму экрана: высокий — вертикальный кадр.
+  String get shownFrame => _tall ? mockTallFrame(frame) : frame;
 
   /// Чем «упасть» при [start] (тест экрана с ошибкой).
   final CameraProblem? fail;
@@ -127,12 +138,17 @@ class MockLiveCamera implements LiveCamera {
   }
 
   @override
-  Widget preview() => Image.asset(frame,
-      bundle: _bundle, fit: BoxFit.cover, gaplessPlayback: true);
+  Widget preview() => LayoutBuilder(builder: (context, c) {
+        _tall = c.hasBoundedHeight &&
+            c.hasBoundedWidth &&
+            c.maxHeight > c.maxWidth * 1.5;
+        return Image.asset(shownFrame,
+            bundle: _bundle, fit: BoxFit.cover, gaplessPlayback: true);
+      });
 
   @override
   Future<Uint8List> capture() async =>
-      (await _bundle.load(frame)).buffer.asUint8List();
+      (await _bundle.load(shownFrame)).buffer.asUint8List();
 
   /// Нарисованный кадр неподвижен — «телефон не двигается».
   @override

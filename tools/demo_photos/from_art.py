@@ -14,6 +14,8 @@
                   (VOICE_MOCK, /screens, --pitch), снимок «Узнать по фото»
                   и проверка «Готовность к показу».
   ac_after.jpg  — «после»: тот же блок и тот же кадр, подтёк и капли убраны.
+  *_tall.jpg    — те же сюжеты кадром 1:2 для заглушки камеры на высоком
+                  экране телефона (на ПК — кадры 4:3).
 
 Угол каждого снимка — маленькая пометка «DEMO»: это нарисованная картинка,
 а не фото объекта.
@@ -38,6 +40,9 @@ MAX_BYTES = 300 * 1024
 # за краем — AC-301 в демо стоит в переговорной (там «Камера-помощник»
 # поднимает зелёную рамку над карточкой).
 AC_CROP = (322, 6, 810, 372)
+# Вертикальный кадр 1:2 для «живой камеры» на телефоне.
+TALL_CROP = (347, 6, 787, 886)
+TALL_SIZE = (720, 1440)
 
 
 def teal_masks(img):
@@ -134,7 +139,7 @@ def line_mask(size, p0, p1, width, dots=()):
     return m
 
 
-def demo_badge(img):
+def demo_badge(img, size=SIZE):
     """Маленькая пометка «DEMO» в правом верхнем углу."""
     d = ImageDraw.Draw(img, 'RGBA')
     try:
@@ -145,25 +150,25 @@ def demo_badge(img):
     x0, y0, x1, y1 = d.textbbox((0, 0), text, font=font)
     w, h = x1 - x0, y1 - y0
     pad = 10
-    X = SIZE[0] - w - 2 * pad - 24
+    X = size[0] - w - 2 * pad - 24
     Y = 24
     d.rounded_rectangle((X, Y, X + w + 2 * pad, Y + h + 2 * pad), radius=10, fill=(0, 0, 0, 110))
     d.text((X + pad - x0, Y + pad - y0), text, font=font, fill=(255, 255, 255, 230))
     return img
 
 
-def finish(img, name):
-    img = img.resize(SIZE, Image.LANCZOS)
+def finish(img, name, size=SIZE):
+    img = img.resize(size, Image.LANCZOS)
     img = img.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
-    img = demo_badge(img)
+    img = demo_badge(img, size)
     path = OUT / name
     for q in (84, 80, 76, 72, 68):
         img.save(path, 'JPEG', quality=q, optimize=True, progressive=True)
         if path.stat().st_size <= MAX_BYTES:
             break
-    size = path.stat().st_size
-    assert size <= MAX_BYTES, f'{name}: {size} байт > 300 КБ'
-    print(f'{path.relative_to(ROOT)}  {SIZE[0]}×{SIZE[1]}  {size // 1024} КБ  q={q}')
+    nbytes = path.stat().st_size
+    assert nbytes <= MAX_BYTES, f'{name}: {nbytes} байт > 300 КБ'
+    print(f'{path.relative_to(ROOT)}  {size[0]}×{size[1]}  {nbytes // 1024} КБ  q={q}')
 
 
 def hotel_ac():
@@ -188,6 +193,11 @@ def hotel_ac():
     fixed = clone(clean, leak, -150, 0)
     finish(clean.crop(AC_CROP), 'ac_indoor.jpg')
     finish(fixed.crop(AC_CROP), 'ac_after.jpg')
+    # Вертикальные кадры для заглушки камеры на телефоне (экран ~1:2): блок
+    # целиком в середине по ширине; ниже подтёка — кровать, на кадре 21 её
+    # закрывает карточка.
+    finish(clean.crop(TALL_CROP), 'ac_indoor_tall.jpg', TALL_SIZE)
+    finish(fixed.crop(TALL_CROP), 'ac_after_tall.jpg', TALL_SIZE)
 
 
 if __name__ == '__main__':

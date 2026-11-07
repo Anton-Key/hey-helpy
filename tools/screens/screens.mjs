@@ -1322,7 +1322,7 @@ function DEMO_ASSET_NAME() { return 'Air conditioner, server room'; }
 /**
  * «Узнать по фото» (шаг 22): кнопка с камерой рядом с «+» (телефон) или
  * «По фото» в боковом меню (ПК) → «Где я»: Demo Tower · 301. Снимок — заглушка
- * VOICE_MOCK: нарисованный кондиционер (assets/demo_photos), ответ без модели.
+ * VOICE_MOCK: кондиционер из иллюстрации художника (assets/demo_photos), ответ без модели.
  */
 const AR_INTRO_SEEN = new WeakSet();
 async function openPhoto(page, { here = true } = {}) {
@@ -1452,7 +1452,7 @@ function NEW_SCREENS() {
       } },
     { key: 'photo-result', title: '«Узнать по фото» — вид, система, «Скорее всего» и «Это он»', run: async (p) => {
         await photoResult(p);
-        return 'нарисованный кондиционер; ответ — заглушка VOICE_MOCK (ПРЕДПРОСМОТР)';
+        return 'кондиционер из иллюстрации художника; ответ — заглушка VOICE_MOCK (ПРЕДПРОСМОТР)';
       } },
     { key: 'photo-order', title: '«Это он» → новая заявка: объект, помещение, оборудование, система, снимок', run: async (p) => {
         await photoResult(p);

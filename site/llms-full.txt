@@ -90,18 +90,18 @@ Security systems have their own contractor, equipment and history.
 #### Camera assistant
 Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.
 
-[Screenshot: Camera assistant: air conditioner KD-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job (app in Russian)]
+[Screenshot: Camera assistant: air conditioner AC-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job]
 Demo frame — not measured accuracy
 
 #### Work orders from Telegram
 A requester reports a fault in Telegram via the site’s QR code — no app needed. The contractor’s technician gets a notification from the bot and handles the work order in the app.
 
-[Screenshot: Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)]
+[Screenshot: Technician chat with the bot: a new work order notification (mock-up with the bot’s texts)]
 
 #### “Before” and “after” photos
 The work order holds all the proof: photos before and after, time, place, documents.
 
-[Screenshot: Work order card: “before” and “after” photos and a maintenance document (app in Russian)]
+[Screenshot: Work order card: “before” and “after” photos and a maintenance document]
 
 [Screenshot: Contractor acts: 5 work orders payable, 4 without proof, 56 % of work proven]
 
@@ -160,7 +160,7 @@ Tap “Hey Helpy” and speak. The text appears as you talk; speech recognition 
 
 - The contractor is assigned automatically by system and site.
 
-[Screenshot: Voice work order check: parsed by AI, system HVAC, room 301 meeting room, priority high (app in Russian)]
+[Screenshot: Voice work order check: parsed by AI, system HVAC, room 301 meeting room, priority high]
 
 ### Photo and the camera assistant
 
@@ -176,13 +176,13 @@ A technician or employee points the phone camera at the equipment and taps “Wh
 
 - If there is no equipment in the frame, the service says so. The recognition shot is neither stored nor logged.
 
-[Screenshot: Camera assistant: frozen frame labelled “KD-301 · 91 %” and the air conditioner card (app in Russian)]
+[Screenshot: Camera assistant: frozen frame labelled “AC-301 · 91 %” and the air conditioner card]
 
 _Demo frame — not measured accuracy_
 
 ### AR labels
 
-Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “KD-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.
+Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “AC-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.
 
 - Tap the label to open the equipment card or create a work order with the site, room and equipment already filled in.
 
@@ -206,7 +206,7 @@ Point the camera — a label with open work orders and preventive maintenance ap
 
 - **The contractor’s technician** only gets a Telegram notification about a new work order; the work order itself is received and handled in the app.
 
-[Screenshot: Technician chat with the bot: a new work order notification (mock-up with the bot’s texts, in Russian)]
+[Screenshot: Technician chat with the bot: a new work order notification (mock-up with the bot’s texts)]
 
 ### Proof-based payment
 
@@ -220,7 +220,7 @@ The monthly contractor act is built automatically and splits work orders into th
 
 Amounts are calculated from the contractor’s rates “per work order” and “per maintenance visit”. The act gets a number like АКТ-2026-001 and exports to PDF and Excel; a re-issued act gets a new number and the previous one is marked “replaced”.
 
-[Screenshot: Contractor acts screen: “Payable” and “No proof” groups with reasons (app in Russian)]
+[Screenshot: Contractor acts screen: “Payable” and “No proof” groups with reasons]
 
 _Contractor act: what is payable, what is not, and why. App screen, demo data._
 
@@ -280,7 +280,7 @@ The creation time of a work order, like the time of the technician’s actions, 
 
 - Maintenance visits are paid at their own rate in the contractor act.
 
-[Screenshot: Preventive maintenance: monthly tasks grouped into “Not started”, “In progress”, “Done” (app in Russian)]
+[Screenshot: Preventive maintenance: monthly tasks grouped into “Not started”, “In progress”, “Done”]
 
 ### Floor plans and equipment
 
@@ -300,7 +300,7 @@ _Floor plan: overdue work stands out (drawn demo plan). App screen, demo data._
 
 Documents can be attached to a work order: PDF, DOC(X), XLS(X), JPG, PNG, TXT — up to 20 MB. Files are private: they open via a temporary link and only for those who can see the work order.
 
-[Screenshot: Work order card: “before” and “after” photos and the Documents section (app in Russian)]
+[Screenshot: Work order card: “before” and “after” photos and the Documents section]
 
 ### Reports
 
@@ -312,7 +312,7 @@ Documents can be attached to a work order: PDF, DOC(X), XLS(X), JPG, PNG, TXT �
 
 - History of accepted and cancelled work orders for a period.
 
-[Screenshot: Contractor report for 30 days: visits, time, on-time share, first-time acceptance (app in Russian)]
+[Screenshot: Contractor report for 30 days: visits, time, on-time share, first-time acceptance]
 
 _Contractor control in numbers (demo data). App screen, demo data._
 
@@ -697,7 +697,7 @@ _Иллюстрация_
 #### Камера-помощник
 Навели камеру на кондиционер — сервис узнал, какое именно это оборудование из реестра, и показал его открытые заявки, плановое ТО и последнюю работу.
 
-[Кадр: Камера-помощник: кондиционер КД-301 с пометкой 91 % на демо-кадре, карточка с открытой заявкой, плановым ТО и последней работой]
+[Кадр: Камера-помощник: кондиционер AC-301 с пометкой 91 % на демо-кадре, карточка с открытой заявкой, плановым ТО и последней работой]
 Демо-кадр, не замеренная точность
 
 #### Заявки из Telegram
@@ -783,13 +783,13 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/features/
 
 - Если в кадре нет оборудования, сервис так и говорит. Снимок для распознавания не сохраняется и не пишется в журнал.
 
-[Кадр: Камера-помощник: стоп-кадр с рамкой «КД-301 · 91 %» и карточкой кондиционера]
+[Кадр: Камера-помощник: стоп-кадр с рамкой «AC-301 · 91 %» и карточкой кондиционера]
 
 _Демо-кадр, не замеренная точность_
 
 ### AR-метки
 
-Навёл камеру — над оборудованием появляется табличка с открытыми заявками и плановым ТО, например «КД-301 · 1 открытая заявка · ТО до 31.10». Табличка остаётся на месте, пока вы ходите по помещению.
+Навёл камеру — над оборудованием появляется табличка с открытыми заявками и плановым ТО, например «AC-301 · 1 открытая заявка · ТО до 31.10». Табличка остаётся на месте, пока вы ходите по помещению.
 
 - Касание таблички — карточка оборудования или новая заявка с уже заполненными объектом, помещением и оборудованием.
 

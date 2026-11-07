@@ -116,7 +116,10 @@ const FRAMES = [
       // «Фото · 2» — у верхнего края: ниже видны «До», «После» и документы.
       const box = await see(page, /(Фото|Photos?) · 2/i).boundingBox();
       await page.mouse.move(206, 500);
-      if (box) await page.mouse.wheel(0, box.y - 110);
+      const dy = box ? box.y - 110 : 560; // рамки может не быть (подпись — не кнопка) — тогда на ~полэкрана
+      for (let i = 0; i < 6; i++) { await page.mouse.wheel(0, dy / 6); await page.waitForTimeout(120); }
+      // Если колесо не сработало — клавишами (KeyboardScrolling в приложении): ↓ ≈ 50 px.
+      for (let i = 0; i < Math.round(dy / 50); i++) { await page.keyboard.press('ArrowDown'); await page.waitForTimeout(40); }
       await settle(page, 2500);
     },
   },

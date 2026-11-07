@@ -93,7 +93,7 @@ export function mockAi(uid, text, locale = 'ru') {
     : clean.split(/[,.]/)[0]).slice(0, 60);
   return { source: 'ai', title: locName ? `${title} — ${locName}`.slice(0, 60) : title,
     description: clean.charAt(0).toUpperCase() + clean.slice(1), layer_id: layer?.id ?? null, layer: layer?.name ?? null,
-    location_id: locId, location_hint: locName, priority: /жарко|очень|срочно|urgent/.test(t) ? 'high' : 'normal',
+    location_id: locId, location_hint: locName, priority: /жарко|очень|срочно|urgent|very hot|asap/.test(t) ? 'high' : 'normal',
     confidence: 0.92, transcript: text };
 }
 

@@ -37,8 +37,8 @@ export const VIDEO = {
   src: 'docs/demo/hey-helpy-demo-v2.mp4',
   file: 'media/hey-helpy-demo.mp4',
   poster: 'img/video-poster.webp',
-  uploadDate: '2026-10-14',
-  duration: 'PT2M9S',
+  uploadDate: '2026-11-07',
+  duration: 'PT2M17S',
   width: 1920,
   height: 1080,
 };

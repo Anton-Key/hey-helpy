@@ -135,13 +135,13 @@ function videoObject(lang) {
     '@type': 'VideoObject',
     name: lang === 'ru' ? 'Демо «Hey Helpy» за две минуты' : 'Hey Helpy two-minute demo',
     description: lang === 'ru'
-      ? 'Сквозная история одной поломки: голосовая заявка, ИИ разбирает её, камера-помощник узнаёт оборудование, фото «после» и акт подрядчику, в котором к оплате только доказанная работа.'
-      : 'The full story of one fault: a voice work order parsed by AI, the camera assistant recognising the equipment, the “after” photo and a contractor act where only proven work is payable. Video in Russian.',
+      ? 'Сквозная история одной поломки: голосовая заявка, ИИ разбирает её, камера-помощник узнаёт оборудование, фото «после» и акт подрядчику, в котором к оплате только доказанная работа. Ролик на английском, демо-данные, ответы ИИ в записи — имитация.'
+      : 'The full story of one fault: a voice work order parsed by AI, the camera assistant recognising the equipment, the “after” photo and a contractor act where only proven work is payable. Demo data; AI responses in the recording are simulated.',
     thumbnailUrl: abs(VIDEO.poster),
     uploadDate: VIDEO.uploadDate,
     duration: VIDEO.duration,
     contentUrl: abs(VIDEO.file),
-    inLanguage: 'ru',
+    inLanguage: 'en',
     publisher: { '@id': abs('#organization') },
   };
 }

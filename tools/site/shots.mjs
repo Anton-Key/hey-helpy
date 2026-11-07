@@ -46,13 +46,30 @@ for (const width of [360, 412]) {
       if (!(await page.locator('.menu ul').isVisible())) errors.push(`${width} ${url}: «Меню» не открывается`);
       if (width === 360 && p === '' ) await page.screenshot({ path: join(out, `menu-360-${lang ? 'ru' : 'en'}.png`) });
       await page.click('.menu summary');
-      if (width === 360 && (p === '' || p === 'contact/')) {
+      if ((width === 360 && (p === '' || p === 'contact/')) || (width === 412 && p === '')) {
         // Картинки с loading="lazy" грузятся только у экрана — для снимка всей страницы загрузить сразу.
         await page.evaluate(() => document.querySelectorAll('img[loading="lazy"]').forEach((i) => { i.loading = 'eager'; }));
         await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 15000 });
-        await page.screenshot({ path: join(out, `${p ? 'contact' : 'home'}-360-${lang ? 'ru' : 'en'}.png`), fullPage: true });
+        await page.screenshot({ path: join(out, `${p ? 'contact' : 'home'}-${width}-${lang ? 'ru' : 'en'}.png`), fullPage: true });
       }
     }
+  }
+  await page.close();
+}
+
+// Шаг 35b: главная на ПК (1280), EN и RU — английские кадры и постер ролика.
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
+  for (const lang of ['', 'ru/']) {
+    await page.goto(base + lang);
+    await page.evaluate(() => document.fonts.ready);
+    await page.evaluate(() => document.querySelectorAll('img[loading="lazy"]').forEach((i) => { i.loading = 'eager'; }));
+    await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 15000 });
+    // Прокрутить до конца: картинки декодируются и рисуются только побывав на экране.
+    for (let y = 0; y < 9000; y += 600) { await page.evaluate((v) => scrollTo(0, v), y); await page.waitForTimeout(120); }
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: join(out, `home-1280-${lang ? 'ru' : 'en'}.png`), fullPage: true });
   }
   await page.close();
 }

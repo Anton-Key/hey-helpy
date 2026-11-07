@@ -22,7 +22,7 @@ export const ui = {
   demoFrame: 'Demo frame — not measured accuracy',
   roiCta: 'Estimate your ROI',
   roiLink: 'Open the ROI calculator',
-  videoNote: 'The video is in Russian with on-screen captions, 2 min 9 s, no sound.',
+  videoNote: 'The video is in English with on-screen captions, 2 min 17 s, no sound. Demo data; AI responses in the recording are simulated.',
 };
 
 export const llmsIntro = 'Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; ' + (ROI_SHOW_PRICES ? `subscription per site from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} per month by site area, contractors pay nothing` : 'pricing on request') + '; pilots available.';

@@ -150,8 +150,11 @@ def demo_badge(img, size=SIZE):
     x0, y0, x1, y1 = d.textbbox((0, 0), text, font=font)
     w, h = x1 - x0, y1 - y0
     pad = 10
-    X = size[0] - w - 2 * pad - 24
-    Y = 24
+    margin = max(24, int(size[0] * 0.08))  # на телефоне края кадра обрезаются
+    X = size[0] - w - 2 * pad - margin
+    # вертикальный кадр (заглушка камеры): сверху кнопки экрана камеры, снизу —
+    # карточка; пометка — справа над карточкой
+    Y = int(size[1] * 0.36) if size[1] > size[0] else 24
     d.rounded_rectangle((X, Y, X + w + 2 * pad, Y + h + 2 * pad), radius=10, fill=(0, 0, 0, 110))
     d.text((X + pad - x0, Y + pad - y0), text, font=font, fill=(255, 255, 255, 230))
     return img

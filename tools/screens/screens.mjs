@@ -1742,6 +1742,7 @@ if (PITCH_MODE) {
         } catch (e) {
           failed.push(`${name}: ${String(e.message).split('\n')[0]}`);
           console.log(`  ❌ ${name}: ${String(e.message).split('\n')[0]}`);
+          if (process.env.SHOT_DEBUG) await page.screenshot({ path: join(process.env.SHOT_DEBUG, name) }).catch(() => {});
         }
         if (s?.after) await s.after(page).catch(() => {});
       }

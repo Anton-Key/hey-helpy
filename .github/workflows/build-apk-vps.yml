@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: build-apk-vps-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -53,7 +57,7 @@ jobs:
         with:
           name: hey-helpy-vps-apk
           path: hey-helpy-vps.apk
-          retention-days: 14
+          retention-days: 3
 
   # Постоянная ссылка (только запуск из main): релиз latest-vps-apk перезаписывается.
   release:

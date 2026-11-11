@@ -5,13 +5,27 @@
 # https://github.com/Anton-Key/hey-helpy/releases/download/latest-apk/hey-helpy.apk
 name: Build Android APK
 
+# Шаг ci-usage (11.11.2026): автосборка только при изменении кода приложения,
+# новый пуш отменяет незаконченную сборку.
 on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - "lib/**"
+      - "android/**"
+      - "assets/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "l10n.yaml"
+      - ".github/workflows/build-apk.yml"
 
 permissions:
   contents: read
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -38,11 +52,13 @@ jobs:
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
           --dart-define=MAP_TILE_KEY=${{ secrets.MAP_TILE_KEY }}
 
+      # Файл нужен только чтобы передать APK задаче release (постоянная ссылка
+      # latest-apk); при ручном запуске его скачивают со страницы запуска. 3 дня хватает.
       - uses: actions/upload-artifact@v4
         with:
           name: hey-helpy-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 14
+          retention-days: 3
 
   # Постоянная ссылка на APK: релиз latest-apk пересоздаётся при каждом пуше в main.
   # Право на запись (contents: write) есть только у этой задачи.

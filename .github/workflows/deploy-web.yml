@@ -11,8 +11,20 @@ name: Deploy web
 on:
   workflow_dispatch:
   workflow_call:
+  # Шаг ci-usage (11.11.2026): автовыкладка только при изменении приложения или сайта.
   push:
     branches: [main]
+    paths:
+      - "lib/**"
+      - "web/**"
+      - "assets/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "l10n.yaml"
+      - "site/**"
+      - "tools/site/**"
+      - "docs/demo/**"
+      - ".github/workflows/deploy-web.yml"
 
 permissions:
   contents: read
@@ -74,9 +86,11 @@ jobs:
           node -e "const f='build/web/404.html',fs=require('fs');fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('<head>','<head><script>if(location.pathname.indexOf(\'/hey-helpy/site/\')===0)location.replace(\'/hey-helpy/site/404.html\')</script>'))"
           grep -q "/hey-helpy/site/404.html" build/web/404.html
 
+      # Файл выкладки нужен только задаче deploy — хранится 1 день.
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
+          retention-days: 1
 
   deploy:
     needs: build

@@ -1,4 +1,5 @@
-// Проверка «в кадрах сайта и питча нет русского текста» (шаг 35b). Запуск вручную:
+// Проверка «в кадрах сайта и питча нет русского текста» (шаг 35b) и старого имени «Helpy» (шаг 36:
+// продукт называется Dokazio). Запуск вручную:
 //   node tools/site/ocr_check.mjs                 → таблица «файл → слов на кириллице → примеры», код 1, если есть
 //   node tools/site/ocr_check.mjs --md out.md     → то же в Markdown-файл (для отчёта)
 //   node tools/site/ocr_check.mjs a.png b.webp    → только эти файлы
@@ -48,6 +49,18 @@ const KNOWN_NOISE = new Set(['Чопег', 'РНОТОЗ', 'нмде', 'Чень
  * («Москва», «Беларусь»); интерфейс на кадре английский. Переснять с ключом: MAP_TILE_KEY в env.json.
  */
 const ALLOW = { 'docs/screens/pitch/08-world-map-desktop.png': 'подложка карты OSM: местные названия городов' };
+/** Похожие кириллические буквы → латиница: OCR rus+eng читает «Helpy» как «Неlру». */
+const LOOK = { А: 'A', В: 'B', Е: 'E', К: 'K', М: 'M', Н: 'H', О: 'O', Р: 'P', С: 'C', Т: 'T', У: 'Y', Х: 'X',
+  а: 'a', е: 'e', о: 'o', р: 'p', с: 'c', у: 'y', х: 'x', І: 'l', і: 'i', '1': 'l', '|': 'l' };
+/**
+ * Старое имя продукта в кадре (шаг 36). Можно: адрес …/hey-helpy/ и бот @HeyHelpy_bot — их не меняют.
+ * Возвращает найденные слова (пусто — всё в порядке).
+ */
+export function oldNameWords(text) {
+  const t = text.replace(/[А-Яа-яІі1|]/g, (c) => LOOK[c] ?? c)
+    .replace(/hey-helpy/gi, '').replace(/heyhelpy[\s_.]*bot/gi, '');
+  return t.match(/\b\S*h[e3]lp[yv]\S*|ctrl\s*site/gi) || [];
+}
 export function cyrillicWords(text) {
   return (text.match(/[A-Za-zА-Яа-яЁё]{4,}/g) || [])
     .filter((w) => !/[A-Za-z]/.test(w) && STRONG.test(w) && !IMPOSSIBLE.test(w) && !KNOWN_NOISE.has(w));
@@ -76,13 +89,15 @@ for (const f of files) {
     const frames = readdirSync(dir).sort();
     const bad = [];
     for (const fr of frames) {
-      const w = cyrillicWords(ocr(join(dir, fr)));
+      const txt = ocr(join(dir, fr));
+      const w = [...cyrillicWords(txt), ...oldNameWords(txt)];
       if (w.length) bad.push(`${Number(fr.slice(0, 4)) - 1} с`);
       words.push(...w);
     }
     rows.push({ rel: `${rel} (${frames.length} кадров)`, words, note: bad.length ? `кадры: ${bad.slice(0, 6).join(', ')}${bad.length > 6 ? '…' : ''}` : '' });
   } else {
-    words = cyrillicWords(ocr(toPng(f, `i${n++}`)));
+    const txt = ocr(toPng(f, `i${n++}`));
+    words = [...cyrillicWords(txt), ...oldNameWords(txt)];
     rows.push({ rel, words, note: '' });
   }
   const r = rows.at(-1);
@@ -93,9 +108,9 @@ rmSync(tmp, { recursive: true, force: true });
 for (const r of rows) if (r.words.length && ALLOW[r.rel]) { r.note = `исключение: ${ALLOW[r.rel]}`; r.allowed = true; }
 const bad = rows.filter((r) => r.words.length && !r.allowed);
 if (mdOut) {
-  const md = ['| Файл | Кириллица | Примеры |', '|---|---|---|', ...rows.map((r) => `| \`${r.rel}\` | ${r.words.length ? (r.allowed ? `исключение (${r.words.length})` : `да (${r.words.length})`) : 'нет'} | ${[...new Set(r.words)].slice(0, 5).join(', ')}${r.note ? ` (${r.note})` : ''} |`)].join('\n');
+  const md = ['| Файл | Кириллица / «Helpy» | Примеры |', '|---|---|---|', ...rows.map((r) => `| \`${r.rel}\` | ${r.words.length ? (r.allowed ? `исключение (${r.words.length})` : `да (${r.words.length})`) : 'нет'} | ${[...new Set(r.words)].slice(0, 5).join(', ')}${r.note ? ` (${r.note})` : ''} |`)].join('\n');
   writeFileSync(mdOut, md + '\n');
 }
-console.log(bad.length ? `\nС кириллицей: ${bad.length} из ${rows.length}` : `\n✓ кириллицы нет: ${rows.length} файлов`);
+console.log(bad.length ? `\nС кириллицей или «Helpy»: ${bad.length} из ${rows.length}` : `\n✓ кириллицы и «Helpy» нет: ${rows.length} файлов`);
 process.exit(bad.length ? 1 : 0);
 export { basename };

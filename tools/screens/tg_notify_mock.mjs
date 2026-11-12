@@ -46,8 +46,8 @@ body{width:412px;height:915px;font-family:Onest,sans-serif;background:#d9e4dc;co
 .mic{width:40px;height:40px;border-radius:50%;background:#2db89a}
 b{font-weight:600}
 </style></head><body>
-<div class="top"><div class="back">‹</div><div class="ava">HH</div>
-  <div><div class="name">Hey Helpy</div><div class="sub">bot · @HeyHelpy_bot</div></div></div>
+<div class="top"><div class="back">‹</div><div class="ava">D</div>
+  <div><div class="name">Dokazio</div><div class="sub">bot · @HeyHelpy_bot</div></div></div>
 <div class="chat">
   <div class="day">Today</div>
   <div class="msg out">Water is dripping from the AC onto the carpet in meeting room 301<div class="t">09:12 ✓✓</div></div>

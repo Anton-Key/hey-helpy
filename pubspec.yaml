@@ -53,8 +53,8 @@ flutter:
   generate: true
   uses-material-design: true
   assets:
-    # Нарисованный «снимок» кондиционера для заглушки «Узнать по фото»
-    # (VOICE_MOCK, /screens) — tools/demo_photos/generate.mjs. Не фото объекта.
+    # Демо-«снимки» кондиционера («до» / «после», заглушки камеры и «Узнать по фото»)
+    # (VOICE_MOCK, /screens) — фрагменты иллюстраций художника, tools/demo_photos/from_art.py (шаг 35c). Не фото объекта.
     - assets/demo_photos/
     # Иллюстрации-концепт (шаг 33): только WebP 1200 px; исходники PNG —
     # assets/marketing/ (в сборку не идут).

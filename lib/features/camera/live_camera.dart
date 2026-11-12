@@ -65,8 +65,15 @@ abstract class LiveCamera {
 }
 
 /// Камера для этой платформы (или заглушка с `VOICE_MOCK`).
-LiveCamera createLiveCamera() =>
-    photoIdentifyMock ? MockLiveCamera() : platform.createPlatformCamera();
+///
+/// [mockFrame] — кадр заглушки (фото «после» — чистый блок, шаг 35c).
+/// [tallCapture] — заглушка на высоком экране отдаёт и вертикальный снимок
+/// («Камера-помощник»: стоп-кадр на весь экран); фото заявки — всегда 4:3.
+LiveCamera createLiveCamera(
+        {String mockFrame = kMockCameraFrame, bool tallCapture = false}) =>
+    photoIdentifyMock
+        ? MockLiveCamera(frame: mockFrame, tallCapture: tallCapture)
+        : platform.createPlatformCamera();
 
 /// Есть ли смысл открывать «Камеру»: на Android — всегда (ошибку покажет
 /// сам экран), в браузере — есть `getUserMedia` и хотя бы одна камера.
@@ -81,13 +88,37 @@ Future<bool> liveCameraAvailable(
   }
 }
 
-/// Нарисованный кадр вместо камеры (`VOICE_MOCK`, тесты). Не фото объекта.
+/// Кадр-картинка вместо камеры (`VOICE_MOCK`, тесты) — фрагмент иллюстрации
+/// художника (`tools/demo_photos/from_art.py`, шаг 35c). Не фото объекта.
 const kMockCameraFrame = 'assets/demo_photos/ac_indoor.jpg';
+
+/// Кадр заглушки для фото «после»: тот же блок, подтёка нет (шаг 35c).
+const kMockAfterFrame = 'assets/demo_photos/ac_after.jpg';
+
+/// Тот же сюжет кадром 1:2 — для высокого экрана телефона: при заполнении
+/// экрана картинкой 4:3 видна только треть ширины (середина блока).
+String mockTallFrame(String frame) => frame.replaceFirst('.jpg', '_tall.jpg');
 
 /// Заглушка камеры: «видео» — нарисованная картинка, кадр — её байты.
 class MockLiveCamera implements LiveCamera {
-  MockLiveCamera({this.fail, AssetBundle? bundle})
+  MockLiveCamera(
+      {this.fail,
+      AssetBundle? bundle,
+      this.frame = kMockCameraFrame,
+      this.tallCapture = false})
       : _bundle = bundle ?? rootBundle;
+
+  /// Картинка, которую «видит» камера.
+  final String frame;
+
+  /// Снимок на высоком экране — вертикальный кадр (как превью), иначе 4:3.
+  final bool tallCapture;
+
+  /// Последний экран был выше, чем шире, — снимок тоже вертикальный.
+  bool _tall = false;
+
+  /// Картинка под форму экрана: высокий — вертикальный кадр.
+  String get shownFrame => _tall ? mockTallFrame(frame) : frame;
 
   /// Чем «упасть» при [start] (тест экрана с ошибкой).
   final CameraProblem? fail;
@@ -116,12 +147,19 @@ class MockLiveCamera implements LiveCamera {
   }
 
   @override
-  Widget preview() => Image.asset(kMockCameraFrame,
-      bundle: _bundle, fit: BoxFit.cover, gaplessPlayback: true);
+  Widget preview() => LayoutBuilder(builder: (context, c) {
+        _tall = c.hasBoundedHeight &&
+            c.hasBoundedWidth &&
+            c.maxHeight > c.maxWidth * 1.5;
+        return Image.asset(shownFrame,
+            bundle: _bundle, fit: BoxFit.cover, gaplessPlayback: true);
+      });
 
   @override
   Future<Uint8List> capture() async =>
-      (await _bundle.load(kMockCameraFrame)).buffer.asUint8List();
+      (await _bundle.load(tallCapture ? shownFrame : frame))
+          .buffer
+          .asUint8List();
 
   /// Нарисованный кадр неподвижен — «телефон не двигается».
   @override

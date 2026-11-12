@@ -87,7 +87,8 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
-  late final LiveCamera _camera = widget.camera ?? createLiveCamera();
+  late final LiveCamera _camera =
+      widget.camera ?? createLiveCamera(tallCapture: true);
   late final AnimationController _breath;
 
   _Cam _cam = _Cam.starting;

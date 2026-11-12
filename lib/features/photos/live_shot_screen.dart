@@ -26,10 +26,18 @@ import 'photo_stamp.dart';
 /// камеры (ПК без веб-камеры, отказ в доступе) можно выбрать файл — такое
 /// фото помечается «из файла» и в акте не считается доказательством.
 /// null — человек закрыл экран, ничего не сняв.
+/// [after] — снимок «после»: заглушка камеры (`VOICE_MOCK`) показывает
+/// чистый блок, а не блок с подтёком (шаг 35c).
 Future<CapturedPhoto?> captureLivePhoto(BuildContext context,
-        {PhotoStamp? stamp, LiveCamera? camera}) =>
+        {PhotoStamp? stamp, LiveCamera? camera, bool after = false}) =>
     Navigator.push<CapturedPhoto>(
-        context, appRoute((_) => LiveShotScreen(stamp: stamp, camera: camera)));
+        context,
+        appRoute((_) => LiveShotScreen(
+            stamp: stamp,
+            camera: camera ??
+                (after
+                    ? createLiveCamera(mockFrame: kMockAfterFrame)
+                    : null))));
 
 enum _Shot { starting, live, frozen, error, saving }
 

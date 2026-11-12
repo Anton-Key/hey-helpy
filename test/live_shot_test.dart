@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hey_helpy/core/design/design.dart';
@@ -27,6 +27,22 @@ Widget _app(Widget child) => MaterialApp(
     );
 
 void main() {
+  test('заглушка камеры: «до» — блок с подтёком, «после» — чистый (шаг 35c)',
+      () async {
+    final bundle = _FileBundle();
+    final before = await MockLiveCamera(bundle: bundle).capture();
+    final after =
+        await MockLiveCamera(bundle: bundle, frame: kMockAfterFrame).capture();
+    expect(before, File(kMockCameraFrame).readAsBytesSync());
+    expect(after, File(kMockAfterFrame).readAsBytesSync());
+    expect(before, isNot(equals(after)));
+    expect(mockTallFrame(kMockCameraFrame),
+        'assets/demo_photos/ac_indoor_tall.jpg');
+    for (final f in [kMockCameraFrame, kMockAfterFrame]) {
+      expect(File(mockTallFrame(f)).existsSync(), isTrue, reason: f);
+    }
+  });
+
   testWidgets('фото «после»: затвор → стоп-кадр → «Готово» — снимок камеры',
       (t) async {
     final cam = MockLiveCamera();
@@ -126,4 +142,11 @@ void main() {
       expect(await size(out), await size(src));
     });
   });
+}
+
+/// Картинки из папки assets без сборки (для заглушки камеры).
+class _FileBundle extends CachingAssetBundle {
+  @override
+  Future<ByteData> load(String key) async =>
+      ByteData.sublistView(File(key).readAsBytesSync());
 }

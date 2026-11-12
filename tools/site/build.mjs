@@ -9,6 +9,7 @@
 // Картинки лежат в assets/site/ (хук block_secrets пропускает картинки только из разрешённых папок)
 // и копируются в img/ только при --out.
 import { readFileSync, writeFileSync, mkdirSync, cpSync, copyFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SITE_URL, APP_URL, UPDATED, CONTACT, VIDEO, BRAND, ROI_SHOW_PRICES } from './config.mjs';
@@ -32,6 +33,29 @@ export const BOTS = [
   'YandexAdditional', 'Bingbot', 'Googlebot',
 ];
 
+/**
+ * Шаг 35c: версия в адресе картинок, постера, ролика, OG и значков — `?v=` + первые 8 знаков
+ * SHA-256 файла. Новый файл → новый адрес, и браузер, CDN и превью ссылок не показывают старую
+ * картинку из кэша. Адрес на сайте → исходный файл в репозитории (то, что assemble() копирует).
+ */
+export function sourceOf(path) {
+  if (path === VIDEO.file) return VIDEO.src;
+  if (path === 'favicon.png') return 'web/favicon.png';
+  const icon = path.match(/^img\/icon-(192|512)\.png$/);
+  if (icon) return `web/icons/Icon-${icon[1]}.png`;
+  if (path.startsWith('img/')) return `assets/site/${path.slice(4)}`;
+  throw new Error(`ver: неизвестный файл ${path}`);
+}
+const hashes = new Map();
+export function ver(path) {
+  if (!hashes.has(path)) {
+    const file = join(root, sourceOf(path));
+    if (!existsSync(file)) throw new Error(`ver: нет файла ${file}`);
+    hashes.set(path, createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 8));
+  }
+  return `${path}?v=${hashes.get(path)}`;
+}
+
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const abs = (path) => SITE_URL + path;
 const depth = (slug) => (slug.match(/\//g) || []).length;
@@ -54,7 +78,7 @@ function helpers(lang, slug) {
   const href = (key, hash = '') => rel + pages[key].slug + hash || './';
   const imgTag = (name, alt, eager) => {
     const [w, h] = sizes[`${name}.webp`];
-    return `<img src="${rel}img/${name}.webp" width="${w}" height="${h}" alt="${esc(alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async">`;
+    return `<img src="${rel}${ver(`img/${name}.webp`)}" width="${w}" height="${h}" alt="${esc(alt)}"${eager ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async">`;
   };
   return {
     rel,
@@ -68,7 +92,7 @@ function helpers(lang, slug) {
     // Шаг 35: пометка у кадров с «AC-301 · 91 %» — это демо-кадр, а не замеренная точность.
     demoFrame: ui.demoFrame,
     cta: (kind) => `<a class="btn${kind === 'primary' ? '' : ' ghost'}" href="${CONTACT.demoUrl}">${ui.demo}</a>`,
-    video: (label) => `<figure class="video"><video controls preload="none" playsinline width="${VIDEO.width}" height="${VIDEO.height}" poster="${rel}${VIDEO.poster}" aria-label="${esc(label)}"><source src="${rel}${VIDEO.file}" type="video/mp4"><a href="${rel}${VIDEO.file}">${esc(label)}</a></video><figcaption>${ui.videoNote}</figcaption></figure>`,
+    video: (label) => `<figure class="video"><video controls preload="none" playsinline width="${VIDEO.width}" height="${VIDEO.height}" poster="${rel}${ver(VIDEO.poster)}" aria-label="${esc(label)}"><source src="${rel}${ver(VIDEO.file)}" type="video/mp4"><a href="${rel}${ver(VIDEO.file)}">${esc(label)}</a></video><figcaption>${ui.videoNote}</figcaption></figure>`,
     ctaBlock: () => lang === 'ru'
       ? `<section class="cta" aria-labelledby="cta"><h2 id="cta">Попробуйте на своих объектах</h2><p>Покажем Hey Helpy на демо-данных и обсудим пилот: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`
       : `<section class="cta" aria-labelledby="cta"><h2 id="cta">Try it at your sites</h2><p>We will show Hey Helpy on demo data and discuss a pilot: your sites, your contractors, payment only for proven work.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`,
@@ -92,7 +116,7 @@ function org(lang) {
     '@id': abs('#organization'),
     name: BRAND[lang],
     url: SITE_URL,
-    logo: { '@type': 'ImageObject', url: abs('img/icon-512.png'), width: 512, height: 512 },
+    logo: { '@type': 'ImageObject', url: abs(ver('img/icon-512.png')), width: 512, height: 512 },
   };
   o.contactPoint = { '@type': 'ContactPoint', contactType: 'sales', url: CONTACT.demoUrl, availableLanguage: ['ru', 'en'] };
   o.sameAs = [`https://t.me/${CONTACT.bot}`];
@@ -116,7 +140,7 @@ function softwareApp(lang) {
     featureList: isRu
       ? ['Заявки текстом, камерой или голосом (ИИ)', 'Распознавание оборудования по фото', 'Заявки и уведомления в Telegram, гости по QR-коду', 'Автоназначение подрядчика по системе и объекту', 'Фото «после» только живой камерой со штампом', 'Отметка визита по геозоне', 'Акт подрядчику: к оплате только доказанная работа', 'Разделение обязанностей на уровне базы данных', 'Работа без интернета (Android)', 'Плановое ТО', 'Планы этажей и реестр оборудования', 'Отчёты PDF и Excel', 'Регионы и зоны доступа']
       : ['Work orders by text, camera or voice (AI)', 'Equipment recognition from photos', 'Work orders and notifications in Telegram, guests via QR code', 'Automatic contractor assignment by system and site', 'Live-camera-only “after” photos with a stamp', 'Geofenced visit check-in', 'Contractor act: only proven work is payable', 'Segregation of duties enforced by the database', 'Offline work (Android)', 'Preventive maintenance', 'Floor plans and asset register', 'PDF and Excel reports', 'Regions and access zones'],
-    screenshot: ['voice', 'camera', 'act'].map((n) => abs(`img/${n}.webp`)),
+    screenshot: ['voice', 'camera', 'act'].map((n) => abs(ver(`img/${n}.webp`))),
     offers: {
       '@type': 'Offer',
       url: CONTACT.demoUrl,
@@ -137,10 +161,10 @@ function videoObject(lang) {
     description: lang === 'ru'
       ? 'Сквозная история одной поломки: голосовая заявка, ИИ разбирает её, камера-помощник узнаёт оборудование, фото «после» и акт подрядчику, в котором к оплате только доказанная работа. Ролик на английском, демо-данные, ответы ИИ в записи — имитация.'
       : 'The full story of one fault: a voice work order parsed by AI, the camera assistant recognising the equipment, the “after” photo and a contractor act where only proven work is payable. Demo data; AI responses in the recording are simulated.',
-    thumbnailUrl: abs(VIDEO.poster),
+    thumbnailUrl: abs(ver(VIDEO.poster)),
     uploadDate: VIDEO.uploadDate,
     duration: VIDEO.duration,
-    contentUrl: abs(VIDEO.file),
+    contentUrl: abs(ver(VIDEO.file)),
     inLanguage: 'en',
     publisher: { '@id': abs('#organization') },
   };
@@ -230,8 +254,8 @@ ${canonical ? `<meta property="og:url" content="${canonical}">` : ''}
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${ogImage}">
 <meta name="theme-color" content="#2DB89A">
-<link rel="icon" href="${rel}favicon.png" type="image/png">
-<link rel="apple-touch-icon" href="${rel}img/icon-192.png">
+<link rel="icon" href="${rel}${ver('favicon.png')}" type="image/png">
+<link rel="apple-touch-icon" href="${rel}${ver('img/icon-192.png')}">
 <link rel="manifest" href="${rel}site.webmanifest">
 <link rel="preload" href="${rel}fonts/onest-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${rel}fonts/onest-600.woff2" as="font" type="font/woff2" crossorigin>
@@ -249,7 +273,7 @@ function renderPage(lang, key) {
   const crumbs = key === 'home' ? '' : `<nav class="crumbs" aria-label="${lang === 'ru' ? 'Навигационная цепочка' : 'Breadcrumb'}"><ol><li><a href="${h.rel + pages.home.slug || './'}">${ui.home}</a></li><li aria-current="page">${page.h1}</li></ol></nav>\n`;
   return `${head({
     lang, title: page.title, description: page.description, canonical: abs(page.slug), alternates,
-    rel: h.rel, ld: jsonLd(lang, key, page), ogImage: abs(`img/og-${lang}.png`),
+    rel: h.rel, ld: jsonLd(lang, key, page), ogImage: abs(ver(`img/og-${lang}.png`)),
   })}
 <body>
 ${header(lang, key, h)}
@@ -267,7 +291,7 @@ function render404() {
   const h = { rel: SITE_URL };
   return `${head({
     lang: 'en', title: `${en.notFound.title}`, description: `${en.notFound.text} ${ru.notFound.text}`, rel: SITE_URL,
-    noindex: true, ogImage: abs('img/og-en.png'),
+    noindex: true, ogImage: abs(ver('img/og-en.png')),
   })}
 <body>
 ${header('en', 'home', h).replace(' aria-current="page"', '')}
@@ -413,8 +437,8 @@ const manifest = () => json({
   name: BRAND.en, short_name: BRAND.en, lang: 'en', start_url: './', display: 'browser',
   background_color: '#F2F4F3', theme_color: '#2DB89A',
   icons: [
-    { src: 'img/icon-192.png', sizes: '192x192', type: 'image/png' },
-    { src: 'img/icon-512.png', sizes: '512x512', type: 'image/png' },
+    { src: ver('img/icon-192.png'), sizes: '192x192', type: 'image/png' },
+    { src: ver('img/icon-512.png'), sizes: '512x512', type: 'image/png' },
   ],
 }) + '\n';
 

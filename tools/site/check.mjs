@@ -4,8 +4,10 @@
 // нет noindex (кроме 404); JSON-LD разбирается и содержит нужные типы; у картинок alt / width / height;
 // нет исполняемых скриптов (весь текст виден без JS); внутренние ссылки и якоря ведут на существующее;
 // robots.txt пускает всех нужных ботов; sitemap.xml и llms.txt — на существующие страницы;
-// нет ключей, e-mail и запрещённых названий.
+// нет ключей, e-mail и запрещённых названий; у каждой картинки, постера, ролика, OG и значка — версия
+// ?v=<первые 8 знаков SHA-256 файла> (шаг 35c), и она совпадает с файлом.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, relative, dirname, normalize } from 'node:path';
 import { SITE_URL } from './config.mjs';
 import { BOTS } from './build.mjs';
@@ -31,7 +33,8 @@ function target(fromFile, href) {
   let path = href;
   if (href.startsWith(SITE_URL)) path = '/' + href.slice(SITE_URL.length);
   else if (/^(https?:|mailto:|tel:)/.test(href)) return null;
-  const [p, hash] = path.split('#');
+  const [withQuery, hash] = path.split('#');
+  const p = withQuery.split('?')[0];
   let file = p === '' ? rel(fromFile) : p.startsWith('/') ? normalize(p.slice(1)) : normalize(join(dirname(rel(fromFile)), p));
   if (file === '.' || file.endsWith('/') || p.endsWith('/') || p === '') file = p === '' ? file : join(file, 'index.html');
   if (existsSync(join(out, file)) && statSync(join(out, file)).isDirectory()) file = join(file, 'index.html');
@@ -121,6 +124,27 @@ for (const f of html) {
   if (/TODO/.test(s)) warns.push(`${name}: TODO на странице`);
 }
 
+// Версии картинок и видео (шаг 35c): адрес без ?v= или с чужим хешем — браузер и превью ссылок
+// покажут старый файл из кэша. Ищем все адреса медиафайлов в HTML (атрибуты, OG, JSON-LD) и манифесте.
+const MEDIA = /(?:https?:\/\/[^"'\s()<>]+|[A-Za-z0-9_./-]+)\.(?:webp|png|jpe?g|gif|svg|avif|mp4|webm)(?![A-Za-z0-9])(?:\?[^"'\s()<>]*)?/g;
+const sha8 = new Map();
+let mediaRefs = 0;
+for (const f of [...html, join(out, 'site.webmanifest')].filter(existsSync)) {
+  const s = readFileSync(f, 'utf8').replace(/<style>[\s\S]*?<\/style>/g, '');
+  for (const [url] of s.matchAll(MEDIA)) {
+    if (url.startsWith('http') && !url.startsWith(SITE_URL)) continue; // чужие адреса не наши
+    mediaRefs++;
+    const v = url.match(/\?v=([0-9a-f]{8})$/)?.[1];
+    if (!v) { err(rel(f), `медиафайл без версии ?v=: ${url}`); continue; }
+    const t = target(f, url);
+    const file = t && join(out, t.file);
+    if (!file || !existsSync(file)) { err(rel(f), `медиафайл не найден: ${url}`); continue; }
+    if (!sha8.has(file)) sha8.set(file, createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 8));
+    if (sha8.get(file) !== v) err(rel(f), `версия ${v} не совпадает с файлом (${sha8.get(file)}): ${url} — пересоберите сайт`);
+  }
+}
+if (!mediaRefs) err('сайт', 'не найдено ни одного адреса картинки — проверка версий не работает');
+
 // robots.txt
 const robots = existsSync(join(out, 'robots.txt')) ? readFileSync(join(out, 'robots.txt'), 'utf8') : '';
 if (!robots) err('robots.txt', 'нет файла');
@@ -156,4 +180,4 @@ if (errors.length) {
   console.error(`\nОшибок: ${errors.length}`);
   process.exit(1);
 }
-console.log(`✓ сайт в порядке: ${html.length} HTML-страниц, ${locs.length} адресов в sitemap, ${BOTS.length} ботов в robots.txt`);
+console.log(`✓ сайт в порядке: ${html.length} HTML-страниц, ${locs.length} адресов в sitemap, ${BOTS.length} ботов в robots.txt, ${mediaRefs} адресов медиафайлов с версией`);

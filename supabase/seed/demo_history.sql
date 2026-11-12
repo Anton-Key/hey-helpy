@@ -1493,7 +1493,7 @@ begin
     created_at = excluded.created_at;
 
   -- Шаг 25: фото «до» у 111 (кадр питча «Заявка: фото «до/после»») —
-  -- нарисованный кондиционер demo/ac_indoor.jpg, автор — заявитель.
+  -- кондиционер с подтёком demo/ac_indoor.jpg (фрагмент иллюстрации, шаг 35c), автор — заявитель.
   insert into public.attachments (id, work_order_id, kind, stage, storage_path, taken_at,
                                   lat, lng, uploaded_by, mock_location, created_at)
   select 'de300000-0000-4000-8000-00000000a201'::uuid, w.id, 'photo', 'before', 'demo/ac_indoor.jpg',

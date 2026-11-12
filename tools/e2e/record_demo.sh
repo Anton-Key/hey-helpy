@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Запасное видео демо: docs/demo/dokazio-demo.mp4 (ПК 1920×1080) и
-# docs/demo/dokazio-demo-phone.mp4 (телефон 412). Локальная база, без сети.
+# Запасное видео демо. Основное (с шага 36 — единственное в репозитории): --v2-only →
+# docs/demo/dokazio-demo-v2.mp4. Без флага — старые русские ролики ПК / телефона
+# (сценарий устарел с шага 33: данные английские, запись обрывается). Локальная база, без сети.
 # База hh_test пересоздаётся (tools/db_test/run.sh). Нужны:
 # сборка build/web_e2e (tools/e2e/build.sh), PostgREST (POSTGREST=…), ffmpeg.
 # Запуск: bash tools/e2e/record_demo.sh [--phone-only|--pc-only|--v2-only]

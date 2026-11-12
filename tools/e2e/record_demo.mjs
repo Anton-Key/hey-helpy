@@ -408,7 +408,7 @@ async function v2Scenario(page) {
   await tap(page, btn(page, /^Что это\?/), { pause: 300 });
   await see(page, /AC-301 · \d+ ?%/).waitFor({ timeout: 30000 });
   await see(page, /Открытые заявки · \d+|Нет открытых заявок/).waitFor({ timeout: 20000 });
-  await caption(page, 'Equipment recognition by camera: “Air conditioner AC-301” — work orders, maintenance, history');
+  await caption(page, 'The camera suggests “Air conditioner AC-301” from the register — confirm it: work orders, maintenance, history');
   await moveTo(page, 1650, 700, 900);
   await hold(page, 5500);
   await caption(page, 'A work order with a photo — in one tap');

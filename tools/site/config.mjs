@@ -37,8 +37,8 @@ export const VIDEO = {
   src: 'docs/demo/dokazio-demo-v2.mp4',
   file: 'media/dokazio-demo.mp4',
   poster: 'img/video-poster.webp',
-  uploadDate: '2026-11-07',
-  duration: 'PT2M17S',
+  uploadDate: '2026-11-12',
+  duration: 'PT1M37S',
   width: 1920,
   height: 1080,
 };

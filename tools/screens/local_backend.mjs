@@ -86,7 +86,7 @@ export function mockAi(uid, text, locale = 'ru') {
   // (номер «305», название и этаж) — так тест проверяет код приложения.
   const loc = null;
   const [locId, locName] = loc ? loc.split('|') : [null, null];
-  const clean = text.replace(/^\s*(эй,?\s*хелпи|hey,?\s*helpy)[,!.]?\s*/i, '');
+  const clean = text.replace(/^\s*(эй,?\s*(?:хелпи|доказио)|hey,?\s*(?:helpy|dokazio))[,!.]?\s*/i, '');
   // Шаг 35b: язык заголовка — как у запроса (английский ролик демо).
   const title = (layerName === 'Климат' ? (en ? 'Air conditioner not working' : 'Не работает кондиционер')
     : layerName === 'Электрика' ? (en ? 'Light not working' : 'Не работает свет')

@@ -12,7 +12,7 @@ const MAX_MARKERS = 5;
 // ---------------------------------------------------------------------------
 const TEXT = {
   ru: {
-    brand: 'Эй, Helpy · демо', title: 'AR-метки на оборудовании',
+    brand: 'Dokazio · демо', title: 'AR-метки на оборудовании',
     intro: 'Поставьте метку над прибором — над ней появится табличка с открытыми заявками и плановым ТО.',
     loading: 'Проверяю вход и поддержку AR…',
     needLogin: 'Откройте сначала приложение и войдите — эта страница берёт вход оттуда.',
@@ -34,7 +34,7 @@ const TEXT = {
     error: 'Не получилось: {e}',
   },
   en: {
-    brand: 'Hey Helpy · demo', title: 'AR tags on equipment',
+    brand: 'Dokazio · demo', title: 'AR tags on equipment',
     intro: 'Place a tag over a unit — a label shows its open work orders and next maintenance.',
     loading: 'Checking sign-in and AR support…',
     needLogin: 'Open the app and sign in first — this page uses the app’s sign-in.',

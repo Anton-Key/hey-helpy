@@ -34,8 +34,8 @@ export const ROI_SHOW_PRICES = true;
 
 /** Демо-ролик: файл в репозитории и данные для VideoObject. */
 export const VIDEO = {
-  src: 'docs/demo/hey-helpy-demo-v2.mp4',
-  file: 'media/hey-helpy-demo.mp4',
+  src: 'docs/demo/dokazio-demo-v2.mp4',
+  file: 'media/dokazio-demo.mp4',
   poster: 'img/video-poster.webp',
   uploadDate: '2026-11-07',
   duration: 'PT2M17S',

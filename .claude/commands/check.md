@@ -33,14 +33,18 @@ allowed-tools: Bash(flutter analyze:*), Bash(flutter test:*), Bash(flutter build
 форматы дат, имена пакетов. Если сомневаешься — пометь «проверить», а не «ошибка».
 
 ## 5. Название продукта
-Название продукта на всех языках — только **«Hey Helpy»** (шаг 33), и в интерфейсе — только из
-ключа `appName` в `lib/l10n/*.arb`.
-- Ошибка: «Эй, Helpy» где угодно в `lib/`, `tools/site/`, `supabase/functions/`, в `.arb` и
-  `android/app/src/main/res/values*/strings.xml` (сторож — `test/terminology_test.dart`).
-- Ошибка: «Helpy» без «Hey » в строковых литералах `lib/` вне `lib/l10n/`, а также в значениях
-  `.arb` (кроме фразы активации `wakePhrase`: «Эй, Хелпи» (RU, её произносят голосом) / «Hey, Helpy»).
-- Не ошибка: имена классов и идентификаторы (`HeyHelpyApp`, `HeyHelpyTheme`), комментарии.
-- Проверь также подписи под иконкой: `android/app/src/main/res/values*/strings.xml`.
+Название продукта на всех языках — только **«Dokazio»** (шаг 36; полное имя «Dokazio — Contractor Control»),
+одним словом, и в интерфейсе — только из ключа `appName` в `lib/l10n/*.arb`.
+- Ошибка: «Hey Helpy», «Helpy», «Эй, Helpy», «CtrlSite» в значениях `.arb`, в подписи под иконкой
+  (`android/app/src/main/res/values*/strings.xml`), в `web/index.html` / `manifest.json`, в текстах бота
+  (`supabase/functions/telegram-bot/texts.ts`), в исходниках и сборке сайта (сторожа —
+  `test/terminology_test.dart` и `node tools/site/check.mjs build/site`).
+- Ошибка: «DokaZio», «Doka zio» и любое другое написание, кроме «Dokazio».
+- Ошибка: «Dokazio» строковым литералом в `lib/` вне `lib/l10n/` (берётся из `appName`).
+- Не ошибка: технические имена, которые не меняются (шаг 36): пакет `hey_helpy`, каналы `hey_helpy/*`,
+  `applicationId`, адрес `/hey-helpy/`, `hey-helpy.apk`, бот `@HeyHelpy_bot` / `BOT_USERNAME`, миграции,
+  старые отчёты `docs/reports/`; старое «хелпи / helpy» в разборе фразы активации (`text_intake.dart`,
+  `_shared/intake.ts`) — его могут сказать по привычке.
 
 ## Итог
 Короткий список в таком виде (по-русски, просто):

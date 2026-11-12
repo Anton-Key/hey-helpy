@@ -122,7 +122,7 @@ export const SCENARIOS = [
       const before = await reportTiles(m, base);
       // Шаг 33: демо-данные на английском — фраза тоже английская (помещение
       // «Meeting room, floor 3» находит разбор по словарю в приложении).
-      await home(m, base, `?voice=${encodeURIComponent('Hey, Helpy, the air conditioner in the meeting room on the third floor is not working, very hot')}`);
+      await home(m, base, `?voice=${encodeURIComponent('Hey, Dokazio, the air conditioner in the meeting room on the third floor is not working, very hot')}`);
       await ctx.shot(m, 'home');
       await clickAction(m, /Нажми и говори/);
       await see(m, /air conditioner in the meeting room/).waitFor({ timeout: 15000 });
@@ -317,7 +317,7 @@ export const SCENARIOS = [
       await ctx.shot(m, 'area-saved');
 
       // c) Голосом «в 305-й не работает свет» → помещение Open space найдено.
-      await home(m, base, `?voice=${encodeURIComponent('Эй, Хелпи, в 305-й не работает свет')}`);
+      await home(m, base, `?voice=${encodeURIComponent('Эй, Доказио, в 305-й не работает свет')}`);
       await clickAction(m, /Нажми и говори/);
       await see(m, /не работает свет/).waitFor({ timeout: 15000 });
       await settle(m, 800);
@@ -714,7 +714,7 @@ export const SCENARIOS = [
       await ctx.shot(m, 'regions');
       // Голосовая заявка на старой базе: создаётся и назначается (фраза
       // английская — демо-помещения на английском, шаг 33).
-      await home(m, base, `?voice=${encodeURIComponent('Hey, Helpy, the air conditioner in the meeting room on the third floor is not working, very hot')}`);
+      await home(m, base, `?voice=${encodeURIComponent('Hey, Dokazio, the air conditioner in the meeting room on the third floor is not working, very hot')}`);
       await clickAction(m, /Нажми и говори/);
       await see(m, /air conditioner in the meeting room/).waitFor({ timeout: 15000 });
       await clickAction(m, /^Готово/);

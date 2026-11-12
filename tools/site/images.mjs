@@ -32,7 +32,7 @@ for (const [src, name, w, pre = ''] of SHOTS) {
 }
 // Постер видео — кадр демо-ролика на 34-й секунде (английский ролик, шаг 35b): готовая карточка «Разобрано ИИ», без индикатора загрузки
 // и служебных надписей (шаг 32). Другой ролик — подобрать кадр заново.
-ff(['-ss', '34', '-i', join(root, 'docs/demo/hey-helpy-demo-v2.mp4'), '-frames:v', '1', '-vf', 'scale=1280:-2',
+ff(['-ss', '34', '-i', join(root, 'docs/demo/dokazio-demo-v2.mp4'), '-frames:v', '1', '-vf', 'scale=1280:-2',
   '-c:v', 'libwebp', '-quality', '75', join(out, 'video-poster.webp')]);
 console.log('готово:', out);
 

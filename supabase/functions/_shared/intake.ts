@@ -109,13 +109,15 @@ export function parseInput(
 // Текст
 // ---------------------------------------------------------------------------
 
-/** «Эй, Хелпи» / «Hey, Helpy» в начале текста (как TextIntake в приложении). */
+/** «Эй, Доказио» / «Hey, Dokazio» в начале текста (как TextIntake в приложении;
+ * старое «Эй, Хелпи» тоже убирается — его могут сказать по привычке). */
 const WAKE = new RegExp(
   String.raw`^[\s\p{P}]*(?:` +
     String.raw`(?:эй|ей|хей|хэй|hey|hay|hi|ok|okay|окей)[\s\p{P}]+` +
-    String
-      .raw`(?:хелпи|хэлпи|хелпе|хелп|helpy|helpie|helpi|help|happy|hippie|hippy|halpy)` +
-    String.raw`|хелпи|хэлпи|helpy|helpie|helpi` +
+    String.raw`(?:доказио|доказиа|доказия|докацио|дуказио|dokazio|docazio|dokazzio|` +
+    String.raw`dokasio|dokazia|doka[\s-]?zio|doca[\s-]?zio|` +
+    String.raw`хелпи|хэлпи|хелпе|хелп|helpy|helpie|helpi|help|happy|hippie|hippy|halpy)` +
+    String.raw`|доказио|докацио|dokazio|docazio|dokazzio|хелпи|хэлпи|helpy|helpie|helpi` +
     String.raw`)(?![\p{L}\p{N}])[\s\p{P}]*`,
   "iu",
 );

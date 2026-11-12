@@ -1,37 +1,38 @@
-# Hey Helpy
+# Dokazio — Contractor Control
 
-> Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; subscription per site from $250 per month by site area, contractors pay nothing; pilots available.
+> Dokazio — Contractor Control (pronounced doh-KAH-zee-oh, from “dokaz”, Serbian for “proof”; tagline: “Send the job. See it done.”) is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; subscription per site from $250 per month by site area, contractors pay nothing; pilots available.
 >
-> Hey Helpy — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, подписка за объект — от $250 в месяц по площади, подрядчики не платят, доступен пилот.
+> Dokazio — Contractor Control (произносится «доКАзио», от сербского «dokaz» — «доказательство»; слоган «Send the job. See it done.») — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, подписка за объект — от $250 в месяц по площади, подрядчики не платят, доступен пилот.
 
 Full product description in one file (EN and RU): https://anton-key.github.io/hey-helpy/site/llms-full.txt
 App sign-in: https://anton-key.github.io/hey-helpy/
-Request a demo or pilot: https://t.me/HeyHelpy_bot?start=demo (Telegram)
+Apply for a pilot: https://t.me/HeyHelpy_bot?start=demo (Telegram)
 
 ## Pages (English)
 
-- [AI service for property maintenance and contractor control](https://anton-key.github.io/hey-helpy/site/): For business and shopping centres, chains and retail, property management and FM companies, public sector: work orders by text, camera or voice; only proven work gets paid.
+- [Send the job. See it done.](https://anton-key.github.io/hey-helpy/site/): For business and shopping centres, chains and retail, property management and FM companies, public sector: work orders by text, camera or voice; only proven work gets paid.
 - [Features](https://anton-key.github.io/hey-helpy/site/features/): Work orders by text, camera or voice and from Telegram, AR labels, proof-based contractor payment, roles, offline work, preventive maintenance, floor plans, reports.
-- [Who it’s for](https://anton-key.github.io/hey-helpy/site/industries/): Hey Helpy for business and shopping centres, chains and retail, property management and FM companies, public-sector and restricted-access sites.
+- [Who it’s for](https://anton-key.github.io/hey-helpy/site/industries/): Dokazio for business and shopping centres, chains and retail, property management and FM companies, public-sector and restricted-access sites.
 - [Security and deployment](https://anton-key.github.io/hey-helpy/site/security/): Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.
 - [How much would proven work save you?](https://anton-key.github.io/hey-helpy/site/roi/): Estimate what paying contractors only for proven work could save across your sites: staff time and cut overbilling, 3% by default (3–10%). US, UK/EU, Gulf.
-- [Frequently asked questions](https://anton-key.github.io/hey-helpy/site/faq/): What happens with no signal in the basement, how Hey Helpy differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.
-- [Request a demo or pilot](https://anton-key.github.io/hey-helpy/site/contact/): Request a Hey Helpy demo or a pilot at your sites: voice and photo work orders, contractor control and proof-based payment.
-- [Website privacy policy](https://anton-key.github.io/hey-helpy/site/privacy/): The Hey Helpy website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.
+- [Frequently asked questions](https://anton-key.github.io/hey-helpy/site/faq/): What happens with no signal in the basement, how Dokazio differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.
+- [Apply for a pilot](https://anton-key.github.io/hey-helpy/site/contact/): Apply for a Dokazio pilot at your sites or ask for a demo: voice and photo work orders, contractor control and proof-based payment.
+- [Website privacy policy](https://anton-key.github.io/hey-helpy/site/privacy/): The Dokazio website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.
 
 ## Страницы (русский)
 
-- [ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков](https://anton-key.github.io/hey-helpy/site/ru/): Для бизнес-центров и ТЦ, сетей и ритейла, УК и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, подрядчик назначается сам, к оплате — только доказанная работа.
+- [Отправьте задачу — увидите, что она сделана](https://anton-key.github.io/hey-helpy/site/ru/): Для бизнес-центров и ТЦ, сетей и ритейла, УК и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, подрядчик назначается сам, к оплате — только доказанная работа.
 - [Возможности](https://anton-key.github.io/hey-helpy/site/ru/features/): Заявки текстом, камерой или голосом и из Telegram, AR-метки, оплата подрядчику по доказательству, роли, работа без интернета, плановое ТО, планы этажей, отчёты.
-- [Для кого](https://anton-key.github.io/hey-helpy/site/ru/industries/): Hey Helpy для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков и режимных объектов: заявки, подрядчики и оплата по доказательству.
+- [Для кого](https://anton-key.github.io/hey-helpy/site/ru/industries/): Dokazio для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков и режимных объектов: заявки, подрядчики и оплата по доказательству.
 - [Безопасность и развёртывание](https://anton-key.github.io/hey-helpy/site/ru/security/): Изоляция компаний на уровне базы данных (RLS), роли и разделение обязанностей, закрытые хранилища файлов, журнал изменений доступа, варианты размещения.
 - [Сколько вы сэкономите, если платить только за доказанное?](https://anton-key.github.io/hey-helpy/site/ru/roi/): Оценка выгоды, если платить подрядчикам только за доказанную работу: время персонала и отсечённые переплаты, 3 % по умолчанию (3–10 %). США, UK/ЕС, Залив.
-- [Частые вопросы](https://anton-key.github.io/hey-helpy/site/ru/faq/): Что будет без связи в подвале, чем Hey Helpy отличается от Excel и мессенджера, можно ли без приложения, где хранятся данные и сколько стоит.
-- [Запросить демо или пилот](https://anton-key.github.io/hey-helpy/site/ru/contact/): Запросите демонстрацию Hey Helpy или пилот на ваших объектах: заявки голосом и по фото, контроль подрядчиков и оплата по доказательству.
-- [Политика конфиденциальности сайта](https://anton-key.github.io/hey-helpy/site/ru/privacy/): Сайт Hey Helpy не использует cookies и счётчики; заявки на демо принимаются только в Telegram — что мы сохраняем и зачем.
+- [Частые вопросы](https://anton-key.github.io/hey-helpy/site/ru/faq/): Что будет без связи в подвале, чем Dokazio отличается от Excel и мессенджера, можно ли без приложения, где хранятся данные и сколько стоит.
+- [Заявка на пилот](https://anton-key.github.io/hey-helpy/site/ru/contact/): Подайте заявку на пилот Dokazio на ваших объектах или попросите показать демо: заявки голосом и по фото, контроль подрядчиков и оплата по доказательству.
+- [Политика конфиденциальности сайта](https://anton-key.github.io/hey-helpy/site/ru/privacy/): Сайт Dokazio не использует cookies и счётчики; заявки на демо принимаются только в Telegram — что мы сохраняем и зачем.
 
 ## Facts
 
+- Name: Dokazio (pronounced doh-KAH-zee-oh; from “dokaz”, Serbian for “proof”). Full name: Dokazio — Contractor Control. Tagline: Send the job. See it done.
 - Category: CMMS, facility management, contractor control (SaaS)
 - Markets: United States, Europe, Middle East
 - Platforms: web (browser) and Android; no iPhone app yet
@@ -39,7 +40,7 @@ Request a demo or pilot: https://t.me/HeyHelpy_bot?start=demo (Telegram)
 - AI: language and multimodal AI models via an OpenAI-compatible API; the provider is configurable per deployment
 - Data: cloud PostgreSQL (Supabase), EU region today; US and UAE regions, a dedicated cloud or the customer's own servers are discussed for a pilot
 - Pricing: subscription per site per month by site area (Site S / M / L), from $250 / €199 / AED 650; contractors pay nothing; no percentage of contractor spend; paid pilot available
-- ROI calculator: https://anton-key.github.io/hey-helpy/site/roi/ — estimates staff time saved and contractor overbilling cut (3% by default, 3–10%) against the Hey Helpy price; the figures are model estimates, not customer results
+- ROI calculator: https://anton-key.github.io/hey-helpy/site/roi/ — estimates staff time saved and contractor overbilling cut (3% by default, 3–10%) against the Dokazio price; the figures are model estimates, not customer results
 - Contact: Telegram https://t.me/HeyHelpy_bot?start=demo; no e-mail or phone published
 - Stage: MVP (October 2026)
 - No reviews, ratings or public customer references are published

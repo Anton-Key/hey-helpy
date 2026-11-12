@@ -62,7 +62,7 @@ class ReadinessRepository {
   Future<Probe> voiceProbe(String locale) => invoke('voice-intake', {
         'text': locale == 'ru'
             ? 'Эй, Хелпи, проверка связи: в переговорной жарко'
-            : 'Hey Helpy, connection test: it is hot in the meeting room',
+            : 'Hey Dokazio, connection test: it is hot in the meeting room',
         'locale': locale == 'ru' ? 'ru' : 'en',
       });
 

@@ -1,21 +1,25 @@
-# Hey Helpy — full description / полное описание
+# Dokazio — Contractor Control — full description / полное описание
 
 Updated: 2026-11-07. Source: https://anton-key.github.io/hey-helpy/site/
 App: https://anton-key.github.io/hey-helpy/
-Request a demo: https://t.me/HeyHelpy_bot?start=demo
+Apply for a pilot: https://t.me/HeyHelpy_bot?start=demo
 
 # English
 
-Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; subscription per site from $250 per month by site area, contractors pay nothing; pilots available.
+Dokazio — Contractor Control (pronounced doh-KAH-zee-oh, from “dokaz”, Serbian for “proof”; tagline: “Send the job. See it done.”) is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; subscription per site from $250 per month by site area, contractors pay nothing; pilots available.
 
 URL: https://anton-key.github.io/hey-helpy/site/
-Hey Helpy — for business and shopping centres, chains and retail, property management and FM companies, public-sector customers
+Dokazio — Contractor Control for business and shopping centres, chains and retail, property management and FM companies, public-sector customers
 
-## AI service for property maintenance and contractor control
+## Send the job. See it done.
 
-**Pay contractors only for proven work.** A work order is created by text, camera or voice — in the app or via Telegram, with nothing to install. The service figures out what broke and where, sends it to the right contractor and collects proof of completion.
+Dispatch work to any contractor in one tap. Dokazio shows proof the work was done at the exact equipment, so you pay only for verified work.
 
-Request a demo Estimate your ROI Watch the video
+Apply for a pilot See how it works
+
+Dokazio (doh-KAH-zee-oh) — from “dokaz”, Serbian for “proof”.
+
+Estimate your ROI → · Watch the two-minute video
 
 [Screenshot: Hotel room: an AR label above the air conditioner with diagnostics and an open work order]
 
@@ -31,11 +35,11 @@ Everyone does their part, yet in the end nobody can show **that the work was don
 
 -
 #### Intake
-Say it: “Hey, Helpy, water is dripping from the air conditioner in the third-floor meeting room.” Or point the camera at the equipment. Or message the Telegram bot — requesters need no app, just the QR code at the site.
+Say it: “Hey, Dokazio, water is dripping from the air conditioner in the third-floor meeting room.” Or point the camera at the equipment. Or message the Telegram bot — requesters need no app, just the QR code at the site.
 
 -
 #### AI parses it
-An AI model works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.
+An AI model works out what happened, in which room, which building system it is and how urgent. From a photo, the service suggests matching equipment from the site’s asset register — a person confirms which unit it is.
 
 -
 #### Contractor
@@ -55,7 +59,7 @@ _Illustration_
 
 ### Any unit, same flow
 
-A fridge, a faucet, a light or a lobby camera — the technician points the camera, the service recognises the equipment from the register and shows its work orders and preventive maintenance. A new work order takes one tap, with the place and equipment already filled in.
+A fridge, a faucet, a light or a lobby camera — the technician points the camera, the service suggests matching equipment from the site’s register, the technician confirms it and sees its work orders and preventive maintenance. A new work order takes one tap, with the place and equipment already filled in.
 
 [Screenshot: Office fridge with an AR card and a maintenance checklist]
 
@@ -88,7 +92,7 @@ Security systems have their own contractor, equipment and history.
 ### Highlights
 
 #### Camera assistant
-Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.
+Point the camera at an air conditioner — the service suggests which unit from the site’s register it may be, you confirm it and see its open work orders, preventive maintenance and last job.
 
 [Screenshot: Camera assistant: air conditioner AC-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job]
 Demo frame — not measured accuracy
@@ -109,9 +113,9 @@ _Contractor act: only proven work is payable. App screen, demo data._
 
 All features →
 
-### Hey Helpy Spatial — work orders on the plan and in space
+### Dokazio Spatial — work orders on the plan and in space
 
-Rooms and equipment are pinned on the floor plan, and anything overdue stands out. On ARCore phones, AR labels show work orders and maintenance right above the equipment. The illustration shows where we are taking this: the whole floor, with every work order tied to its place.
+Rooms and equipment are pinned on the floor plan, and anything overdue stands out. On ARCore phones, a person places AR labels with work orders and maintenance right above the equipment. The illustration shows where we are taking this: the whole floor, with every work order tied to its place.
 
 [Screenshot: Isometric office floor: rooms, equipment and work order markers]
 
@@ -150,7 +154,7 @@ The four stages of maintenance — intake, dispatch, execution, control — in o
 
 ### Voice work orders
 
-Tap “Hey Helpy” and speak. The text appears as you talk; speech recognition is done by the browser (Chrome, Edge) or by Android.
+Tap “Dokazio” and speak. The text appears as you talk; speech recognition is done by the browser (Chrome, Edge) or by Android.
 
 - An AI model turns the phrase into work order fields: title, description, system (HVAC, electrical, plumbing…), room and priority.
 
@@ -168,7 +172,7 @@ A technician or employee points the phone camera at the equipment and taps “Wh
 
 - A multimodal model describes the shot: equipment type (from a catalogue of 22 types), system, readable nameplate, visible defect.
 
-- Which exact unit from the register it is, the service decides itself — by serial number, model, type, room and floor. Up to three candidates with reasons.
+- The service suggests units from the site’s register that may match — by serial number, model, type, room and floor: up to three candidates with reasons. A person confirms the right one (“This is it”) or picks another.
 
 - Equipment card: open work orders, next preventive maintenance, last completed job.
 
@@ -182,17 +186,17 @@ _Demo frame — not measured accuracy_
 
 ### AR labels
 
-Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “AC-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.
+Point the camera at the equipment and confirm which unit from the register it is — a label with open work orders and preventive maintenance is placed above it, for example “AC-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room. In the first version labels are placed by a person.
 
 - Tap the label to open the equipment card or create a work order with the site, room and equipment already filled in.
 
-- The equipment is recognised by the same service as in the camera assistant; the shot is neither stored nor logged.
+- The service suggests candidates from the register, as in the camera assistant, and a person chooses; the shot is neither stored nor logged.
 
 - The phone’s position in the room is calculated on the phone itself. No data goes to third-party AR services: Google’s cloud anchors and geospatial positioning are switched off.
 
 - Works in the Android app on phones that support ARCore. Other devices get the regular camera assistant.
 
-- Labels are not yet kept between sessions: after the screen is closed, equipment has to be recognised again. An internet connection is required — recognition runs on the server.
+- Labels are not yet kept between sessions: after the screen is closed, labels have to be placed again. An internet connection is required — suggestions come from the server.
 
 ### Work orders and notifications in Telegram
 
@@ -333,7 +337,7 @@ _Contractor control in numbers (demo data). App screen, demo data._
 URL: https://anton-key.github.io/hey-helpy/site/industries/
 ## Who it’s for
 
-Hey Helpy fits wherever buildings are serviced by contractors and you want to pay only for work actually done — in the United States, Europe and the Middle East.
+Dokazio fits wherever buildings are serviced by contractors and you want to pay only for work actually done — in the United States, Europe and the Middle East.
 
 ### Business centres and shopping centres
 
@@ -380,7 +384,7 @@ The product has no public-sector certifications yet.
 URL: https://anton-key.github.io/hey-helpy/site/security/
 ## Security and deployment
 
-In Hey Helpy permissions are enforced by the database. The interface only shows what is allowed.
+In Dokazio permissions are enforced by the database. The interface only shows what is allowed.
 
 ### Company isolation
 
@@ -431,7 +435,7 @@ Clients: web version in the browser and the Android app.
 URL: https://anton-key.github.io/hey-helpy/site/roi/
 ## How much would proven work save you?
 
-A one-minute estimate for your portfolio: the staff time Hey Helpy takes over (sending work orders, collecting photos and acts, reconciling the monthly statement) plus the contractor overbilling you stop paying for, because work without proof is not paid. We use cautious defaults: 3% overbilling, adjustable from 3% to 10%.
+A one-minute estimate for your portfolio: the staff time Dokazio takes over (sending work orders, collecting photos and acts, reconciling the monthly statement) plus the contractor overbilling you stop paying for, because work without proof is not paid. We use cautious defaults: 3% overbilling, adjustable from 3% to 10%.
 
 ### Reference examples
 
@@ -449,7 +453,7 @@ One site of 5,000 m² (Site M), default hours, monthly billing, no payout fee. A
 
 | Benefit at 3% | $1,188 | €591 | AED 1,127 |
 
-| Hey Helpy price | $450 | €349 | AED 1,100 |
+| Dokazio price | $450 | €349 | AED 1,100 |
 
 | Net benefit at 3% | $738 | €242 | AED 27 |
 
@@ -483,7 +487,7 @@ Subscription per site, per month
 
 - No percentage of your contractor spend — the price depends only on the site area.
 
-- Optional, from 2028: paying contractors through Hey Helpy via a partner bank — $2 / €2 / AED 7 per payout, paid by the customer, regardless of the invoice amount. Off by default in the calculator.
+- Optional, from 2028: paying contractors through Dokazio via a partner bank — $2 / €2 / AED 7 per payout, paid by the customer, regardless of the invoice amount. Off by default in the calculator.
 
 - Paid pilot: 90 days at 50% of the price, credited towards an annual contract (not included in the calculation).
 
@@ -495,7 +499,7 @@ Subscription per site, per month
 
 - **Benefit** = staff time + cut overbilling, multiplied by the number of sites.
 
-- **Hey Helpy cost** = subscription for the site’s area tier (−15% for annual payment) + the optional payout fee, multiplied by the number of sites.
+- **Dokazio cost** = subscription for the site’s area tier (−15% for annual payment) + the optional payout fee, multiplied by the number of sites.
 
 - **Net benefit** = benefit − cost; per year = × 12. **Return** = benefit / cost, shown as “×2.6”. The range is the same calculation at 3% and at 10% overbilling.
 
@@ -545,18 +549,18 @@ US repair cost: $2.15 per sq ft per year (IFMA 2025 / BOMA 2024 median via Oxmai
 
 - ServiceChannel — Ovation Brands case study
 
-Overbilling of 10–15% is an estimate by Vixxo, a vendor with an interest in the topic, so we use it only as the upper bound, never as the default. The ServiceChannel case (Ovation Brands) reports an 11.8% lower average invoice; ACFE 2024 describes billing fraud in general. Hey Helpy has no paying customers yet: none of these numbers are our customers’ results.
+Overbilling of 10–15% is an estimate by Vixxo, a vendor with an interest in the topic, so we use it only as the upper bound, never as the default. The ServiceChannel case (Ovation Brands) reports an 11.8% lower average invoice; ACFE 2024 describes billing fraud in general. Dokazio has no paying customers yet: none of these numbers are our customers’ results.
 
 ---
 
 URL: https://anton-key.github.io/hey-helpy/site/faq/
 ## Frequently asked questions
 
-### What is Hey Helpy?
+### What is Dokazio?
 An AI service for property maintenance and contractor control. Work orders come in by voice, by photo and via Telegram, the contractor is assigned automatically, and only work with proof — a stamped “after” photo, a visit inside the site geofence and a completed checklist — is payable in the contractor act.
 
 ### How is it different from a spreadsheet or a group chat?
-In a chat requests get lost; a spreadsheet has to be filled in by hand. In Hey Helpy you just say or photograph the problem — AI fills in the place, system and priority, the contractor is assigned automatically, overdue work is visible at once. The key difference is proof: time, place and the “after” photo are captured automatically, and the act shows what to pay for and what not.
+In a chat requests get lost; a spreadsheet has to be filled in by hand. In Dokazio you just say or photograph the problem — AI fills in the place, system and priority, the contractor is assigned automatically, overdue work is visible at once. The key difference is proof: time, place and the “after” photo are captured automatically, and the act shows what to pay for and what not.
 
 ### What if there is no signal in the basement?
 The Android app works offline: a new work order can be created without a connection, and the technician’s work orders are saved on the phone in advance, actions and “after” photos are queued and sent automatically when the connection returns. Time is verified by a clock that cannot be changed or by GPS, and the photo fingerprint is checked on the server. If the time cannot be verified, the work order goes to a manager’s decision in the act.
@@ -571,7 +575,7 @@ Yes, the contractor’s technician receives and handles work orders in the app �
 No. Only a technician of the assigned contractor can start the work, take the “after” photo and submit it, and only a manager who did not submit it can accept it. This is enforced by the database, not just the interface.
 
 ### How does the AI know what broke and where?
-An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.
+An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service suggests matching units from the register by serial number, model, type and room — a person confirms the right one. If AI is unavailable, a dictionary parser or manual selection takes over.
 
 ### Where is the data stored?
 Currently in a cloud PostgreSQL database (Supabase) in the EU region; company data is isolated by database access policies. Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud and installation on the customer’s own servers are discussed during a pilot.
@@ -585,13 +589,13 @@ English (default) and Russian; the language is switched in settings.
 ### How much does it cost?
 A subscription per site per month, by site area: from $250 / €199 / AED 650 (Site S, up to 3,000 m²); 15% off when paying annually; sites over 30,000 m² — custom pricing. Contractors use it free and pay nothing. There is no percentage of your contractor spend. A paid pilot is available: 90 days at 50% of the price, credited towards an annual contract. Prices and the calculation are on the ROI calculator page. Open the ROI calculator.
 
-### Will Hey Helpy pay for itself?
-Estimate it for your portfolio in the ROI calculator. It counts the staff time Hey Helpy takes over and the contractor overbilling you stop paying for, with a cautious 3% by default (3–10%). For one 5,000 m² site in the US the estimate is about ×2.6 at 3%; in the Gulf it is about ×1.0, and we show that as it is. This is an estimate, not a promise — a pilot shows real numbers. Open the ROI calculator.
+### Will Dokazio pay for itself?
+Estimate it for your portfolio in the ROI calculator. It counts the staff time Dokazio takes over and the contractor overbilling you stop paying for, with a cautious 3% by default (3–10%). For one 5,000 m² site in the US the estimate is about ×2.6 at 3%; in the Gulf it is about ×1.0, and we show that as it is. This is an estimate, not a promise — a pilot shows real numbers. Open the ROI calculator.
 
 ---
 
 URL: https://anton-key.github.io/hey-helpy/site/contact/
-## Request a demo or pilot
+## Apply for a pilot
 
 We will show the service on demo data and discuss a pilot at your sites.
 
@@ -613,16 +617,20 @@ Already have access? Sign in to the app.
 
 # Русский
 
-Hey Helpy — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, подписка за объект — от $250 в месяц по площади, подрядчики не платят, доступен пилот.
+Dokazio — Contractor Control (произносится «доКАзио», от сербского «dokaz» — «доказательство»; слоган «Send the job. See it done.») — ИИ-сервис эксплуатации объектов недвижимости (CMMS / facility management) и контроля подрядчиков для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков: заявки текстом, камерой или голосом, в приложении или в Telegram, автоматическое назначение подрядчика, доказательства выполнения (фото «после» со штампом, визит по геозоне, чек-лист) и акт подрядчику, в который к оплате попадает только доказанная работа. Веб и Android. Стадия — MVP, подписка за объект — от $250 в месяц по площади, подрядчики не платят, доступен пилот.
 
 URL: https://anton-key.github.io/hey-helpy/site/ru/
-Hey Helpy — для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков
+Dokazio — Contractor Control для бизнес-центров и ТЦ, сетей и ритейла, управляющих и FM-компаний, госзаказчиков
 
-## ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков
+## Отправьте задачу — увидите, что она сделана
 
-**Платим подрядчику только за доказанную работу.** Заявку создают текстом, камерой или голосом — в приложении или в Telegram, без установки. Сервис сам понимает, что и где сломалось, отправляет нужному подрядчику и собирает доказательства выполнения.
+Отправьте работу любому подрядчику одним касанием. Dokazio показывает доказательство, что работа сделана именно на этом оборудовании, — и вы платите только за подтверждённую работу.
 
-Запросить демо Посчитать окупаемость Смотреть видео
+Подать заявку на пилот Как это работает
+
+Dokazio (доКАзио) — от сербского «dokaz», «доказательство».
+
+Посчитать окупаемость → · Смотреть видео на две минуты
 
 [Кадр: Гостиничный номер: над кондиционером — AR-метка с диагностикой и открытой заявкой]
 
@@ -638,11 +646,11 @@ _Иллюстрация_
 
 -
 #### Приём
-Заявку говорят: «Эй, Хелпи, в переговорной на третьем этаже капает вода с кондиционера». Или наводят камеру на оборудование. Или пишут боту в Telegram — заявителю приложение не нужно, достаточно QR-кода на объекте.
+Заявку говорят: «Эй, Доказио, в переговорной на третьем этаже капает вода с кондиционера». Или наводят камеру на оборудование. Или пишут боту в Telegram — заявителю приложение не нужно, достаточно QR-кода на объекте.
 
 -
 #### ИИ разбирает
-ИИ-модель определяет, что случилось, в каком помещении, какая это система и насколько срочно. По фото сервис находит конкретную единицу оборудования в реестре. Человек только подтверждает.
+ИИ-модель определяет, что случилось, в каком помещении, какая это система и насколько срочно. По фото сервис предлагает подходящее оборудование из реестра объекта — человек подтверждает, какое именно.
 
 -
 #### Подрядчик
@@ -662,7 +670,7 @@ _Иллюстрация_
 
 ### Любое оборудование — один сценарий
 
-Холодильник, кран, светильник или камера в лобби — исполнитель наводит камеру, сервис узнаёт оборудование из реестра и показывает его заявки и плановое ТО. Новая заявка — одним касанием, место и оборудование уже заполнены.
+Холодильник, кран, светильник или камера в лобби — исполнитель наводит камеру, сервис предлагает подходящее оборудование из реестра объекта, исполнитель подтверждает — и видит его заявки и плановое ТО. Новая заявка — одним касанием, место и оборудование уже заполнены.
 
 [Кадр: Офисный холодильник с AR-карточкой и чек-листом ТО]
 
@@ -695,7 +703,7 @@ _Иллюстрация_
 ### Главное
 
 #### Камера-помощник
-Навели камеру на кондиционер — сервис узнал, какое именно это оборудование из реестра, и показал его открытые заявки, плановое ТО и последнюю работу.
+Навели камеру на кондиционер — сервис предложил, какое это может быть оборудование из реестра объекта; вы подтверждаете и видите его открытые заявки, плановое ТО и последнюю работу.
 
 [Кадр: Камера-помощник: кондиционер AC-301 с пометкой 91 % на демо-кадре, карточка с открытой заявкой, плановым ТО и последней работой]
 Демо-кадр, не замеренная точность
@@ -716,9 +724,9 @@ _Акт подрядчику: к оплате — только доказанн�
 
 Все возможности →
 
-### Hey Helpy Spatial — заявки на плане и в пространстве
+### Dokazio Spatial — заявки на плане и в пространстве
 
-Помещения и оборудование стоят точками на плане этажа, просроченное видно сразу. На телефонах с ARCore AR-метки показывают заявки и ТО прямо над оборудованием. Иллюстрация — куда мы развиваем это направление: весь этаж, где каждая заявка привязана к месту.
+Помещения и оборудование стоят точками на плане этажа, просроченное видно сразу. На телефонах с ARCore человек ставит AR-метки с заявками и ТО прямо над оборудованием. Иллюстрация — куда мы развиваем это направление: весь этаж, где каждая заявка привязана к месту.
 
 [Кадр: Изометрия офисного этажа: помещения, оборудование и метки заявок]
 
@@ -757,7 +765,7 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/features/
 
 ### Заявки голосом
 
-Кнопка «Hey Helpy» — и можно говорить. Текст виден по ходу речи; распознавание — средствами браузера (Chrome, Edge) или системы Android.
+Кнопка «Dokazio» — и можно говорить. Текст виден по ходу речи; распознавание — средствами браузера (Chrome, Edge) или системы Android.
 
 - ИИ-модель раскладывает фразу на поля заявки: заголовок, описание, систему (климат, электрика, сантехника…), помещение и срочность.
 
@@ -775,7 +783,7 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/features/
 
 - Мультимодальная модель описывает снимок: вид оборудования (из каталога из 22 видов), систему, читаемый шильдик, видимую неисправность.
 
-- Какая именно это единица из реестра, решает сам сервис: по серийному номеру, модели, виду, помещению и этажу. Предлагается до трёх вариантов с причинами.
+- Сервис предлагает единицы из реестра объекта, которые могут подойти, — по серийному номеру, модели, виду, помещению и этажу: до трёх вариантов с причинами. Человек подтверждает нужную («Это он») или выбирает другую.
 
 - Карточка оборудования: открытые заявки, ближайшее плановое ТО, последняя выполненная работа.
 
@@ -789,17 +797,17 @@ _Демо-кадр, не замеренная точность_
 
 ### AR-метки
 
-Навёл камеру — над оборудованием появляется табличка с открытыми заявками и плановым ТО, например «AC-301 · 1 открытая заявка · ТО до 31.10». Табличка остаётся на месте, пока вы ходите по помещению.
+Навели камеру на оборудование и подтвердили, какое это оборудование из реестра, — над ним ставится табличка с открытыми заявками и плановым ТО, например «AC-301 · 1 открытая заявка · ТО до 31.10». Табличка остаётся на месте, пока вы ходите по помещению. В первой версии метки ставит человек.
 
 - Касание таблички — карточка оборудования или новая заявка с уже заполненными объектом, помещением и оборудованием.
 
-- Оборудование узнаёт тот же сервис, что и «Камера-помощник»; снимок не сохраняется и не пишется в журнал.
+- Сервис предлагает варианты из реестра, как в «Камере-помощнике», а выбирает человек; снимок не сохраняется и не пишется в журнал.
 
 - Положение телефона в помещении считается на самом телефоне. Данные не уходят на сторонние AR-сервисы: облачные якоря и геопозиционирование Google выключены.
 
 - Работает в Android-приложении на телефонах с поддержкой ARCore. На других устройствах — обычная «Камера-помощник».
 
-- Метки пока не сохраняются между запусками: после закрытия экрана оборудование нужно узнать заново. Нужен интернет — распознаёт сервер.
+- Метки пока не сохраняются между запусками: после закрытия экрана метки нужно поставить заново. Нужен интернет — варианты предлагает сервер.
 
 ### Заявки и уведомления в Telegram
 
@@ -940,7 +948,7 @@ _Контроль подрядчиков цифрами (демо-данные).
 URL: https://anton-key.github.io/hey-helpy/site/ru/industries/
 ## Для кого
 
-Hey Helpy нужен там, где здание обслуживают подрядчики, а платить хочется только за сделанную работу, — в США, Европе и на Ближнем Востоке.
+Dokazio нужен там, где здание обслуживают подрядчики, а платить хочется только за сделанную работу, — в США, Европе и на Ближнем Востоке.
 
 ### Бизнес-центры и торговые центры
 
@@ -987,7 +995,7 @@ Hey Helpy нужен там, где здание обслуживают подр
 URL: https://anton-key.github.io/hey-helpy/site/ru/security/
 ## Безопасность и развёртывание
 
-Права в Hey Helpy проверяет база данных. Интерфейс только показывает то, что разрешено.
+Права в Dokazio проверяет база данных. Интерфейс только показывает то, что разрешено.
 
 ### Изоляция компаний
 
@@ -1038,7 +1046,7 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/security/
 URL: https://anton-key.github.io/hey-helpy/site/ru/roi/
 ## Сколько вы сэкономите, если платить только за доказанное?
 
-Оценка за минуту для вашего портфеля: время персонала, которое берёт на себя Hey Helpy (рассылка заявок, сбор фото и актов, сверка ведомости), плюс переплаты подрядчикам, которые вы перестаёте оплачивать, — работа без доказательства не оплачивается. Значения по умолчанию осторожные: переплаты 3 %, ползунок — от 3 до 10 %.
+Оценка за минуту для вашего портфеля: время персонала, которое берёт на себя Dokazio (рассылка заявок, сбор фото и актов, сверка ведомости), плюс переплаты подрядчикам, которые вы перестаёте оплачивать, — работа без доказательства не оплачивается. Значения по умолчанию осторожные: переплаты 3 %, ползунок — от 3 до 10 %.
 
 ### Контрольные примеры
 
@@ -1056,7 +1064,7 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/roi/
 
 | Выгода при 3 % | $1 188 | €591 | AED 1 127 |
 
-| Цена Hey Helpy | $450 | €349 | AED 1 100 |
+| Цена Dokazio | $450 | €349 | AED 1 100 |
 
 | Чистая выгода при 3 % | $738 | €242 | AED 27 |
 
@@ -1090,7 +1098,7 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/roi/
 
 - Никакого процента от расходов на подрядчиков — цена зависит только от площади объекта.
 
-- Опция с 2028 года: оплата подрядчикам через Hey Helpy и банк-партнёра — $2 / €2 / AED 7 за выплату, платит клиент, не зависит от суммы счёта. В калькуляторе по умолчанию выключена.
+- Опция с 2028 года: оплата подрядчикам через Dokazio и банк-партнёра — $2 / €2 / AED 7 за выплату, платит клиент, не зависит от суммы счёта. В калькуляторе по умолчанию выключена.
 
 - Платный пилот: 90 дней за 50 % цены, засчитывается в годовой договор (в расчёт не включён).
 
@@ -1102,7 +1110,7 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/roi/
 
 - **Выгода** = время персонала + отсечённые переплаты, умноженные на число объектов.
 
-- **Стоимость Hey Helpy** = подписка по ступени площади объекта (−15 % при оплате за год) + плата за выплаты, если включена, умноженные на число объектов.
+- **Стоимость Dokazio** = подписка по ступени площади объекта (−15 % при оплате за год) + плата за выплаты, если включена, умноженные на число объектов.
 
 - **Чистая выгода** = выгода − стоимость; за год — × 12. **Окупаемость** = выгода / стоимость, показываем как «×2,6». Диапазон — тот же расчёт при 3 % и при 10 % переплат.
 
@@ -1152,18 +1160,18 @@ URL: https://anton-key.github.io/hey-helpy/site/ru/roi/
 
 - ServiceChannel — кейс Ovation Brands
 
-Переплаты 10–15 % — оценка вендора Vixxo, заинтересованной стороны, поэтому для нас это только верхняя граница, а не значение по умолчанию. В кейсе ServiceChannel (Ovation Brands) средняя стоимость счёта снизилась на 11,8 %; ACFE 2024 описывает мошенничество со счетами в целом. Платящих клиентов у Hey Helpy пока нет: ни одна из этих цифр — не результат наших клиентов.
+Переплаты 10–15 % — оценка вендора Vixxo, заинтересованной стороны, поэтому для нас это только верхняя граница, а не значение по умолчанию. В кейсе ServiceChannel (Ovation Brands) средняя стоимость счёта снизилась на 11,8 %; ACFE 2024 описывает мошенничество со счетами в целом. Платящих клиентов у Dokazio пока нет: ни одна из этих цифр — не результат наших клиентов.
 
 ---
 
 URL: https://anton-key.github.io/hey-helpy/site/ru/faq/
 ## Частые вопросы
 
-### Что такое Hey Helpy?
+### Что такое Dokazio?
 ИИ-сервис эксплуатации объектов недвижимости и контроля подрядчиков. Заявки принимаются голосом, по фото и через Telegram, подрядчик назначается автоматически, а в акт к оплате попадает только работа с доказательствами: фото «после» со штампом, визит в геозоне объекта и выполненный чек-лист.
 
 ### Чем это отличается от Excel или чата в мессенджере?
-В чате заявка теряется, а в таблице её надо заполнять руками. В Hey Helpy заявку достаточно сказать или сфотографировать — ИИ сам заполнит место, систему и срочность, подрядчик назначится по закреплению, просрочка видна сразу. Главное отличие — доказательства: время, место и фото «после» фиксируются автоматически, и акт показывает, за что платить, а за что нет.
+В чате заявка теряется, а в таблице её надо заполнять руками. В Dokazio заявку достаточно сказать или сфотографировать — ИИ сам заполнит место, систему и срочность, подрядчик назначится по закреплению, просрочка видна сразу. Главное отличие — доказательства: время, место и фото «после» фиксируются автоматически, и акт показывает, за что платить, а за что нет.
 
 ### А если в подвале нет связи?
 Android-приложение работает без интернета: новую заявку можно создать и без связи, а заявки исполнителя заранее сохраняются на телефоне, действия и фото «после» встают в очередь и отправляются сами, когда появится связь. Время подтверждается по часам, которые нельзя перевести, или по GPS, а отпечаток фото сверяется на сервере. Если время подтвердить нельзя, заявка попадает в акт на решение менеджера.
@@ -1178,7 +1186,7 @@ Android-приложение работает без интернета: нов�
 Нет. Начать работу, снять фото «после» и сдать её может только исполнитель назначенного подрядчика, а принять — менеджер, который её не сдавал. Это проверяет база данных, а не только интерфейс.
 
 ### Как ИИ понимает, что и где сломалось?
-ИИ-модель разбирает фразу в заявку: систему, помещение и срочность — только из справочников вашей компании. По фото модель описывает оборудование, а сервис находит конкретную единицу в реестре по серийному номеру, модели, виду и помещению. Если ИИ недоступен, работает разбор по словарю или выбор вручную.
+ИИ-модель разбирает фразу в заявку: систему, помещение и срочность — только из справочников вашей компании. По фото модель описывает оборудование, а сервис предлагает подходящие единицы из реестра по серийному номеру, модели, виду и помещению — человек подтверждает нужную. Если ИИ недоступен, работает разбор по словарю или выбор вручную.
 
 ### Где хранятся данные?
 Сейчас — в облачной базе PostgreSQL (Supabase) в регионе ЕС, данные компаний изолированы правилами доступа базы. Облако в регионе по выбору заказчика (США, ЕС, ОАЭ), выделенное облако и установка на собственных серверах обсуждаются в пилоте.
@@ -1192,13 +1200,13 @@ Android-приложение работает без интернета: нов�
 ### Сколько стоит?
 Подписка за объект в месяц, по площади: от $250 / €199 / AED 650 (Site S, до 3 000 м²); скидка 15 % при оплате за год; объекты больше 30 000 м² — индивидуальная цена. Подрядчики пользуются бесплатно и ничего не платят. Процента от расходов на подрядчиков нет. Есть платный пилот: 90 дней за 50 % цены, засчитывается в годовой договор. Цены и расчёт — на странице калькулятора окупаемости. Открыть калькулятор окупаемости.
 
-### Окупится ли Hey Helpy для нас?
-Оцените для своего портфеля в калькуляторе окупаемости. Он считает время персонала, которое берёт на себя Hey Helpy, и переплаты подрядчикам, которые вы перестаёте оплачивать, — осторожно, 3 % по умолчанию (3–10 %). Для одного объекта 5 000 м² в США оценка — около ×2,6 при 3 %; в Заливе — около ×1,0, и так и показываем. Это оценка, а не обещание: реальные цифры покажет пилот. Открыть калькулятор окупаемости.
+### Окупится ли Dokazio для нас?
+Оцените для своего портфеля в калькуляторе окупаемости. Он считает время персонала, которое берёт на себя Dokazio, и переплаты подрядчикам, которые вы перестаёте оплачивать, — осторожно, 3 % по умолчанию (3–10 %). Для одного объекта 5 000 м² в США оценка — около ×2,6 при 3 %; в Заливе — около ×1,0, и так и показываем. Это оценка, а не обещание: реальные цифры покажет пилот. Открыть калькулятор окупаемости.
 
 ---
 
 URL: https://anton-key.github.io/hey-helpy/site/ru/contact/
-## Запросить демо или пилот
+## Заявка на пилот
 
 Покажем сервис на демо-данных и обсудим пилот на ваших объектах.
 

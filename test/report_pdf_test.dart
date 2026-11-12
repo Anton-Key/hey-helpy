@@ -126,9 +126,9 @@ void main() {
           reportOrderNumber('de300000-0000-4000-8000-000000000101'), '#000101');
       expect(
           reportPdfFileName(ru, DateTime(2026, 9, 10), DateTime(2026, 10, 10)),
-          'HeyHelpy_Отчёт_2026-09-10_2026-10-09.pdf');
+          'Dokazio_Отчёт_2026-09-10_2026-10-09.pdf');
       expect(reportPdfFileName(en, DateTime(2026, 9, 1), DateTime(2026, 10, 1)),
-          'HeyHelpy_Report_2026-09-01_2026-09-30.pdf');
+          'Dokazio_Report_2026-09-01_2026-09-30.pdf');
     });
   });
 

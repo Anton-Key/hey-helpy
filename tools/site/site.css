@@ -1,4 +1,4 @@
-/* Сайт «Hey Helpy» — стиль продукта (вариант A, docs/design/DESIGN.md): Onest, акцент #2DB89A.
+/* Сайт «Dokazio» — стиль продукта (вариант A, docs/design/DESIGN.md): Onest, акцент #2DB89A.
    Встраивается в каждую страницу (<style>) — без отдельного запроса, быстрее первая отрисовка. */
 @font-face{font-family:Onest;font-weight:400;font-style:normal;font-display:swap;src:url(FONT400) format("woff2")}
 @font-face{font-family:Onest;font-weight:600;font-style:normal;font-display:swap;src:url(FONT600) format("woff2")}
@@ -61,6 +61,7 @@ main section{margin:0 0 48px}
 .crumbs li{margin:0}
 .crumbs li+li::before{content:"›";margin-inline-end:6px}
 .kicker{color:var(--link);font-weight:600;margin-bottom:.6em}
+.legend{color:var(--muted,#5b6b66);font-size:15px;margin:.2em 0 .8em}
 .lead{font-size:clamp(18px,2.4vw,21px);color:var(--ink);max-width:44em}
 .note{color:var(--muted);font-size:15px}
 .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}

@@ -31,24 +31,70 @@ void main() {
     expect(bad.map((e) => '${e.key}: ${e.value}'), isEmpty);
   });
 
-  // Шаг 33: название на всех языках — «Hey Helpy». Голосовая фраза
-  // «Эй, Хелпи» (ключ wakePhrase) — другое написание и под правило не попадает.
-  test('нигде нет старого названия «Эй, Helpy»', () {
-    const roots = ['lib', 'tools/site', 'supabase/functions'];
+  // Шаг 36: название на всех языках — «Dokazio» (одним словом). Старые имена
+  // «Hey Helpy», «Эй, Helpy», «Helpy», «CtrlSite» не должны встречаться в том,
+  // что видят люди: строки .arb, подпись под иконкой, исходники и сборка сайта,
+  // тексты бота. Можно: адрес /hey-helpy/ (GitHub Pages) и имя бота
+  // @HeyHelpy_bot — их поменять нельзя (см. отчёт шага 36).
+  String visible(String s) => s
+      .replaceAll(RegExp(r'hey[-_]helpy', caseSensitive: false), '')
+      .replaceAll('HeyHelpy_bot', '');
+  final oldName = RegExp(r'helpy|хелпи|ctrl\s*site', caseSensitive: false);
+  // «DokaZio», «Doka zio», «DOKAZIO»… — всё, что похоже на имя, но не «Dokazio».
+  final misspelled = RegExp(r'doka[\s\-_]*zio', caseSensitive: false);
+  bool badSpelling(String s) => misspelled
+      .allMatches(s)
+      .any((m) => m.group(0) != 'Dokazio' && m.group(0) != 'dokazio');
+
+  List<File> filesIn(String root, RegExp ext) => Directory(root)
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((f) => ext.hasMatch(f.path) && !f.path.contains('node_modules'))
+      .toList();
+
+  final visibleFiles = <File>[
+    File('lib/l10n/app_ru.arb'),
+    File('lib/l10n/app_en.arb'),
+    ...filesIn('android/app/src/main/res', RegExp(r'strings\.xml$')),
+    File('web/index.html'),
+    File('web/manifest.json'),
+    File('supabase/functions/telegram-bot/texts.ts'),
+    ...filesIn('tools/site', RegExp(r'content\.(ru|en)\.mjs$|config\.mjs$')),
+    ...filesIn('site', RegExp(r'\.(html|txt|xml|json|webmanifest)$')),
+  ];
+
+  test('название — Dokazio: нет старых имён там, что видят люди', () {
     final bad = <String>[];
-    for (final r in roots) {
-      for (final f in Directory(r).listSync(recursive: true)) {
-        if (f is! File || f.path.contains('node_modules')) continue;
-        if (!RegExp(r'\.(dart|arb|ts|mjs|css|json)$').hasMatch(f.path)) continue;
-        if (f.readAsStringSync().contains('Эй, Helpy')) bad.add(f.path);
-      }
+    for (final f in visibleFiles) {
+      final text = f.path.endsWith('.arb')
+          ? values(f.path).values.join('\n')
+          : f.readAsStringSync();
+      final m = oldName.firstMatch(visible(text));
+      if (m != null) bad.add('${f.path}: «${m.group(0)}»');
     }
-    for (final f in Directory('android/app/src/main/res')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((f) => f.path.endsWith('strings.xml'))) {
-      if (f.readAsStringSync().contains('Эй, Helpy')) bad.add(f.path);
-    }
+    expect(bad, isEmpty);
+  });
+
+  test('«Dokazio» написано одним словом и правильно', () {
+    final bad = <String>[
+      for (final f in visibleFiles)
+        if (badSpelling(f.readAsStringSync())) f.path,
+    ];
+    expect(bad, isEmpty);
+    expect(values('lib/l10n/app_en.arb')['appName'], 'Dokazio');
+    expect(values('lib/l10n/app_ru.arb')['appName'], 'Dokazio');
+    expect(badSpelling('DokaZio'), isTrue);
+    expect(badSpelling('Doka zio'), isTrue);
+    expect(badSpelling('Dokazio — Contractor Control'), isFalse);
+  });
+
+  test('нигде нет «Эй, Helpy» (lib, сайт, функции)', () {
+    const roots = ['lib', 'tools/site', 'supabase/functions'];
+    final bad = <String>[
+      for (final r in roots)
+        for (final f in filesIn(r, RegExp(r'\.(dart|arb|ts|mjs|css|json)$')))
+          if (f.readAsStringSync().contains('Эй, Helpy')) f.path,
+    ];
     expect(bad, isEmpty);
   });
 }

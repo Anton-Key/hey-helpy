@@ -1,4 +1,4 @@
-# Подключение Telegram-бота @HeyHelpy_bot к Edge Function telegram-bot (шаг 23):
+# Подключение Telegram-бота Dokazio (@HeyHelpy_bot — имя пользователя не меняется) к Edge Function telegram-bot (шаг 23):
 # setWebhook (адрес функции + секрет), команды бота (RU и EN), проверка.
 # Только вручную и только с ветки main: Actions → "Telegram webhook" → Run workflow →
 # Review deployments → production-db → Approve. Подробно — CLAUDE.md, «Telegram-бот».
@@ -108,8 +108,8 @@ jobs:
           cmds=$(deno eval 'import { COMMANDS } from "./supabase/functions/telegram-bot/texts.ts"; console.log(JSON.stringify(COMMANDS));')
           call setMyCommands "$(echo "$cmds" | jq -c '{commands: .en}')"
           call setMyCommands "$(echo "$cmds" | jq -c '{commands: .ru, language_code: "ru"}')"
-          call setMyDescription '{"description":"Report a problem at a site by text, voice or photo. You need a link or QR code from your employer."}'
-          call setMyDescription '{"description":"Сообщить о неисправности на объекте текстом, голосом или фото. Нужна ссылка или QR-код от работодателя.","language_code":"ru"}'
+          call setMyDescription '{"description":"Dokazio — Contractor Control. Report a problem at a site by text, voice or photo. You need a link or QR code from your employer."}'
+          call setMyDescription '{"description":"Dokazio — Contractor Control. Сообщить о неисправности на объекте текстом, голосом или фото. Нужна ссылка или QR-код от работодателя.","language_code":"ru"}'
 
       - name: Отключить бота
         id: delete

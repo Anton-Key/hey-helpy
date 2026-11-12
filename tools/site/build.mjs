@@ -1,4 +1,4 @@
-// Генератор сайта «Hey Helpy» — без зависимостей, только Node ≥ 18.
+// Генератор сайта «Dokazio» — без зависимостей, только Node ≥ 18.
 //
 //   node tools/site/build.mjs              → перезаписывает HTML и служебные файлы в site/
 //   node tools/site/build.mjs --out DIR    → ещё и собирает готовый к публикации сайт в DIR
@@ -94,8 +94,8 @@ function helpers(lang, slug) {
     cta: (kind) => `<a class="btn${kind === 'primary' ? '' : ' ghost'}" href="${CONTACT.demoUrl}">${ui.demo}</a>`,
     video: (label) => `<figure class="video"><video controls preload="none" playsinline width="${VIDEO.width}" height="${VIDEO.height}" poster="${rel}${ver(VIDEO.poster)}" aria-label="${esc(label)}"><source src="${rel}${ver(VIDEO.file)}" type="video/mp4"><a href="${rel}${ver(VIDEO.file)}">${esc(label)}</a></video><figcaption>${ui.videoNote}</figcaption></figure>`,
     ctaBlock: () => lang === 'ru'
-      ? `<section class="cta" aria-labelledby="cta"><h2 id="cta">Попробуйте на своих объектах</h2><p>Покажем Hey Helpy на демо-данных и обсудим пилот: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`
-      : `<section class="cta" aria-labelledby="cta"><h2 id="cta">Try it at your sites</h2><p>We will show Hey Helpy on demo data and discuss a pilot: your sites, your contractors, payment only for proven work.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`,
+      ? `<section class="cta" aria-labelledby="cta"><h2 id="cta">Попробуйте на своих объектах</h2><p>Покажем Dokazio на демо-данных и обсудим пилот: ваши объекты, ваши подрядчики, оплата только за доказанную работу.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`
+      : `<section class="cta" aria-labelledby="cta"><h2 id="cta">Try it at your sites</h2><p>We will show Dokazio on demo data and discuss a pilot: your sites, your contractors, payment only for proven work.</p><p class="actions"><a class="btn" href="${CONTACT.demoUrl}">${ui.demo}</a> <a class="btn ghost" href="${APP_URL}">${ui.login}</a></p></section>`,
     contact: () => contactBlock(lang),
   };
 }
@@ -138,8 +138,8 @@ function softwareApp(lang) {
     operatingSystem: 'Web, Android',
     inLanguage: ['ru', 'en'],
     featureList: isRu
-      ? ['Заявки текстом, камерой или голосом (ИИ)', 'Распознавание оборудования по фото', 'Заявки и уведомления в Telegram, гости по QR-коду', 'Автоназначение подрядчика по системе и объекту', 'Фото «после» только живой камерой со штампом', 'Отметка визита по геозоне', 'Акт подрядчику: к оплате только доказанная работа', 'Разделение обязанностей на уровне базы данных', 'Работа без интернета (Android)', 'Плановое ТО', 'Планы этажей и реестр оборудования', 'Отчёты PDF и Excel', 'Регионы и зоны доступа']
-      : ['Work orders by text, camera or voice (AI)', 'Equipment recognition from photos', 'Work orders and notifications in Telegram, guests via QR code', 'Automatic contractor assignment by system and site', 'Live-camera-only “after” photos with a stamp', 'Geofenced visit check-in', 'Contractor act: only proven work is payable', 'Segregation of duties enforced by the database', 'Offline work (Android)', 'Preventive maintenance', 'Floor plans and asset register', 'PDF and Excel reports', 'Regions and access zones'],
+      ? ['Заявки текстом, камерой или голосом (ИИ)', 'Подсказка оборудования по фото из реестра объекта — человек подтверждает', 'Заявки и уведомления в Telegram, гости по QR-коду', 'Автоназначение подрядчика по системе и объекту', 'Фото «после» только живой камерой со штампом', 'Отметка визита по геозоне', 'Акт подрядчику: к оплате только доказанная работа', 'Разделение обязанностей на уровне базы данных', 'Работа без интернета (Android)', 'Плановое ТО', 'Планы этажей и реестр оборудования', 'Отчёты PDF и Excel', 'Регионы и зоны доступа']
+      : ['Work orders by text, camera or voice (AI)', 'Equipment suggestions from photos, matched to the site register — a person confirms', 'Work orders and notifications in Telegram, guests via QR code', 'Automatic contractor assignment by system and site', 'Live-camera-only “after” photos with a stamp', 'Geofenced visit check-in', 'Contractor act: only proven work is payable', 'Segregation of duties enforced by the database', 'Offline work (Android)', 'Preventive maintenance', 'Floor plans and asset register', 'PDF and Excel reports', 'Regions and access zones'],
     screenshot: ['voice', 'camera', 'act'].map((n) => abs(ver(`img/${n}.webp`))),
     offers: {
       '@type': 'Offer',
@@ -157,10 +157,10 @@ function softwareApp(lang) {
 function videoObject(lang) {
   return {
     '@type': 'VideoObject',
-    name: lang === 'ru' ? 'Демо «Hey Helpy» за две минуты' : 'Hey Helpy two-minute demo',
+    name: lang === 'ru' ? 'Демо Dokazio за две минуты' : 'Dokazio two-minute demo',
     description: lang === 'ru'
-      ? 'Сквозная история одной поломки: голосовая заявка, ИИ разбирает её, камера-помощник узнаёт оборудование, фото «после» и акт подрядчику, в котором к оплате только доказанная работа. Ролик на английском, демо-данные, ответы ИИ в записи — имитация.'
-      : 'The full story of one fault: a voice work order parsed by AI, the camera assistant recognising the equipment, the “after” photo and a contractor act where only proven work is payable. Demo data; AI responses in the recording are simulated.',
+      ? 'Сквозная история одной поломки: голосовая заявка, ИИ разбирает её, камера-помощник предлагает оборудование из реестра, человек подтверждает, фото «после» и акт подрядчику, в котором к оплате только доказанная работа. Ролик на английском, демо-данные, ответы ИИ в записи — имитация.'
+      : 'The full story of one fault: a voice work order parsed by AI, the camera assistant suggesting the equipment from the register for a person to confirm, the “after” photo and a contractor act where only proven work is payable. Demo data; AI responses in the recording are simulated.',
     thumbnailUrl: abs(ver(VIDEO.poster)),
     uploadDate: VIDEO.uploadDate,
     duration: VIDEO.duration,
@@ -336,7 +336,7 @@ let lang_img = 'Кадр';
 
 function llmsTxt() {
   const L = (lang, key) => `- [${LANGS[lang].pages[key].h1}](${abs(LANGS[lang].pages[key].slug)}): ${LANGS[lang].pages[key].description}`;
-  return `# Hey Helpy
+  return `# Dokazio — Contractor Control
 
 > ${en.llmsIntro}
 >
@@ -344,7 +344,7 @@ function llmsTxt() {
 
 Full product description in one file (EN and RU): ${abs('llms-full.txt')}
 App sign-in: ${APP_URL}
-Request a demo or pilot: ${CONTACT.demoUrl} (Telegram)
+Apply for a pilot: ${CONTACT.demoUrl} (Telegram)
 
 ## Pages (English)
 
@@ -356,6 +356,7 @@ ${KEYS.map((k) => L('ru', k)).join('\n')}
 
 ## Facts
 
+- Name: Dokazio (pronounced doh-KAH-zee-oh; from “dokaz”, Serbian for “proof”). Full name: Dokazio — Contractor Control. Tagline: Send the job. See it done.
 - Category: CMMS, facility management, contractor control (SaaS)
 - Markets: United States, Europe, Middle East
 - Platforms: web (browser) and Android; no iPhone app yet
@@ -363,7 +364,7 @@ ${KEYS.map((k) => L('ru', k)).join('\n')}
 - AI: language and multimodal AI models via an OpenAI-compatible API; the provider is configurable per deployment
 - Data: cloud PostgreSQL (Supabase), EU region today; US and UAE regions, a dedicated cloud or the customer's own servers are discussed for a pilot
 - Pricing: ${ROI_SHOW_PRICES ? `subscription per site per month by site area (Site S / M / L), from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} / ${fmtMoney(REGIONS.EU.prices.S, 'EU', 'en')} / ${fmtMoney(REGIONS.GCC.prices.S, 'GCC', 'en')}; contractors pay nothing; no percentage of contractor spend; paid pilot available` : 'on request; pilot available'}
-- ROI calculator: ${abs(en.pages.roi.slug)} — estimates staff time saved and contractor overbilling cut (3% by default, 3–10%) against the Hey Helpy price; the figures are model estimates, not customer results
+- ROI calculator: ${abs(en.pages.roi.slug)} — estimates staff time saved and contractor overbilling cut (3% by default, 3–10%) against the Dokazio price; the figures are model estimates, not customer results
 - Contact: Telegram ${CONTACT.demoUrl}; no e-mail or phone published
 - Stage: MVP (October 2026)
 - No reviews, ratings or public customer references are published
@@ -384,11 +385,11 @@ function llmsFullTxt() {
       return `URL: ${abs(p.slug)}\n${htmlToText(p.body(h, p).replace(/<section class="cta"[\s\S]*?<\/section>/g, ''))}`;
     }).join('\n\n---\n\n');
   };
-  return `# Hey Helpy — full description / полное описание
+  return `# Dokazio — Contractor Control — full description / полное описание
 
 Updated: ${UPDATED}. Source: ${SITE_URL}
 App: ${APP_URL}
-Request a demo: ${CONTACT.demoUrl}
+Apply for a pilot: ${CONTACT.demoUrl}
 
 # English
 

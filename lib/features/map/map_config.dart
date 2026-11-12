@@ -30,4 +30,4 @@ int get mapTileMaxNativeZoom => mapUsesCarto ? 20 : 19;
 
 /// Имя приложения в запросах плиток (User-Agent): по нему сервис плиток
 /// отличает наше приложение от других.
-const mapUserAgentPackage = 'app.heyhelpy.cmms';
+const mapUserAgentPackage = 'app.dokazio.cmms';

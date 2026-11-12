@@ -106,5 +106,5 @@ Future<void> printPoster(
   final fonts = await loadReportFonts();
   final bytes = await buildPosterPdf(
       l: l, fonts: fonts, objectName: objectName, url: url);
-  await outputReportPdf(bytes, 'hey-helpy-qr.pdf');
+  await outputReportPdf(bytes, 'dokazio-qr.pdf');
 }

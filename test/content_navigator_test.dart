@@ -14,7 +14,7 @@ void main() {
       home: Scaffold(
         body: Row(children: [
           AppSideNav(
-            brand: 'Hey Helpy',
+            brand: 'Dokazio',
             rail: false,
             index: 0,
             onChanged: (_) {},
@@ -29,7 +29,7 @@ void main() {
                   label: 'Профиль',
                   badge: 1),
             ],
-            voiceLabel: 'Hey Helpy',
+            voiceLabel: 'Dokazio',
             voiceSemantic: 'Голосовая заявка',
             onVoice: () {},
             addLabel: 'Заявка',

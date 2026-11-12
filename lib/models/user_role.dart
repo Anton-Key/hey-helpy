@@ -1,4 +1,4 @@
-/// Роли пользователя в Hey Helpy (соответствуют profiles.role в БД).
+/// Роли пользователя в Dokazio (соответствуют profiles.role в БД).
 enum UserRole {
   admin,
   manager,

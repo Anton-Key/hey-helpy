@@ -9,15 +9,15 @@ import 'core/theme.dart';
 import 'l10n/app_localizations.dart';
 import 'core/scrolling.dart';
 
-class HeyHelpyApp extends StatefulWidget {
-  const HeyHelpyApp({super.key, required this.locale});
+class DokazioApp extends StatefulWidget {
+  const DokazioApp({super.key, required this.locale});
   final LocaleController locale;
 
   @override
-  State<HeyHelpyApp> createState() => _HeyHelpyAppState();
+  State<DokazioApp> createState() => _DokazioAppState();
 }
 
-class _HeyHelpyAppState extends State<HeyHelpyApp> {
+class _DokazioAppState extends State<DokazioApp> {
   // Создаются один раз: пересоздание роутера в build() сбрасывало навигацию.
   late final SessionController _session = SessionController();
   late final GoRouter _router = createRouter(_session);

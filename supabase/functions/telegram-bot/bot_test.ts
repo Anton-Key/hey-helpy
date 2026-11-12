@@ -414,8 +414,8 @@ Deno.test("тексты: RU и EN — одни и те же ключи и под
   for (const k of Object.keys(ru) as (keyof typeof ru)[]) {
     assertEquals(vars(ru[k]), vars(en[k]), k);
   }
-  assertStringIncludes(ru.startUnknown, "«Hey Helpy»");
-  assertStringIncludes(en.startUnknown, "Hey Helpy");
+  assertStringIncludes(ru.startUnknown, "Dokazio");
+  assertStringIncludes(en.startUnknown, "Dokazio");
   assertEquals(langOf("ru-RU"), "ru");
   assertEquals(langOf("de"), "en");
   assertEquals(langOf(undefined), "en");
@@ -503,7 +503,7 @@ Deno.test("незнакомый чат: подсказка без компани
 Deno.test("незнакомый чат по-английски", async () => {
   const w = world({ who: { kind: "none" } });
   await handleUpdate(msg({ text: "/start", lang: "en" }), w.deps);
-  assertStringIncludes(w.sent[0].html, "Hey Helpy");
+  assertStringIncludes(w.sent[0].html, "Dokazio");
 });
 
 Deno.test("гость по QR объекта: текст → карточка ИИ → «Создать» → заявка", async () => {
@@ -875,7 +875,8 @@ const OWNER = -100777;
 Deno.test("demo: /start demo — просьба написать, без компаний и объектов; текст → лид → «Спасибо»", async () => {
   const w = world({ who: { kind: "none" }, lead: { ok: true, id: "l1" } });
   await handleUpdate(msg({ text: "/start demo" }), w.deps);
-  assertStringIncludes(w.sent[0].html, "Расскажите в одном сообщении");
+  assertStringIncludes(w.sent[0].html, "расскажите в одном сообщении");
+  assertStringIncludes(w.sent[0].html, "Dokazio");
   assertEquals(w.calls.includes("resolve"), false, "незнакомцу не показываем ни компаний, ни объектов");
   assertEquals(w.sessions.get(CHAT)?.step, "lead");
 
@@ -897,7 +898,7 @@ Deno.test("demo: /start demo — просьба написать, без ком�
 Deno.test("demo: английский по языку Telegram", async () => {
   const w = world({ who: { kind: "none" }, lead: { ok: true } });
   await handleUpdate(msg({ text: "/start demo", lang: "en" }), w.deps);
-  assertStringIncludes(w.sent[0].html, "In one message, tell us");
+  assertStringIncludes(w.sent[0].html, "tell us in one message");
   await handleUpdate(msg({ text: "Acme, 3 sites", lang: "en" }), w.deps);
   assertEquals(w.leads[0].lang, "en");
   assertStringIncludes(w.sent.at(-1)!.html, "Thank you!");
@@ -977,7 +978,7 @@ Deno.test("leadsChatId и leadWho", () => {
 Deno.test("demo: /start roi — та же просьба, в лиде и у владельца пометка «[ROI calculator]»", async () => {
   const w = world({ who: { kind: "none" }, lead: { ok: true }, leadsChat: OWNER });
   await handleUpdate(msg({ text: "/start roi", lang: "en" }), w.deps);
-  assertStringIncludes(w.sent[0].html, "In one message, tell us");
+  assertStringIncludes(w.sent[0].html, "tell us in one message");
   assertEquals(w.calls.includes("resolve"), false);
   assertEquals(w.sessions.get(CHAT)?.source, "roi");
   await handleUpdate(msg({ text: "Acme, 12 sites in Dubai", lang: "en" }), w.deps);

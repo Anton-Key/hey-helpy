@@ -11,11 +11,13 @@ export const ui = {
   skip: 'Skip to content',
   menu: 'Menu',
   login: 'Sign in',
-  demo: 'Request a demo',
+  demo: 'Apply for a pilot',
+  howCta: 'See how it works',
+  legend: 'Dokazio (doh-KAH-zee-oh) — from “dokaz”, Serbian for “proof”.',
   home: 'Home',
   otherLang: 'Русский',
   otherLangShort: 'RU',
-  footerNote: 'AI service for property maintenance and contractor control. The product is at the MVP stage.',
+  footerNote: 'Dokazio — Contractor Control. Send the job. See it done. The product is at the MVP stage.',
   footerAi: 'For AI assistants',
   shotNote: 'App screen, demo data',
   illNote: 'Illustration',
@@ -25,7 +27,7 @@ export const ui = {
   videoNote: 'The video is in English with on-screen captions, 2 min 17 s, no sound. Demo data; AI responses in the recording are simulated.',
 };
 
-export const llmsIntro = 'Hey Helpy is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; ' + (ROI_SHOW_PRICES ? `subscription per site from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} per month by site area, contractors pay nothing` : 'pricing on request') + '; pilots available.';
+export const llmsIntro = 'Dokazio — Contractor Control (pronounced doh-KAH-zee-oh, from “dokaz”, Serbian for “proof”; tagline: “Send the job. See it done.”) is an AI service for property maintenance (CMMS / facility management) and contractor control for business and shopping centres, chains and retail, property management and FM companies, and public-sector customers: work orders by text, camera or voice, in the app or via Telegram, automatic contractor assignment, proof of completion (an “after” photo with a stamp, a geofenced visit, a checklist) and a contractor act where only proven work is payable. Web and Android. Stage: MVP; ' + (ROI_SHOW_PRICES ? `subscription per site from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} per month by site area, contractors pay nothing` : 'pricing on request') + '; pilots available.';
 
 // Калькулятор окупаемости (шаг 35). Тексты — из docs/site/roi-calculator-brief.md (разделы 2–9),
 // цифры подставляет roi_page.mjs из tools/site/roi.mjs.
@@ -42,9 +44,9 @@ const SOURCES = [
 
 export const roi = {
   h1: 'How much would proven work save you?',
-  lead: 'A one-minute estimate for your portfolio: the staff time Hey Helpy takes over (sending work orders, collecting photos and acts, reconciling the monthly statement) plus the contractor overbilling you stop paying for, because work without proof is not paid. We use cautious defaults: 3% overbilling, adjustable from 3% to 10%.',
+  lead: 'A one-minute estimate for your portfolio: the staff time Dokazio takes over (sending work orders, collecting photos and acts, reconciling the monthly statement) plus the contractor overbilling you stop paying for, because work without proof is not paid. We use cautious defaults: 3% overbilling, adjustable from 3% to 10%.',
   noJs: 'The interactive calculator needs JavaScript. Below are reference examples, prices and how we calculate — the same formulas the calculator uses.',
-  demo: 'Request a demo',
+  demo: 'Apply for a pilot',
   honest: 'This is an estimate based on industry data and our assumptions, not a promise. A pilot on your sites will show real numbers.',
   priceOnRequest: 'Pricing on request',
   custom: 'custom',
@@ -61,7 +63,7 @@ export const roi = {
     time: 'Staff time',
     over: 'Cut overbilling at {p}',
     value: 'Benefit at {p}',
-    price: 'Hey Helpy price',
+    price: 'Dokazio price',
     net: 'Net benefit at {p}',
     roi: 'Return at {p}',
     gulfNote: 'In the Gulf, at 3% the return is about ×1.0 — we show it as it is. Staff time costs less there, so the main benefit is control of overbilling and records for civil defence inspections.',
@@ -75,7 +77,7 @@ export const roi = {
       '<strong>Contractors use it free and pay nothing.</strong> Only the customer pays.',
       '{d} off when paying a year in advance.',
       'No percentage of your contractor spend — the price depends only on the site area.',
-      'Optional, from 2028: paying contractors through Hey Helpy via a partner bank — {us} / {eu} / {gcc} per payout, paid by the customer, regardless of the invoice amount. Off by default in the calculator.',
+      'Optional, from 2028: paying contractors through Dokazio via a partner bank — {us} / {eu} / {gcc} per payout, paid by the customer, regardless of the invoice amount. Off by default in the calculator.',
       'Paid pilot: 90 days at 50% of the price, credited towards an annual contract (not included in the calculation).',
     ],
     free: 'Contractors use it free and pay nothing.',
@@ -87,7 +89,7 @@ export const roi = {
       '<strong>Staff time.</strong> Hours saved per site per month (by default 15 coordinator hours and 5 facility manager hours) × the cost of an hour. The cost of an hour = annual salary × 1.25 (taxes and social contributions) / 2,080 working hours.',
       '<strong>Cut overbilling.</strong> Contractor spend per site per month × the overbilling share. By default, contractor spend = site area × repair and maintenance cost per m² per year × 70% (the share that goes to contractors) / 12. You can enter your own figure.',
       '<strong>Benefit</strong> = staff time + cut overbilling, multiplied by the number of sites.',
-      '<strong>Hey Helpy cost</strong> = subscription for the site’s area tier (−15% for annual payment) + the optional payout fee, multiplied by the number of sites.',
+      '<strong>Dokazio cost</strong> = subscription for the site’s area tier (−15% for annual payment) + the optional payout fee, multiplied by the number of sites.',
       '<strong>Net benefit</strong> = benefit − cost; per year = × 12. <strong>Return</strong> = benefit / cost, shown as “×2.6”. The range is the same calculation at 3% and at 10% overbilling.',
       'Money is rounded to whole units of currency, the return to one decimal place. Sites over 30,000 m² have custom pricing — we do not estimate them.',
     ],
@@ -109,7 +111,7 @@ export const roi = {
     notes: 'US repair cost: ${sqft} per sq ft per year (IFMA 2025 / BOMA 2024 median via Oxmaint); 1 m² = {m2} sq ft. UK / EU = {eu} of the US figure, Gulf = {gcc} (our assumptions). Fixed exchange rates: 1 EUR = {eur} USD, 1 USD = {aed} AED. UK / EU salaries: coordinator — Payscale UK (£28,044) converted to euros, facility manager — StepStone DE. Gulf salaries are based on small samples. Hours saved come from the founder’s experience and will be checked in pilots.',
     sourcesTitle: 'Sources',
     sources: SOURCES,
-    vendorNote: 'Overbilling of 10–15% is an estimate by Vixxo, a vendor with an interest in the topic, so we use it only as the upper bound, never as the default. The ServiceChannel case (Ovation Brands) reports an 11.8% lower average invoice; ACFE 2024 describes billing fraud in general. Hey Helpy has no paying customers yet: none of these numbers are our customers’ results.',
+    vendorNote: 'Overbilling of 10–15% is an estimate by Vixxo, a vendor with an interest in the topic, so we use it only as the upper bound, never as the default. The ServiceChannel case (Ovation Brands) reports an 11.8% lower average invoice; ACFE 2024 describes billing fraud in general. Dokazio has no paying customers yet: none of these numbers are our customers’ results.',
   },
   form: {
     submit: 'Calculate',
@@ -130,7 +132,7 @@ export const roi = {
     hc: 'Coordinator hours saved per site, per month',
     hf: 'Facility manager hours saved per site, per month',
     hoursHint: 'From 0 to 744.',
-    payouts: 'Pay contractors through Hey Helpy (from 2028)',
+    payouts: 'Pay contractors through Dokazio (from 2028)',
     payoutsHint: '{us} / {eu} / {gcc} per payout, paid by you — not a percentage of the invoice.',
     k: 'Payouts per site, per month',
     kHint: 'About 10 by default.',
@@ -142,12 +144,12 @@ export const roi = {
     value: 'Benefit',
     perMonth: '/ month',
     perYear: '/ year',
-    cost: 'Hey Helpy cost',
+    cost: 'Dokazio cost',
     free: 'Contractors use it free and pay nothing.',
     time: 'Staff time',
     over: 'Cut overbilling',
     fix: 'Check the highlighted fields — then the estimate will appear.',
-    custom: 'Sites over 30,000 m² (about 322,900 sq ft) have custom pricing, so we do not show an estimate for them. Request a demo — we will calculate it together for your portfolio.',
+    custom: 'Sites over 30,000 m² (about 322,900 sq ft) have custom pricing, so we do not show an estimate for them. Apply for a pilot — we will calculate it together for your portfolio.',
     gulf: 'In the Gulf, the main benefit is control of overbilling and records for civil defence inspections, not staff time.',
   },
   js: {
@@ -181,16 +183,18 @@ export const pages = {
   home: {
     slug: '',
     nav: 'Home',
-    title: 'Hey Helpy — AI service for property maintenance and contractor control',
+    title: 'Dokazio — Contractor Control: send the job, see it done',
     description: 'For business and shopping centres, chains and retail, property management and FM companies, public sector: work orders by text, camera or voice; only proven work gets paid.',
-    h1: 'AI service for property maintenance and contractor control',
+    h1: 'Send the job. See it done.',
     body: (h) => `
 <section class="hero">
   <div class="hero-text">
-    <p class="kicker">Hey Helpy — for business and shopping centres, chains and retail, property management and FM companies, public-sector customers</p>
-    <h1>AI service for property maintenance and contractor control</h1>
-    <p class="lead"><strong>Pay contractors only for proven work.</strong> A work order is created by text, camera or voice — in the app or via Telegram, with nothing to install. The service figures out what broke and where, sends it to the right contractor and collects proof of completion.</p>
-    <p class="actions">${h.cta('primary')} ${h.link('roi', ui.roiCta).replace('<a ', '<a class="btn ghost" ')} <a class="btn ghost" href="#video">Watch the video</a></p>
+    <p class="kicker">Dokazio — Contractor Control for business and shopping centres, chains and retail, property management and FM companies, public-sector customers</p>
+    <h1>Send the job. See it done.</h1>
+    <p class="lead">Dispatch work to any contractor in one tap. Dokazio shows proof the work was done at the exact equipment, so you pay only for verified work.</p>
+    <p class="actions">${h.cta('primary')} <a class="btn ghost" href="#how">${ui.howCta}</a></p>
+    <p class="legend">${ui.legend}</p>
+    <p>${h.link('roi', ui.roiCta + ' →')} · <a href="#video">Watch the two-minute video</a></p>
   </div>
   ${h.ill('hotel_ac', 'Hotel room: an AR label above the air conditioner with diagnostics and an open work order', { eager: true })}
 </section>
@@ -204,8 +208,8 @@ export const pages = {
 <section aria-labelledby="how">
   <h2 id="how">How it works</h2>
   <ol class="steps">
-    <li><h3>Intake</h3><p>Say it: “Hey, Helpy, water is dripping from the air conditioner in the third-floor meeting room.” Or point the camera at the equipment. Or message the Telegram bot — requesters need no app, just the QR code at the site.</p></li>
-    <li><h3>AI parses it</h3><p>An AI model works out what happened, in which room, which building system it is and how urgent. From a photo, the service finds the exact piece of equipment in the asset register. A person just confirms.</p></li>
+    <li><h3>Intake</h3><p>Say it: “Hey, Dokazio, water is dripping from the air conditioner in the third-floor meeting room.” Or point the camera at the equipment. Or message the Telegram bot — requesters need no app, just the QR code at the site.</p></li>
+    <li><h3>AI parses it</h3><p>An AI model works out what happened, in which room, which building system it is and how urgent. From a photo, the service suggests matching equipment from the site’s asset register — a person confirms which unit it is.</p></li>
     <li><h3>Contractor</h3><p>The work order goes straight to the contractor assigned to that system at that site. The technician gets a notification and takes it with one tap.</p></li>
     <li><h3>Proof</h3><p>The “after” photo can only be taken with the app’s live camera and carries a stamp: date · site · room · inside geofence. The visit is checked against the site’s geofence, the checklist item by item. No “after” photo — no hand-over.</p></li>
     <li><h3>Contractor act</h3><p>At month-end the contractor act is built automatically: only accepted work with proof is payable, disputed items go to a manager’s decision, the rest show why they are not payable.</p></li>
@@ -215,7 +219,7 @@ export const pages = {
 
 <section aria-labelledby="any-unit">
   <h2 id="any-unit">Any unit, same flow</h2>
-  <p>A fridge, a faucet, a light or a lobby camera — the technician points the camera, the service recognises the equipment from the register and shows its work orders and preventive maintenance. A new work order takes one tap, with the place and equipment already filled in.</p>
+  <p>A fridge, a faucet, a light or a lobby camera — the technician points the camera, the service suggests matching equipment from the site’s register, the technician confirms it and sees its work orders and preventive maintenance. A new work order takes one tap, with the place and equipment already filled in.</p>
   <div class="ills">
     <div>${h.ill('fridge', 'Office fridge with an AR card and a maintenance checklist')}<h3>Office fridge</h3><p>The preventive maintenance checklist right at the unit.</p></div>
     <div>${h.ill('faucet', 'Leaking faucet with a plumbing AR label')}<h3>Leaking faucet</h3><p>A work order with a “before” photo goes to the contractor assigned to plumbing at the site.</p></div>
@@ -227,7 +231,7 @@ export const pages = {
 <section aria-labelledby="features">
   <h2 id="features">Highlights</h2>
   <div class="cards">
-    ${h.card('camera', 'Camera assistant', 'Point the camera at an air conditioner — the service recognises which unit from the register it is and shows its open work orders, preventive maintenance and last job.', 'Camera assistant: air conditioner AC-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job', h.demoFrame)}
+    ${h.card('camera', 'Camera assistant', 'Point the camera at an air conditioner — the service suggests which unit from the site’s register it may be, you confirm it and see its open work orders, preventive maintenance and last job.', 'Camera assistant: air conditioner AC-301 labelled 91 % in a demo frame, card with an open work order, maintenance and last job', h.demoFrame)}
     ${h.card('telegram', 'Work orders from Telegram', 'A requester reports a fault in Telegram via the site’s QR code — no app needed. The contractor’s technician gets a notification from the bot and handles the work order in the app.', 'Technician chat with the bot: a new work order notification (mock-up with the bot’s texts)')}
     ${h.card('photos', '“Before” and “after” photos', 'The work order holds all the proof: photos before and after, time, place, documents.', 'Work order card: “before” and “after” photos and a maintenance document')}
   </div>
@@ -236,8 +240,8 @@ export const pages = {
 </section>
 
 <section aria-labelledby="spatial">
-  <h2 id="spatial">Hey Helpy Spatial — work orders on the plan and in space</h2>
-  <p>Rooms and equipment are pinned on the floor plan, and anything overdue stands out. On ARCore phones, AR labels show work orders and maintenance right above the equipment. The illustration shows where we are taking this: the whole floor, with every work order tied to its place.</p>
+  <h2 id="spatial">Dokazio Spatial — work orders on the plan and in space</h2>
+  <p>Rooms and equipment are pinned on the floor plan, and anything overdue stands out. On ARCore phones, a person places AR labels with work orders and maintenance right above the equipment. The illustration shows where we are taking this: the whole floor, with every work order tied to its place.</p>
   ${h.ill('iso', 'Isometric office floor: rooms, equipment and work order markers')}
 </section>
 
@@ -250,7 +254,7 @@ export const pages = {
 <section aria-labelledby="video">
   <h2 id="video">Two-minute demo</h2>
   <p>The full story of one fault: spoken request → camera → work order with a photo → proof → contractor act.</p>
-  ${h.video('Hey Helpy demo: voice work order, camera assistant, “after” photo and contractor act')}
+  ${h.video('Dokazio demo: voice work order, camera assistant, “after” photo and contractor act')}
 </section>
 
 <section aria-labelledby="who">
@@ -271,7 +275,7 @@ ${h.ctaBlock()}
   features: {
     slug: 'features/',
     nav: 'Features',
-    title: 'Features — Hey Helpy',
+    title: 'Features — Dokazio',
     description: 'Work orders by text, camera or voice and from Telegram, AR labels, proof-based contractor payment, roles, offline work, preventive maintenance, floor plans, reports.',
     h1: 'Features',
     body: (h) => `
@@ -288,7 +292,7 @@ ${h.ctaBlock()}
   <h2 id="voice">Voice work orders</h2>
   <div class="split">
     <div>
-      <p>Tap “Hey Helpy” and speak. The text appears as you talk; speech recognition is done by the browser (Chrome, Edge) or by Android.</p>
+      <p>Tap “Dokazio” and speak. The text appears as you talk; speech recognition is done by the browser (Chrome, Edge) or by Android.</p>
       <ul>
         <li>An AI model turns the phrase into work order fields: title, description, system (HVAC, electrical, plumbing…), room and priority.</li>
         <li>If the AI does not answer in time, a built-in dictionary parses the request; the screen shows which one did: “Parsed by AI” or “Parsed by dictionary”.</li>
@@ -307,7 +311,7 @@ ${h.ctaBlock()}
       <p>A technician or employee points the phone camera at the equipment and taps “What is this?”.</p>
       <ul>
         <li>A multimodal model describes the shot: equipment type (from a catalogue of 22 types), system, readable nameplate, visible defect.</li>
-        <li>Which exact unit from the register it is, the service decides itself — by serial number, model, type, room and floor. Up to three candidates with reasons.</li>
+        <li>The service suggests units from the site’s register that may match — by serial number, model, type, room and floor: up to three candidates with reasons. A person confirms the right one (“This is it”) or picks another.</li>
         <li>Equipment card: open work orders, next preventive maintenance, last completed job.</li>
         <li>“Create work order” — site, room, equipment and system are pre-filled, the shot is attached as the “before” photo.</li>
         <li>If there is no equipment in the frame, the service says so. The recognition shot is neither stored nor logged.</li>
@@ -319,13 +323,13 @@ ${h.ctaBlock()}
 
 <section aria-labelledby="ar">
   <h2 id="ar">AR labels</h2>
-  <p>Point the camera — a label with open work orders and preventive maintenance appears above the equipment, for example “AC-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room.</p>
+  <p>Point the camera at the equipment and confirm which unit from the register it is — a label with open work orders and preventive maintenance is placed above it, for example “AC-301 · 1 open work order · maintenance by 31.10”. The label stays in place while you walk around the room. In the first version labels are placed by a person.</p>
   <ul>
     <li>Tap the label to open the equipment card or create a work order with the site, room and equipment already filled in.</li>
-    <li>The equipment is recognised by the same service as in the camera assistant; the shot is neither stored nor logged.</li>
+    <li>The service suggests candidates from the register, as in the camera assistant, and a person chooses; the shot is neither stored nor logged.</li>
     <li>The phone’s position in the room is calculated on the phone itself. No data goes to third-party AR services: Google’s cloud anchors and geospatial positioning are switched off.</li>
     <li>Works in the Android app on phones that support ARCore. Other devices get the regular camera assistant.</li>
-    <li>Labels are not yet kept between sessions: after the screen is closed, equipment has to be recognised again. An internet connection is required — recognition runs on the server.</li>
+    <li>Labels are not yet kept between sessions: after the screen is closed, labels have to be placed again. An internet connection is required — suggestions come from the server.</li>
   </ul>
 </section>
 
@@ -455,12 +459,12 @@ ${h.ctaBlock()}
   industries: {
     slug: 'industries/',
     nav: 'Who it’s for',
-    title: 'Who it’s for — Hey Helpy',
-    description: 'Hey Helpy for business and shopping centres, chains and retail, property management and FM companies, public-sector and restricted-access sites.',
+    title: 'Who it’s for — Dokazio',
+    description: 'Dokazio for business and shopping centres, chains and retail, property management and FM companies, public-sector and restricted-access sites.',
     h1: 'Who it’s for',
     body: (h) => `
 <h1>Who it’s for</h1>
-<p class="lead">Hey Helpy fits wherever buildings are serviced by contractors and you want to pay only for work actually done — in the United States, Europe and the Middle East.</p>
+<p class="lead">Dokazio fits wherever buildings are serviced by contractors and you want to pay only for work actually done — in the United States, Europe and the Middle East.</p>
 
 <section aria-labelledby="bc">
   <h2 id="bc">Business centres and shopping centres</h2>
@@ -509,12 +513,12 @@ ${h.ctaBlock()}
   security: {
     slug: 'security/',
     nav: 'Security',
-    title: 'Security and deployment — Hey Helpy',
+    title: 'Security and deployment — Dokazio',
     description: 'Company isolation at the database level (RLS), roles and segregation of duties, private file storage, access change log, hosting options.',
     h1: 'Security and deployment',
     body: (h) => `
 <h1>Security and deployment</h1>
-<p class="lead">In Hey Helpy permissions are enforced by the database. The interface only shows what is allowed.</p>
+<p class="lead">In Dokazio permissions are enforced by the database. The interface only shows what is allowed.</p>
 
 <section aria-labelledby="isolation">
   <h2 id="isolation">Company isolation</h2>
@@ -567,24 +571,24 @@ ${h.ctaBlock()}
   faq: {
     slug: 'faq/',
     nav: 'FAQ',
-    title: 'FAQ — Hey Helpy',
-    description: 'What happens with no signal in the basement, how Hey Helpy differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.',
+    title: 'FAQ — Dokazio',
+    description: 'What happens with no signal in the basement, how Dokazio differs from spreadsheets and messengers, can you use it without the app, where data is stored and how much it costs.',
     h1: 'Frequently asked questions',
     faq: [
-      ['What is Hey Helpy?', 'An AI service for property maintenance and contractor control. Work orders come in by voice, by photo and via Telegram, the contractor is assigned automatically, and only work with proof — a stamped “after” photo, a visit inside the site geofence and a completed checklist — is payable in the contractor act.'],
-      ['How is it different from a spreadsheet or a group chat?', 'In a chat requests get lost; a spreadsheet has to be filled in by hand. In Hey Helpy you just say or photograph the problem — AI fills in the place, system and priority, the contractor is assigned automatically, overdue work is visible at once. The key difference is proof: time, place and the “after” photo are captured automatically, and the act shows what to pay for and what not.'],
+      ['What is Dokazio?', 'An AI service for property maintenance and contractor control. Work orders come in by voice, by photo and via Telegram, the contractor is assigned automatically, and only work with proof — a stamped “after” photo, a visit inside the site geofence and a completed checklist — is payable in the contractor act.'],
+      ['How is it different from a spreadsheet or a group chat?', 'In a chat requests get lost; a spreadsheet has to be filled in by hand. In Dokazio you just say or photograph the problem — AI fills in the place, system and priority, the contractor is assigned automatically, overdue work is visible at once. The key difference is proof: time, place and the “after” photo are captured automatically, and the act shows what to pay for and what not.'],
       ['What if there is no signal in the basement?', 'The Android app works offline: a new work order can be created without a connection, and the technician’s work orders are saved on the phone in advance, actions and “after” photos are queued and sent automatically when the connection returns. Time is verified by a clock that cannot be changed or by GPS, and the photo fingerprint is checked on the server. If the time cannot be verified, the work order goes to a manager’s decision in the act.'],
       ['Can someone report a fault without the app?', 'Yes. A QR code at the site lets anyone message the Telegram bot with text, a voice note or a photo — no sign-up. A team Telegram group can also be linked to a site. The author gets “in progress” and “done” notifications with a photo.'],
       ['Does the contractor need to install anything?', 'Yes, the contractor’s technician receives and handles work orders in the app — on Android or in a browser: starts work, checks in, ticks the checklist, takes the “after” photo. Telegram only sends them notifications about new work orders.'],
       ['Can a manager close a work order on the contractor’s behalf?', 'No. Only a technician of the assigned contractor can start the work, take the “after” photo and submit it, and only a manager who did not submit it can accept it. This is enforced by the database, not just the interface.'],
-      ['How does the AI know what broke and where?', 'An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service finds the exact unit in the register by serial number, model, type and room. If AI is unavailable, a dictionary parser or manual selection takes over.'],
+      ['How does the AI know what broke and where?', 'An AI model parses the phrase into a work order: system, room and priority — only from your company’s reference data. From a photo the model describes the equipment, and the service suggests matching units from the register by serial number, model, type and room — a person confirms the right one. If AI is unavailable, a dictionary parser or manual selection takes over.'],
       ['Where is the data stored?', 'Currently in a cloud PostgreSQL database (Supabase) in the EU region; company data is isolated by database access policies. Cloud in the region of the customer’s choice (US, EU, UAE), a dedicated cloud and installation on the customer’s own servers are discussed during a pilot.'],
       ['Which devices does it run on?', 'In a browser on desktop and mobile (voice input in Chrome and Edge) and in the Android app. There is no iPhone app yet.'],
       ['Which languages does the interface support?', 'English (default) and Russian; the language is switched in settings.'],
       ['How much does it cost?', ROI_SHOW_PRICES
         ? `A subscription per site per month, by site area: from ${fmtMoney(REGIONS.US.prices.S, 'US', 'en')} / ${fmtMoney(REGIONS.EU.prices.S, 'EU', 'en')} / ${fmtMoney(REGIONS.GCC.prices.S, 'GCC', 'en')} (Site S, up to 3,000 m²); 15% off when paying annually; sites over 30,000 m² — custom pricing. Contractors use it free and pay nothing. There is no percentage of your contractor spend. A paid pilot is available: 90 days at 50% of the price, credited towards an annual contract. Prices and the calculation are on the ROI calculator page.`
-        : 'Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To request a demo or pilot, use the “Request a demo” button: it opens our Telegram bot.', 'roi'],
-      ['Will Hey Helpy pay for itself?', 'Estimate it for your portfolio in the ROI calculator. It counts the staff time Hey Helpy takes over and the contractor overbilling you stop paying for, with a cautious 3% by default (3–10%). ' + (ROI_SHOW_PRICES ? `For one 5,000 m² site in the US the estimate is about ${exampleRoi('US', 'en')} at 3%; in the Gulf it is about ${exampleRoi('GCC', 'en')}, and we show that as it is. ` : '') + 'This is an estimate, not a promise — a pilot shows real numbers.', 'roi'],
+        : 'Pricing is on request and depends on the number of sites. The product is at the MVP stage, and we offer a pilot at your sites. To apply for a pilot, use the “Apply for a pilot” button: it opens our Telegram bot.', 'roi'],
+      ['Will Dokazio pay for itself?', 'Estimate it for your portfolio in the ROI calculator. It counts the staff time Dokazio takes over and the contractor overbilling you stop paying for, with a cautious 3% by default (3–10%). ' + (ROI_SHOW_PRICES ? `For one 5,000 m² site in the US the estimate is about ${exampleRoi('US', 'en')} at 3%; in the Gulf it is about ${exampleRoi('GCC', 'en')}, and we show that as it is. ` : '') + 'This is an estimate, not a promise — a pilot shows real numbers.', 'roi'],
     ],
     body: (h, page) => `
 <h1>Frequently asked questions</h1>
@@ -598,11 +602,11 @@ ${h.ctaBlock()}
   contact: {
     slug: 'contact/',
     nav: 'Contact',
-    title: 'Request a demo or pilot — Hey Helpy',
-    description: 'Request a Hey Helpy demo or a pilot at your sites: voice and photo work orders, contractor control and proof-based payment.',
-    h1: 'Request a demo or pilot',
+    title: 'Apply for a pilot — Dokazio',
+    description: 'Apply for a Dokazio pilot at your sites or ask for a demo: voice and photo work orders, contractor control and proof-based payment.',
+    h1: 'Apply for a pilot',
     body: (h) => `
-<h1>Request a demo or pilot</h1>
+<h1>Apply for a pilot</h1>
 <p class="lead">We will show the service on demo data and discuss a pilot at your sites.</p>
 ${h.contact()}
 <section aria-labelledby="what">
@@ -620,7 +624,7 @@ ${h.contact()}
   roi: {
     slug: 'roi/',
     nav: 'ROI',
-    title: 'ROI calculator — Hey Helpy',
+    title: 'ROI calculator — Dokazio',
     description: 'Estimate what paying contractors only for proven work could save across your sites: staff time and cut overbilling, 3% by default (3–10%). US, UK/EU, Gulf.',
     h1: roi.h1,
     body: (h) => roiBody(h, roi, 'en'),
@@ -629,8 +633,8 @@ ${h.contact()}
   privacy: {
     slug: 'privacy/',
     nav: 'Privacy',
-    title: 'Website privacy policy — Hey Helpy',
-    description: 'The Hey Helpy website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.',
+    title: 'Website privacy policy — Dokazio',
+    description: 'The Dokazio website uses no cookies or analytics; demo requests are accepted only via Telegram — what we store and why.',
     h1: 'Website privacy policy',
     body: (h) => `
 <h1>Website privacy policy</h1>
@@ -638,7 +642,7 @@ ${h.contact()}
 <section aria-labelledby="collect"><h2 id="collect">What the website collects</h2>
   <ul>
     <li>The website uses no cookies, visit counters, advertising or analytics services.</li>
-    <li>There are no forms that send data to a server. The “Request a demo” button opens Telegram — you decide what to write.</li>
+    <li>There are no forms that send data to a server. The “Apply for a pilot” button opens Telegram — you decide what to write.</li>
     <li>Fonts, images and video are loaded from the same address as the website, with no third-party services.</li>
   </ul>
 </section>
@@ -646,10 +650,10 @@ ${h.contact()}
   <p>The website is hosted on GitHub Pages. Like any web server, the host may keep technical request logs (e.g. IP address) under GitHub’s terms.</p>
 </section>
 <section aria-labelledby="letters"><h2 id="letters">Demo requests in Telegram</h2>
-  <p>If you message our bot @HeyHelpy_bot via the “Request a demo” link, we store your message text, your Telegram name and username, language and chat ID — only to reply and discuss a demo or pilot. Only the Hey Helpy team can see this data, and we do not share it with third parties. To have it deleted, send a request the same way — via the “Request a demo” link.</p>
+  <p>If you message our bot @HeyHelpy_bot via the “Apply for a pilot” link, we store your message text, your Telegram name and username, language and chat ID — only to reply and discuss a demo or pilot. Only the Dokazio team can see this data, and we do not share it with third parties. To have it deleted, send a request the same way — via the “Apply for a pilot” link.</p>
 </section>
 <section aria-labelledby="app"><h2 id="app">The app</h2>
-  <p>Data processing in the ${h.appLink('Hey Helpy')} app (work orders, photos, location when checking in) is governed by the contract with the customer company. App data is stored in the cloud; the storage region (US, EU or UAE) is chosen in the contract with the customer, currently the EU. How data access works is described on the ${h.link('security', 'Security')} page.</p>
+  <p>Data processing in the ${h.appLink('Dokazio')} app (work orders, photos, location when checking in) is governed by the contract with the customer company. App data is stored in the cloud; the storage region (US, EU or UAE) is chosen in the contract with the customer, currently the EU. How data access works is described on the ${h.link('security', 'Security')} page.</p>
   <p>The “AR labels” feature in the Android app uses “Google Play Services for AR” (ARCore) — a Google app on the phone, governed by the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. ARCore calculates the phone’s position on the phone itself; our code does not call Google services, and Google’s cloud anchors and geospatial positioning are switched off. The shot used to recognise equipment goes to our server and is not stored.</p>
 </section>
 `,
@@ -657,7 +661,7 @@ ${h.contact()}
 };
 
 export const notFound = {
-  title: 'Page not found — Hey Helpy',
+  title: 'Page not found — Dokazio',
   h1: 'Page not found',
   text: 'This page does not exist. The address may have changed.',
 };

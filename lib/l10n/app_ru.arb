@@ -1,10 +1,10 @@
 {
   "@@locale": "ru",
-  "appName": "Hey Helpy",
+  "appName": "Dokazio",
   "@appName": {
-    "description": "Название продукта в интерфейсе. Единственное место, где оно задано (кроме подписи под иконкой: android/app/src/main/res/values*/strings.xml). Шапка выделяет часть после первого пробела."
+    "description": "Название продукта в интерфейсе. Единственное место, где оно задано (кроме подписи под иконкой: android/app/src/main/res/values*/strings.xml).."
   },
-  "wakePhrase": "Эй, Хелпи",
+  "wakePhrase": "Эй, Доказио",
   "@wakePhrase": {
     "description": "Фраза голосовой активации, как её произносит пользователь"
   },
@@ -958,7 +958,7 @@
   "navCompanyRole": "{company} · {role}",
   "@navCompanyRole": {"placeholders": {"company": {"type": "String"}, "role": {"type": "String"}}},
   "helpTitle": "Справка",
-  "helpTip1": "«Hey Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.",
+  "helpTip1": "«Dokazio» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.",
   "helpTip2": "Заявку нельзя закрыть без фото «после» и подтверждения автора или менеджера.",
   "helpTip3": "«Локации» — объекты на карте и планы этажей с маркерами помещений и оборудования.",
   "helpHotkeys": "Горячие клавиши",
@@ -1149,7 +1149,7 @@
   "@pdfColRegion": {"description": "Шаг 16 (E): отчёты, PDF"},
   "pdfColCity": "Город",
   "@pdfColCity": {"description": "Шаг 16 (E): отчёты, PDF"},
-  "pdfFileName": "HeyHelpy_Отчёт_{period}.pdf",
+  "pdfFileName": "Dokazio_Отчёт_{period}.pdf",
   "@pdfFileName": {"description": "Шаг 16 (E): отчёты, PDF", "placeholders": {"period": {"type": "String"}}},
   "roomCode": "Номер помещения",
   "roomCodeHint": "Например, 305 или 12А",
@@ -1393,7 +1393,7 @@
   "@importInfo3": {"description": "Реестр оборудования (шаг 16)"},
   "importInfo4": "Строки с ошибками не загружаются: исправьте их в файле и выберите файл ещё раз. Недостающие помещения можно создать при импорте.",
   "@importInfo4": {"description": "Реестр оборудования (шаг 16)"},
-  "importTemplateFileName": "HeyHelpy_Оборудование_шаблон",
+  "importTemplateFileName": "Dokazio_Оборудование_шаблон",
   "@importTemplateFileName": {"description": "Имя файла шаблона импорта, без расширения (шаг 16)"},
   "importTemplateSheetName": "Оборудование",
   "@importTemplateSheetName": {"description": "Название листа в шаблоне импорта .xlsx"},

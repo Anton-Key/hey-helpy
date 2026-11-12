@@ -9,10 +9,10 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appName => 'Hey Helpy';
+  String get appName => 'Dokazio';
 
   @override
-  String get wakePhrase => 'Эй, Хелпи';
+  String get wakePhrase => 'Эй, Доказио';
 
   @override
   String get appTagline => 'Заявки и контроль работ — в одно касание';
@@ -2442,7 +2442,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get helpTip1 =>
-      '«Hey Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.';
+      '«Dokazio» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.';
 
   @override
   String get helpTip2 =>
@@ -2921,7 +2921,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String pdfFileName(String period) {
-    return 'HeyHelpy_Отчёт_$period.pdf';
+    return 'Dokazio_Отчёт_$period.pdf';
   }
 
   @override
@@ -3463,7 +3463,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Строки с ошибками не загружаются: исправьте их в файле и выберите файл ещё раз. Недостающие помещения можно создать при импорте.';
 
   @override
-  String get importTemplateFileName => 'HeyHelpy_Оборудование_шаблон';
+  String get importTemplateFileName => 'Dokazio_Оборудование_шаблон';
 
   @override
   String get importTemplateSheetName => 'Оборудование';

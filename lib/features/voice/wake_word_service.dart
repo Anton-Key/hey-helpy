@@ -7,7 +7,7 @@ import 'dart:async';
 ///   на ней держится демо);
 /// - PorcupineWakeWord — фраза «Эй, Хелпи» на устройстве (шаг 4, позже).
 abstract class WakeWordService {
-  /// Срабатывает, когда пользователь позвал Hey Helpy.
+  /// Срабатывает, когда пользователь позвал Dokazio.
   Stream<void> get detections;
 
   Future<void> start();

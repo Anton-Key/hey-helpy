@@ -118,17 +118,21 @@ Deno.test("слишком длинный title обрезается по сло�
   assert(!t.includes("  "));
 });
 
-Deno.test("«Эй, Хелпи» убирается из title и description; первая буква заглавная", () => {
+Deno.test("«Эй, Доказио» убирается из title и description; первая буква заглавная", () => {
   const r = normalize(
     {
-      title: "эй хелпи не работает лифт",
-      description: "Hey, Helpy! lift is broken",
+      title: "эй доказио не работает лифт",
+      description: "Hey, Dokazio! lift is broken",
     },
     catalog,
     "x",
   );
   assertEquals(r.title, "Не работает лифт");
   assertEquals(r.description, "Lift is broken");
+  // Старое имя по привычке и написание раздельно — тоже убираются.
+  const old = normalize({ title: "Эй, Хелпи, не работает лифт", description: "hey doka zio lift" }, catalog, "x");
+  assertEquals(old.title, "Не работает лифт");
+  assertEquals(old.description, "Lift");
 });
 
 Deno.test("prompt injection: текст заявки — только в сообщении user, как данные", () => {

@@ -224,7 +224,7 @@ void main() {
     expect(rows.last, contains('"AC, ""west"""'));
     expect(rows.first, contains(',true,true,'));
     expect(evalReportFileName(DateTime(2026, 11, 3), 'pdf'),
-        'hey-helpy-recognition-test-2026-11-03.pdf');
+        'dokazio-recognition-test-2026-11-03.pdf');
   });
 
   test('провайдеры из ответа функции', () {

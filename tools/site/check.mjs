@@ -4,7 +4,7 @@
 // нет noindex (кроме 404); JSON-LD разбирается и содержит нужные типы; у картинок alt / width / height;
 // нет исполняемых скриптов (весь текст виден без JS); внутренние ссылки и якоря ведут на существующее;
 // robots.txt пускает всех нужных ботов; sitemap.xml и llms.txt — на существующие страницы;
-// нет ключей, e-mail и запрещённых названий; у каждой картинки, постера, ролика, OG и значка — версия
+// нет ключей, e-mail и запрещённых названий (старые имена продукта — шаг 36); у каждой картинки, постера, ролика, OG и значка — версия
 // ?v=<первые 8 знаков SHA-256 файла> (шаг 35c), и она совпадает с файлом.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -120,7 +120,6 @@ for (const f of html) {
   if (/[A-Za-z0-9._%+-]+@(?!media\b|font-face\b|HeyHelpy_bot)[A-Za-z0-9-]+\.[A-Za-z]{2,}/.test(s.replace(/<style>[\s\S]*?<\/style>/, ''))) warns.push(`${name}: есть e-mail — проверьте, что это рабочий адрес владельца`);
   if (/Сербская Роза|Serbian Rose/i.test(s)) err(name, 'кодовое название продукта');
   // Строка собрана из частей, чтобы сторож test/terminology_test.dart не находил её в этом файле.
-  if (s.includes('Эй' + ', Helpy')) err(name, 'старое название продукта — на всех языках «Hey Helpy» (шаг 33)');
   if (/TODO/.test(s)) warns.push(`${name}: TODO на странице`);
 }
 
@@ -171,6 +170,20 @@ for (const f of ['llms.txt', 'llms-full.txt']) {
   for (const [, u] of t.matchAll(/\]\((https:[^)]+)\)/g)) {
     const tg = target(join(out, 'index.html'), u);
     if (tg && !existsSync(join(out, tg.file))) err(f, `ссылка без страницы: ${u}`);
+  }
+}
+
+// Название — Dokazio (шаг 36): старых имён нет ни в одном текстовом файле собранного сайта.
+// Можно только адрес /hey-helpy/ (GitHub Pages) и имя бота HeyHelpy_bot — их поменять нельзя.
+// Строки собраны из частей, чтобы сторож test/terminology_test.dart не находил их в этом файле.
+const OLD_NAME = new RegExp(['hel' + 'py', 'хел' + 'пи', 'ctrl\\s*site'].join('|'), 'i');
+const MISSPELLED = /doka[\s\-_]*zio/gi;
+for (const f of files.filter((x) => /\.(html|txt|xml|json|webmanifest|css|js)$/.test(x))) {
+  const t = readFileSync(f, 'utf8').replace(/hey[-_]helpy/gi, '').replace(/HeyHelpy_bot/g, '');
+  const m = t.match(OLD_NAME);
+  if (m) err(rel(f), `старое название продукта «${m[0]}» — на всех языках «Dokazio» (шаг 36)`);
+  for (const [w] of t.matchAll(MISSPELLED)) {
+    if (w !== 'Dokazio' && w !== 'dokazio') err(rel(f), `название написано неверно: «${w}» — только «Dokazio», одним словом`);
   }
 }
 

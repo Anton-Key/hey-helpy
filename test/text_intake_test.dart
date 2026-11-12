@@ -102,14 +102,24 @@ void main() {
         'Эй, Helpy, не горит свет',
         'Хей Хелпи не горит свет',
         'хэй, хелпи: не горит свет',
-        'Hey Helpy, не горит свет',
+        'Dokazio, не горит свет',
         'Хелпи, не горит свет',
+        // Шаг 36: новое имя.
+        'Эй, Доказио, не горит свет',
+        'эй доказио не горит свет',
+        'Hey Dokazio, не горит свет',
+        'hey, doka zio: не горит свет',
+        'Хей Докацио не горит свет',
+        'Доказио, не горит свет',
+        'Dokazio не горит свет',
       ]) {
         expect(TextIntake.stripWakePhrase(s), 'не горит свет', reason: s);
       }
       // Обычные слова не трогаем.
       expect(TextIntake.stripWakePhrase('Эй, тут течёт кран'),
           'Эй, тут течёт кран');
+      expect(TextIntake.stripWakePhrase('Доказательство: фото после'),
+          'Доказательство: фото после');
     });
 
     test('длинный текст без точек — короткий заголовок с «…»', () {
@@ -191,9 +201,9 @@ void main() {
   });
 
   group('English', () {
-    test('Hey Helpy + HVAC + floor + urgency', () {
+    test('Dokazio + HVAC + floor + urgency', () {
       final d = parse(
-          "Hey Helpy, the air conditioner in the meeting room on the third floor isn't working, it's really hot");
+          "Hey Dokazio, the air conditioner in the meeting room on the third floor isn't working, it's really hot");
       // Первая часть длиннее 60 символов — обрезается по словам.
       expect(d.title,
           'The air conditioner in the meeting room on the third floor…');

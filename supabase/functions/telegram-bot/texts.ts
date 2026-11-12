@@ -11,7 +11,7 @@ export function langOf(code: string | null | undefined): Lang {
 const RU = {
   // Вход и привязка
   startUnknown:
-    "Это бот «Hey Helpy» — сообщить о неисправности на объекте текстом, голосом или фото.\n\n" +
+    "Это бот Dokazio — сообщить о неисправности на объекте текстом, голосом или фото.\n\n" +
     "Чтобы начать, нужна ссылка от работодателя:\n" +
     "• отсканируйте QR-код на плакате объекта или откройте ссылку компании из рабочего чата;\n" +
     "• если у вас есть аккаунт в приложении — «Профиль → Настройки → Telegram → Подключить Telegram».",
@@ -110,12 +110,12 @@ const RU = {
   pr_critical: "авария",
   // Заявка на демо с сайта (шаг 29, /start demo)
   demoAsk:
-    "Здравствуйте! Это Hey Helpy. Расскажите в одном сообщении: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы свяжемся с вами здесь, в Telegram.",
+    "Здравствуйте! Это Dokazio — Contractor Control. Чтобы подать заявку на пилот, расскажите в одном сообщении: компания, сколько объектов и в каких городах, что хотите посмотреть. Мы свяжемся с вами здесь, в Telegram.",
   demoThanks: "Спасибо! Мы получили заявку и напишем вам здесь.",
   demoTextOnly: "Напишите, пожалуйста, текстом — одним сообщением: компания, сколько объектов и в каких городах, что хотите посмотреть.",
   demoTooLong: "Слишком длинно — уложитесь, пожалуйста, в 2000 символов.",
   demoLimit: "Мы уже получили ваши заявки сегодня и скоро напишем. Новую можно отправить завтра.",
-  demoFailed: "Не получилось сохранить заявку. Попробуйте ещё раз чуть позже: откройте ссылку «Запросить демо» на сайте.",
+  demoFailed: "Не получилось сохранить заявку. Попробуйте ещё раз чуть позже: откройте ссылку «Подать заявку на пилот» на сайте.",
   demoNotice: "🆕 Заявка на демо: {who}\n\n{text}",
 };
 
@@ -123,7 +123,7 @@ export type TextKey = keyof typeof RU;
 
 const EN: Record<TextKey, string> = {
   startUnknown:
-    "This is the Hey Helpy bot — report a problem at a site by text, voice or photo.\n\n" +
+    "This is the Dokazio bot — report a problem at a site by text, voice or photo.\n\n" +
     "To start you need a link from your employer:\n" +
     "• scan the QR code on the site's poster or open the company link from your work chat;\n" +
     "• if you have an account in the app — “Profile → Settings → Telegram → Connect Telegram”.",
@@ -214,12 +214,12 @@ const EN: Record<TextKey, string> = {
   pr_high: "high",
   pr_critical: "emergency",
   demoAsk:
-    "Hello! This is Hey Helpy. In one message, tell us: your company, how many sites and in which cities, and what you would like to see. We will get back to you here in Telegram.",
+    "Hello! This is Dokazio — Contractor Control. To apply for a pilot, tell us in one message: your company, how many sites and in which cities, and what you would like to see. We will get back to you here in Telegram.",
   demoThanks: "Thank you! We have received your request and will message you here.",
   demoTextOnly: "Please write it as text, in one message: your company, how many sites and in which cities, and what you would like to see.",
   demoTooLong: "That's too long — please keep it under 2000 characters.",
   demoLimit: "We have already received your requests today and will be in touch soon. You can send a new one tomorrow.",
-  demoFailed: "Couldn't save your request. Please try again a bit later: open the “Request a demo” link on the website.",
+  demoFailed: "Couldn't save your request. Please try again a bit later: open the “Apply for a pilot” link on the website.",
   demoNotice: "🆕 Demo request: {who}\n\n{text}",
 };
 

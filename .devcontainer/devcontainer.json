@@ -1,5 +1,5 @@
 {
-  "name": "Hey Helpy Flutter",
+  "name": "Dokazio Flutter",
   "image": "ghcr.io/cirruslabs/flutter:stable",
   "features": {
     "ghcr.io/devcontainers/features/node:1": { "version": "20" },

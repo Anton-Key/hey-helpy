@@ -38,7 +38,7 @@ Future<void> main() async {
   // Страница «AR (демо)» (web/ar/) берёт адрес базы и вход отсюда.
   WebBridge.publishConfig(SupabaseConfig.url, SupabaseConfig.anonKey);
 
-  runApp(HeyHelpyApp(locale: locale));
+  runApp(DokazioApp(locale: locale));
 }
 
 /// Экран-заглушка, если не переданы SUPABASE_URL / SUPABASE_ANON_KEY.

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Запасное видео демо: docs/demo/hey-helpy-demo.mp4 (ПК 1920×1080) и
-# docs/demo/hey-helpy-demo-phone.mp4 (телефон 412). Локальная база, без сети.
+# Запасное видео демо. Основное (с шага 36 — единственное в репозитории): --v2-only →
+# docs/demo/dokazio-demo-v2.mp4. Без флага — старые русские ролики ПК / телефона
+# (сценарий устарел с шага 33: данные английские, запись обрывается). Локальная база, без сети.
 # База hh_test пересоздаётся (tools/db_test/run.sh). Нужны:
 # сборка build/web_e2e (tools/e2e/build.sh), PostgREST (POSTGREST=…), ffmpeg.
 # Запуск: bash tools/e2e/record_demo.sh [--phone-only|--pc-only|--v2-only]
-# --v2-only (шаг 25) — только docs/demo/hey-helpy-demo-v2.mp4 (ПК, «Камера-помощник» → акт).
+# --v2-only (шаг 25) — только docs/demo/dokazio-demo-v2.mp4 (ПК, «Камера-помощник» → акт).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"

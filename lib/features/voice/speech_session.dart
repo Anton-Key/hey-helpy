@@ -204,7 +204,7 @@ bool isWeakSpeechBrowser(String userAgent, {bool brave = false}) {
 /// Браузер, где распознавание речи не работает совсем: в Firefox нет
 /// Web Speech API, а Яндекс Браузер, Opera и Brave его объявляют, но сервис
 /// распознавания им недоступен (сразу `network` / `not-allowed`). В них «Эй,
-/// Helpy» сразу открывает «Ввести текстом» с подсказкой про Chrome и Edge.
+/// Dokazio» сразу открывает «Ввести текстом» с подсказкой про Chrome и Edge.
 /// Samsung Internet сюда не входит — там попытка иногда работает.
 bool isNoSpeechBrowser(String userAgent, {bool brave = false}) {
   if (brave) return true;

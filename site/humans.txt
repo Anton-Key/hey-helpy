@@ -1,5 +1,5 @@
 /* TEAM */
-Product: Hey Helpy / Hey Helpy
+Product: Dokazio / Dokazio
 Built with: Claude Code
 
 /* SITE */

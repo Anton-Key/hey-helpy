@@ -98,16 +98,16 @@ abstract class AppLocalizations {
     Locale('ru')
   ];
 
-  /// Название продукта в интерфейсе. Единственное место, где оно задано (кроме подписи под иконкой: android/app/src/main/res/values*/strings.xml). Шапка выделяет часть после первого пробела.
+  /// Название продукта в интерфейсе. Единственное место, где оно задано (кроме подписи под иконкой: android/app/src/main/res/values*/strings.xml)..
   ///
   /// In ru, this message translates to:
-  /// **'Hey Helpy'**
+  /// **'Dokazio'**
   String get appName;
 
   /// Фраза голосовой активации, как её произносит пользователь
   ///
   /// In ru, this message translates to:
-  /// **'Эй, Хелпи'**
+  /// **'Эй, Доказио'**
   String get wakePhrase;
 
   /// No description provided for @appTagline.
@@ -4134,7 +4134,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTip1.
   ///
   /// In ru, this message translates to:
-  /// **'«Hey Helpy» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.'**
+  /// **'«Dokazio» — скажите, что случилось и где: заявка заполнится сама, останется проверить и отправить.'**
   String get helpTip1;
 
   /// No description provided for @helpTip2.
@@ -4938,7 +4938,7 @@ abstract class AppLocalizations {
   /// Шаг 16 (E): отчёты, PDF
   ///
   /// In ru, this message translates to:
-  /// **'HeyHelpy_Отчёт_{period}.pdf'**
+  /// **'Dokazio_Отчёт_{period}.pdf'**
   String pdfFileName(String period);
 
   /// No description provided for @roomCode.
@@ -5862,7 +5862,7 @@ abstract class AppLocalizations {
   /// Имя файла шаблона импорта, без расширения (шаг 16)
   ///
   /// In ru, this message translates to:
-  /// **'HeyHelpy_Оборудование_шаблон'**
+  /// **'Dokazio_Оборудование_шаблон'**
   String get importTemplateFileName;
 
   /// Название листа в шаблоне импорта .xlsx

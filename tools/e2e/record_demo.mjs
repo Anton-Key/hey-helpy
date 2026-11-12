@@ -2,7 +2,7 @@
 //   node record_demo.mjs [--phone | --v2] [--out=<файл.mp4>]
 //   --v2 (шаг 25) — видео показа v2 (ПК, 2–2,5 мин): голос → «Камера-помощник» →
 //   заявка с фото → исполнитель «после» → приёмка → акт «к оплате» → уведомление
-//   в Telegram (макет, кадр 22) → docs/demo/hey-helpy-demo-v2.mp4.
+//   в Telegram (макет, кадр 22) → docs/demo/dokazio-demo-v2.mp4.
 //   Шаг 35b: v2 — на АНГЛИЙСКОМ (интерфейс, демо-данные, фраза, подписи). Ответы «ИИ» здесь —
 //   заглушки локального бэкенда, поэтому весь ролик идёт с пометкой в углу
 //   «Demo data · AI responses simulated» (нельзя выдавать заглушку за настоящий ответ).
@@ -30,7 +30,7 @@ import {
 const PHONE = process.argv.includes('--phone');
 const V2 = process.argv.includes('--v2');
 const OUT = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6)
-  ?? join(ROOT, 'docs/demo', PHONE ? 'hey-helpy-demo-phone.mp4' : V2 ? 'hey-helpy-demo-v2.mp4' : 'hey-helpy-demo.mp4'));
+  ?? join(ROOT, 'docs/demo', PHONE ? 'dokazio-demo-phone.mp4' : V2 ? 'dokazio-demo-v2.mp4' : 'dokazio-demo.mp4'));
 const VIEW = PHONE ? { width: 412, height: 915, scale: 2 } : { width: 1920, height: 1080, scale: 1 };
 const FRAMES = mkdtempSync(join(tmpdir(), 'hh-demo-frames-'));
 const TMP = mkdtempSync(join(tmpdir(), 'hh-demo-'));
@@ -270,13 +270,13 @@ async function executorOffscreen(orderTitle) {
 // Сценарий
 // ---------------------------------------------------------------------------
 async function pcScenario(page) {
-  await caption(page, 'Hey Helpy — ИИ-сервис эксплуатации зданий: все заявки в одном месте');
+  await caption(page, 'Dokazio — ИИ-сервис эксплуатации зданий: все заявки в одном месте');
   await moveTo(page, 600, 420, 900);
   await hold(page, 3500);
 
   // 1. Заявка голосом.
-  await caption(page, 'Заявка голосом: «Эй, Хелпи, в переговорной не работает кондиционер…»');
-  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Hey Helpy/ }).first(), { pause: 600 });
+  await caption(page, 'Заявка голосом: «Эй, Доказио, в переговорной не работает кондиционер…»');
+  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Dokazio/ }).first(), { pause: 600 });
   await see(page, /очень жарко/).waitFor({ timeout: 20000 });
   await hold(page, 1400);
   await tap(page, btn(page, /^Готово/), { pause: 200 });
@@ -375,7 +375,7 @@ async function pcScenario(page) {
   await caption(page, 'Каждому менеджеру — своя зона доступа: только Москва, только климат и сантехника');
   await moveTo(page, 1100, 500, 800);
   await hold(page, 4500);
-  await caption(page, 'Hey Helpy: приём → отправка → исполнение → контроль');
+  await caption(page, 'Dokazio: приём → отправка → исполнение → контроль');
   await hold(page, 3500);
 }
 
@@ -383,13 +383,13 @@ async function pcScenario(page) {
 // Видео v2 (шаг 25): одна поломка от голоса до «выполнена ✅».
 // ---------------------------------------------------------------------------
 async function v2Scenario(page) {
-  await caption(page, 'Hey Helpy — AI service for property maintenance');
+  await caption(page, 'Dokazio — Contractor Control. Send the job. See it done.');
   await moveTo(page, 600, 420, 900);
   await hold(page, 3000);
 
   // 1. Голос → ИИ.
   await caption(page, 'Work orders are not typed — they are spoken');
-  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Hey Helpy/ }).first(), { pause: 600 });
+  await tap(page, page.getByRole('button', { name: /Нажми и говори|^Dokazio/ }).first(), { pause: 600 });
   await see(page, /very hot/).waitFor({ timeout: 20000 });
   await hold(page, 1400);
   await tap(page, btn(page, /^Готово/), { pause: 200 });
@@ -408,7 +408,7 @@ async function v2Scenario(page) {
   await tap(page, btn(page, /^Что это\?/), { pause: 300 });
   await see(page, /AC-301 · \d+ ?%/).waitFor({ timeout: 30000 });
   await see(page, /Открытые заявки · \d+|Нет открытых заявок/).waitFor({ timeout: 20000 });
-  await caption(page, 'Equipment recognition by camera: “Air conditioner AC-301” — work orders, maintenance, history');
+  await caption(page, 'The camera suggests “Air conditioner AC-301” from the register — confirm it: work orders, maintenance, history');
   await moveTo(page, 1650, 700, 900);
   await hold(page, 5500);
   await caption(page, 'A work order with a photo — in one tap');
@@ -461,7 +461,7 @@ async function v2Scenario(page) {
   await moveTo(page, 1050, 640, 900);
   await hold(page, 4000);
   await page.evaluate(() => window.__pdf(null));
-  await caption(page, 'Hey Helpy: intake → dispatch → execution → control');
+  await caption(page, 'Dokazio: intake → dispatch → execution → control');
   await hold(page, 3500);
 }
 
@@ -472,11 +472,11 @@ async function back(page) {
 }
 
 async function phoneScenario(page) {
-  await caption(page, 'Hey Helpy — заявки здания в кармане');
+  await caption(page, 'Dokazio — заявки здания в кармане');
   await moveTo(page, 200, 400, 800);
   await hold(page, 3000);
   await caption(page, 'Заявка голосом');
-  await tap(page, page.getByRole('button', { name: /^Hey Helpy|Нажми и говори/ }).first(), { pause: 600 });
+  await tap(page, page.getByRole('button', { name: /^Dokazio|Нажми и говори/ }).first(), { pause: 600 });
   await see(page, /очень жарко/).waitFor({ timeout: 20000 });
   await hold(page, 1200);
   await tap(page, btn(page, /^Готово/), { pause: 200 });
@@ -506,7 +506,7 @@ async function phoneScenario(page) {
   await caption(page, 'ППР по графику');
   await section(page, /^ППР/);
   await hold(page, 3500);
-  await caption(page, 'Hey Helpy: приём → отправка → исполнение → контроль');
+  await caption(page, 'Dokazio: приём → отправка → исполнение → контроль');
   await hold(page, 3000);
 }
 
@@ -547,8 +547,8 @@ try {
   await page.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
     [`flutter.photo_here_v1_${uid}`, `${uuid(10)}|${uuid(21)}`]);
   const phrase = V2
-    ? 'Hey Helpy, the air conditioner in the meeting room on the third floor isn\'t working, it\'s very hot'
-    : 'Эй, Хелпи, в переговорной на третьем этаже не работает кондиционер, очень жарко';
+    ? 'Hey Dokazio, the air conditioner in the meeting room on the third floor isn\'t working, it\'s very hot'
+    : 'Эй, Доказио, в переговорной на третьем этаже не работает кондиционер, очень жарко';
   await openApp(page, base, `?voice=${encodeURIComponent(phrase)}`);
   await profileTab(page).waitFor({ timeout: 60000 });
   await settle(page, 3000);

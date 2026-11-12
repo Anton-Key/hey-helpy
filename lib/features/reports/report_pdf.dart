@@ -10,7 +10,7 @@ import '../../core/l10n_ext.dart';
 import '../../l10n/app_localizations.dart';
 import 'report_repository.dart';
 
-/// PDF отчёта (шаг 16, блок E): A4 книжная, шапка «Hey Helpy» с компанией,
+/// PDF отчёта (шаг 16, блок E): A4 книжная, шапка «Dokazio» с компанией,
 /// периодом, фильтрами словами и «Сформирован: …», показатели, таблицы
 /// «По регионам» и «По подрядчикам», список заявок. Номера страниц
 /// «стр. 2 из 5», шапки таблиц повторяются на каждой новой странице.
@@ -98,7 +98,7 @@ String reportOrderNumber(String id) {
   return '#${hex.substring(hex.length - n).toUpperCase()}';
 }
 
-/// Имя файла: «HeyHelpy_Отчёт_2026-09-10_2026-10-09.pdf».
+/// Имя файла: «Dokazio_Отчёт_2026-09-10_2026-10-09.pdf».
 String reportPdfFileName(
     AppLocalizations l, DateTime from, DateTime toExclusive) {
   final f = DateFormat('yyyy-MM-dd');

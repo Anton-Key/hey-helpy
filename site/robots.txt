@@ -1,4 +1,4 @@
-# Hey Helpy / Hey Helpy: сайт открыт для поисковиков и ИИ-ассистентов.
+# Dokazio / Dokazio: сайт открыт для поисковиков и ИИ-ассистентов.
 # The site is open to search engines and AI assistants.
 
 User-agent: GPTBot

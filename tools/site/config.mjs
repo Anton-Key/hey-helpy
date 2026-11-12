@@ -1,4 +1,4 @@
-// Настройки сайта «Hey Helpy» — одно место.
+// Настройки сайта «Dokazio» — одно место.
 // После покупки своего домена: поменять SITE_URL (с «/» в конце) и пересобрать:
 //   node tools/site/build.mjs
 // (подробно — docs/site/README.md, «Свой домен»).
@@ -25,7 +25,7 @@ export const CONTACT = {
 };
 
 /**
- * Калькулятор окупаемости (шаг 35, страница roi/): показывать ли цены Hey Helpy и ROI.
+ * Калькулятор окупаемости (шаг 35, страница roi/): показывать ли цены Dokazio и ROI.
  * true — прейскурант из tools/site/roi.mjs, стоимость, чистая выгода и ROI «×N».
  * false — только выгода в деньгах, вместо цены «Цена — по запросу» / “Pricing on request”.
  * Поменять → node tools/site/build.mjs → коммит (подробно — docs/site/README.md).
@@ -34,14 +34,14 @@ export const ROI_SHOW_PRICES = true;
 
 /** Демо-ролик: файл в репозитории и данные для VideoObject. */
 export const VIDEO = {
-  src: 'docs/demo/hey-helpy-demo-v2.mp4',
-  file: 'media/hey-helpy-demo.mp4',
+  src: 'docs/demo/dokazio-demo-v2.mp4',
+  file: 'media/dokazio-demo.mp4',
   poster: 'img/video-poster.webp',
-  uploadDate: '2026-11-07',
-  duration: 'PT2M17S',
+  uploadDate: '2026-11-12',
+  duration: 'PT1M37S',
   width: 1920,
   height: 1080,
 };
 
 /** Название — одно на всех языках (шаг 33). */
-export const BRAND = { ru: 'Hey Helpy', en: 'Hey Helpy' };
+export const BRAND = { ru: 'Dokazio', en: 'Dokazio' };

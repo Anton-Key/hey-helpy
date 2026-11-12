@@ -17,7 +17,7 @@ const img = (n) => `data:image/webp;base64,${b64(`assets/site/${n}.webp`)}`;
 // Шаг 35b: продукт по умолчанию на английском — карточка русской версии тоже английская
 // (в картинках сайта нет кириллицы, проверяет tools/site/ocr_check.mjs). Текст ссылки (og:title,
 // og:description) у русской страницы остаётся русским.
-const EN = { brand: 'Hey Helpy', h: 'AI service for property maintenance and contractor control', s: 'Pay contractors only for proven work' };
+const EN = { brand: 'Dokazio', h: 'Send the job. See it done.', s: 'Pay only for verified work' };
 const T = { ru: EN, en: EN };
 
 const browser = await chromium.launch();

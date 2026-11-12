@@ -568,8 +568,8 @@ String evalCsv(EvalReport r, {required DateTime generatedAt}) {
   return b.toString();
 }
 
-/// Имя файла отчёта: hey-helpy-recognition-test-2026-11-03.csv / .pdf.
+/// Имя файла отчёта: dokazio-recognition-test-2026-11-03.csv / .pdf.
 String evalReportFileName(DateTime at, String ext) {
   String two(int v) => v.toString().padLeft(2, '0');
-  return 'hey-helpy-recognition-test-${at.year}-${two(at.month)}-${two(at.day)}.$ext';
+  return 'dokazio-recognition-test-${at.year}-${two(at.month)}-${two(at.day)}.$ext';
 }

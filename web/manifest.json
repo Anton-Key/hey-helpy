@@ -1,11 +1,11 @@
 {
-    "name": "hey_helpy",
-    "short_name": "hey_helpy",
+    "name": "Dokazio — Contractor Control",
+    "short_name": "Dokazio",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Send the job. See it done. Dispatch work to contractors and see proof it was done.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
